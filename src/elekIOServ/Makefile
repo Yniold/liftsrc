@@ -1,5 +1,5 @@
 #
-# Makefile for ELectronic Konverter test tool 
+# Makefile for ELectronic Konverter test tool
 #
 
 VERSION=0.1
@@ -8,7 +8,7 @@ PROJECT=elekIOServ
 CC=gcc
 SHELL=/bin/sh
 
-modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o
+modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o NMEAParser.o serial.o
 
 headers=elekIOServ.h ../include/elekIO.h ../include/elekIOPorts.h
 
