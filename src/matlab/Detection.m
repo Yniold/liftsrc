@@ -586,7 +586,7 @@ function togBlower_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of togglebutton3
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
 
@@ -611,7 +611,7 @@ function togHV_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of togHV
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
 

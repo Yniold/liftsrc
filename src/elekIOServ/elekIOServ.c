@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-15 18:09:59 $ by $Author: harder $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-17 21:36:00 $ by $Author: martinez $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.12  2005-02-15 18:09:59  harder
+* Revision 1.13  2005-02-17 21:36:00  martinez
+* corrected Mask Address calculation by editing device number
+*
+* Revision 1.12  2005/02/15 18:09:59  harder
 * the counter mask for all channels is set to  but the lsb which counts the number of shots, added some comments, removed bug in shift operation in channel extraction of ccADC
 *
 * Revision 1.11  2005/02/15 17:28:00  harder
@@ -1591,7 +1594,7 @@ int main()
   	      sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    } else { // we found that Message.Addr is larger than MAX_COUNTER_CHANNEL*10
-  	      sprintf(buf,"elekIOServ: Set Mask : Addr %d is larger than %d", MaskAddr, MAX_COUNTER_CHANNEL*10);
+  	      sprintf(buf,"elekIOServ: Set Mask : Addr %d is larger than %d", Message.Addr, MAX_COUNTER_CHANNEL*10);
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    } /* if Message.Addr >=0 ... */
 

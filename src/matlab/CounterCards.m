@@ -203,14 +203,15 @@ function MaskApply_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
-Detdata = getappdata(str2double(horusdata.hADC),'Detdata');
+Detdata = getappdata(str2double(horusdata.hDetection),'Detdata');
+device = get(handles.device,'Value')-1;
 
-switch get(handles.device,'Value')
-    case 1
+switch device
+    case 0
         Mask=Detdata.PMTMask;
-    case 2
+    case 1
         Mask=Detdata.MCP1Mask;
-    case 3
+    case 2
         Mask=Detdata.MCP2Mask;
 end
 
@@ -237,14 +238,14 @@ else
     for i=StartAddr:StopAddr
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
-        system(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
+        system(['/lift/bin/eCmd s setmask ',num2str(i-1+device*10),word]);
     end
 end
 
 
 function device_Callback(hObject, eventdata, handles)
 set(hObject,'BackgroundColor','white');
-guidata(hObject, handles);
+
 
 
 
