@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-27 18:17:21 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-28 17:41:44 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.2  2005-01-27 18:17:21  rudolf
+* Revision 1.3  2005-01-28 17:41:44  rudolf
+* Added GetGPSData() to fill the structure with (dummy) values, but at leat it still compiles :-)
+*
+* Revision 1.2  2005/01/27 18:17:21  rudolf
 * added InitGPSReceiver(), modifications for GPS
 *
 *
@@ -962,7 +965,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
 /**********************************************************************************************************/
 
 void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus ) {
-  
+
   extern struct MessagePortType MessageInPortList[];
   extern struct MessagePortType MessageOutPortList[];
 
@@ -972,44 +975,44 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus ) {
   uint16_t       ret;
   uint16_t       Control;
   char           buf[GENERIC_BUF_LEN];
-  
+
   for (Card=0; Card<MAX_TEMP_SENSOR_CARD; Card++) {
-    
-    // check if AVR busy   
+
+    // check if AVR busy
     do {
       ptrElekStatus->TempSensCard[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
     } while ( (TimeOut++<MAX_TEMP_TIMEOUT) && (ptrElekStatus->TempSensCard[Card].Control.Field.Update));
-    
+
     //    sprintf(buf,"GetTemp: Control : %x",ptrElekStatus->TempSensCard[Card].Control.Word);
     //    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-    
+
     if (TimeOut>MAX_TEMP_TIMEOUT) {
-      if ( ((ptrElekStatus->TempSensCard[Card].NumMissed)++)>MAX_TEMP_MISSED_READING) {	
-	// mark Sensor Data as not valid and mark temperature as invalid 
-	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) {	
+      if ( ((ptrElekStatus->TempSensCard[Card].NumMissed)++)>MAX_TEMP_MISSED_READING) {
+	// mark Sensor Data as not valid and mark temperature as invalid
+	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) {
 	  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Field.TempFrac=0x0;
 	  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Field.TempMain=0x80;
 	} /* for Sensor */
 	sprintf(buf,"GetTemp: Problem with Card : %d Missed Reading %d",Card, ptrElekStatus->TempSensCard[Card].NumMissed);
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
       } else {
-	// mark Sensor Data as not valid 
-	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+	// mark Sensor Data as not valid
+	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++)
 	  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Field.bValid=0;
       }
     } else {
       // we set the busy flag to get exclusive access
       //    ptrElekStatus->TempSensCard[Card].Control.Field.Busy=1;
-      // ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word ); 
-      
+      // ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
+
       ptrElekStatus->TempSensCard[Card].NumMissed=0;              // reset Missed Reading Counter
-      
+
       // first we read the number of Sensor we have
       ptrElekStatus->TempSensCard[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
       ptrElekStatus->TempSensCard[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
       ptrElekStatus->TempSensCard[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
-      
-      // now check each sensor 
+
+      // now check each sensor
       for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) {
 	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
 	//	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
@@ -1020,20 +1023,54 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus ) {
 	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
 	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
       } /* for Sensor */
-      
-      
+
+
       //      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
       // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-      
-      // we release the busy flag       
+
+      // we release the busy flag
       ptrElekStatus->TempSensCard[Card].Control.Field.Busy=0;
-      ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );  
-      
+      ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
+
     } /* if TimeOut */
   } /* for Card */
-  
-  
+
+
 } /* GetTemperatureCardData */
+
+/**********************************************************************************************************/
+/* GetGPSData                                                                                     */
+/**********************************************************************************************************/
+
+void GetGPSData ( struct elekStatusType *ptrElekStatus ) {
+
+  extern struct MessagePortType MessageInPortList[];
+  extern struct MessagePortType MessageOutPortList[];
+
+  uint16_t       ret;
+  uint16_t       Control;
+  char           buf[GENERIC_BUF_LEN];
+
+   // set data to initial values
+
+   ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
+   ptrElekStatus->GPSData.ucUTCMins    = 0;
+   ptrElekStatus->GPSData.ucUTCSeconds = 0;
+
+   ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
+   ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
+
+   ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
+   ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+
+   ptrElekStatus->GPSData.ucNumberOfSatellites = 0;   // normal range 1-12
+   ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+
+   ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+   ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+
+
+} /* GetGPSData */
 
 /**********************************************************************************************************/
 /* GetElekStatus                                                                                          */
@@ -1067,9 +1104,11 @@ void GetElekStatus ( struct elekStatusType *ptrElekStatus ) {
   // Valve Card
   GetValveCardData(ptrElekStatus);
     
-
   // now get the temperature data
   GetTemperatureCardData(ptrElekStatus);
+
+  // now get the GPS date
+  GetGPSData(ptrElekStatus);
 
 } /* GetElekStatus */
 
