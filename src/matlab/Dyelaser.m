@@ -133,16 +133,14 @@ EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 EtalonSpeed=statusData(:,EtalonBase+10);
 
 EtalonStatus=statusData(:,EtalonBase+11);
-set(handles.radLeftEnd,'Value',bitand(EtalonStatus(lastrow),1));
-set(GUI_handles.radRightEnd,'Value',bitand(EtalonStatus(lastrow),2));
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.scan_step,'String',EtalonSpeed(lastrow));
-if bitget(EtalonStatus(lastrow),1)
+if bitget(EtalonStatus(lastrow),9)
     set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
-elseif bitget(EtalonStatus(lastrow),2)
+elseif bitget(EtalonStatus(lastrow),10)
     set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
 else
     set(handles.txtLimitSwitch,'String','none','BackgroundColor','b');
@@ -230,7 +228,7 @@ else
 end
 
 % check shutter status
-if bitget(statusData(lastrow,724),12)==0;
+if bitget(statusData(lastrow,724),13)==0;
     set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
     set(handles.toggleShutter,'BackgroundColor','b');
 else 
@@ -660,15 +658,15 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),12);
-    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to close shutter
+    Valveword=bitset(statusData(lastrow,724),13);
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    system('sleep 1');
-    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep shutter closed
     set(hObject,'String','Shutter is CLOSED');
     set(hObject,'BackgroundColor','r');
-else
-    Valveword=bitset(statusData(lastrow,724),12,0);
+    system('sleep 1');
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+else    
+    Valveword=bitset(statusData(lastrow,724),13,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
     set(hObject,'BackgroundColor','b');

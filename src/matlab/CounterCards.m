@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 11-Feb-2005 14:02:56
+% Last Modified by GUIDE v2.5 14-Feb-2005 16:17:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,7 +63,9 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
-%setup Timer function
+% initialize device to be the PMT
+set(handles.device,'Value',1);
+% setup Timer function
 handles.Timer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
@@ -95,31 +97,38 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-set(txtMaster,'String',num2str(statusData(lastrow,15)));
-switch handles.device
-    case 0
-        set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
-        set(handles.txtGain,'String','NA');
-        set(handles.txtGainWidth,'String','NA');
-        set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
-    case 1
-        if bitget(statusData(lastrow,226),16)
-            set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
-        else
+set(handles.txtMaster,'String',num2str(statusData(lastrow,15)));
+if isfield(handles,'device')
+    switch get(handles.device,'Value')
+        case 1
             set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
-        end
-        set(handles.txtGain,'String',num2str(statusData(lastrow,226)));
-        set(handles.txtGainWidth,'String',num2str(statusData(lastrow,227)));
-        set(handles.txtCounter,'String',num2str(statusData(lastrow,225)));
-    case 2
-        if bitget(statusData(lastrow,435),16);
-            set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
-        else
-            set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
-        end
-        set(handles.txtGain,'String',num2str(statusData(lastrow,435)));
-        set(handles.txtGainWidth,'String',num2str(statusData(lastrow,436)));
-        set(handles.txtCounter,'String',num2str(statusData(lastrow,434)));
+            set(handles.txtGain,'String','NA');
+            set(handles.txtGainWidth,'String','NA');
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
+        case 2
+            if bitget(statusData(lastrow,226),16)
+                set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
+            else
+                set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+            end
+            set(handles.txtGain,'String',num2str(statusData(lastrow,226)));
+            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,227)));
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,225)));
+        case 3
+            if bitget(statusData(lastrow,435),16);
+                set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
+            else
+                set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+            end
+            set(handles.txtGain,'String',num2str(statusData(lastrow,435)));
+            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,436)));
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,434)));
+    end
+else % if no device was chosen then show values for PMT
+    set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+    set(handles.txtGain,'String','NA');
+    set(handles.txtGainWidth,'String','NA');
+    set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
 end
 
 data.lastrow=lastrow;
@@ -195,12 +204,12 @@ function MaskApply_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 Detdata = getappdata(str2double(horusdata.hADC),'Detdata');
 
-switch handles.device
-    case 0
-        Mask=Detdata.PMTMask;
+switch get(handles.device,'Value')
     case 1
-        Mask=Detdata.MCP1Mask;
+        Mask=Detdata.PMTMask;
     case 2
+        Mask=Detdata.MCP1Mask;
+    case 3
         Mask=Detdata.MCP2Mask;
 end
 
@@ -227,24 +236,14 @@ else
     for i=StartAddr:StopAddr
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
-        handles.device;
         system(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
     end
 end
 
 
-function devicePopupmenu_Callback(hObject, eventdata, handles)
+function device_Callback(hObject, eventdata, handles)
 set(hObject,'BackgroundColor','white');
-val=get(hObject,'Value');
-switch val
-    case 1
-        handles.device=0;
-    case 2
-        handles.device=1;        
-    case 3
-        handles.device=2;        
-end
-% Update handles structure
+get(hObject,'Value')
 guidata(hObject, handles);
 
 
@@ -277,24 +276,24 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     set(hObject,'String','Gain is ON','BackgroundColor','g');
-    switch handles.device
-        case 0
-            set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+    switch get(handles.device,'Value')
         case 1
+            set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+        case 2
             word=bitset(statusData(lastrow,226),16);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 2
+        case 3
             word=bitset(statusData(lastrow,435),16);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
     end
 else
     set(hObject,'String','Gain is OFF','BackgroundColor','c');
-    switch handles.device
-        case 0
+    switch get(handles.device,'Value')
         case 1
+        case 2
             word=bitset(statusData(lastrow,226),16,0);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 2
+        case 3
             word=bitset(statusData(lastrow,435),16,0);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
     end
@@ -320,13 +319,13 @@ if gaindelay<1
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','w');
-    switch handles.device
-        case 0
+    switch get(handles.device,'Value')
         case 1
+        case 2
             gainstatus=bitget(statusData(lastrow,226),16);
             word=bitset(gaindelay,16,gainstatus);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);            
-        case 2
+        case 3
             gainstatus=bitget(statusData(lastrow,435),16);
             word=bitset(gaindelay,16,gainstatus);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);            
@@ -365,12 +364,12 @@ if counterdelay<1
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','w');
-    switch handles.device
-        case 0
-            system(['/lift/bin/eCmd w 0xa310 ',num2str(counterdelay)]);            
+    switch get(handles.device,'Value')
         case 1
-            system(['/lift/bin/eCmd w 0xa312 ',num2str(counterdelay)]);            
+            system(['/lift/bin/eCmd w 0xa310 ',num2str(counterdelay)]);            
         case 2
+            system(['/lift/bin/eCmd w 0xa312 ',num2str(counterdelay)]);            
+        case 3
             system(['/lift/bin/eCmd w 0xa314 ',num2str(counterdelay)]);            
     end
 end
@@ -390,11 +389,11 @@ if gainwidth<1
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','w');
-    switch handles.device
-        case 0
+    switch get(handles.device,'Value')
         case 1
-            system(['/lift/bin/eCmd w 0xa31a ',num2str(gainwidth)]);            
         case 2
+            system(['/lift/bin/eCmd w 0xa31a ',num2str(gainwidth)]);            
+        case 3
             system(['/lift/bin/eCmd w 0xa31e ',num2str(gainwidth)]);            
     end
 end

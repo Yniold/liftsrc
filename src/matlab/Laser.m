@@ -1,7 +1,7 @@
 function varargout = Laser(varargin)
 % GUI for pump laser control
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
-% diode temperature should be 26.1°C for PSSN 120865, HEADSN 2363/710
+% diode temperature should be 26.1?C for PSSN 120865, HEADSN 2363/710
 % crystal temperature should be 151 for PSSN 120865, HEADSN 2363/710
 
 % LASER M-file for Laser.fig
@@ -85,29 +85,29 @@ pause(0.5);
 HEADSN=tport.UserData;
 
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
-% diode temperature should be 26.1°C for PSSN 120865, HEADSN 2363/710
+% diode temperature should be 26.1?C for PSSN 120865, HEADSN 2363/710
 % crystal temperature should be 151 for PSSN 120865, HEADSN 2363/710
 
 % diode current should be 36.0 for PSSN 120881, HEADSN 2366/712
-% diode temperature should be 28.6°C for PSSN 120881, HEADSN 2366/712
+% diode temperature should be 28.6?C for PSSN 120881, HEADSN 2366/712
 % crystal temperature should be 130 for PSSN 120881, HEADSN 2366/712
 
 set(handles.txtsetReprate,'String','3000 kHz'); % pulses/s
 if PSSN(1:6)=='120865'
     set(handles.txtsetDiodeCurrent,'String','35.4 A');
-    set(handles.txtsetDiodeTemp,'String','26.1°C');
+    set(handles.txtsetDiodeTemp,'String','26.1 C');
     set(handles.txtsetIRPower,'String','4.5 W'); % IR intern
 elseif PSSN(1:6)=='120881'
     set(handles.txtsetDiodeCurrent,'String','36.0 A');
-    set(handles.txtsetDiodeTemp,'String','28.6°C');
+    set(handles.txtsetDiodeTemp,'String','28.6 C');
     set(handles.txtsetIRPower,'String','4.45 W'); % IR intern
 end
 if HEADSN(1:8)=='2363/710'
     set(handles.txtsetCrtemp,'String','151'); % ADC Counts
-    set(handles.txtsetTowerTemp,'String','???°C');
+    set(handles.txtsetTowerTemp,'String','??? C');
 elseif HEADSN(1:8)=='2366/712'
     set(handles.txtsetCrtemp,'String','130'); % ADC Counts
-    set(handles.txtsetTowerTemp,'String','28.6°C');    
+    set(handles.txtsetTowerTemp,'String','28.6 C');    
 end
 
 % Update handles structure
