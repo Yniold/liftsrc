@@ -57,11 +57,21 @@ function horus_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for horus
 handles.output = hObject;
 
+%setup Timer function
+handles.ActTimer = timer('ExecutionMode','fixedDelay',...
+      'Period',0.7,...    
+      'BusyMode','drop',...
+      'TimerFcn', {@ReadStatus,handles});   
+
+data.ActTimer=handles.ActTimer;
+
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes horus wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% UIWAIT makes ADC wait for user response (see UIRESUME)
+% uiwait(handles.figDataGUI);
+setappdata(handles.output, 'horusdata', data);
+
 
 
 % --- Outputs from this function are returned to the command line.
@@ -73,6 +83,12 @@ function varargout = horus_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+
+function ReadStatus(arg1,arg2,handles)
+data = getappdata(handles.output, 'horusdata');
+[horusdata.statusData,horusdata.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
+setappdata(handles.output, 'horusdata', data);
 
 
 % --- Executes on button press in ADC.
@@ -139,6 +155,9 @@ if isfield(data,'hEtalon')
     hEtalon=str2double(data.hEtalon);
     if ishandle(hEtalon), close(hEtalon); end
 end
+
+stop(handles.ActTimer);
+delete(handles.ActTimer);
 
 close(horus);
 

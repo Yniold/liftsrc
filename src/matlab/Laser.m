@@ -57,15 +57,15 @@ function Laser_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Laser
 handles.output = hObject;
 
-% open the serial line for communication with Laser
-if (computer=='PCWIN') 
-   handles.serLaser = serial('COM10', 'BaudRate', 9600); 
-else
-    handles.serLaser = serial('/dev/ttyS0', 'BaudRate', 9600);
-end
-fopen(handles.serLaser); 
-
-
+% open tcpip port for communication with Laser
+echotcpip('on',10001);
+tport=tcpip('10.111.111.20',10001);
+fopen(tport); 
+%fwrite(t,65:74)
+%A = fread(t, 10);
+%fclose(t)
+%delete(t)
+%echotcpip('off')
 %setup Timer function for update Laserinfo
 handles.LaserTimer = timer('ExecutionMode','fixedDelay',...
           'Period',2,...    

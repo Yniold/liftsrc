@@ -54,25 +54,24 @@ function ADC_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ADC
 handles.output = hObject;
 
+if length(varargin)==2 & varargin{1}=='handle'
+    handles.parenthandle=str2double(varargin{2});
+end
+
 %setup Timer function
 handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
       'TimerFcn', {@PlotRefresh,handles});   
 
-if nargin & isstr(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
-end
-
 data.ActTimer=handles.ActTimer;
+
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'ADCdata', data);
-
-
 
 
 function PlotRefresh(arg1,arg2,GUI_handles)
@@ -86,7 +85,10 @@ data = getappdata(GUI_handles.output, 'ADCdata');
 %set(GUI_handles.figDataGUI,'Visible','on');
 
 %statusData=ReadDataAvg('status.bin',50,2500);
-[statusData,AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+AvgData=horusdata.AvgData;
+%[statusData,AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...

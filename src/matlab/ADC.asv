@@ -55,27 +55,34 @@ function ADC_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 %setup Timer function
+hADC=str2double(data.hADC);
+    if ishandle(hADC), 
+        ADCdata = getappdata(hADC, 'ADCdata');
+
+
+
 handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
       'TimerFcn', {@PlotRefresh,handles});   
 
-if nargin & isstr(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
+if length(varargin)==2 & varargin{1}=='handle'
+    handles.parenthandle=str2double(varargin{2});
 end
 
+data.ActTimer=handles.ActTimer;
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
+setappdata(handles.output, 'ADCdata', data);
 
 
 
 
 function PlotRefresh(arg1,arg2,GUI_handles)
 data = getappdata(GUI_handles.output, 'ADCdata');
-
 
 %[s,w] = system('tail -n-10 data/ccStatus.txt > data/status_sub.txt');
 %clear status_sub;
@@ -330,8 +337,9 @@ plot(GUI_handles.axeEtalon,statusData(iZeit,ADCBase2+1+7*3),statusData(iZeit,ADC
 PMTBase=19;
 MCP1Base=228;
 MCP2Base=437;
-AVGBase=805;
+AVGBase=1;
 PMTMaskBase=211;
+MCP1MaskBase=420;
 MCP2MaskBase=629;
 
 % PMT: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
@@ -343,7 +351,18 @@ if ~isfield(data,'PMTMask')| ...
     end
 end
     
-PMTSumCounts=statusData(:,223);
+PMTSumCounts=statusData(:,PMTMaskBase+12);
+
+% MCP1: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
+if ~isfield(data,'MCP1Mask')| ...
+        ~isequal(statusData(lastrow,MCP1MaskBase:MCP1MaskBase+9),statusData(lastrow-5,MCP1MaskBase:MCP1MaskBase+9))
+    data.MCP1Mask=ones(1,160);
+    for a=0:9
+        data.MCP1Mask((a*16+1):(a*16+16))=bitget(statusData(lastrow,MCP1MaskBase+a),1:16);
+    end
+end
+
+MCP1SumCounts=statusData(:,MCP1MaskBase+12);
 
 % MCP2: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'MCP2Mask')| ...
@@ -354,7 +373,7 @@ if ~isfield(data,'MCP2Mask')| ...
     end
 end
 
-MCP2SumCounts=statusData(:,641);
+MCP2SumCounts=statusData(:,MCP2MaskBase+12);
 
 set(GUI_handles.PMTCounts,'String',statusData(lastrow,PMTBase+204));
 set(GUI_handles.MCP1Counts,'String',statusData(lastrow,MCP1Base+204));
@@ -383,6 +402,11 @@ PMTOfflineAvg(1:size(statusData,1))=NaN;
 PMTOfflineAvg(OfflineRightFilter & statusData(:,805)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
 PMTOfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
 
+PMTAvg(statusData(:,805)==3)=PMTOnlineAvg(statusData(:,805)==3);
+PMTAvg(statusData(:,805)==2)=PMTOfflineLeftAvg(statusData(:,805)==2);
+PMTAvg(statusData(:,805)==1)=PMTOfflineRightAvg(statusData(:,805)==1);
+PMTAvg(statusData(:,805)==0)=NaN;
+
 MCP1OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+3);
 MCP1OnlineAvg(~OnlineFilter)=NaN;
 MCP1OfflineLeftAvg(OfflineLeftFilter)=AvgData(OfflineLeftFilter,AVGBase+4);
@@ -393,6 +417,11 @@ MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
 MCP1OfflineAvg(OfflineRightFilter & statusData(:,805)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
 MCP1OfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
+
+MCP1Avg(statusData(:,805)==3)=MCP1OnlineAvg(statusData(:,805)==3);
+MCP1Avg(statusData(:,805)==2)=MCP1OfflineLeftAvg(statusData(:,805)==2);
+MCP1Avg(statusData(:,805)==1)=MCP1OfflineRightAvg(statusData(:,805)==1);
+MCP1Avg(statusData(:,805)==0)=NaN;
 
 MCP2OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+6);
 MCP2OnlineAvg(~OnlineFilter)=NaN;
@@ -457,9 +486,8 @@ if get(GUI_handles.chkPMT,'Value')
            plot(GUI_handles.axeCounts,Zeit(iZeit),PMTSumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
            hold(GUI_handles.axeCounts,'on');
         case 2           
-           plot(GUI_handles.axeCounts,Zeit(30:end),PMTOnlineAvg(30:end)-PMTOfflineAvg(30:end),'b'); 
+           plot(GUI_handles.axeCounts,Zeit(30:end),PMTAvg(30:end),'b');   
            hold(GUI_handles.axeCounts,'on');
-           %plot(GUI_handles.axeCounts,Zeit(10:end),PMTOfflineAvg(10:end),'b:');   
     end
     %plot(GUI_handles.axeCounts,Zeit(iZeit),statusData(iZeit,PMTBase+204),'r');
     plot(GUI_handles.axeCountsEtalon,EtalonCurPos(iZeit),PMTSumCounts(iZeit),'.');
@@ -495,10 +523,8 @@ if get(GUI_handles.chkMCP1,'Value')
            plot(GUI_handles.axeCounts,Zeit(iZeit),MCP1SumCounts(iZeit)); %statusData(iZeit,MCP1Base+204));
            hold(GUI_handles.axeCounts,'on');
         case 2           
-           %plot(GUI_handles.axeCounts,Zeit(30:end),int16(MCP1OnlineAvg(30:end)),'b'); %-int16(MCP1OfflineAvg(30:end)),'b'); 
            plot(GUI_handles.axeCounts,Zeit(30:end),MCP1Avg(30:end),'b');   
            hold(GUI_handles.axeCounts,'on');
-           %plot(GUI_handles.axeCounts,Zeit(30:end),MCP1OfflineAvg(30:end),'b:');   
     end
 
     %plot(GUI_handles.axeCounts,Zeit(iZeit),MCP1SumCounts(iZeit),'g');         %statusData(iZeit,MCP1Base+204),'g');
