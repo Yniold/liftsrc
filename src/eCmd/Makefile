@@ -2,7 +2,7 @@
 # Makefile for ELectronic Konverter test tool 
 #
 
-VERSION = 0.1
+VERSION = $Revision: 1.2 $
 PROJECT=eCmd
 
 CC=gcc
