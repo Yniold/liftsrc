@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-11 13:44:00 $ by $Author: harder $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-14 17:36:31 $ by $Author: martinez $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.9  2005-02-11 13:44:00  harder
+* Revision 1.10  2005-02-14 17:36:31  martinez
+* corrected numering for gate settings
+*
+* Revision 1.9  2005/02/11 13:44:00  harder
 * added InstrumentAction to elekStatus, added support in elekIOServ & eCmd
 *
 * Revision 1.8  2005/02/11 12:36:12  martinez
@@ -292,7 +295,10 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus) {
   ptrElekStatus->CounterCard.Channel[2].ShiftDelay=0x32;  //MCP2 shift
 
   // set CounterCard GateDelays 
-  for(i=0; i<MAX_COUNTER_GATE;i++) {
+  // set to zero for channel 0, which is the PMT and has no gate register 
+  ptrElekStatus->CounterCard.Channel[0].GateDelay=0; 
+  ptrElekStatus->CounterCard.Channel[0].GateWidth=0;	
+  for(i=1; i<MAX_COUNTER_CHANNEL;i++) {// skip channel 0 which is the PMT and has no gate register 
     ptrElekStatus->CounterCard.Channel[i].GateDelay=0x10;
     ptrElekStatus->CounterCard.Channel[i].GateWidth=1000;	
   }
@@ -366,9 +372,9 @@ int InitCounterCard (struct elekStatusType *ptrElekStatus) {
     ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*Channel,ptrElekStatus->CounterCard.Channel[Channel].ShiftDelay);
   
   // CounterCard GateDelays
-  for(Channel=0; Channel<MAX_COUNTER_GATE;Channel++) {
-    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*Channel,ptrElekStatus->CounterCard.Channel[Channel].GateDelay);
-    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*Channel+2,ptrElekStatus->CounterCard.Channel[Channel].GateWidth);	
+  for(Channel=1; Channel<MAX_COUNTER_CHANNEL;Channel++) { // skip channel 0 which is the PMT and has no gate register 
+    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1),ptrElekStatus->CounterCard.Channel[Channel].GateDelay);
+    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1)+2,ptrElekStatus->CounterCard.Channel[Channel].GateWidth);	
   }
 
   // initialize mask shift register for all channels
@@ -927,9 +933,9 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   ptrElekStatus->CounterCard.MasterDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+6);  // MasterDelay
   
   // CounterCard GateDelays
-  for(i=0; i<MAX_COUNTER_GATE;i++) {
-    ptrElekStatus->CounterCard.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*i);
-    ptrElekStatus->CounterCard.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*i+2);	
+  for(i=1; i<MAX_COUNTER_CHANNEL;i++) {// skip channel 0 which is the PMT and has no gate register 
+    ptrElekStatus->CounterCard.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1));
+    ptrElekStatus->CounterCard.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1)+2);	
   }
   
   TimeOut=0;
