@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.9 $ */
+ /* $Revision: 1.10 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -664,113 +664,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
   }
 
 
-  /* we store the Online/Offline Flag only once */
-  #ifdef D_HEADER
-    mexPrintf("RAvgOnOffFlag #%d : %d\n",Channel,1+count/nelements);      
-  #endif 
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=OnlineAverage[0].OnOffFlag[i];                       /* use PMT aka Ref Channel for on/offline reference */   
-  }
-
-/******************* Instrument Flag Instrument Action ***************************/     
-  #ifdef D_HEADER
-    mexPrintf("InstrumentAction  %d %d\n",count,1+count/nelements);      
-  #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].InstrumentFlags.InstrumentAction;       
-  }
-
-/******************* GPS Data ***************************/     
-  #ifdef D_HEADER
-    mexPrintf("GPSsecondsUTC  %d %d\n",count,1+count/nelements);      
-  #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucUTCHours*3600+elekStatus[i].GPSData.ucUTCMins*60
-	  +elekStatus[i].GPSData.ucUTCSeconds;       
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSLongitude  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* we represent the longitude 2 words */
-  /* the first word contains degrees and mins */
-  /* 0 means 180,0°W, 15*60+30 means 74°30'W */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=((int)(elekStatus[i].GPSData.dLongitude/100)+180)*60+
-	  (int)(elekStatus[i].GPSData.dLongitude-((int)(elekStatus[i].GPSData.dLongitude/100))*100);       
-  }
-  /* the second word contains 4 post decimal positions*/
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=(elekStatus[i].GPSData.dLongitude-(int)(elekStatus[i].GPSData.dLongitude))*10000;       
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSLatitude  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* we represent the latitude 2 words */
-  /* the first word contains degrees and mins */
-  /* 0 means 90,0°S, 15*60+30 means 74°30'S */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=((int)(elekStatus[i].GPSData.dLatitude/100)+90)*60+
-	  (int)(elekStatus[i].GPSData.dLatitude-((int)(elekStatus[i].GPSData.dLatitude/100))*100);       
-  }
-  /* the second word contains 4 post decimal positions*/
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=(elekStatus[i].GPSData.dLatitude-(int)(elekStatus[i].GPSData.dLatitude))*10000;       
-  }
-  
-  #ifdef D_HEADER
-    mexPrintf("GPSAltitude  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* altitude above the geoid in metres */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.fAltitude;
-  }
- 
-  #ifdef D_HEADER
-    mexPrintf("GPSHDOP  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* Horizontal Dillution Of Precision, whatever it means....*/
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.fHDOP;
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSnumSat  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* number of satellites seen by the GPS receiver */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucNumberOfSatellites;
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSLastValidData  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* number of data aquisitions (5Hz) with no valid GPS data */
-  /* will stick at 255 if no data received for a long period */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucLastValidData;
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSGroundSpeed  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* speed in cm/s above ground */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.uiGroundSpeed;
-  }
-
-  #ifdef D_HEADER
-    mexPrintf("GPSHeading  %d %d\n",count,1+count/nelements);      
-  #endif
-  /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.uiHeading;
-  }
-
-
-
-    
 /******************* Calculate running averages ***************************/    
     
   /* now calculate running Average of Online and Offlinesignals */
@@ -900,6 +793,113 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
   } /* for Channel*/
+
+
+  
+  /* we store the Online/Offline Flag only once */
+  #ifdef D_HEADER
+    mexPrintf("RAvgOnOffFlag #%d : %d\n",Channel,1+count/nelements);      
+  #endif 
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=OnlineAverage[0].OnOffFlag[i];                       /* use PMT aka Ref Channel for on/offline reference */   
+  }
+
+  
+  /******************* Instrument Flag Instrument Action ***************************/     
+  #ifdef D_HEADER
+    mexPrintf("InstrumentAction  %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].InstrumentFlags.InstrumentAction;       
+  }
+
+/******************* GPS Data ***************************/     
+  #ifdef D_HEADER
+    mexPrintf("GPSsecondsUTC  %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.ucUTCHours*3600+elekStatus[i].GPSData.ucUTCMins*60
+	  +elekStatus[i].GPSData.ucUTCSeconds;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLongitude  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* we represent the longitude 2 words */
+  /* the first word contains degrees and mins */
+  /* 0 means 180,0°W, 15*60+30 means 74°30'W */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=((int)(elekStatus[i].GPSData.dLongitude/100)+180)*60+
+	  (int)(elekStatus[i].GPSData.dLongitude-((int)(elekStatus[i].GPSData.dLongitude/100))*100);       
+  }
+  /* the second word contains 4 post decimal positions*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=(elekStatus[i].GPSData.dLongitude-(int)(elekStatus[i].GPSData.dLongitude))*10000;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLatitude  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* we represent the latitude 2 words */
+  /* the first word contains degrees and mins */
+  /* 0 means 90,0°S, 15*60+30 means 74°30'S */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=((int)(elekStatus[i].GPSData.dLatitude/100)+90)*60+
+	  (int)(elekStatus[i].GPSData.dLatitude-((int)(elekStatus[i].GPSData.dLatitude/100))*100);       
+  }
+  /* the second word contains 4 post decimal positions*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=(elekStatus[i].GPSData.dLatitude-(int)(elekStatus[i].GPSData.dLatitude))*10000;       
+  }
+  
+  #ifdef D_HEADER
+    mexPrintf("GPSAltitude  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* altitude above the geoid in metres */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.fAltitude;
+  }
+ 
+  #ifdef D_HEADER
+    mexPrintf("GPSHDOP  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* Horizontal Dillution Of Precision, whatever it means....*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.fHDOP;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSnumSat  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* number of satellites seen by the GPS receiver */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.ucNumberOfSatellites;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLastValidData  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* number of data aquisitions (5Hz) with no valid GPS data */
+  /* will stick at 255 if no data received for a long period */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.ucLastValidData;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSGroundSpeed  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* speed in cm/s above ground */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.uiGroundSpeed;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSHeading  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSData.uiHeading;
+  }
 
   
   return;
