@@ -20,7 +20,7 @@ struct SyncFlagType {
 // Globals for GPS
 // ========================
 
-unsigned char port[256] = "/dev/ttyS1";   // serial device used for the incoming GPS data
+unsigned char port[256] = "/dev/ttyS0";   // serial device used for the incoming GPS data
 unsigned char pDataBuffer[1024];
 
 char aProgramName[] = "GPS";              // needed for serial.c 's debug output
