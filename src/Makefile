@@ -39,7 +39,14 @@ all : $(modules) $(headers)
 	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
 #	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
 	chmod +x $(INSTDIR)* 
-	cp $(INSTDIR)* ../bin
+#	cp $(INSTDIR)* ../bin
+	cp $(INSTDIR)eCmd ../bin
+	cp $(INSTDIR)elekIOServ ../bin
+	cp $(INSTDIR)elekStatus ../bin
+	cp $(INSTDIR)statView ../bin
+	cp $(INSTDIR)etalon ../bin
+	cp $(INSTDIR)debugMon ../bin
+#	cp $(INSTDIR)instServer ../bin
 #	cp ../bin/* /tmp/lift
 #	tar -C ../ -czf /mnt/magera/HorusV$(VERSION).tgz src
 
