@@ -116,6 +116,11 @@ set(handles.txtPDyelaser,'String',statusData(lastrow,col.PDyelaser));
 set(handles.txtPVent,'String',statusData(lastrow,col.PVent));
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
 set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
+if statusData(lastrow,col.PRef)>10500
+    set(handles.txtPRef,'BackgroundColor','r');
+else
+    set(handles.txtPRef,'BackgroundColor',[0.5,0.5,0.5]);
+end
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
 EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));

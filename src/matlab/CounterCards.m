@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 14-Feb-2005 16:17:12
+% Last Modified by GUIDE v2.5 18-Feb-2005 13:06:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -401,5 +401,39 @@ else
 end
 
 
+% --- Executes on button press in toggleHV.
+function toggleHV_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleHV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleHV
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    set(hObject,'String','HV is ON','BackgroundColor','g');
+            word=bitset(statusData(lastrow,col.ccGateDelay1),16);
+            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        case 3
+            word=bitset(statusData(lastrow,col.ccGateDelay2),16);
+            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+    end
+else
+    set(hObject,'String','Gain is OFF','BackgroundColor','c');
+    switch get(handles.device,'Value')
+        case 1
+        case 2
+            word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        case 3
+            word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+    end
+end    
 
 
