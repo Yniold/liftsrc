@@ -54,13 +54,15 @@ function ADC_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ADC
 handles.output = hObject;
 
-    c=@PlotRefresh;
-    %setup Timer function
-    handles.ActTimer = timer('ExecutionMode','fixedDelay',...
-          'Period',0.7,...    
-          'BusyMode','drop',...
-          'TimerFcn', {@PlotRefresh,handles});   
+%setup Timer function
+handles.ActTimer = timer('ExecutionMode','fixedDelay',...
+      'Period',0.7,...    
+      'BusyMode','drop',...
+      'TimerFcn', {@PlotRefresh,handles});   
 
+if nargin & isstr(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
 
 % Update handles structure
 guidata(hObject, handles);
@@ -72,8 +74,7 @@ guidata(hObject, handles);
 
 
 function PlotRefresh(arg1,arg2,GUI_handles)
-
-data = getappdata(gcbf, 'ADCdata');
+data = getappdata(GUI_handles.output, 'ADCdata');
 
 % ADCChannel conversionfactor List
 ADC_Offset(1:16)=9997;
@@ -87,7 +88,7 @@ ADC_Slope(1:16)=1500;
 %set(GUI_handles.figDataGUI,'Visible','on');
 
 %statusData=ReadDataAvg('status.bin',50,2500);
-statusData=ReadDataAvg('/lift/ramdisk/status.bin',50,1200);
+statusData=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
@@ -142,8 +143,12 @@ set(GUI_handles.ADCWert8,'String',statusData(lastrow,ccADCBase+7));
 
 ADCBase1=655;
 ADCBase2=688;
-TempDetAxis=single(statusData(:,ADCBase2+1+4*3));                      % 10000cts-2.5V*1500cts/V
-%TempDetAxis=
+TempBase=728;
+TempDetAxis=single(statusData(:,TempBase+8))./100-273.15;  
+P20=single(statusData(:,ADCBase2+1+1*3))*0.00891-89.55;
+P1000=single(statusData(:,ADCBase2+1));%*0.4464-4380.9;
+DiodeUV=4.6863E-6*double(statusData(iZeit,ADCBase1+1+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase1+1+2*3))+390.41;
+DiodeWZ=double(statusData(iZeit,ADCBase2+1+5*3))-9790.0/193.2836;
 set(GUI_handles.txtPDyeL,'String',statusData(lastrow,ADCBase1+1));
 set(GUI_handles.txtPVent,'String',statusData(lastrow,ADCBase1+1+6*3));
 set(GUI_handles.txtPRef,'String',statusData(lastrow,ADCBase1+1+3*3));
@@ -161,6 +166,12 @@ set(GUI_handles.txtTDet,'String',TempDetAxis(lastrow));
 set(GUI_handles.txtIFila,'String',statusData(lastrow,ADCBase2+1+6*3));
 set(GUI_handles.txtOPHIR,'String',statusData(lastrow,ADCBase2+1+7*3));
 
+if P20(lastrow)<3 | P20(lastrow)>6
+    set(GUI_handles.txtP20Det,'BackgroundColor','r');
+end
+if DiodeWZ(lastrow)<2
+    set(GUI_handles.txtDiodeWht,'BackgroundColor','r');
+end
 
 EtalonBase=643; 
 help=int32(statusData(:,EtalonBase)); %+65536.*statusData(:,EtalonBase+1));
@@ -260,7 +271,7 @@ if get(GUI_handles.chkPRef,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeUV,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),4.6863E-6*double(statusData(iZeit,ADCBase1+1+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase1+1+2*3))+390.41,'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),DiodeUV(iZeit),'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeEta,'Value')
@@ -273,11 +284,11 @@ if get(GUI_handles.chkDiodeGR,'Value')
 end 
 
 if get(GUI_handles.chkP1000Det,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1),'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),P1000(iZeit),'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkP20Det,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+1*3),'g');
+    plot(GUI_handles.axeADC,Zeit(iZeit),P20(iZeit),'g');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkPNO,'Value')
@@ -285,7 +296,7 @@ if get(GUI_handles.chkPNO,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeWht,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),(double(statusData(iZeit,ADCBase2+1+5*3))-9790.0)/193.2836,'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),DiodeWZ,'b');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkVHV,'Value')
@@ -293,7 +304,7 @@ if get(GUI_handles.chkVHV,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkTDet,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+4*3),'b');
+    plot(GUI_handles.axeADC,Zeit(iZeit),TempDetAxis(iZeit),'b');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkIFila,'Value')
@@ -324,27 +335,25 @@ MCP1Base=228;
 MCP2Base=437;
 AVGBase=805;
 PMTMaskBase=211;
-MCP2MaskBase=420;
+MCP2MaskBase=629;
 
-% PMT: Hat sich Maske geändert ? Dann neue Maske einlesen.
+% PMT: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'PMTMask')| ...
-        ~isequal(statusdata(lastrow,PMTMaskBase:PMTMaskBase+9),statusdata(lastrow-1,PMTMaskBase:PMTMaskBase+9))
-    data.PMTMask=ones(160);
-    for a=1:10
-        data.PMTMask(((a-1)*16+1):((a-1)*16+16))=bitget(statusData(lastrow,210+a),1:16);
+        ~isequal(statusData(lastrow,PMTMaskBase:PMTMaskBase+9),statusData(lastrow-5,PMTMaskBase:PMTMaskBase+9))
+    data.PMTMask=ones(1,160);
+    for a = 0:9,
+        data.PMTMask((a*16+1):(a*16+16))=bitget(statusData(lastrow,PMTMaskBase+a),1:16);
     end
 end
     
 PMTSumCounts=statusData(:,223);
 
-% MCP2: Hat sich Maske geändert ? Dann neue Maske einlesen.
+% MCP2: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'MCP2Mask')| ...
-        ~isequal(statusdata(lastrow,MCP2MaskBase:MCP2MaskBase+9),statusdata(lastrow-1,MCP2MaskBase:MCP2MaskBase+9))
-    data.MCP2Mask=ones(maxLen,160);
-    for a=1:10
-        for b=1:16
-            data.MCP2Mask(:,(a-1)*16+b)=bitget(statusData(:,419+a),b);
-        end
+        ~isequal(statusData(lastrow,MCP2MaskBase:MCP2MaskBase+9),statusData(lastrow-5,MCP2MaskBase:MCP2MaskBase+9))
+    data.MCP2Mask=ones(1,160);
+    for a=0:9
+        data.MCP2Mask((a*16+1):(a*16+16))=bitget(statusData(lastrow,MCP2MaskBase+a),1:16);
     end
 end
 
@@ -366,22 +375,22 @@ OfflineRightFilter=statusData(:,AVGBase+5)>0;
 UVDiodeOnline(OnlineFilter)=single(statusData(OnlineFilter,ADCBase1+1+2*3))/1000.0;
 UVDiodeOfflineLeft(OfflineLeftFilter)=single(statusData(OfflineLeftFilter,ADCBase1+1+2*3))/1000.0;
 UVDiodeOfflineRight(OfflineRightFilter)=single(statusData(OfflineRightFilter,ADCBase1+1+2*3))/1000.0;
-PMTOnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase)./(statusData(OnlineFilter,AVGBase+1)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOnlineAvg(OnlineFilter)=double(statusData(OnlineFilter,AVGBase)./(statusData(OnlineFilter,AVGBase+1))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOnlineAvg(~OnlineFilter)=NaN;
-PMTOfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+2)./(statusData(OfflineLeftFilter,AVGBase+3)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineLeftAvg(OfflineLeftFilter)=double(statusData(OfflineLeftFilter,AVGBase+2)./(statusData(OfflineLeftFilter,AVGBase+3))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOfflineLeftAvg(~OfflineLeftFilter)=NaN;
-PMTOfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+4)./(statusData(OfflineRightFilter,AVGBase+5)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineRightAvg(OfflineRightFilter)=double(statusData(OfflineRightFilter,AVGBase+4)./(statusData(OfflineRightFilter,AVGBase+5))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOfflineRightAvg(~OfflineRightFilter)=NaN;
 
 PMTOfflineAvg(1:size(statusData,1))=NaN;
 PMTOfflineAvg(OfflineRightFilter & statusData(:,823)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,823)==1);
 PMTOfflineAvg(OfflineLeftFilter & statusData(:,823)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,823)==2);
 
-MCP1OnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase+6)./(statusData(OnlineFilter,AVGBase+7)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OnlineAvg(OnlineFilter)=double(statusData(OnlineFilter,AVGBase+6)./(statusData(OnlineFilter,AVGBase+7))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OnlineAvg(~OnlineFilter)=NaN;
-MCP1OfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+8)./(statusData(OfflineLeftFilter,AVGBase+9)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineLeftAvg(OfflineLeftFilter)=double(statusData(OfflineLeftFilter,AVGBase+8)./(statusData(OfflineLeftFilter,AVGBase+9))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OfflineLeftAvg(~OfflineLeftFilter)=NaN;
-MCP1OfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+10)./(statusData(OfflineRightFilter,AVGBase+11)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineRightAvg(OfflineRightFilter)=double(statusData(OfflineRightFilter,AVGBase+10)./(statusData(OfflineRightFilter,AVGBase+11))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
 
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
@@ -416,9 +425,9 @@ set(GUI_handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
 
 etaOnlinePos=int16(statusData(:,803));
 etaCurPos=int16(statusData(:,645));
-online=PMTSumCounts'>2500 & abs(etaCurPos-etaOnlinePos)<20;
-offline1=PMTSumCounts'<=2500 & (etaCurPos-etaOnlinePos)==-600;
-offline2=PMTSumCounts'<=2500 & (etaCurPos-etaOnlinePos)==600;   
+online=PMTSumCounts>2500 & abs(etaCurPos-etaOnlinePos)<20;
+offline1=PMTSumCounts<=2500 & (etaCurPos-etaOnlinePos)==-600;
+offline2=PMTSumCounts<=2500 & (etaCurPos-etaOnlinePos)==600;   
 
 hold(GUI_handles.axeRay,'off');
 hold(GUI_handles.axeFluo,'off');
@@ -426,20 +435,24 @@ hold(GUI_handles.axeCounts,'off');
 hold(GUI_handles.axeCountsEtalon,'off');
 
 if get(GUI_handles.chkPMT,'Value')
+    %hold(GUI_handles.axeRay,'off');     
     plot(GUI_handles.axeRay,statusData(lastrow,PMTBase+1:PMTBase+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.PMTMask==0);
-    PMTdata1=statusData(lastrow,PMTBase+1:PMTBase+160);
+    PMTdata1=double(statusData(lastrow,PMTBase+1:PMTBase+160));
     PMTdata1(z)=NaN;
-    plot(GUI_handles.axeRay,PMTdata1(z)); 
+    plot(GUI_handles.axeRay,PMTdata1); 
+    xlim(GUI_handles.axeRay,[1,160]); 
     
-    plot(GUI_handles.axeFluo,statusData(lastrow,PMTBase+40:PMTBase+160),'r');
+    xaxis=[40:160];
+    plot(GUI_handles.axeFluo,xaxis,statusData(lastrow,PMTBase+40:PMTBase+160),'r');
     hold(GUI_handles.axeFluo,'on');
     y=data.PMTMask(40:160);
     z=find(y==0);
-    PMTdata2=statusData(lastrow,PMTBase+40:PMTBase+160);
+    PMTdata2=double(statusData(lastrow,PMTBase+40:PMTBase+160));
     PMTdata2(z)=NaN;
-    plot(GUI_handles.axeRay,PMTdata2(z)); 
+    plot(GUI_handles.axeFluo,xaxis,PMTdata2); 
+    xlim(GUI_handles.axeFluo,[40,160]); 
     
     WhichPlot=get(GUI_handles.popPMTPlot,'Value');
     switch WhichPlot
@@ -470,20 +483,25 @@ if get(GUI_handles.chkMCP1,'Value')
 end
 
 if get(GUI_handles.chkMCP2,'Value')
+    %hold(GUI_handles.axeRay,'off');     
     plot(GUI_handles.axeRay,statusData(lastrow,MCP2Base+1:MCP2Base+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.MCP2Mask==0);
-    MCP2Data1=statusData(lastrow,MCP2Base+1:MCP2Base+160);
+    MCP2Data1=double(statusData(lastrow,MCP2Base+1:MCP2Base+160));
     MCP2data1(z)=NaN;
-    plot(GUI_handles.axeRay,MCP2data1(z)); 
+    plot(GUI_handles.axeRay,MCP2data1); 
+    xlim(GUI_handles.axeRay,[1,160]); 
     
+    %hold(GUI_handles.axeFluo,'off');     
+    xaxis=[40:160];
     plot(GUI_handles.axeFluo,statusData(lastrow,MCP2Base+40:MCP2Base+160),'r');
     hold(GUI_handles.axeFluo,'on');
     y=data.MCP2Mask(40:160);
     z=find(y==0);
-    MCP2data2=statusData(lastrow,MCP2Base+40:MCP2Base+160);
+    MCP2data2=double(statusData(lastrow,MCP2Base+40:MCP2Base+160));
     MCP2data2(z)=NaN;
-    plot(GUI_handles.axeRay,MCP2data2(z)); 
+    plot(GUI_handles.axeFluo,MCP2data2); 
+    xlim(GUI_handles.axeFluo,[40,160]); 
 
     WhichPlot=get(GUI_handles.popMCP2Plot,'Value');
     switch WhichPlot
@@ -510,7 +528,7 @@ xlim(GUI_handles.axeCounts,[minTime maxTime]);
 %datetick(GUI_handles.axeCounts,'x',13,'keeplimits');
 %set(GUI_handles.axeCounts,'XTick',timeXTick);
 grid(GUI_handles.axeCounts);
-setappdata(gcbf, 'ADCdata', data);
+setappdata(GUI_handles.output, 'ADCdata', data);
 
 
 
@@ -1127,129 +1145,3 @@ function chkOPHIR_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkOPHIR
-
-
-
-
-
-function MaskStart_Callback(hObject, eventdata, handles)
-% hObject    handle to MaskStart (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of MaskStart as text
-%        str2double(get(hObject,'String')) returns contents of MaskStart as a double
-MaskStartChannel=uint8(str2double(get(hObject,'String')));
-if isnan(MaskStartChannel)| MaskStartChannel<1 | MaskStartChannel>160
-    set(hObject,'BackgroundColor','red');
-else 
-    set(hObject,'BackgroundColor','white');
-    set(hObject,'string',num2str(MaskStartChannel));
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function MaskStart_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MaskStart (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-
-function MaskStop_Callback(hObject, eventdata, handles)
-% hObject    handle to MaskStop (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of MaskStop as text
-%        str2double(get(hObject,'String')) returns contents of MaskStop as a double
-MaskStopChannel=uint8(str2double(get(hObject,'String')));
-if isnan(MaskStopChannel)| MaskStopChannel<1 | MaskStopChannel>160
-    set(hObject,'BackgroundColor','red');
-else 
-    set(hObject,'BackgroundColor','white');
-    set(hObject,'string',num2str(MaskStopChannel));
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function MaskStop_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MaskStop (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
-end
-
-
-% --- Executes on button press in toggleMaskUnmask.
-function toggleMaskUnmask_Callback(hObject, eventdata, handles)
-% hObject    handle to toggleMaskUnmask (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of toggleMaskUnmask
-    
-
-% --- Executes on button press in MaskApply.
-function MaskApply_Callback(hObject, eventdata, handles)
-% hObject    handle to MaskApply (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-data = getappdata(gcbf, 'motordata');
-
-PMTMaskBase=211;
-MCP2MaskBase=420;
-
-MaskOption=get(handles.toggleMaskUnMask,'Value')
-if MaskOption==get(handles.toggleMaskUnMask,'Max')
-    MaskOption=1;
-else
-    MaskOption=0;
-end
-    
-MaskStartChannel=uint8(str2double(get(handles.MaskStart,'String')));
-MaskStopChannel=uint8(str2double(get(handles.MaskStop,'String')));
-if {isnan(MaskStartChannel)| MaskStartChannel<1 | MaskStartChannel>160 ...
-    |isnan(MaskStopChannel)| MaskStopChannel<1 | MaskStopChannel>160}
-    error('invalid channels');
-else
-    StartAddr=floor(MaskStartChannel/16)+1;
-    StartValue=mod(MaskStartChannel/16);
-    StopAddr=floor(MaskStopChannel/16)+1;
-    StopValue=mod(MaskStopChannel/16);
-    if StartAddr==StopAddr
-        for x=1:StartValue
-            
-            Value='1'
-            
-        eval(['./bin/eCmd s setmask ',num2str(StartAddr),'0x0',dec2hex(]);
-    end
-    
-    
-        
-    
-
-        
-            
-    end
-
-    
-        
-        eval(['./bin/lift/eCmd s setmask ', 
-        
-    end
-end
-

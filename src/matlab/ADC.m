@@ -88,7 +88,7 @@ ADC_Slope(1:16)=1500;
 %set(GUI_handles.figDataGUI,'Visible','on');
 
 %statusData=ReadDataAvg('status.bin',50,2500);
-statusData=ReadDataAvg('/lift/ramdisk/status.bin',50,1200);
+statusData=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
@@ -143,8 +143,12 @@ set(GUI_handles.ADCWert8,'String',statusData(lastrow,ccADCBase+7));
 
 ADCBase1=655;
 ADCBase2=688;
-TempDetAxis=single(statusData(:,ADCBase2+1+4*3));                      % 10000cts-2.5V*1500cts/V
-%TempDetAxis=
+TempBase=728;
+TempDetAxis=single(statusData(:,TempBase+8))./100-273.15;  
+P20=single(statusData(:,ADCBase2+1+1*3))*0.00891-89.55;
+P1000=single(statusData(:,ADCBase2+1));%*0.4464-4380.9;
+DiodeUV=4.6863E-6*double(statusData(iZeit,ADCBase1+1+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase1+1+2*3))+390.41;
+DiodeWZ=(double(statusData(iZeit,ADCBase2+1+5*3))-9790.0)/193.2836;
 set(GUI_handles.txtPDyeL,'String',statusData(lastrow,ADCBase1+1));
 set(GUI_handles.txtPVent,'String',statusData(lastrow,ADCBase1+1+6*3));
 set(GUI_handles.txtPRef,'String',statusData(lastrow,ADCBase1+1+3*3));
@@ -162,6 +166,12 @@ set(GUI_handles.txtTDet,'String',TempDetAxis(lastrow));
 set(GUI_handles.txtIFila,'String',statusData(lastrow,ADCBase2+1+6*3));
 set(GUI_handles.txtOPHIR,'String',statusData(lastrow,ADCBase2+1+7*3));
 
+if P20(lastrow)<3 | P20(lastrow)>6
+    set(GUI_handles.txtP20Det,'BackgroundColor','r');
+end
+if DiodeWZ(lastrow)<2
+    set(GUI_handles.txtDiodeWht,'BackgroundColor','r');
+end
 
 EtalonBase=643; 
 help=int32(statusData(:,EtalonBase)); %+65536.*statusData(:,EtalonBase+1));
@@ -261,7 +271,7 @@ if get(GUI_handles.chkPRef,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeUV,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),4.6863E-6*double(statusData(iZeit,ADCBase1+1+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase1+1+2*3))+390.41,'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),DiodeUV(iZeit),'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeEta,'Value')
@@ -274,11 +284,11 @@ if get(GUI_handles.chkDiodeGR,'Value')
 end 
 
 if get(GUI_handles.chkP1000Det,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1),'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),P1000(iZeit),'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkP20Det,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+1*3),'g');
+    plot(GUI_handles.axeADC,Zeit(iZeit),P20(iZeit),'g');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkPNO,'Value')
@@ -286,7 +296,7 @@ if get(GUI_handles.chkPNO,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeWht,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),(double(statusData(iZeit,ADCBase2+1+5*3))-9790.0)/193.2836,'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),DiodeWZ(iZeit),'b');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkVHV,'Value')
@@ -294,7 +304,7 @@ if get(GUI_handles.chkVHV,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkTDet,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+4*3),'b');
+    plot(GUI_handles.axeADC,Zeit(iZeit),TempDetAxis(iZeit),'b');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkIFila,'Value')
@@ -365,22 +375,22 @@ OfflineRightFilter=statusData(:,AVGBase+5)>0;
 UVDiodeOnline(OnlineFilter)=single(statusData(OnlineFilter,ADCBase1+1+2*3))/1000.0;
 UVDiodeOfflineLeft(OfflineLeftFilter)=single(statusData(OfflineLeftFilter,ADCBase1+1+2*3))/1000.0;
 UVDiodeOfflineRight(OfflineRightFilter)=single(statusData(OfflineRightFilter,ADCBase1+1+2*3))/1000.0;
-PMTOnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase)./(statusData(OnlineFilter,AVGBase+1)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOnlineAvg(OnlineFilter)=double(statusData(OnlineFilter,AVGBase)./(statusData(OnlineFilter,AVGBase+1))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOnlineAvg(~OnlineFilter)=NaN;
-PMTOfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+2)./(statusData(OfflineLeftFilter,AVGBase+3)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineLeftAvg(OfflineLeftFilter)=double(statusData(OfflineLeftFilter,AVGBase+2)./(statusData(OfflineLeftFilter,AVGBase+3))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOfflineLeftAvg(~OfflineLeftFilter)=NaN;
-PMTOfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+4)./(statusData(OfflineRightFilter,AVGBase+5)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineRightAvg(OfflineRightFilter)=double(statusData(OfflineRightFilter,AVGBase+4)./(statusData(OfflineRightFilter,AVGBase+5))); %.*statusData(:,ADCBase1+1+2*3));
 PMTOfflineRightAvg(~OfflineRightFilter)=NaN;
 
 PMTOfflineAvg(1:size(statusData,1))=NaN;
 PMTOfflineAvg(OfflineRightFilter & statusData(:,823)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,823)==1);
 PMTOfflineAvg(OfflineLeftFilter & statusData(:,823)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,823)==2);
 
-MCP1OnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase+6)./(statusData(OnlineFilter,AVGBase+7)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OnlineAvg(OnlineFilter)=double(statusData(OnlineFilter,AVGBase+6)./(statusData(OnlineFilter,AVGBase+7))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OnlineAvg(~OnlineFilter)=NaN;
-MCP1OfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+8)./(statusData(OfflineLeftFilter,AVGBase+9)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineLeftAvg(OfflineLeftFilter)=double(statusData(OfflineLeftFilter,AVGBase+8)./(statusData(OfflineLeftFilter,AVGBase+9))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OfflineLeftAvg(~OfflineLeftFilter)=NaN;
-MCP1OfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+10)./(statusData(OfflineRightFilter,AVGBase+11)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineRightAvg(OfflineRightFilter)=double(statusData(OfflineRightFilter,AVGBase+10)./(statusData(OfflineRightFilter,AVGBase+11))); %.*statusData(:,ADCBase1+1+2*3));
 MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
 
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
@@ -425,7 +435,7 @@ hold(GUI_handles.axeCounts,'off');
 hold(GUI_handles.axeCountsEtalon,'off');
 
 if get(GUI_handles.chkPMT,'Value')
-    hold(GUI_handles.axeRay,'off');     
+    %hold(GUI_handles.axeRay,'off');     
     plot(GUI_handles.axeRay,statusData(lastrow,PMTBase+1:PMTBase+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.PMTMask==0);
@@ -473,7 +483,7 @@ if get(GUI_handles.chkMCP1,'Value')
 end
 
 if get(GUI_handles.chkMCP2,'Value')
-    hold(GUI_handles.axeRay,'off');     
+    %hold(GUI_handles.axeRay,'off');     
     plot(GUI_handles.axeRay,statusData(lastrow,MCP2Base+1:MCP2Base+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.MCP2Mask==0);
@@ -482,6 +492,7 @@ if get(GUI_handles.chkMCP2,'Value')
     plot(GUI_handles.axeRay,MCP2data1); 
     xlim(GUI_handles.axeRay,[1,160]); 
     
+    %hold(GUI_handles.axeFluo,'off');     
     xaxis=[40:160];
     plot(GUI_handles.axeFluo,statusData(lastrow,MCP2Base+40:MCP2Base+160),'r');
     hold(GUI_handles.axeFluo,'on');

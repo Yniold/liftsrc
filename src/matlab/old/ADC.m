@@ -22,7 +22,7 @@ function varargout = ADC(varargin)
 
 % Edit the above text to modify the response to help ADC
 
-% Last Modified by GUIDE v2.5 01-Jul-2004 02:32:44
+% Last Modified by GUIDE v2.5 22-Oct-2004 12:54:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,7 +57,7 @@ handles.output = hObject;
     c=@PlotRefresh;
     %setup Timer function
     handles.ActTimer = timer('ExecutionMode','fixedDelay',...
-          'Period',0.5,...    
+          'Period',0.7,...    
           'BusyMode','drop',...
           'TimerFcn', {@PlotRefresh,handles});   
 
@@ -71,6 +71,12 @@ guidata(hObject, handles);
 
 function PlotRefresh(arg1,arg2,GUI_handles)
 
+% ADCChannel conversionfactor List
+ADC_Offset(1:16)=9997;
+ADC_Slope(1:16)=1500;
+
+
+
 
 %[s,w] = system('tail -n-10 data/ccStatus.txt > data/status_sub.txt');
 %clear status_sub;
@@ -79,8 +85,8 @@ function PlotRefresh(arg1,arg2,GUI_handles)
 %figure(GUI_handles.figDataGUI);
 %set(GUI_handles.figDataGUI,'Visible','on');
 
-%statusData=ReadData('status.bin');
-statusData=ReadData('/lift/ramdisk/status.bin');
+%statusData=ReadDataAvg('status.bin',50,2500);
+statusData=ReadDataAvg('/lift/ramdisk/status.bin',50,1200);
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
@@ -134,6 +140,9 @@ set(GUI_handles.ADCWert7,'String',statusData(lastrow,ccADCBase+6));
 set(GUI_handles.ADCWert8,'String',statusData(lastrow,ccADCBase+7));
 
 ADCBase1=655;
+ADCBase2=688;
+TempDetAxis=single(statusData(:,ADCBase2+1+4*3));                      % 10000cts-2.5V*1500cts/V
+%TempDetAxis=
 set(GUI_handles.txtPDyeL,'String',statusData(lastrow,ADCBase1+1));
 set(GUI_handles.txtPVent,'String',statusData(lastrow,ADCBase1+1+6*3));
 set(GUI_handles.txtPRef,'String',statusData(lastrow,ADCBase1+1+3*3));
@@ -141,28 +150,29 @@ set(GUI_handles.txtDiodeUV,'String',statusData(lastrow,ADCBase1+1+2*3));
 set(GUI_handles.txtDiodeEta,'String',statusData(lastrow,ADCBase1+1+4*3));
 set(GUI_handles.txtDiodeGR,'String',statusData(lastrow,ADCBase1+1+5*3));
 
-ADCBase2=688;
+
 set(GUI_handles.txtP1000Det,'String',statusData(lastrow,ADCBase2+1));
 set(GUI_handles.txtP20Det,'String',statusData(lastrow,ADCBase2+1+1*3));
 set(GUI_handles.txtPNO,'String',statusData(lastrow,ADCBase2+1+2*3));
 set(GUI_handles.txtDiodeWht,'String',statusData(lastrow,ADCBase2+1+5*3));
 set(GUI_handles.txtVHV,'String',statusData(lastrow,ADCBase2+1+3*3));
-set(GUI_handles.txtTDet,'String',statusData(lastrow,ADCBase2+1+4*3));
+set(GUI_handles.txtTDet,'String',TempDetAxis(lastrow));
 set(GUI_handles.txtIFila,'String',statusData(lastrow,ADCBase2+1+6*3));
+set(GUI_handles.txtOPHIR,'String',statusData(lastrow,ADCBase2+1+7*3));
 
 
 EtalonBase=643; 
 help=int32(statusData(:,EtalonBase)); %+65536.*statusData(:,EtalonBase+1));
-EtalonSetPos=(help); EtalonSetPos(help>32767)=EtalonSetPos(help>32767)-65535;
+EtalonSetPos=(help)+int32(statusData(:,EtalonBase+1)); EtalonSetPos(help>32767)=EtalonSetPos(help>32767)-65535;
 
 help=int32(statusData(:,EtalonBase+2)); %+65536.*statusData(:,EtalonBase+1));
-EtalonCurPos=(help); EtalonCurPos(help>32767)=EtalonCurPos(help>32767)-65535;
+EtalonCurPos=(help)+int32(statusData(:,EtalonBase+3)); EtalonCurPos(help>32767)=EtalonCurPos(help>32767)-65535;
 
 help=int32(statusData(:,EtalonBase+4)); %+65536.*statusData(:,EtalonBase+1));
-EtalonEncPos=(help); EtalonEncPos(help>32767)=EtalonEncPos(help>32767)-65535;
+EtalonEncPos=(help)+int32(statusData(:,EtalonBase+5)); EtalonEncPos(help>32767)=EtalonEncPos(help>32767)-65535;
 
 help=int32(statusData(:,EtalonBase+6)); %+65536.*statusData(:,EtalonBase+1));
-EtalonIndPos=(help); EtalonIndPos(help>32767)=EtalonIndPos(help>32767)-65535;
+EtalonIndPos=(help)+int32(statusData(:,EtalonBase+7)); EtalonIndPos(help>32767)=EtalonIndPos(help>32767)-65535;
 
 EtalonSpeed=statusData(:,EtalonBase+10);
 EtalonStatus=statusData(:,EtalonBase+11);
@@ -249,7 +259,7 @@ if get(GUI_handles.chkPRef,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeUV,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase1+1+2*3),'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),4.6863E-6*double(statusData(iZeit,ADCBase1+1+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase1+1+2*3))+390.41,'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeEta,'Value')
@@ -274,7 +284,7 @@ if get(GUI_handles.chkPNO,'Value')
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkDiodeWht,'Value')
-    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+5*3),'r');
+    plot(GUI_handles.axeADC,Zeit(iZeit),(double(statusData(iZeit,ADCBase2+1+5*3))-9790.0)/193.2836,'r');
     hold(GUI_handles.axeADC,'on');
 end 
 if get(GUI_handles.chkVHV,'Value')
@@ -289,6 +299,10 @@ if get(GUI_handles.chkIFila,'Value')
     plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+6*3),'r');
     hold(GUI_handles.axeADC,'on');
 end 
+if get(GUI_handles.chkOPHIR,'Value')
+    plot(GUI_handles.axeADC,Zeit(iZeit),statusData(iZeit,ADCBase2+1+7*3),'r');
+    hold(GUI_handles.axeADC,'on');
+end 
 
 timeStep=double(10.0/86400.0);
 if (maxTime-minTime>0.7/1400.0)
@@ -300,15 +314,23 @@ xlim(GUI_handles.axeADC,[minTime maxTime]);
 %set(GUI_handles.axeADC,'XTick',timeXTick);
 grid(GUI_handles.axeADC);
 %xlim(GUI_handles.axeADC,[minTime maxTime]);
-plot(GUI_handles.axeEtalon,EtalonEncPos(iZeit),EtalonCurPos(iZeit),'.');
+%plot(GUI_handles.axeEtalon,EtalonEncPos(iZeit),EtalonCurPos(iZeit),'.');
+plot(GUI_handles.axeEtalon,statusData(iZeit,ADCBase2+1+7*3),statusData(iZeit,ADCBase1+1+5*3),'.');
 
 
 PMTBase=19;
 MCP1Base=228;
 MCP2Base=437;
+AVGBase=805;
+
 PMTSpec=statusData(:,PMTBase+1:PMTBase+160);
 PMTSpec(:,1:33)=0; PMTSpec(:,43:60)=0; PMTSpec(:,109:129)=0;
 PMTSumCounts=sum(PMTSpec');
+
+MCP2Spec=statusData(:,MCP2Base+1:MCP2Base+160);
+MCP2Spec(:,1:58)=0; 
+MCP2SumCounts=sum(MCP2Spec');
+
 set(GUI_handles.PMTCounts,'String',statusData(lastrow,PMTBase+204));
 set(GUI_handles.MCP1Counts,'String',statusData(lastrow,MCP1Base+204));
 set(GUI_handles.MCP2Counts,'String',statusData(lastrow,MCP2Base+204));
@@ -317,16 +339,88 @@ set(GUI_handles.PMTPulses,'String',statusData(lastrow,PMTBase+205));
 set(GUI_handles.MCP1Pulses,'String',statusData(lastrow,MCP1Base+205));
 set(GUI_handles.MCP2Pulses,'String',statusData(lastrow,MCP2Base+205));
 
+%warning('OFF');
+OnlineFilter=statusData(:,AVGBase+1)>0;
+OfflineLeftFilter=statusData(:,AVGBase+3)>0;
+OfflineRightFilter=statusData(:,AVGBase+5)>0;
+
+UVDiodeOnline(OnlineFilter)=single(statusData(OnlineFilter,ADCBase1+1+2*3))/1000.0;
+UVDiodeOfflineLeft(OfflineLeftFilter)=single(statusData(OfflineLeftFilter,ADCBase1+1+2*3))/1000.0;
+UVDiodeOfflineRight(OfflineRightFilter)=single(statusData(OfflineRightFilter,ADCBase1+1+2*3))/1000.0;
+PMTOnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase)./(statusData(OnlineFilter,AVGBase+1)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOnlineAvg(~OnlineFilter)=NaN;
+PMTOfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+2)./(statusData(OfflineLeftFilter,AVGBase+3)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineLeftAvg(~OfflineLeftFilter)=NaN;
+PMTOfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+4)./(statusData(OfflineRightFilter,AVGBase+5)); %.*statusData(:,ADCBase1+1+2*3));
+PMTOfflineRightAvg(~OfflineRightFilter)=NaN;
+
+PMTOfflineAvg(1:size(statusData,1))=NaN;
+PMTOfflineAvg(OfflineRightFilter & statusData(:,823)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,823)==1);
+PMTOfflineAvg(OfflineLeftFilter & statusData(:,823)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,823)==2);
+
+MCP1OnlineAvg(OnlineFilter)=statusData(OnlineFilter,AVGBase+6)./(statusData(OnlineFilter,AVGBase+7)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OnlineAvg(~OnlineFilter)=NaN;
+MCP1OfflineLeftAvg(OfflineLeftFilter)=statusData(OfflineLeftFilter,AVGBase+8)./(statusData(OfflineLeftFilter,AVGBase+9)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineLeftAvg(~OfflineLeftFilter)=NaN;
+MCP1OfflineRightAvg(OfflineRightFilter)=statusData(OfflineRightFilter,AVGBase+10)./(statusData(OfflineRightFilter,AVGBase+11)); %.*statusData(:,ADCBase1+1+2*3));
+MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
+
+MCP1OfflineAvg(1:size(statusData,1))=NaN;
+MCP1OfflineAvg(OfflineRightFilter & statusData(:,823)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,823)==1);
+MCP1OfflineAvg(OfflineLeftFilter & statusData(:,823)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,823)==2);
+
+MCP2OnlineAvg(OnlineFilter)=single(statusData(OnlineFilter,AVGBase+12))./(single(statusData(OnlineFilter,AVGBase+13)));%.*UVDiodeOnline(OnlineFilter));
+MCP2OnlineAvg(~OnlineFilter)=NaN;
+MCP2OfflineLeftAvg(OfflineLeftFilter)=single(statusData(OfflineLeftFilter,AVGBase+14))./(single(statusData(OfflineLeftFilter,AVGBase+15)));%.*UVDiodeOffline(OfflineFilter));
+MCP2OfflineLeftAvg(~OfflineLeftFilter)=NaN;
+MCP2OfflineRightAvg(OfflineRightFilter)=single(statusData(OfflineRightFilter,AVGBase+16))./(single(statusData(OfflineRightFilter,AVGBase+17)));%.*UVDiodeOffline(OfflineFilter));
+MCP2OfflineRightAvg(~OfflineRightFilter)=NaN;
+
+MCP2OfflineAvg(1:size(statusData,1))=NaN;
+MCP2OfflineAvg(OfflineRightFilter & statusData(:,823)==1)=MCP2OfflineRightAvg(OfflineRightFilter & statusData(:,823)==1);
+MCP2OfflineAvg(OfflineLeftFilter & statusData(:,823)==2)=MCP2OfflineLeftAvg(OfflineLeftFilter & statusData(:,823)==2);
+
+MCP2Avg(statusData(:,AVGBase+18)==3)=MCP2OnlineAvg(statusData(:,AVGBase+18)==3);
+MCP2Avg(statusData(:,AVGBase+18)==2)=MCP2OfflineLeftAvg(statusData(:,AVGBase+18)==2);
+MCP2Avg(statusData(:,AVGBase+18)==1)=MCP2OfflineRightAvg(statusData(:,AVGBase+18)==1);
+MCP2Avg(statusData(:,AVGBase+18)==0)=NaN;
+
+
+set(GUI_handles.txtPMTOffline,'String',PMTOfflineAvg(lastrow));
+set(GUI_handles.txtMCP1Offline,'String',MCP1OfflineAvg(lastrow));
+set(GUI_handles.txtMCP2Offline,'String',MCP2OfflineAvg(lastrow));
+
+set(GUI_handles.txtPMTOnline,'String',PMTOnlineAvg(lastrow));
+set(GUI_handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
+set(GUI_handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
+
+
+etaOnlinePos=int16(statusData(:,803));
+etaCurPos=int16(statusData(:,645));
+online=PMTSumCounts'>2500 & abs(etaCurPos-etaOnlinePos)<20;
+offline1=PMTSumCounts'<=2500 & (etaCurPos-etaOnlinePos)==-600;
+offline2=PMTSumCounts'<=2500 & (etaCurPos-etaOnlinePos)==600;   
+
 hold(GUI_handles.axeRay,'off');
 hold(GUI_handles.axeFluo,'off');
 hold(GUI_handles.axeCounts,'off');
 hold(GUI_handles.axeCountsEtalon,'off');
 
 if get(GUI_handles.chkPMT,'Value')
-    plot(GUI_handles.axeRay,statusData(lastrow,PMTBase+1:PMTBase+160));
-    plot(GUI_handles.axeFluo,statusData(lastrow,PMTBase+30:PMTBase+160));
-    plot(GUI_handles.axeCounts,Zeit(iZeit),PMTSumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
-    plot(GUI_handles.axeCountsEtalon,EtalonEncPos,statusData(:,PMTBase+204),'.');
+    plot(GUI_handles.axeRay,statusData(lastrow,PMTBase+1:PMTBase+160)); 
+    plot(GUI_handles.axeFluo,statusData(lastrow,PMTBase+40:PMTBase+160));
+    WhichPlot=get(GUI_handles.popPMTPlot,'Value');
+    switch WhichPlot
+        case 1
+           plot(GUI_handles.axeCounts,Zeit(iZeit),PMTSumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
+           hold(GUI_handles.axeCounts,'on');
+        case 2           
+           plot(GUI_handles.axeCounts,Zeit(30:end),PMTOnlineAvg(30:end)-PMTOfflineAvg(30:end),'b'); 
+           hold(GUI_handles.axeCounts,'on');
+           %plot(GUI_handles.axeCounts,Zeit(10:end),PMTOfflineAvg(10:end),'b:');   
+    end
+    %plot(GUI_handles.axeCounts,Zeit(iZeit),statusData(iZeit,PMTBase+204),'r');
+    plot(GUI_handles.axeCountsEtalon,EtalonCurPos(iZeit),PMTSumCounts(iZeit),'.');
     hold(GUI_handles.axeRay,'on');
     hold(GUI_handles.axeFluo,'on');
     hold(GUI_handles.axeCounts,'on');
@@ -336,9 +430,9 @@ end
 
 if get(GUI_handles.chkMCP1,'Value')
     plot(GUI_handles.axeRay,statusData(lastrow,MCP1Base+1:MCP1Base+160),'r');
-    plot(GUI_handles.axeFluo,statusData(lastrow,MCP1Base+30:MCP1Base+160),'r');
+    plot(GUI_handles.axeFluo,statusData(lastrow,MCP1Base+40:MCP1Base+160),'r');
     plot(GUI_handles.axeCounts,Zeit(iZeit),statusData(iZeit,MCP1Base+204),'r');
-    plot(GUI_handles.axeCountsEtalon,EtalonEncPos,statusData(:,MCP1Base+204),'r.');
+    plot(GUI_handles.axeCountsEtalon,EtalonCurPos,statusData(:,MCP1Base+204),'r.');
     hold(GUI_handles.axeRay,'on');
     hold(GUI_handles.axeFluo,'on');
     hold(GUI_handles.axeCounts,'on');
@@ -347,14 +441,31 @@ end
 
 if get(GUI_handles.chkMCP2,'Value')
     plot(GUI_handles.axeRay,statusData(lastrow,MCP2Base+1:MCP2Base+160),'g');
-    plot(GUI_handles.axeFluo,statusData(lastrow,MCP2Base+30:MCP2Base+160),'g');
-    plot(GUI_handles.axeCounts,Zeit(iZeit),statusData(iZeit,MCP2Base+204),'g');
-    plot(GUI_handles.axeCountsEtalon,EtalonEncPos,statusData(:,MCP2Base+204),'g.');
+    plot(GUI_handles.axeFluo,statusData(lastrow,MCP2Base+40:MCP2Base+160),'g');
+
+    WhichPlot=get(GUI_handles.popMCP2Plot,'Value');
+    switch WhichPlot
+        case 1
+           plot(GUI_handles.axeCounts,Zeit(iZeit),MCP2SumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
+           hold(GUI_handles.axeCounts,'on');
+        case 2           
+           %plot(GUI_handles.axeCounts,Zeit(30:end),int16(MCP2OnlineAvg(30:end)),'b'); %-int16(MCP2OfflineAvg(30:end)),'b'); 
+           plot(GUI_handles.axeCounts,Zeit(30:end),MCP2Avg(30:end),'b');   
+           hold(GUI_handles.axeCounts,'on');
+           %plot(GUI_handles.axeCounts,Zeit(30:end),MCP2OfflineAvg(30:end),'b:');   
+    end
+
+
+    %plot(GUI_handles.axeCounts,Zeit(iZeit),MCP2SumCounts(iZeit),'g');         %statusData(iZeit,MCP2Base+204),'g');
+    plot(GUI_handles.axeCountsEtalon,EtalonCurPos(iZeit),MCP2SumCounts(iZeit),'g.'); %statusData(:,MCP2Base+204),'g.');
     hold(GUI_handles.axeRay,'on');
     hold(GUI_handles.axeFluo,'on');
     hold(GUI_handles.axeCounts,'on');
     hold(GUI_handles.axeCountsEtalon,'on');
 end
+
+     %ylim(GUI_handles.axeRay,[0 50]);
+     %xlim(GUI_handles.axeRay,[110 140]);
 
 xlim(GUI_handles.axeCounts,[minTime maxTime]);
 %datetick(GUI_handles.axeCounts,'x',13,'keeplimits');
@@ -647,7 +758,7 @@ function chkPDyeL_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(hObject,'Backgroundcolor',[1 0 0]);
 else
-    set(hObject,'Backgroundcolor',[0.9 0.9 0.9]);    
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
 end
 
 % --- Executes on button press in checkbox30.
@@ -684,6 +795,11 @@ function chkDiodeEta_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkDiodeEta
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in chkDiodeGR.
@@ -693,6 +809,11 @@ function chkDiodeGR_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkDiodeGR
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in checkbox35.
@@ -747,6 +868,11 @@ function chkDiodeWht_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkDiodeWht
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in checkbox41.
@@ -765,6 +891,11 @@ function chkTDet_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkTDet
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in checkbox43.
@@ -792,6 +923,11 @@ function chkPVent_Callback(hObject, eventdata, handles)
 % hObject    handle to chkPVent (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in chkPRef.
@@ -799,6 +935,11 @@ function chkPRef_Callback(hObject, eventdata, handles)
 % hObject    handle to chkPRef (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
 
 
 % --- Executes on button press in chkDiodeUV.
@@ -806,5 +947,145 @@ function chkDiodeUV_Callback(hObject, eventdata, handles)
 % hObject    handle to chkDiodeUV (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(hObject,'Backgroundcolor',[1 0 0]);
+else
+    set(hObject,'Backgroundcolor',[0.831 0.816 0.784]);    
+end
+
+
+
+
+% --- Executes on button press in chkP1000Det.
+function chkP1000Det_Callback(hObject, eventdata, handles)
+% hObject    handle to chkP1000Det (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkP1000Det
+
+
+% --- Executes on button press in chkP20Det.
+function chkP20Det_Callback(hObject, eventdata, handles)
+% hObject    handle to chkP20Det (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkP20Det
+
+
+% --- Executes on button press in chkPNO.
+function chkPNO_Callback(hObject, eventdata, handles)
+% hObject    handle to chkPNO (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkPNO
+
+
+% --- Executes on button press in chkVHV.
+function chkVHV_Callback(hObject, eventdata, handles)
+% hObject    handle to chkVHV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkVHV
+
+
+% --- Executes on button press in chkIFila.
+function chkIFila_Callback(hObject, eventdata, handles)
+% hObject    handle to chkIFila (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkIFila
+
+
+
+
+% --- Executes on selection change in popPMTPlot.
+function popPMTPlot_Callback(hObject, eventdata, handles)
+% hObject    handle to popPMTPlot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popPMTPlot contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popPMTPlot
+
+
+% --- Executes during object creation, after setting all properties.
+function popPMTPlot_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popPMTPlot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+% --- Executes on selection change in popMCP1Plot.
+function popMCP1Plot_Callback(hObject, eventdata, handles)
+% hObject    handle to popMCP1Plot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popMCP1Plot contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popMCP1Plot
+
+
+% --- Executes during object creation, after setting all properties.
+function popMCP1Plot_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popMCP1Plot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+% --- Executes on selection change in popupmenu3.
+function popupmenu3_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popupmenu3 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu3
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+
+
+% --- Executes on button press in chkOPHIR.
+function chkOPHIR_Callback(hObject, eventdata, handles)
+% hObject    handle to chkOPHIR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkOPHIR
 
 
