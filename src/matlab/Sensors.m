@@ -24,7 +24,7 @@ function varargout = Sensors(varargin)
 
 % Edit the above text to modify the response to help Sensors
 
-% Last Modified by GUIDE v2.5 08-Feb-2005 16:18:14
+% Last Modified by GUIDE v2.5 08-Feb-2005 17:19:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,9 +79,6 @@ start(handles.Timer);
 
 function SensRefresh(arg1,arg2,handles)
 
-% load data, otherwise timer makes error
-data = getappdata(handles.output, 'Sensdata');
-
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
@@ -93,6 +90,10 @@ statustime=double(statusData(:,1))+ ...
            double(statusData(:,4))./1440.0+...
            double(statusData(:,5))./86400.0;
 
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+       
 % Calculate parameter values
 
 ccADCBase=7;
@@ -288,6 +289,10 @@ switch char(ypar)
     case 'EtaIndPos'
         ydata=EtalonIndPos;
 end
+
+% display latest x and y values
+set(handles.txtxvalue,'String',num2str(xdata(lastrow)));
+set(handles.txtyvalue,'String',num2str(ydata(lastrow)));
 
 plot(handles.axes1,xdata,ydata,'.');
 grid(handles.axes1);
