@@ -1,10 +1,14 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.3 $ 
-last change on $Date: 2005-01-21 14:17:47 $ by $Author: harder $ 
+$RCSfile: eCmd.c,v $ $Revision: 1.4 $ 
+last change on $Date: 2005-01-21 14:18:07 $ by $Author: harder $ 
 
 $Log: eCmd.c,v $
-Revision 1.3  2005-01-21 14:17:47  harder
+Revision 1.4  2005-01-21 14:18:07  harder
+update file description
+
+
+Revision 1.3  2005/01/21 14:17:47  harder
 update file description
 
 Revision 1.2  2005/01/21 14:13:03  harder
