@@ -85,6 +85,7 @@ data = getappdata(handles.output, 'Gatedata');
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
+col=horusdata.col;
 
 % Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,1))+ ...
@@ -97,38 +98,38 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-set(handles.txtMaster,'String',num2str(statusData(lastrow,15)));
+set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelay)));
 if isfield(handles,'device')
     switch get(handles.device,'Value')
         case 1
             set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             set(handles.txtGain,'String','NA');
             set(handles.txtGainWidth,'String','NA');
-            set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
         case 2
-            if bitget(statusData(lastrow,226),16)
+            if bitget(statusData(lastrow,col.ccGateDelay1),16)
                 set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
             else
                 set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             end
-            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,226),16,0)));
-            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,227)));
-            set(handles.txtCounter,'String',num2str(statusData(lastrow,225)));
+            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,col.ccGateDelay1),16,0)));
+            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,col.ccGateWidth1)));
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay1)));
         case 3
-            if bitget(statusData(lastrow,435),16);
+            if bitget(statusData(lastrow,col.ccGateDelay2),16);
                 set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
             else
                 set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             end
-            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,435),16,0)));
-            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,436)));
-            set(handles.txtCounter,'String',num2str(statusData(lastrow,434)));
+            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,col.ccGateDelay2),16,0)));
+            set(handles.txtGainWidth,'String',num2str(statusData(lastrow,col.ccGateWidth2)));
+            set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay2)));
     end
 else % if no device was chosen then show values for PMT
     set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
     set(handles.txtGain,'String','NA');
     set(handles.txtGainWidth,'String','NA');
-    set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
+    set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
 end
 
 data.lastrow=lastrow;
@@ -247,9 +248,6 @@ guidata(hObject, handles);
 
 
 
-
-
-
 % --- Executes on button press in Exit.
 function Exit_Callback(hObject, eventdata, handles)
 % hObject    handle to Exit (see GCBO)
@@ -270,6 +268,8 @@ function toggleGain_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleGain
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
+
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
 
@@ -279,10 +279,10 @@ if get(hObject,'Value')
         case 1
             set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
         case 2
-            word=bitset(statusData(lastrow,226),16);
+            word=bitset(statusData(lastrow,col.ccGateDelay1),16);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
         case 3
-            word=bitset(statusData(lastrow,435),16);
+            word=bitset(statusData(lastrow,col.ccGateDelay2),16);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
     end
 else
@@ -290,10 +290,10 @@ else
     switch get(handles.device,'Value')
         case 1
         case 2
-            word=bitset(statusData(lastrow,226),16,0);
+            word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
         case 3
-            word=bitset(statusData(lastrow,435),16,0);
+            word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
     end
 end    
@@ -309,6 +309,8 @@ function edGain_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edGain as a double
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
+
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
 
@@ -321,11 +323,11 @@ else
     switch get(handles.device,'Value')
         case 1
         case 2
-            gainstatus=bitget(statusData(lastrow,226),16);
+            gainstatus=bitget(statusData(lastrow,col.ccGateDelay1),16);
             word=bitset(gaindelay,16,gainstatus);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);            
         case 3
-            gainstatus=bitget(statusData(lastrow,435),16);
+            gainstatus=bitget(statusData(lastrow,col.ccGateDelay2),16);
             word=bitset(gaindelay,16,gainstatus);
             system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);            
     end

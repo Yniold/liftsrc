@@ -85,6 +85,9 @@ data = getappdata(handles.output, 'Dyelaserdata');
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
+
 statustime=double(statusData(:,1))+ ...
            double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
@@ -102,49 +105,42 @@ iZeit=indexZeit(startPlot:stopPlot);
 minTime=statustime(iZeit(1));
 maxTime=statustime(iZeit(size(iZeit,1)));
 
-ADCBase0=656;
-ADCBase1=689;
-
 % display ADC values
 
-DiodeUV=4.6863E-6*double(statusData(iZeit,ADCBase0+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase0+2*3))+390.41;
+x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
 
-set(handles.txtDiodeGr,'String',statusData(lastrow,ADCBase0+5*3));
-set(handles.txtDiodeUV,'String',statusData(lastrow,ADCBase0+2*3));
-set(handles.txtDiodeEt,'String',statusData(lastrow,ADCBase0+4*3));
-set(handles.txtPDyelaser,'String',statusData(lastrow,ADCBase0+1*3));
-set(handles.txtPVent,'String',statusData(lastrow,ADCBase0+7*3));
-set(handles.txtIFilament,'String',statusData(lastrow,ADCBase1+6*3));
-set(handles.txtPRef,'String',statusData(lastrow,ADCBase0+3*3));
+set(handles.txtDiodeGr,'String',statusData(lastrow,col.DiodeGr));
+set(handles.txtDiodeUV,'String',statusData(lastrow,col.DiodeUV));
+set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
+set(handles.txtPDyelaser,'String',statusData(lastrow,col.PDyelaser));
+set(handles.txtPVent,'String',statusData(lastrow,col.PVent));
+set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
+set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
 
-EtalonBase=643; 
-Etalonhelp=int32(statusData(:,EtalonBase));
-EtalonSetPos=(Etalonhelp)+int32(statusData(:,EtalonBase+1));
+Etalonhelp=int32(statusData(:,col.etaSetPosLow));
+EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
 EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
 
-Etalonhelp=int32(statusData(:,EtalonBase+2));
-EtalonCurPos=(Etalonhelp)+int32(statusData(:,EtalonBase+3)); 
+Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
 EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
 
-Etalonhelp=int32(statusData(:,EtalonBase+4)); 
-EtalonEncPos=(Etalonhelp)+int32(statusData(:,EtalonBase+5)); 
+Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
 EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
-EtalonSpeed=statusData(:,EtalonBase+10);
-
-EtalonStatus=statusData(:,EtalonBase+11);
-set(handles.radLeftEnd,'Value',bitand(EtalonStatus(lastrow),1));
-set(GUI_handles.radRightEnd,'Value',bitand(EtalonStatus(lastrow),2));
+EtalonSpeed=statusData(:,col.etaCurSpd);
+EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.scan_step,'String',EtalonSpeed(lastrow));
-if bitget(EtalonStatus(lastrow),1)
+if bitget(EtalonStatus(lastrow),9)
     set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
-elseif EtalonStatus(lastrow)==2
+elseif bitget(EtalonStatus(lastrow),10)
     set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
-if bitget(EtalonStatus(lastrow),0==0
+else
     set(handles.txtLimitSwitch,'String','none','BackgroundColor','b');
 end
 
@@ -153,7 +149,7 @@ end
 hold(handles.axes1,'off'); 
 
 if get(handles.checkDiodeGr,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+5*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.DiodeGr),'r');
     hold(handles.axes1,'on');
 end 
 
@@ -163,17 +159,17 @@ if get(handles.checkDiodeUV,'Value')
 end 
 
 if get(handles.checkDiodeEt,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+4*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.DiodeEtalon),'r');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPDyelaser,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+1*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PDyelaser),'r');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+7*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PVent),'r');
     hold(handles.axes1,'on');
 end 
 
@@ -197,9 +193,6 @@ grid(handles.axes1);
 
 % plot ref. signal in graph 2
 
-PMTMaskBase=211;
-PMTSumCounts=statusData(:,PMTMaskBase+12);
-
 [SortEtpos,indexEtpos]=sort(EtalonCurPos);
 iEtpos=indexEtpos(startPlot:stopPlot);
 minEtpos=EtalonCurPos(iEtpos(1));
@@ -208,12 +201,12 @@ maxEtpos=max(maxEtpos,minEtpos+1);
 
 if get(handles.radioTime,'Value');
     hold(handles.axes2,'off');
-    plot(handles.axes2,statustime(iZeit),PMTSumCounts(iZeit)); 
+    plot(handles.axes2,statustime(iZeit),statusData(iZeit,col.ccCounts0)); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minTime maxTime]);
 else
     hold(handles.axes2,'off');
-    plot(handles.axes2,EtalonCurPos(iEtpos),PMTSumCounts(iEtpos)); 
+    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0)); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minEtpos maxEtpos]);
 end
@@ -221,7 +214,7 @@ grid(handles.axes2);
 
 
 % check filament status (e.g. if it was swiched off by horus)
-if bitget(statusData(lastrow,724),14)==0;
+if bitget(statusData(lastrow,col.Valve),14)==0;
     set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
     set(handles.toggleFilament,'BackgroundColor','b');
 else 
@@ -230,7 +223,7 @@ else
 end
 
 % check shutter status
-if bitget(statusData(lastrow,724),12)==0;
+if bitget(statusData(lastrow,col.Valve),13)==0;
     set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
     set(handles.toggleShutter,'BackgroundColor','b');
 else 
@@ -307,14 +300,15 @@ function toggleDyelaser_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleDyelaser
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),10+1);
+    Valveword=bitset(statusData(lastrow,col.Valve),10+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),10+1,0);
+    Valveword=bitset(statusData(lastrow,col.Valve),10+1,0);
     set(hObject,'BackgroundColor','b');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -331,14 +325,15 @@ function toggleVacuum_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleVacuum
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),7+1);
+    Valveword=bitset(statusData(lastrow,col.Valve),7+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),7+1,0);
+    Valveword=bitset(statusData(lastrow,col.Valve),7+1,0);
     set(hObject,'BackgroundColor','b');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -355,14 +350,15 @@ function toggleN2_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleN2
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),9+1);
+    Valveword=bitset(statusData(lastrow,col.Valve),9+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),9+1,0);
+    Valveword=bitset(statusData(lastrow,col.Valve),9+1,0);
     set(hObject,'BackgroundColor','b');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -379,11 +375,12 @@ function toggleAmbient_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleAmbient
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),8+1);
+    Valveword=bitset(statusData(lastrow,col.Valve),8+1);
     set(hObject,'BackgroundColor','r');
 else
     Valveword=bitset(statusData(lastrow,724),8+1,0);
@@ -660,15 +657,15 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),12);
-    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to close shutter
+    Valveword=bitset(statusData(lastrow,724),13);
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    system('sleep 1');
-    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep shutter closed
     set(hObject,'String','Shutter is CLOSED');
     set(hObject,'BackgroundColor','r');
-else
-    Valveword=bitset(statusData(lastrow,724),12,0);
+    system('sleep 1');
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+else    
+    Valveword=bitset(statusData(lastrow,724),13,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
     set(hObject,'BackgroundColor','b');

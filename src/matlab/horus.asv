@@ -65,8 +65,9 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
   
 data.ActTimer=handles.ActTimer;
 
-% call script colassign.m, whidh creates structu
-colassign;
+% call function varassign.m to create structures containing column numbers
+% and conversion functions for the parameters in the data files
+[data.varnames,data.col,data.fcts2val]=varassign;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -301,7 +302,7 @@ end
 if isfield(data,'hDetection')
     hDetection=str2double(data.hDetection);
     if ishandle(hDetection), 
-        Detdata = getappdata(hDetection, 'Detectiondata');
+        Detdata = getappdata(hDetection, 'Detdata');
         if isfield(Detdata,'Timer')
             stop(Detdata.Timer);
             delete(Detdata.Timer);

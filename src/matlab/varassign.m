@@ -1,7 +1,6 @@
-function [col,fcts2val]=varassign();
-% defines cell array with variable names and columns and creates structure
-% col with fields named after the variables containing the corresponding status
-% data column number
+function [varnames,col,fcts2val]=varassign();
+% defines cell array with variable names and columns and creates structures
+% col and fcts2val with fields named after the variables
 
 % cell array, 
 % 1st column contains variable names;
@@ -11,7 +10,7 @@ function [col,fcts2val]=varassign();
 % edit 2nd column if assignments in ReadAvgData change 
 % edit 3rd column if sensor calibrations change
 statusDataCols=...
-{'PMTthresh',7,'5*x/4096','V';
+{'PMTThresh',7,'5*x/4096','V';
 'LaserTrigThresh',8,'5*x/4096','V';
 'MCP1Thresh',9,'5*x/4096','V';
 'MCP2Thresh',10,'5*x/4096','V';
@@ -49,9 +48,9 @@ statusDataCols=...
 'etaEncoderPosHigh',648,'x*NaN','';
 'etaIndexPosLow',649,'x*NaN','';
 'etaIndexPosHigh',650,'x*NaN','';
-'etaSetSpd',651,'x*NaN','';
-'etaSetAcclSpd',652,'x*NaN','';
-'etaCurSpd',653,'x*NaN','';
+'etaSetSpd',651,'x','';
+'etaSetAcclSpd',652,'x','';
+'etaCurSpd',653,'x','';
 'etaStatus',654,'x*NaN','';
 'NumSamplesADC1',655,'x*5','s';
 'PDyelaser',656,'x*NaN','mbar';
@@ -217,10 +216,11 @@ statusDataCols=...
 'GPSGroundSpeed',816,'x/100','m/s';
 'GPSHeading',817,'x/10','deg'};
 
-% creates structure 'col' with field names taken from 1st column of
+% create structure 'col' with field names taken from 1st column of
 % statusDataCols and values from 2nd column
 col=cell2struct(statusDataCols(:,2),statusDataCols(:,1),1);
 
-% creates structure 'fcts2val' with field names taken from 1st column of
+% create structure 'fcts2val' with field names taken from 1st column of
 % statusDataCols and values from 3rd column
 fcts2val=cell2struct(statusDataCols(:,3),statusDataCols(:,1),1);
+

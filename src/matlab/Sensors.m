@@ -82,6 +82,8 @@ function SensRefresh(arg1,arg2,handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
 
 % Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,1))+ ...
@@ -94,34 +96,6 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
        
-% Calculate parameter values
-
-ccADCBase=7;
-ADCBase0=656;
-ADCBase1=689;
-TempBase=729;
-EtalonBase=643; 
-
-DiodeUV=4.6863E-6*double(statusData(:,ADCBase0+2*3)).^2-8.5857E-2*double(statusData(:,ADCBase0+2*3))+390.41;
-DiodeWZout=(double(statusData(:,ADCBase1+5*3))-9790.0)/193.2836;
-P20=single(statusData(:,ADCBase1+1*3))*0.00891-89.55;
-TDet=single(statusData(:,TempBase+7))./100-273.15;
-
-help=int32(statusData(:,EtalonBase));
-EtalonSetPos=(help)+int32(statusData(:,EtalonBase+1)); EtalonSetPos(help>32767)=EtalonSetPos(help>32767)-65535;
-
-help=int32(statusData(:,EtalonBase+2));
-EtalonCurPos=(help)+int32(statusData(:,EtalonBase+3)); EtalonCurPos(help>32767)=EtalonCurPos(help>32767)-65535;
-
-help=int32(statusData(:,EtalonBase+4));
-EtalonEncPos=(help)+int32(statusData(:,EtalonBase+5)); EtalonEncPos(help>32767)=EtalonEncPos(help>32767)-65535;
-
-help=int32(statusData(:,EtalonBase+6));
-EtalonIndPos=(help)+int32(statusData(:,EtalonBase+7)); EtalonIndPos(help>32767)=EtalonIndPos(help>32767)-65535;
-
-EtalonSpeed=statusData(:,EtalonBase+10);
-EtalonStatus=statusData(:,EtalonBase+11);
-
 % get parameter selected in listbox X
 xvars=get(handles.listboxX,'String');
 xvalue=get(handles.listboxX,'Value');
@@ -137,84 +111,230 @@ switch char(xpar)
     case 'Time'
         xdata=statustime;
     case 'DiodeGr'
-        xdata=statusData(:,ADCBase0+5*3);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.DiodeGr);
+        else
+            x=double(statusData(:,col.DiodeGr)); eval(['xdata=',fcts2val.DiodeGr,';']);
+        end
     case 'DiodeUV'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,ADCBase0+2*3);
+            xdata=statusData(:,col.DiodeUV);
         else
-            xdata=DiodeUV;
+            x=double(statusData(:,col.DiodeUV)); eval(['xdata=',fcts2val.DiodeUV,';']);
         end
     case 'DiodeEtalon'
-        xdata=statusData(:,ADCBase0+4*3);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.DiodeEtalon);
+        else
+            x=double(statusData(:,col.DiodeEtalon)); eval(['xdata=',fcts2val.DiodeEtalon,';']);
+        end
     case 'DiodeWZin' % not yet available
-        xdata=statusData(:,ADCBase1+5*3);
         xdata(:)=NaN;
     case 'DiodeWZout'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,ADCBase1+5*3);
+            xdata=statusData(:,col.DiodeWZout);
         else
-            xdata=DiodeWZout;
+            x=double(statusData(:,col.DiodeWZout)); eval(['xdata=',fcts2val.DiodeWZout,';']);
         end
     case 'Ophir'
-        xdata=statusData(:,ADCBase1+7*3);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.Ophir);
+        else
+            x=double(statusData(:,col.Ophir)); eval(['xdata=',fcts2val.Ophir,';']);
+        end
     case 'P20'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,ADCBase1+1*3);
+            xdata=statusData(:,col.P20);
         else
-            xdata=P20;
+            x=double(statusData(:,col.P20)); eval(['xdata=',fcts2val.P20,';']);
         end
     case 'P1000'
-        xdata=single(statusData(:,ADCBase1));
-    case 'PRef'
-        xdata=statusData(:,ADCBase0+3*3);
-    case 'PDyelaser'
-        xdata=statusData(:,ADCBase0+1*3);
-    case 'PVent'
-        xdata=statusData(:,ADCBase0+7*3);
-    case 'PNO'
-        xdata=statusData(:,ADCBase1+2*3);
-    case 'IFilament'
-        xdata=statusData(:,ADCBase1+6*3);
-    case 'TDet'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,TempBase+7);
+            xdata=statusData(:,col.P1000);
         else
-            xdata=TDet;
+            x=double(statusData(:,col.P1000)); eval(['xdata=',fcts2val.P20,';']);
+        end
+    case 'PRef'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.PRef);
+        else
+            x=double(statusData(:,col.PRef)); eval(['xdata=',fcts2val.PRef,';']);
+        end
+    case 'PDyelaser'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.PDyelaser);
+        else
+            x=double(statusData(:,col.PDyelaser)); eval(['xdata=',fcts2val.PDyelaser,';']);
+        end
+    case 'PVent'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.PVent);
+        else
+            x=double(statusData(:,col.PVent)); eval(['xdata=',fcts2val.PVent,';']);
+        end
+    case 'PNO'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.PNO);
+        else
+            x=double(statusData(:,col.PNO)); eval(['xdata=',fcts2val.PNO,';']);
+        end
+    case 'IFilament'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.IFilament);
+        else
+            x=double(statusData(:,col.IFilament)); eval(['xdata=',fcts2val.IFilament,';']);
         end
     case 'VHV'
-        xdata=statusData(:,ADCBase1+3*3);
-    case 'PMTThr'
-        xdata=statusData(:,ccADCBase+0);
-    case 'LastTrigThr'
-        xdata=statusData(:,ccADCBase+1);
-    case 'MCP1Thr'
-        xdata=statusData(:,ccADCBase+2);
-    case 'MCP2Thr'
-        xdata=statusData(:,ccADCBase+3);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.VHV);
+        else
+            x=double(statusData(:,col.VHV)); eval(['xdata=',fcts2val.VHV,';']);
+        end
+    case 'LaserTrigThresh'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.LaserTrigThresh);
+        else
+            x=double(statusData(:,col.LaserTrigThresh)); eval(['xdata=',fcts2val.LaserTrigThresh,';']);
+        end
+    case 'PMTThresh'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.PMTThresh);
+        else
+            x=double(statusData(:,col.PMTThresh)); eval(['xdata=',fcts2val.PMTThresh,';']);
+        end
+    case 'MCP1Thresh'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.MCP1Thresh);
+        else
+            x=double(statusData(:,col.MCP1Thresh)); eval(['xdata=',fcts2val.MCP1Thresh,';']);
+        end
+    case 'MCP2Thresh'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.MCP2Thresh);
+        else
+            x=double(statusData(:,col.MCP2Thresh)); eval(['xdata=',fcts2val.MCP2Thresh,';']);
+        end
     case '+5V'
-        xdata=statusData(:,ccADCBase+4);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.V5V);
+        else
+            x=double(statusData(:,col.V5V)); eval(['xdata=',fcts2val.V5V,';']);
+        end
     case '+28V'
-        xdata=statusData(:,ccADCBase+5);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.V28V);
+        else
+            x=double(statusData(:,col.V28V)); eval(['xdata=',fcts2val.V28V,';']);
+        end
     case '+3.3V'
-        xdata=statusData(:,ccADCBase+6);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.V3_3V);
+        else
+            x=double(statusData(:,col.V3_3V)); eval(['xdata=',fcts2val.V3_3V,';']);
+        end
     case '+1.5V'
-        xdata=statusData(:,ccADCBase+7);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.V1_5V);
+        else
+            x=double(statusData(:,col.V1_5V)); eval(['xdata=',fcts2val.V1_5V,';']);
+        end
     case 'EtaSpd'
-        xdata=EtalonSpeed;
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.etaCurSpd);
+        else
+            x=double(statusData(:,col.etaCurSpd)); eval(['xdata=',fcts2val.etaCurSpd,';']);
+        end
     case 'EtaSetPos'
+        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
+        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
+        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         xdata=EtalonSetPos;
     case 'EtaCurPos'
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
+        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         xdata=EtalonCurPos;
     case 'EtaEncPos'
+        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
+        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
         xdata=EtalonEncPos;
     case 'EtaIndPos'
+        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
+        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
+        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
         xdata=EtalonIndPos;
-    case 'VSolenoids'
-        xdata=statusData(:,723);
-    case 'MFCSetFlow'
-        xdata=statusData(:,721);
+    case 'EtaOnlinePos'
+        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
+        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
+        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
+        xdata=EtalonOnlinePos;
+    case 'ValveVolt'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.ValveVolt);
+        else
+            x=double(statusData(:,col.ValveVolt)); eval(['xdata=',fcts2val.ValveVolt,';']);
+        end
     case 'MFCFlow'
-        xdata=statusData(:,722);
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.MFCFlow);
+        else
+            x=double(statusData(:,col.MFCFlow)); eval(['xdata=',fcts2val.MFCFlow,';']);
+        end
+    case 'TDet'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.TDet);
+        else
+            x=double(statusData(:,col.TDet)); eval(['xdata=',fcts2val.TDet,';']);
+        end
+    case 'Temp0'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.Temp0);
+        else
+            x=double(statusData(:,col.Temp0)); eval(['xdata=',fcts2val.Temp0,';']);
+        end
+    case 'TDetaxis'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.TDetaxis);
+        else
+            x=double(statusData(:,col.TDetaxis)); eval(['xdata=',fcts2val.TDetaxis,';']);
+        end
+    case 'Temp2'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.Temp2);
+        else
+            x=double(statusData(:,col.Temp2)); eval(['xdata=',fcts2val.Temp2,';']);
+        end
+    case 'Temp3'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.Temp3);
+        else
+            x=double(statusData(:,col.Temp3)); eval(['xdata=',fcts2val.Temp3,';']);
+        end
+    case 'GPSsecondsUTC'
+        xdata=statusData(:,col.GPSsecondsUTC);
+    case 'GPSLongitude'
+        xdata=double(statusData(:,col.GPSLongitude))/60-180 ...
+            +double(statusData(:,col.GPSLongitudeDecimals))/10000;
+    case 'GPSLatitude'
+        xdata=double(statusData(:,col.GPSLatitude))/60-180 ...
+            +double(statusData(:,col.GPSLatitudeDecimals))/10000;
+    case 'GPSAltitude'
+        xdata=statusData(:,col.GPSAltitude);
+    case 'GPSHDOP'
+        xdata=statusData(:,col.GPSHDOP);
+    case 'GPSnumSat'
+        xdata=statusData(:,col.GPSnumSat);
+    case 'GPSLastValidData'
+        if get(handles.toggleX,'Value')
+            xdata=statusData(:,col.GPSLastValidData);
+        else
+            x=double(statusData(:,col.GPSLastValidData)); eval(['xdata=',fcts2val.GPSLastValidData,';']);
+        end
+    case 'GPSGroundSpeed'
+        xdata=double(statusData(:,col.GPSGroundSpeed))/100;
+    case 'GPSHeading'
+        xdata=double(statusData(:,col.GPSHeading))/10;
 end
         
 % assign data to y-axis
@@ -222,84 +342,230 @@ switch char(ypar)
     case 'Time'
         ydata=statustime;
     case 'DiodeGr'
-        ydata=statusData(:,ADCBase0+5*3);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.DiodeGr);
+        else
+            x=double(statusData(:,col.DiodeGr)); eval(['ydata=',fcts2val.DiodeGr,';']);
+        end
     case 'DiodeUV'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,ADCBase0+2*3);
+            ydata=statusData(:,col.DiodeUV);
         else
-            ydata=DiodeUV;
+            x=double(statusData(:,col.DiodeUV)); eval(['ydata=',fcts2val.DiodeUV,';']);
         end
     case 'DiodeEtalon'
-        ydata=statusData(:,ADCBase0+4*3);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.DiodeEtalon);
+        else
+            x=double(statusData(:,col.DiodeEtalon)); eval(['ydata=',fcts2val.DiodeEtalon,';']);
+        end
     case 'DiodeWZin' % not yet available
-        ydata=statusData(:,ADCBase1+5*3);
         ydata(:)=NaN;
     case 'DiodeWZout'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,ADCBase1+5*3);
+            ydata=statusData(:,col.DiodeWZout);
         else
-            ydata=DiodeWZout;
+            x=double(statusData(:,col.DiodeWZout)); eval(['ydata=',fcts2val.DiodeWZout,';']);
         end
     case 'Ophir'
-        ydata=statusData(:,ADCBase1+7*3);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.Ophir);
+        else
+            x=double(statusData(:,col.Ophir)); eval(['ydata=',fcts2val.Ophir,';']);
+        end
     case 'P20'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,ADCBase1+1*3);
+            ydata=statusData(:,col.P20);
         else
-            ydata=P20;
+            x=double(statusData(:,col.P20)); eval(['ydata=',fcts2val.P20,';']);
         end
     case 'P1000'
-        ydata=single(statusData(:,ADCBase1));
-    case 'PRef'
-        ydata=statusData(:,ADCBase0+3*3);
-    case 'PDyelaser'
-        ydata=statusData(:,ADCBase0+1*3);
-    case 'PVent'
-        ydata=statusData(:,ADCBase0+7*3);
-    case 'PNO'
-        ydata=statusData(:,ADCBase1+2*3);
-    case 'IFilament'
-        ydata=statusData(:,ADCBase1+6*3);
-    case 'TDet'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,TempBase+7);
+            ydata=statusData(:,col.P1000);
         else
-            ydata=TDet;
+            x=double(statusData(:,col.P1000)); eval(['ydata=',fcts2val.P20,';']);
+        end
+    case 'PRef'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.PRef);
+        else
+            x=double(statusData(:,col.PRef)); eval(['ydata=',fcts2val.PRef,';']);
+        end
+    case 'PDyelaser'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.PDyelaser);
+        else
+            x=double(statusData(:,col.PDyelaser)); eval(['ydata=',fcts2val.PDyelaser,';']);
+        end
+    case 'PVent'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.PVent);
+        else
+            x=double(statusData(:,col.PVent)); eval(['ydata=',fcts2val.PVent,';']);
+        end
+    case 'PNO'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.PNO);
+        else
+            x=double(statusData(:,col.PNO)); eval(['ydata=',fcts2val.PNO,';']);
+        end
+    case 'IFilament'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.IFilament);
+        else
+            x=double(statusData(:,col.IFilament)); eval(['ydata=',fcts2val.IFilament,';']);
         end
     case 'VHV'
-        ydata=statusData(:,ADCBase1+3*3);
-    case 'PMTThr'
-        ydata=statusData(:,ccADCBase+0);
-    case 'LastTrigThr'
-        ydata=statusData(:,ccADCBase+1);
-    case 'MCP1Thr'
-        ydata=statusData(:,ccADCBase+2);
-    case 'MCP2Thr'
-        ydata=statusData(:,ccADCBase+3);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.VHV);
+        else
+            x=double(statusData(:,col.VHV)); eval(['ydata=',fcts2val.VHV,';']);
+        end
+    case 'LaserTrigThresh'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.LaserTrigThresh);
+        else
+            x=double(statusData(:,col.LaserTrigThresh)); eval(['ydata=',fcts2val.LaserTrigThresh,';']);
+        end
+    case 'PMTThresh'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.PMTThresh);
+        else
+            x=double(statusData(:,col.PMTThresh)); eval(['ydata=',fcts2val.PMTThresh,';']);
+        end
+    case 'MCP1Thresh'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.MCP1Thresh);
+        else
+            x=double(statusData(:,col.MCP1Thresh)); eval(['ydata=',fcts2val.MCP1Thresh,';']);
+        end
+    case 'MCP2Thresh'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.MCP2Thresh);
+        else
+            x=double(statusData(:,col.MCP2Thresh)); eval(['ydata=',fcts2val.MCP2Thresh,';']);
+        end
     case '+5V'
-        ydata=statusData(:,ccADCBase+4);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.V5V);
+        else
+            x=double(statusData(:,col.V5V)); eval(['ydata=',fcts2val.V5V,';']);
+        end
     case '+28V'
-        ydata=statusData(:,ccADCBase+5);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.V28V);
+        else
+            x=double(statusData(:,col.V28V)); eval(['ydata=',fcts2val.V28V,';']);
+        end
     case '+3.3V'
-        ydata=statusData(:,ccADCBase+6);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.V3_3V);
+        else
+            x=double(statusData(:,col.V3_3V)); eval(['ydata=',fcts2val.V3_3V,';']);
+        end
     case '+1.5V'
-        ydata=statusData(:,ccADCBase+7);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.V1_5V);
+        else
+            x=double(statusData(:,col.V1_5V)); eval(['ydata=',fcts2val.V1_5V,';']);
+        end
     case 'EtaSpd'
-        ydata=EtalonSpeed;
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.etaCurSpd);
+        else
+            x=double(statusData(:,col.etaCurSpd)); eval(['ydata=',fcts2val.etaCurSpd,';']);
+        end
     case 'EtaSetPos'
+        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
+        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
+        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
+        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         ydata=EtalonCurPos;
     case 'EtaEncPos'
+        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
+        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
         ydata=EtalonEncPos;
     case 'EtaIndPos'
+        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
+        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
+        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
         ydata=EtalonIndPos;
-    case 'VSolenoids'
-        ydata=statusData(:,723);
-    case 'MFCSetFlow'
-        ydata=statusData(:,721);
+    case 'EtaOnlinePos'
+        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
+        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
+        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
+        ydata=EtalonOnlinePos;
+    case 'ValveVolt'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.ValveVolt);
+        else
+            x=double(statusData(:,col.ValveVolt)); eval(['ydata=',fcts2val.ValveVolt,';']);
+        end
     case 'MFCFlow'
-        ydata=statusData(:,722);
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.MFCFlow);
+        else
+            x=double(statusData(:,col.MFCFlow)); eval(['ydata=',fcts2val.MFCFlow,';']);
+        end
+    case 'TDet'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.TDet);
+        else
+            x=double(statusData(:,col.TDet)); eval(['ydata=',fcts2val.TDet,';']);
+        end
+    case 'Temp0'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.Temp0);
+        else
+            x=double(statusData(:,col.Temp0)); eval(['ydata=',fcts2val.Temp0,';']);
+        end
+    case 'TDetaxis'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.TDetaxis);
+        else
+            x=double(statusData(:,col.TDetaxis)); eval(['ydata=',fcts2val.TDetaxis,';']);
+        end
+    case 'Temp2'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.Temp2);
+        else
+            x=double(statusData(:,col.Temp2)); eval(['ydata=',fcts2val.Temp2,';']);
+        end
+    case 'Temp3'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.Temp3);
+        else
+            x=double(statusData(:,col.Temp3)); eval(['ydata=',fcts2val.Temp3,';']);
+        end
+    case 'GPSsecondsUTC'
+        ydata=statusData(:,col.GPSsecondsUTC);
+    case 'GPSLongitude'
+        ydata=double(statusData(:,col.GPSLongitude))/60-180 ...
+            +double(statusData(:,col.GPSLongitudeDecimals))/10000;
+    case 'GPSLatitude'
+        ydata=double(statusData(:,col.GPSLatitude))/60-180 ...
+            +double(statusData(:,col.GPSLatitudeDecimals))/10000;
+    case 'GPSAltitude'
+        ydata=statusData(:,col.GPSAltitude);
+    case 'GPSHDOP'
+        ydata=statusData(:,col.GPSHDOP);
+    case 'GPSnumSat'
+        ydata=statusData(:,col.GPSnumSat);
+    case 'GPSLastValidData'
+        if get(handles.toggleY,'Value')
+            ydata=statusData(:,col.GPSLastValidData);
+        else
+            x=double(statusData(:,col.GPSLastValidData)); eval(['ydata=',fcts2val.GPSLastValidData,';']);
+        end
+    case 'GPSGroundSpeed'
+        ydata=double(statusData(:,col.GPSGroundSpeed))/100;
+    case 'GPSHeading'
+        ydata=double(statusData(:,col.GPSHeading))/10;
 end
 
 % display latest x and y values
@@ -339,13 +605,14 @@ function listboxX_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
-    'TDet';'VHV';'PMTThr';'LastTrigThr';'MCP1Thr';'MCP2Thr';'+5V';'+28V';...
-    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';...
-    'VSolenoids';'MFCSetFlow';'MFCFlow'};
+    'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5V';'+28V';...
+    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';...
+    'ValveVolt';'MFCFlow';'TDet';'Temp0';'TDetaxis';'Temp2';'Temp3';...
+    'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
+    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading'};
 set(hObject,'String',vars);
 
 
@@ -370,9 +637,11 @@ function listboxY_CreateFcn(hObject, eventdata, handles)
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
-    'TDet';'VHV';'PMTThr';'LastTrigThr';'MCP1Thr';'MCP2Thr';'+5V';'+28V';...
-    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';...
-    'VSolenoids';'MFCSetFlow';'MFCFlow'};
+    'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5V';'+28V';...
+    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';...
+    'ValveVolt';'MFCFlow';'TDet';'Temp0';'TDetaxis';'Temp2';'Temp3';...
+    'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
+    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading'};
 set(hObject,'String',vars);
 
 
