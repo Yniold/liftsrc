@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 24-Jan-2005 13:03:27
+% Last Modified by GUIDE v2.5 24-Jan-2005 19:11:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,5 +107,32 @@ data = getappdata(gcbf, 'horusdata');
 handleEtalon=etalon('handle',num2str(gcbf,16));
 data.hEtalon=num2str(handleEtalon,16);
 setappdata(gcbf, 'horusdata', data); 
+
+
+
+
+% --- Executes on button press in Exit.
+function Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+
+if isfield(data,'hADC')
+    hADC=str2double(data.hADC);
+    close(hADC);
+end
+
+if isfield(data,'hCounterCards')
+    hCounterCards=str2double(data.hCounterCards);
+    close(hCounterCards);
+end
+
+if isfield(data,'hADC')
+    hEtalon=str2double(data.hEtalon);
+    close(hEtalon);
+end
+
+close(horus);
 
 
