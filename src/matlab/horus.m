@@ -128,7 +128,7 @@ if isfield(data,'hCounterCards')
     if ishandle(hCounterCards), close(hCounterCards); end
 end
 
-if isfield(data,'hADC')
+if isfield(data,'hEtalon')
     hEtalon=str2double(data.hEtalon);
     if ishandle(hEtalon), close(hEtalon); end
 end
