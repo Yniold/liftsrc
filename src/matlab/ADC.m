@@ -330,8 +330,9 @@ plot(GUI_handles.axeEtalon,statusData(iZeit,ADCBase2+1+7*3),statusData(iZeit,ADC
 PMTBase=19;
 MCP1Base=228;
 MCP2Base=437;
-AVGBase=805;
+AVGBase=1;
 PMTMaskBase=211;
+MCP1MaskBase=420;
 MCP2MaskBase=629;
 
 % PMT: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
@@ -344,6 +345,17 @@ if ~isfield(data,'PMTMask')| ...
 end
     
 PMTSumCounts=statusData(:,223);
+
+% MCP1: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
+if ~isfield(data,'MCP1Mask')| ...
+        ~isequal(statusData(lastrow,MCP1MaskBase:MCP1MaskBase+9),statusData(lastrow-5,MCP1MaskBase:MCP1MaskBase+9))
+    data.MCP1Mask=ones(1,160);
+    for a=0:9
+        data.MCP1Mask((a*16+1):(a*16+16))=bitget(statusData(lastrow,MCP1MaskBase+a),1:16);
+    end
+end
+
+MCP2SumCounts=statusData(:,641);
 
 % MCP2: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'MCP2Mask')| ...
@@ -383,6 +395,11 @@ PMTOfflineAvg(1:size(statusData,1))=NaN;
 PMTOfflineAvg(OfflineRightFilter & statusData(:,805)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
 PMTOfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
 
+PMTAvg(statusData(:,805)==3)=PMTOnlineAvg(statusData(:,805)==3);
+PMTAvg(statusData(:,805)==2)=PMTOfflineLeftAvg(statusData(:,805)==2);
+PMTAvg(statusData(:,805)==1)=PMTOfflineRightAvg(statusData(:,805)==1);
+PMTAvg(statusData(:,805)==0)=NaN;
+
 MCP1OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+3);
 MCP1OnlineAvg(~OnlineFilter)=NaN;
 MCP1OfflineLeftAvg(OfflineLeftFilter)=AvgData(OfflineLeftFilter,AVGBase+4);
@@ -393,6 +410,11 @@ MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
 MCP1OfflineAvg(OfflineRightFilter & statusData(:,805)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
 MCP1OfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
+
+MCP1Avg(statusData(:,805)==3)=MCP1OnlineAvg(statusData(:,805)==3);
+MCP1Avg(statusData(:,805)==2)=MCP1OfflineLeftAvg(statusData(:,805)==2);
+MCP1Avg(statusData(:,805)==1)=MCP1OfflineRightAvg(statusData(:,805)==1);
+MCP1Avg(statusData(:,805)==0)=NaN;
 
 MCP2OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+6);
 MCP2OnlineAvg(~OnlineFilter)=NaN;
@@ -457,9 +479,8 @@ if get(GUI_handles.chkPMT,'Value')
            plot(GUI_handles.axeCounts,Zeit(iZeit),PMTSumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
            hold(GUI_handles.axeCounts,'on');
         case 2           
-           plot(GUI_handles.axeCounts,Zeit(30:end),PMTOnlineAvg(30:end)-PMTOfflineAvg(30:end),'b'); 
+           plot(GUI_handles.axeCounts,Zeit(30:end),PMTAvg(30:end),'b');   
            hold(GUI_handles.axeCounts,'on');
-           %plot(GUI_handles.axeCounts,Zeit(10:end),PMTOfflineAvg(10:end),'b:');   
     end
     %plot(GUI_handles.axeCounts,Zeit(iZeit),statusData(iZeit,PMTBase+204),'r');
     plot(GUI_handles.axeCountsEtalon,EtalonCurPos(iZeit),PMTSumCounts(iZeit),'.');
@@ -495,10 +516,8 @@ if get(GUI_handles.chkMCP1,'Value')
            plot(GUI_handles.axeCounts,Zeit(iZeit),MCP1SumCounts(iZeit)); %statusData(iZeit,MCP1Base+204));
            hold(GUI_handles.axeCounts,'on');
         case 2           
-           %plot(GUI_handles.axeCounts,Zeit(30:end),int16(MCP1OnlineAvg(30:end)),'b'); %-int16(MCP1OfflineAvg(30:end)),'b'); 
            plot(GUI_handles.axeCounts,Zeit(30:end),MCP1Avg(30:end),'b');   
            hold(GUI_handles.axeCounts,'on');
-           %plot(GUI_handles.axeCounts,Zeit(30:end),MCP1OfflineAvg(30:end),'b:');   
     end
 
     %plot(GUI_handles.axeCounts,Zeit(iZeit),MCP1SumCounts(iZeit),'g');         %statusData(iZeit,MCP1Base+204),'g');
