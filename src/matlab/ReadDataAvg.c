@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.7 $ */
+ /* $Revision: 1.8 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -585,28 +585,28 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /* we are only interested in Data of Card 0 */
     Card=0;   
 #ifdef D_HEADER
-  mexPrintf("TempMissed #%d %d\n",j,1+count/nelements);      
+  mexPrintf("TempMissed %d\n",1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].TempSensCard[Card].NumMissed;       
     }
 
 #ifdef D_HEADER
-  mexPrintf("TempNumber #%d %d\n",j,1+count/nelements);      
+  mexPrintf("TempNumber %d\n",1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].TempSensCard[Card].NumSensor;       
     }
 
 #ifdef D_HEADER
-  mexPrintf("TempErrCRC #%d %d\n",j,1+count/nelements);      
+  mexPrintf("TempErrCRC %d\n",1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].TempSensCard[Card].NumErrCRC;       
     }
 
 #ifdef D_HEADER
-  mexPrintf("TempNoResponse #%d %d\n",j,1+count/nelements);      
+  mexPrintf("TempNoResponse %d\n",1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].TempSensCard[Card].NumErrNoResponse;       
@@ -627,7 +627,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   mexPrintf("Temp #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
 #endif
       for (i=0; i<nelements;i++) {
-	*(z+count++)=elekStatus[i].TempSensCard[Card].TempSensor[j].Word.WordTemp & 17;       
+	*(z+count++)=elekStatus[i].TempSensCard[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position       
       }
 
 #ifdef D_HEADER
@@ -660,6 +660,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /* 7*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Online.PositionWord.High;       
+    }
+
+
+/* we store the Online/Offline Flag only once */
+#ifdef D_HEADER
+      mexPrintf("RAvgOnOffFlag #%d : %d\n",Channel,1+count/nelements);      
+#endif 
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=OnlineAverage[0].OnOffFlag[i];                       /* use PMT aka Ref Channel for on/offline reference */   
     }
 
 /******************* Instrument Flag Instrument Action ***************************/     
@@ -883,14 +892,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 } /* for Channel*/
 
-    /* we store the Online/Offline Flag only once */
-#ifdef D_HEADER
-      mexPrintf("RAvgOnOffFlag #%d : %d\n",Channel,1+count/nelements);      
-#endif 
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=OnlineAverage[0].OnOffFlag[i];                       /* use PMT aka Ref Channel for on/offline reference */   
-    }
-   
+  
     return;
 }
 

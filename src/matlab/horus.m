@@ -65,6 +65,10 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
   
 data.ActTimer=handles.ActTimer;
 
+% call function varassign.m to create structures containing column numbers
+% and conversion functions for the parameters in the data files
+[data.col,data.fcts2val]=varassign;
+
 % Update handles structure
 guidata(hObject, handles);
 

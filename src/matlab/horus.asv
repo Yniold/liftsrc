@@ -65,6 +65,9 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
   
 data.ActTimer=handles.ActTimer;
 
+% call script colassign.m, whidh creates structu
+colassign;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -272,8 +275,8 @@ if isfield(data,'hCounterCards')
     if ishandle(hCounterCards)
         Gatedata = getappdata(hCounterCards, 'Gatedata');
         if isfield(Gatedata,'Timer')
-            stop(Dyelaserdata.ActTimer);
-            delete(Dyelaserdata.ActTimer);
+            stop(Gatedata.Timer);
+            delete(Gatedata.Timer);
         end
         close(hCounterCards); 
     end

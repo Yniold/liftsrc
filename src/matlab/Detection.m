@@ -83,6 +83,8 @@ data = getappdata(handles.output, 'Detdata');
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
 
 % Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,1))+ ...
@@ -105,23 +107,19 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
-ADCBase0=656;
-ADCBase1=689;
-TempBase=729;
-
-TempDetAxis=single(statusData(:,TempBase+7))./100-273.15;  
-P20=single(statusData(:,ADCBase1+1*3))*0.00891-89.55;
-P1000=single(statusData(:,ADCBase1));%*0.4464-4380.9;
-DiodeWZout=(double(statusData(iZeit,ADCBase1+5*3))-9790.0)/193.2836;
+x=statusData(:,col.TDetaxis); eval(['TDetaxis=',fcts2val.TDetaxis]);
+x=statusData(:,col.P20); eval(['P20=',fcts2val.P20]);
+x=statusData(:,col.P1000); eval(['P1000=',fcts2val.P1000]);
+x=statusData(:,col.DiodeWZout); eval(['DiodeWZout=',fcts2val.DiodeWZout]);
 
 % display ADC counts
-set(handles.txtWZin,'String','NA'); %statusData(lastrow,ADCBase1+5*3));
-set(handles.txtWZout,'String',statusData(lastrow,ADCBase1+5*3));
-set(handles.txtP1000,'String',statusData(lastrow,ADCBase1));
-set(handles.txtP20,'String',statusData(lastrow,ADCBase1+1*3));
-set(handles.txtPNO,'String',statusData(lastrow,ADCBase1+2*3));
-set(handles.txtVHV,'String',statusData(lastrow,ADCBase1+3*3));
-set(handles.txtTDet,'String',TempDetAxis(lastrow));
+set(handles.txtWZin,'String','NA');
+set(handles.txtWZout,'String',statusData(lastrow,col.DiodeWZout));
+set(handles.txtP1000,'String',statusData(lastrow,col.P1000));
+set(handles.txtP20,'String',statusData(lastrow,col.P20));
+set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
+set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
+set(handles.txtTDet,'String',statusData(lastrow,col.TDet));
 
 % warn for ADC signals out of allowed range for measurements
 if P20(lastrow)<3 | P20(lastrow)>6
@@ -150,15 +148,16 @@ if get(handles.chkP20,'Value')
     hold(handles.axes1,'on');
 end 
 if get(handles.chkPNO,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase1+2*3),'b');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PNO),'b');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkVHV,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase1+3*3),'b');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.VHV),'b');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkTDet,'Value')
-    plot(handles.axes1,statustime(iZeit),TempDetAxis(iZeit),'b');
+% as we don't have the conversion factor for TDet yet, for now we plot TDetaxis instead
+    plot(handles.axes1,statustime(iZeit),TempDetaxis(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 xlim(handles.axes1,[minTime maxTime]);
@@ -166,13 +165,13 @@ grid(handles.axes1);
 
 %plot PMT and MCP signals
 
-PMTBase=19;
-MCP1Base=228;
-MCP2Base=437;
+PMTBase=col.ccData0;
+MCP1Base=col.ccData1;
+MCP2Base=col.ccData2;
 AVGBase=1;
-PMTMaskBase=211;
-MCP1MaskBase=420;
-MCP2MaskBase=629;
+PMTMaskBase=col.ccMask0;
+MCP1MaskBase=col.ccMask1;
+MCP2MaskBase=col.ccMask2;
 
 % PMT: Has the counter mask changed ? Then read in new mask.
 if ~isfield(data,'PMTMask')| ...
@@ -183,7 +182,7 @@ if ~isfield(data,'PMTMask')| ...
     end
 end
     
-PMTSumCounts=statusData(:,PMTMaskBase+12);
+PMTSumCounts=statusData(:,col.ccCounts0);
 
 % MCP1: Has the counter mask changed ? Then read in new mask.
 if ~isfield(data,'MCP1Mask')| ...
@@ -194,7 +193,7 @@ if ~isfield(data,'MCP1Mask')| ...
     end
 end
 
-MCP1SumCounts=statusData(:,MCP1MaskBase+12);
+MCP1SumCounts=statusData(:,col.ccCounts1);
 
 % MCP2: Has the counter mask changed ? Then read in new mask.
 if ~isfield(data,'MCP2Mask')| ...
@@ -205,16 +204,16 @@ if ~isfield(data,'MCP2Mask')| ...
     end
 end
 
-MCP2SumCounts=statusData(:,MCP2MaskBase+12);
+MCP2SumCounts=statusData(:,col.ccCounts2);
 
 % display counts and pulses
-set(handles.txtPMTCounts,'String',statusData(lastrow,PMTBase+204));
-set(handles.txtMCP1Counts,'String',statusData(lastrow,MCP1Base+204));
-set(handles.txtMCP2Counts,'String',statusData(lastrow,MCP2Base+204));
+set(handles.txtPMTCounts,'String',statusData(lastrow,col.ccCounts0));
+set(handles.txtMCP1Counts,'String',statusData(lastrow,col.ccCounts1));
+set(handles.txtMCP2Counts,'String',statusData(lastrow,col.ccCounts2));
 
-set(handles.txtPMTPulses,'String',statusData(lastrow,PMTBase+205));
-set(handles.txtMCP1Pulses,'String',statusData(lastrow,MCP1Base+205));
-set(handles.txtMCP2Pulses,'String',statusData(lastrow,MCP2Base+205));
+set(handles.txtPMTPulses,'String',statusData(lastrow,col.ccPulses0));
+set(handles.txtMCP1Pulses,'String',statusData(lastrow,col.ccPulses1));
+set(handles.txtMCP2Pulses,'String',statusData(lastrow,col.ccPulses2));
 
 % calculate running averages for online and both offlines
 OnlineFilter=AvgData(:,AVGBase)>0;
@@ -380,7 +379,7 @@ xlim(handles.axeCounts,[minTime maxTime]);
 grid(handles.axeCounts);
 
 % check HV
-if single(statusData(lastrow,725))==0
+if single(statusData(lastrow,col.HVSwitchV))==0
     set(handles.togHV,'Value',0)
     set(handles.togHV,'BackgroundColor','b','String','HV OFF');
 else
@@ -389,7 +388,7 @@ else
 end
 
 % check Blower
-if single(statusData(lastrow,727))==0
+if single(statusData(lastrow,col.BlowerSwitchV))==0
     set(handles.togBlower,'Value',0)
     set(handles.togBlower,'BackgroundColor','b','String','Blower OFF');
 else
@@ -398,7 +397,7 @@ else
 end
 
 % check Butterfly
-if single(statusData(lastrow,726))==0
+if single(statusData(lastrow,col.ButterflySwitchV))==0
     set(handles.togButterfly,'Value',1)
     set(handles.togButterfly,'BackgroundColor','r','String','Butterfly OPEN');
 else
@@ -590,9 +589,10 @@ horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
+col=horusdata.col;
 
 if get(hObject,'Value')
-%    if single(statusData(:,ADCBase1))<? % switch on Blower only if cell pressure P1000 is low enough
+%    if single(statusData(lastrow,col.P1000))<? % switch on Blower only if cell pressure P1000 is low enough
         system('/lift/bin/eCmd w 0xa464 1800');
         set(hObject,'BackgroundColor','r','String','Blower ON');
 %    end
@@ -614,9 +614,10 @@ horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
+col=horusdata.col;
 
 if get(hObject,'Value')
-%    if single(statusData(lastrow,ADCBase1+1*3))<? % switch on HV only if cell pressure P20 is low
+%    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
         system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
         set(hObject,'BackgroundColor','r','String','HV ON');
 %    end
