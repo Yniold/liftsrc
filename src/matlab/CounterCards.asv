@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 11-Feb-2005 12:25:42
+% Last Modified by GUIDE v2.5 11-Feb-2005 14:02:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,6 +78,7 @@ start(handles.Timer);
 
 
 function GateRefresh(arg1,arg2,handles)
+data = getappdata(handles.output, 'Gatedata');
 
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
@@ -94,33 +95,35 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-set(edMaster,'String',num2str(statusData(lastrow,15)));
+set(txtMaster,'String',num2str(statusData(lastrow,15)));
 switch handles.device
     case 0
         set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
-        set(handles.edGain,'String','NA');
-        set(handles.edGainWidth,'String','NA');
-        set(handles.edCounter,'String',num2str(statusData(lastrow,16)));
+        set(handles.txtGain,'String','NA');
+        set(handles.txtGainWidth,'String','NA');
+        set(handles.txtCounter,'String',num2str(statusData(lastrow,16)));
     case 1
         if bitget(statusData(lastrow,226),16)
             set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
         else
             set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
         end
-        set(handles.edGain,'String',num2str(statusData(lastrow,226)));
-        set(handles.edGainWidth,'String',num2str(statusData(lastrow,227)));
-        set(handles.edCounter,'String',num2str(statusData(lastrow,225)));
+        set(handles.txtGain,'String',num2str(statusData(lastrow,226)));
+        set(handles.txtGainWidth,'String',num2str(statusData(lastrow,227)));
+        set(handles.txtCounter,'String',num2str(statusData(lastrow,225)));
     case 2
         if bitget(statusData(lastrow,435),16);
             set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
         else
             set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
         end
-        set(handles.edGain,'String',num2str(statusData(lastrow,435)));
-        set(handles.edGainWidth,'String',num2str(statusData(lastrow,436)));
-        set(handles.edCounter,'String',num2str(statusData(lastrow,434)));
+        set(handles.txtGain,'String',num2str(statusData(lastrow,435)));
+        set(handles.txtGainWidth,'String',num2str(statusData(lastrow,436)));
+        set(handles.txtCounter,'String',num2str(statusData(lastrow,434)));
 end
 
+data.lastrow=lastrow;
+setappdata(handles.output, 'Gatedata', data);
 
 
 
@@ -143,8 +146,8 @@ function MaskStart_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of MaskStart as text
 %        str2double(get(hObject,'String')) returns contents of MaskStart as a double
-MaskStartChannel=uint8(str2double(get(hObject,'String')));
-if isnan(MaskStartChannel)| MaskStartChannel<1 | MaskStartChannel>160
+MaskStartChannel=uint8(str2double(get(hObject,'String')))
+if MaskStartChannel<1 | MaskStartChannel>160
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
@@ -160,7 +163,7 @@ function MaskStop_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of MaskStop as text
 %        str2double(get(hObject,'String')) returns contents of MaskStop as a double
 MaskStopChannel=uint8(str2double(get(hObject,'String')));
-if isnan(MaskStopChannel)| MaskStopChannel<1 | MaskStopChannel>160
+if MaskStopChannel<1 | MaskStopChannel>160
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
@@ -225,7 +228,6 @@ else
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
         handles.device;
-        disp(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
         system(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
     end
 end
@@ -257,7 +259,7 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.Timer);
 delete(handles.Timer);
-close(handles.figure1);
+close(handles.CounterCards);
 
 
 
@@ -268,8 +270,37 @@ function toggleGain_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleGain
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 
-
+if get(hObject,'Value')
+    set(hObject,'String','Gain is ON','BackgroundColor','g');
+    switch handles.device
+        case 0
+            set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+        case 1
+            word=bitset(statusData(lastrow,226),16);
+            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        case 2
+            word=bitset(statusData(lastrow,435),16);
+            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+    end
+else
+    set(hObject,'String','Gain is OFF','BackgroundColor','c');
+    switch handles.device
+        case 0
+        case 1
+            word=bitset(statusData(lastrow,226),16,0);
+            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        case 2
+            word=bitset(statusData(lastrow,435),16,0);
+            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+    end
+end    
+    
+    
 
 function edGain_Callback(hObject, eventdata, handles)
 % hObject    handle to edGain (see GCBO)
@@ -278,22 +309,28 @@ function edGain_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edGain as text
 %        str2double(get(hObject,'String')) returns contents of edGain as a double
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 
-
-% --- Executes during object creation, after setting all properties.
-function edGain_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edGain (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+gaindelay=uint16(str2double(get(hObject,'String')));
+if gaindelay<1  % uint(char) is 0
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','w');
+    switch handles.device
+        case 0
+        case 1
+            gainstatus=bitget(statusData(lastrow,226),16);
+            word=bitset(gaindelay,16,gainstatus);
+            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);            
+        case 2
+            gainstatus=bitget(statusData(lastrow,435),16);
+            word=bitset(gaindelay,16,gainstatus);
+            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);            
+    end
 end
-
 
 
 function edMaster_Callback(hObject, eventdata, handles)
@@ -303,20 +340,12 @@ function edMaster_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edMaster as text
 %        str2double(get(hObject,'String')) returns contents of edMaster as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edMaster_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edMaster (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+masterdelay=uint16(str2double(get(hObject,'String')))
+if isnan(masterdelay)
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','w');
+    system(['/lift/bin/eCmd w 0xa316 ',num2str(masterdelay)]);            
 end
 
 
@@ -328,23 +357,20 @@ function edCounter_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edCounter as text
 %        str2double(get(hObject,'String')) returns contents of edCounter as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edCounter_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edCounter (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+counterdelay=uint16(str2double(get(hObject,'String')));
+if isnan(counterdelay)
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','w');
+    switch handles.device
+        case 0
+            system(['/lift/bin/eCmd w 0xa310 ',num2str(counterdelay)]);            
+        case 1
+            system(['/lift/bin/eCmd w 0xa312 ',num2str(counterdelay)]);            
+        case 2
+            system(['/lift/bin/eCmd w 0xa314 ',num2str(counterdelay)]);            
+    end
 end
-
-
 
 
 
@@ -355,20 +381,20 @@ function edGainWidth_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edGainWidth as text
 %        str2double(get(hObject,'String')) returns contents of edGainWidth as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edGainWidth_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edGainWidth (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc
-    set(hObject,'BackgroundColor','white');
-else
-    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+gainwidth=uint16(str2double(get(hObject,'String')));
+if isnan(gainwidth)
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','w');
+    switch handles.device
+        case 0
+        case 1
+            system(['/lift/bin/eCmd w 0xa31a ',num2str(gainwidth)]);            
+        case 2
+            system(['/lift/bin/eCmd w 0xa31e ',num2str(gainwidth)]);            
+    end
 end
+
+
 
 
