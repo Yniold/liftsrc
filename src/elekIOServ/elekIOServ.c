@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-15 17:28:00 $ by $Author: harder $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-15 18:09:59 $ by $Author: harder $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.11  2005-02-15 17:28:00  harder
+* Revision 1.12  2005-02-15 18:09:59  harder
+* the counter mask for all channels is set to  but the lsb which counts the number of shots, added some comments, removed bug in shift operation in channel extraction of ccADC
+*
+* Revision 1.11  2005/02/15 17:28:00  harder
 * added comments
 *
 * Revision 1.10  2005/02/14 17:36:31  martinez
@@ -69,18 +72,18 @@
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
-  ELEK_MANUAL_IN,
-  ELEK_ETALON_IN,
-  ELEK_SCRIPT_IN,
-  MAX_MESSAGE_INPORTS }; 
+    ELEK_MANUAL_IN,      // port for incoming commands from eCmd
+    ELEK_ETALON_IN,      // port for incoming commands from etalon
+    ELEK_SCRIPT_IN,      // port for incoming commands from scripting host (not yet existing, HH, Feb2005
+    MAX_MESSAGE_INPORTS }; 
 
 enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
-  ELEK_STATUS_OUT,
-  ELEK_MANUAL_OUT,
-  ELEK_ETALON_OUT,
-  ELEK_ETALON_STATUS_OUT,
-  ELEK_SCRIPT_OUT,
-  ELEK_DEBUG_OUT,
+    ELEK_STATUS_OUT,      // port for outgoing messages to status
+  ELEK_MANUAL_OUT,        // port for outgoing messages to eCmd
+  ELEK_ETALON_OUT,        // port for outgoing messages to etalon
+  ELEK_ETALON_STATUS_OUT, // port for outgoing messages to etalon status, so etalon is directly informed of the status
+  ELEK_SCRIPT_OUT,        // port for outgoing messages to script 
+  ELEK_DEBUG_OUT,         // port for outgoing messages to debug
   MAX_MESSAGE_OUTPORTS }; 
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling 
@@ -190,7 +193,8 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus) {
     } /* for Channel */
   } /* for Card */
 
-  // for pressure sensor
+  // for bridge pressure sensors we need two adc channels, one for the signal, the other for the bridge power 
+  // those pairs are set here
   Card=0; Channel=0;
   ptrElekStatus->ADCCard[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
   ptrElekStatus->ADCCard[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
@@ -263,25 +267,28 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus) {
     for (i=0;i<COUNTER_MASK_WIDTH; i++) {
       ptrElekStatus->CounterCard.Channel[Channel].Mask[i]=0x0ffff;   
     } // for i
-    // we do not want to count the first data word in the sumcounts
+    // we do not want to count the first data word in the sumcounts which are the number of lasershots
     ptrElekStatus->CounterCard.Channel[Channel].Mask[0]=0x0fffe;
   } // for Channel
 
+
+// we don't set the mask more specfic in elekIOServ. This should be done by setup applications
+ 
   // as long as Masking in Counter Card doesn't work we have to do the job.
-  //setup Mask for PMT
-  Channel=0;
-  for (i=0; i<33; i++)     
-    SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-  for (i=42; i<59; i++)     
-    SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-  for (i=108; i<128; i++)     
-    SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
+  // setup Mask for PMT
+  // Channel=0;
+  //for (i=0; i<33; i++)     
+  //  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
+  //for (i=42; i<59; i++)     
+  //  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
+  //for (i=108; i<128; i++)     
+  //  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
 
   // as long as Masking in Counter Card doesn't work we have to do the job.
-  //setup Mask for PMT
-  Channel=2;
-  for (i=0; i<58; i++)     
-    SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
+  //setup initial first guess Mask for PMT
+  //Channel=2;
+  //for (i=0; i<58; i++)     
+  //  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
 
 
   ptrElekStatus->CounterCard.MasterDelay=0x50;                                                   // master delay
@@ -316,7 +323,7 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus) {
 
 
 /**********************************************************************************************************/
-/* SetCounterCardMask                                                                                        */
+/* SetCounterCardMask                                                                                     */
 /**********************************************************************************************************/
                                                                                     
 void SetCounterCardMask(struct elekStatusType *ptrElekStatus)
@@ -737,7 +744,7 @@ int TestChannelMask(uint16_t *Mask, int TimeSlot) {
    
   Cell=(int) (TimeSlot/16);
   BitNo=1<<(TimeSlot % 16);
-  if (Cell<COUNTER_MASK_WIDTH) Bit=BitNo==(Mask[Cell] & BitNo);
+  if (Cell<COUNTER_MASK_WIDTH) Bit=(BitNo==(Mask[Cell] & BitNo));
   else {
     printf("PROBLEM WITH MASK ADDING %d %d\n",Cell,BitNo);
     Bit=0;
@@ -930,8 +937,8 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
       ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
       // mask channel in upper 4 bits
-      if ((ADCData<<12)!=i) {
-	  sprintf(buf,"elekIOServ: ccADC tried to read channel %d, got channel %d",i,ADCData<<12 );
+      if ((ADCData>>12)!=i) {
+	  sprintf(buf,"elekIOServ: ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
 	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	  ADCData=0xffff;
       }      
@@ -1270,6 +1277,10 @@ int ChangePriority() {
   return (ret);
   
 } /* ChangePriority */
+
+/**********************************************************************************************************/
+/* MAIN                                                                                                   */
+/**********************************************************************************************************/
 
 
 int main() 
