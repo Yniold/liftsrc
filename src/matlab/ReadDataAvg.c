@@ -9,7 +9,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.3 $ */
+ /* $Revision: 1.4 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -82,7 +82,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   int dimaverages[2];
   unsigned char *Databuf;
   long count, countAvg;
-  struct tm *ptrTmZeit;
+  __unaligned struct tm *ptrTmZeit;
   time_t Seconds;
   int Channel;
   int RunAverageLen;
@@ -180,7 +180,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + 2;  /* valve data */  
   dims[1]= dims[1] + MAX_DCDC4_CHANNEL_PER_CARD;  /* dcdc data */
   dims[1]= dims[1] + 4 + MAX_TEMP_SENSOR*3;  /* temp data */
-  dims[1]= dims[1] + 1;  /* instrument flags */
+  dims[1]= dims[1] + 1;  /* EtalonAction */
+  dims[1]= dims[1] + 1;  /* EtalonOnlinePos high */
+  dims[1]= dims[1] + 1;  /* EtalonOnlinePos low */
+  
   dims[1]= dims[1] + 1;  /* OnOffFlag */
   dims[1]= dims[1] + 1;  /* MCP2CountsOrg */
   dims[1]= dims[1] + 1;  /* MCP2FibreRefCount3 */
@@ -200,6 +203,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
   ptrAvg=mxGetPr(plhs[1]);
   countAvg=0;
   
+#ifdef X_DEBUG  
+  mexPrintf("allocate memory....\n");
+#endif
+
   /* allocate mem for running Average arrays and init struct */
   for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
     OnlineOfflineCounts[Channel].Online=(int*)mxCalloc(MAX_AVERAGE_TIME, sizeof(int));
@@ -225,8 +232,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
   /* first we sort the data according to time */
   
+#ifdef X_DEBUG  
+  mexPrintf("sort....\n");
+#endif
   qsort(elekStatus,nelements,sizeof(struct elekStatusType),cmptimesort);
   
+#ifdef X_DEBUG  
+  mexPrintf("copy counts....\n");
+#endif
+
   for (i=0; i<nelements;i++) {
     MCP1Counts[i]=elekStatus[i].CounterCard.Channel[1].Counts;
 	MCP2Counts[i]=elekStatus[i].CounterCard.Channel[2].Counts;
@@ -243,13 +257,30 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
   
   /* Date */
+
+#ifdef X_DEBUG  
+  mexPrintf("fill year....%d elements\n",nelements);
+#endif
+
   
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDay.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
-    *(z+count++)=ptrTmZeit->tm_year;
+#ifdef X_DEBUG  
+  mexPrintf("%lu ",Seconds);
+#endif
+    ptrTmZeit=(struct tm *)localtime(&Seconds); 
+#ifdef X_DEBUG  
+  mexPrintf("%d ",ptrTmZeit->tm_year);
+#endif
+    *(z+count++)=(uint16_t)ptrTmZeit->tm_year;
+#ifdef X_DEBUG  
+  mexPrintf("%d ",i);
+#endif
   }
   
+#ifdef X_DEBUG  
+  mexPrintf("fill yday....\n");
+#endif
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDay.tv_sec;
     ptrTmZeit=localtime(&Seconds);
@@ -276,6 +307,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 
   
+#ifdef X_DEBUG  
+  mexPrintf("fill int16 array....\n");
+#endif
 
   /******************* Counter Card ***************************/ 
   /* mexPrintf("%d %d %d\n",sizeof(uint16_t),sizeof(struct timeval),sizeof(struct elekStatusType));
@@ -293,7 +327,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("ccMasterDelay %d\n",1+count/nelements);      
+  mexPrintf("ccMasterDelay  %d %d\n",count,1+count/nelements);      
 #endif
      
      for (i=0; i<nelements;i++) {
@@ -365,14 +399,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /******************* etalon ***************************/  
 
 #ifdef D_HEADER
-  mexPrintf("etaSetPosLow %d\n",1+count/nelements);      
+  mexPrintf("etaSetPosLow  %d %d\n",count,1+count/nelements);      
 #endif
 /* 0*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Set.PositionWord.Low;       
     }
 #ifdef D_HEADER
-  mexPrintf("etaSetPosHigh %d\n",1+count/nelements);      
+  mexPrintf("etaSetPosHigh  %d %d\n",count,1+count/nelements);      
 #endif
 /* 1*/
     for (i=0; i<nelements;i++) {
@@ -380,14 +414,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaCurPosLow %d\n",1+count/nelements);      
+  mexPrintf("etaCurPosLow  %d %d\n",count,1+count/nelements);      
 #endif
 /* 2*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Current.PositionWord.Low;       
     }
 #ifdef D_HEADER
-  mexPrintf("etaCurPosHigh %d\n",1+count/nelements);      
+  mexPrintf("etaCurPosHigh  %d %d\n",count,1+count/nelements);      
 #endif
 /* 3*/
     for (i=0; i<nelements;i++) {
@@ -395,14 +429,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaEncoderPosLow %d\n",1+count/nelements);      
+  mexPrintf("etaEncoderPosLow  %d %d\n",count,1+count/nelements);      
 #endif
 /* 4*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Encoder.PositionWord.Low;       
     }
 #ifdef D_HEADER
-  mexPrintf("etaEncoderPosHigh %d\n",1+count/nelements);      
+  mexPrintf("etaEncoderPosHigh  %d %d\n",count,1+count/nelements);      
 #endif
 /* 5*/
     for (i=0; i<nelements;i++) {
@@ -410,14 +444,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaIndexPosLow %d\n",1+count/nelements);      
+  mexPrintf("etaIndexPosLow  %d %d\n",count,1+count/nelements);      
 #endif
 /* 6*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Index.PositionWord.Low;       
     }
 #ifdef D_HEADER
-  mexPrintf("etaIndexPosHigh %d\n",1+count/nelements);      
+  mexPrintf("etaIndexPosHigh  %d %d\n",count,1+count/nelements);      
 #endif
 /* 7*/
     for (i=0; i<nelements;i++) {
@@ -426,7 +460,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 
 #ifdef D_HEADER
-  mexPrintf("etaSetSpd %d\n",1+count/nelements);      
+  mexPrintf("etaSetSpd  %d %d\n",count,1+count/nelements);      
 #endif
 /* 8*/
     for (i=0; i<nelements;i++) {
@@ -434,7 +468,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaSetAcclSpd %d\n",1+count/nelements);      
+  mexPrintf("etaSetAcclSpd  %d %d\n",count,1+count/nelements);      
 #endif
 /* 9*/
     for (i=0; i<nelements;i++) {
@@ -442,7 +476,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaCurSpd %d\n",1+count/nelements);      
+  mexPrintf("etaCurSpd  %d %d\n",count,1+count/nelements);      
 #endif
 /* 10*/
     for (i=0; i<nelements;i++) {
@@ -450,7 +484,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaStatus %d\n",1+count/nelements);      
+  mexPrintf("etaStatus  %d %d\n",count,1+count/nelements);      
 #endif
 /* 11*/
     for (i=0; i<nelements;i++) {
@@ -463,7 +497,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     for (k=0; k<MAX_ADC_CARD; k++) {
 
 #ifdef D_HEADER
-  mexPrintf("NumSamples %d\n",1+count/nelements);      
+  mexPrintf("NumSamples  %d %d\n",count,1+count/nelements);      
 #endif
       for (i=0; i<nelements;i++) 
 	*(z+count++)=elekStatus[i].ADCCard[k].NumSamples;       
@@ -476,13 +510,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  *(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].ADCData;       
 	
 #ifdef D_HEADER
-  mexPrintf("adcSumDat %d\n",1+count/nelements);      
+  mexPrintf("adcSumDat  %d %d\n",count,1+count/nelements);      
 #endif
 	for (i=0; i<nelements;i++) 
 	  *(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].SumDat;       
 	
 #ifdef D_HEADER
-  mexPrintf("adcSumSqr %d\n",1+count/nelements);      
+  mexPrintf("adcSumSqr  %d %d\n",count,1+count/nelements);      
 #endif
 	for (i=0; i<nelements;i++) 
 	  *(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].SumSqr;                              	
@@ -508,13 +542,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /* we are only interested in Data of Card 0 */
     Card=0;
 #ifdef D_HEADER
-  mexPrintf("MFCSetFlow %d\n",1+count/nelements);      
+  mexPrintf("MFCSetFlow  %d %d\n",count,1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCard[Card].MFCChannelData[0].SetFlow;       
     }
 #ifdef D_HEADER
-    mexPrintf("MFCFlow %d\n",1+count/nelements); 
+    mexPrintf("MFCFlow  %d %d\n",count,1+count/nelements); 
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCard[Card].MFCChannelData[0].Flow;    
@@ -525,14 +559,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /* we are only interested in Data of Card 0 */
     Card=0;
 #ifdef D_HEADER
-  mexPrintf("ValveVolt %d\n",1+count/nelements);      
+  mexPrintf("ValveVolt  %d %d\n",count,1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].ValveCard[Card].ValveVolt;       
     }
 
 #ifdef D_HEADER
-  mexPrintf("Valve %d\n",1+count/nelements);      
+  mexPrintf("Valve  %d %d\n",count,1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].ValveCard[Card].Valve;       
@@ -611,21 +645,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 /******************* Instrument Flags ***************************/     
 #ifdef D_HEADER
-  mexPrintf("EtalonAction %d\n",1+count/nelements);      
+  mexPrintf("EtalonAction  %d %d\n",count,1+count/nelements);      
 #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].InstrumentFlags.EtalonAction;       
     }
 
 #ifdef D_HEADER
-  mexPrintf("etaOnlinePosLow %d\n",1+count/nelements);      
+  mexPrintf("etaOnlinePosLow  %d %d\n",count,1+count/nelements);      
 #endif
 /* 6*/
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].EtalonData.Online.PositionWord.Low;       
     }
 #ifdef D_HEADER
-  mexPrintf("etaOnlinePosHigh %d\n",1+count/nelements);      
+  mexPrintf("etaOnlinePosHigh  %d %d\n",count,1+count/nelements);      
 #endif
 /* 7*/
     for (i=0; i<nelements;i++) {
