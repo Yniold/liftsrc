@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.6 $ */
+ /* $Revision: 1.7 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -84,7 +84,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   int dimaverages[2];
   unsigned char *Databuf;
   long count, countAvg;
-  __unaligned struct tm *ptrTmZeit;
+  struct tm *ptrTmZeit;
   time_t Seconds;
   int Channel;
   int RunAverageLen;
@@ -184,8 +184,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + 1;  /* EtalonOnlinePos high */
   dims[1]= dims[1] + 1;  /* EtalonOnlinePos low */
   
-  dims[1]= dims[1] + 1;  /* OnOffFlag */
-  dims[1]= dims[1] + 1;  /* MCP2FibreRefCount3 */
+  dims[1]= dims[1] + 1;  /* InstrumentAction */
+  dims[1]= dims[1] + 11;  /* GPS */
 
   dims[1]= dims[1] + 3;  /* extra reserve */
 
@@ -686,7 +686,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	/* 0 means 180,0°W, 15*60+30 means 74°30'W */
 	for (i=0; i<nelements;i++) {
       *(z+count++)=((int)(elekStatus[i].GPSData.dLongitude/100)+180)*60+
-		  int(elekStatus[i].GPSData.dLongitude-((int)(elekStatus[i].GPSData.dLongitude/100))*100);       
+		  (int)(elekStatus[i].GPSData.dLongitude-((int)(elekStatus[i].GPSData.dLongitude/100))*100);       
     }
     /* the second word contains 4 post decimal positions*/
 	for (i=0; i<nelements;i++) {
@@ -700,7 +700,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	/* 0 means 90,0°S, 15*60+30 means 74°30'S */
 	for (i=0; i<nelements;i++) {
       *(z+count++)=((int)(elekStatus[i].GPSData.dLatitude/100)+90)*60+
-		  int(elekStatus[i].GPSData.dLatitude-((int)(elekStatus[i].GPSData.dLatitude/100))*100);       
+		  (int)(elekStatus[i].GPSData.dLatitude-((int)(elekStatus[i].GPSData.dLatitude/100))*100);       
     }
     /* the second word contains 4 post decimal positions*/
 	for (i=0; i<nelements;i++) {
