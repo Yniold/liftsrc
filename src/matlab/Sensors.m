@@ -79,6 +79,9 @@ start(handles.Timer);
 
 function SensRefresh(arg1,arg2,handles)
 
+% load data, otherwise timer makes error
+data = getappdata(handles.output, 'Sensdata');
+
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
@@ -129,7 +132,7 @@ yvalue=get(handles.listboxY,'Value');
 ypar=yvars(yvalue);
 
 % assign data to x-axis
-switch xpar
+switch char(xpar)
     case 'Time'
         xdata=statustime;
     case 'DiodeGr'
@@ -155,7 +158,7 @@ switch xpar
         xdata=statusData(:,ADCBase1+7*3);
     case 'P20'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,ADCBase1+1*3)
+            xdata=statusData(:,ADCBase1+1*3);
         else
             xdata=P20;
         end
@@ -208,7 +211,7 @@ switch xpar
 end
         
 % assign data to y-axis
-switch ypar
+switch char(ypar)
     case 'Time'
         ydata=statustime;
     case 'DiodeGr'
@@ -234,7 +237,7 @@ switch ypar
         ydata=statusData(:,ADCBase1+7*3);
     case 'P20'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,ADCBase1+1*3)
+            ydata=statusData(:,ADCBase1+1*3);
         else
             ydata=P20;
         end
@@ -286,7 +289,7 @@ switch ypar
         ydata=EtalonIndPos;
 end
 
-plot(handles.axes1,xdata,ydata);
+plot(handles.axes1,xdata,ydata,'.');
 grid(handles.axes1);
 
 
