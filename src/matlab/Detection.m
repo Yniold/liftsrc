@@ -227,13 +227,13 @@ PMTOfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+2);
 PMTOfflineRightAvg(~OfflineRightFilter)=NaN;
 
 PMTOfflineAvg(1:size(statusData,1))=NaN;
-PMTOfflineAvg(OfflineRightFilter & statusData(:,805)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
-PMTOfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
+PMTOfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
+PMTOfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
 
-PMTAvg(statusData(:,805)==3)=PMTOnlineAvg(statusData(:,805)==3);
-PMTAvg(statusData(:,805)==2)=PMTOfflineLeftAvg(statusData(:,805)==2);
-PMTAvg(statusData(:,805)==1)=PMTOfflineRightAvg(statusData(:,805)==1);
-PMTAvg(statusData(:,805)==0)=NaN;
+PMTAvg(statusData(:,col.RAvgOnOffFlag)==3)=PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
+PMTAvg(statusData(:,col.RAvgOnOffFlag)==2)=PMTOfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
+PMTAvg(statusData(:,col.RAvgOnOffFlag)==1)=PMTOfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+PMTAvg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
 MCP1OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+3);
 MCP1OnlineAvg(~OnlineFilter)=NaN;
@@ -243,13 +243,13 @@ MCP1OfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+5);
 MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
 
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
-MCP1OfflineAvg(OfflineRightFilter & statusData(:,805)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
-MCP1OfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
+MCP1OfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
+MCP1OfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
 
-MCP1Avg(statusData(:,805)==3)=MCP1OnlineAvg(statusData(:,805)==3);
-MCP1Avg(statusData(:,805)==2)=MCP1OfflineLeftAvg(statusData(:,805)==2);
-MCP1Avg(statusData(:,805)==1)=MCP1OfflineRightAvg(statusData(:,805)==1);
-MCP1Avg(statusData(:,805)==0)=NaN;
+MCP1Avg(statusData(:,col.RAvgOnOffFlag)==3)=MCP1OnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
+MCP1Avg(statusData(:,col.RAvgOnOffFlag)==2)=MCP1OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
+MCP1Avg(statusData(:,col.RAvgOnOffFlag)==1)=MCP1OfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+MCP1Avg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
 MCP2OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+6);
 MCP2OnlineAvg(~OnlineFilter)=NaN;
@@ -259,13 +259,13 @@ MCP2OfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+8);
 MCP2OfflineRightAvg(~OfflineRightFilter)=NaN;
 
 MCP2OfflineAvg(1:size(statusData,1))=NaN;
-MCP2OfflineAvg(OfflineRightFilter & statusData(:,805)==1)=MCP2OfflineRightAvg(OfflineRightFilter & statusData(:,805)==1);
-MCP2OfflineAvg(OfflineLeftFilter & statusData(:,805)==2)=MCP2OfflineLeftAvg(OfflineLeftFilter & statusData(:,805)==2);
+MCP2OfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=MCP2OfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
+MCP2OfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=MCP2OfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
 
-MCP2Avg(statusData(:,805)==3)=MCP2OnlineAvg(statusData(:,805)==3);
-MCP2Avg(statusData(:,805)==2)=MCP2OfflineLeftAvg(statusData(:,805)==2);
-MCP2Avg(statusData(:,805)==1)=MCP2OfflineRightAvg(statusData(:,805)==1);
-MCP2Avg(statusData(:,805)==0)=NaN;
+MCP2Avg(statusData(:,col.RAvgOnOffFlag)==3)=MCP2OnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
+MCP2Avg(statusData(:,col.RAvgOnOffFlag)==2)=MCP2OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
+MCP2Avg(statusData(:,col.RAvgOnOffFlag)==1)=MCP2OfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+MCP2Avg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
 % display offline and online averages
 set(handles.txtPMTOffline,'String',PMTOfflineAvg(lastrow));

@@ -44,6 +44,10 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+end
+
+
+
 
 
 % --- Executes just before horus is made visible.
@@ -76,6 +80,7 @@ guidata(hObject, handles);
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'horusdata', data);
 start(handles.ActTimer);
+end
 
 
 
@@ -88,6 +93,11 @@ function varargout = horus_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+end
+
+
+
+
 
 
 function ReadStatus(arg1,arg2,handles)
@@ -145,40 +155,9 @@ if isfield(data,'hSensors')
 end
 
 setappdata(handles.output, 'horusdata', data);
+end
 
-% calculate time values
-%statusData=data.statusData;
-%statustime=double(statusData(:,1))+ ...
-%           double(statusData(:,2))./1.0+ ...
-%           double(statusData(:,3))./24.0+...
-%           double(statusData(:,4))./1440.0+...
-%           double(statusData(:,5))./86400.0;
-%[SortZeit,indexZeit]=sort(statustime);
-%maxLen=size(statustime,1);
-%lastrow=indexZeit(maxLen);
-%ADCBase1=689;
 
-% if filament is on check reference cell pressure 
-%if bitget(statusData(lastrow,724),14)
-%    if statusData(lastrow,ADCBase1+3*3)>?
-%        Valveword=bitset(statusData(lastrow,724),14,0);
-%        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-%    end
-%end
-
-% if HV is on check cell pressure P20
-%if single(statusData(lastrow,725))==1
-%    if single(statusData(lastrow,ADCBase1+1*3))>=?
-%        system('/lift/bin/eCmd w 0xa460 0');
-%    end
-%end
-
-% if Blower is on check cell pressure P1000
-%if single(statusData(lastrow,727))==1
-%    if single(statusData(:,ADCBase1))>?
-%        system('/lift/bin/eCmd w 0xa464 0');
-%    end
-%end
 
 % --- Executes on button press in ADC.
 function ADC_Callback(hObject, eventdata, handles)
@@ -195,6 +174,10 @@ elseif ~ishandle(str2double(data.hADC))
     data.hADC=num2str(handleADC,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+end
+
+
+
 
 
 % --- Executes on button press in CounterCards.
@@ -216,18 +199,10 @@ if isfield(data,'hDetection')
     end
 end
 setappdata(gcbf, 'horusdata', data); 
+end
 
 
 
-% --- Executes on button press in etalon.
-%function Etalon_Callback(hObject, eventdata, handles)
-% hObject    handle to etalon (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-%data = getappdata(gcbf, 'horusdata');
-%handleEtalon=etalon('handle',num2str(gcbf,16));
-%data.hEtalon=num2str(handleEtalon,16);
-%setappdata(gcbf, 'horusdata', data); 
 
 
 
@@ -283,11 +258,6 @@ if isfield(data,'hCounterCards')
     end
 end
 
-%if isfield(data,'hEtalon')
-%    hEtalon=str2double(data.hEtalon);
-%    if ishandle(hEtalon), close(hEtalon); end
-%end
-
 if isfield(data,'hLaser')
     hLaser=str2double(data.hLaser);
     if ishandle(hLaser), 
@@ -325,6 +295,8 @@ end
 
 delete(handles.ActTimer);
 close(gcbf);
+end
+
 
 
 
@@ -344,6 +316,11 @@ elseif ~ishandle(str2double(data.hDyelaser))
     data.hDyelaser=num2str(handleDyelaser,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+end
+
+
+
+
 
 
 % --- Executes on button press in Laser.
@@ -361,6 +338,9 @@ elseif ~ishandle(str2double(data.hLaser))
     data.hLaser=num2str(handleLaser,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+end
+
+
 
 
 
@@ -380,7 +360,11 @@ elseif ~ishandle(str2double(data.hDetection))
     handleDetection=Detection('handle',num2str(gcbf,16));
     data.hDetection=num2str(handleDetection,16);
 end
-setappdata(gcbf, 'horusdata', data); 
+setappdata(gcbf, 'horusdata', data);
+end
+
+
+
 
 
 
@@ -399,5 +383,10 @@ elseif ~ishandle(str2double(data.hSensors))
     data.hSensors=num2str(handleSensors,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+end
+
+
+
+
 
 

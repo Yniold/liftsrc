@@ -10,14 +10,14 @@ function [col,fcts2val]=varassign();
 % edit 2nd column if assignments in ReadAvgData change 
 % edit 3rd column if sensor calibrations change
 statusDataCols=...
-{'PMTThresh',7,'5*x/4096','V';
-'LaserTrigThresh',8,'5*x/4096','V';
-'MCP1Thresh',9,'5*x/4096','V';
-'MCP2Thresh',10,'5*x/4096','V';
-'V5V',11,'3*2.5*x/4096','V';
-'V28V',12,'16*2.5*x/4096','V';
-'V3_3V',13,'5*x/4096','V';
-'V1_5V',14,'2.5*x/4096','V';
+{'PMTThresh',7,'5*(bitand(x,4095))/4096','V';
+'LaserTrigThresh',8,'5*(bitand(x,4095))/4096','V';
+'MCP1Thresh',9,'5*(bitand(x,4095))/4096','V';
+'MCP2Thresh',10,'5*(bitand(x,4095))/4096','V';
+'V5V',11,'3*2.5*(bitand(x,4095))/4096','V';
+'V28V',12,'16*2.5*(bitand(x,4095))/4096','V';
+'V3_3V',13,'5*(bitand(x,4095))/4096','V';
+'V1_5V',14,'2.5*(bitand(x,4095))/4096','V';
 'ccMasterDelay',15,'12+x*4','ns';
 'ccShiftDelay0',16,'12+x*4','ns';
 'ccGateDelay0',17,'x*NaN','';
