@@ -399,11 +399,11 @@ end
 
 % check Butterfly
 if single(statusData(lastrow,726))==0
-    set(handles.togHV,'Value',1)
-    set(handles.togHV,'BackgroundColor','r','String','Butterfly OPEN');
+    set(handles.togButterfly,'Value',1)
+    set(handles.togButterfly,'BackgroundColor','r','String','Butterfly OPEN');
 else
-    set(handles.togHV,'Value',0)
-    set(handles.togHV,'BackgroundColor','b','String','Butterfly CLOSED');
+    set(handles.togButterfly,'Value',0)
+    set(handles.togButterfly,'BackgroundColor','b','String','Butterfly CLOSED');
 end
 
 data.lastrow=lastrow;
