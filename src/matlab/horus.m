@@ -269,7 +269,14 @@ end
 
 if isfield(data,'hCounterCards')
     hCounterCards=str2double(data.hCounterCards);
-    if ishandle(hCounterCards), close(hCounterCards); end
+    if ishandle(hCounterCards)
+        Gatedata = getappdata(hCounterCards, 'Gatedata');
+        if isfield(Gatedata,'Timer')
+            stop(Gatedata.Timer);
+            delete(Gatedata.Timer);
+        end
+        close(hCounterCards); 
+    end
 end
 
 %if isfield(data,'hEtalon')

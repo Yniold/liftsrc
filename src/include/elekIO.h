@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-01-27 15:48:10 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-02-11 12:36:12 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.3  2005-01-27 15:48:10  rudolf
+* Revision 1.4  2005-02-11 12:36:12  martinez
+* started including gatings in CounterCards, started including instrument action structure in elekIO.h and elekIOServ.c
+*
+* Revision 1.3  2005/01/27 15:48:10  rudolf
 * Added header field for proper CVS version history
 *
 *
@@ -254,29 +257,6 @@ struct DCDC4CardType {
   uint16_t    Channel[MAX_DCDC4_CHANNEL_PER_CARD];                         /* voltage applied for Channel */	
 };
 
-struct GPSDataType {					/* data type for GPS data*/
-	unsigned char ucUTCHours;			/* binary, not BCD coded (!) 0 - 23 decimal*/
-	unsigned char ucUTCMins;			/* binary, 0-59 decimal */
-	unsigned char ucUTCSeconds;			/* binary 0-59 decimal */
-
-	double dLongitude;					/* "Laengengrad" I always mix it up...
-										signed notation,
-										negative values mean "W - west of Greenwich"
-										positive values mean "E - east of Greenwich" */
-
-	double dLatitude;					/* "Breitengrad" I always mix it up...
-										signed notation,
-										negative values mean "S - south of the equator"
-										positive values mean "N - north of the equator */
-	float fAltitude;					/* altitude above the geoid in metres */
-	float fHDOP;						/* Horizontal Dillution Of Precision, whatever it means....*/
-	unsigned char ucNumberOfSatellites; /* number of satellites seen by the GPS receiver */
-	unsigned char ucLastValidData;		/* number of data aquisitions (5Hz) with no valid GPS data
-										will stick at 255 if no data received for a long period */
-	uint16_t uiGroundSpeed;				/* speed in cm/s above ground */
-	uint16_t uiHeading;					/* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
-
-};
 
 /*************************************************************************************************************/
 #define MAX_TEMP_SENSOR   23
@@ -344,14 +324,54 @@ struct TempSensorCardType {
 
 /*************************************************************************************************************/
 
+enum InstrumentActionType { /* update also in instrument.c */
+    INSTRUMENT_ACTION_NOP,			
+	INSTRUMENT_ACTION_MEASURE,
+    INSTRUMENT_ACTION_CAL,   
+    INSTRUMENT_ACTION_DIAG,  
+    INSTRUMENT_ACTION_POWERUP, 
+    INSTRUMENT_ACTION_POWERDOWN, 
+    INSTRUMENT_ACTION_LASERMIRRORTUNE,
+
+    INSTRUMENT_ACTION_MAX
+};
+
+
+
 struct InstrumentFlagsType {                      /* set of flags for the instrument Server status */
     uint16_t  StatusSave:1;                       /* indicates if Status should be saved to disk */
     uint16_t  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
     enum EtalonActionType EtalonAction;           /* indicates what the etalon is doing */
+	enum InstrumentActionType InstrumentAction;		/* indicates what the instrument is doing (measuring, calibrating, etc.) */	
   /*  enum DebugType        Debug;                    /* indicates */ 
 }; /* ServerFlagsType */
 
 /*************************************************************************************************************/
+struct GPSDataType {					/* data type for GPS data*/
+	unsigned char ucUTCHours;			/* binary, not BCD coded (!) 0 - 23 decimal*/
+	unsigned char ucUTCMins;			/* binary, 0-59 decimal */
+	unsigned char ucUTCSeconds;			/* binary 0-59 decimal */
+
+	double dLongitude;					/* "Laengengrad" I always mix it up...
+										signed notation,
+										negative values mean "W - west of Greenwich"
+										positive values mean "E - east of Greenwich" */
+
+	double dLatitude;					/* "Breitengrad" I always mix it up...
+										signed notation,
+										negative values mean "S - south of the equator"
+										positive values mean "N - north of the equator */
+	float fAltitude;					/* altitude above the geoid in metres */
+	float fHDOP;						/* Horizontal Dillution Of Precision, whatever it means....*/
+	unsigned char ucNumberOfSatellites; /* number of satellites seen by the GPS receiver */
+	unsigned char ucLastValidData;		/* number of data aquisitions (5Hz) with no valid GPS data
+										will stick at 255 if no data received for a long period */
+	uint16_t uiGroundSpeed;				/* speed in cm/s above ground */
+	uint16_t uiHeading;					/* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+
+};
+/*************************************************************************************************************/
+
 
 struct elekStatusType {                                             /* combined status information of instrument */
   struct timeval             TimeOfDay;                             /* time of data */

@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 25-Jan-2005 11:08:45
+% Last Modified by GUIDE v2.5 11-Feb-2005 12:25:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,14 +58,71 @@ function CounterCards_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for guidetemplate0
 handles.output = hObject;
 
-% UIWAIT makes guidetemplate0 wait for user response (see UIRESUME)
-% uiwait(handles.CounterCards);
+% get horus handle
 if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
+%setup Timer function
+handles.Timer = timer('ExecutionMode','fixedDelay',...
+      'Period',0.7,...    
+      'BusyMode','drop',...
+      'TimerFcn', {@GateRefresh,handles});   
+
+data.Timer=handles.Timer;
+
 % Update handles structure
 guidata(hObject, handles);
+setappdata(handles.output, 'Gatedata', data);
+start(handles.Timer);
+
+
+function GateRefresh(arg1,arg2,handles)
+
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+AvgData=horusdata.AvgData;
+
+% Calculate time as sum of day, hour, min, etc.
+statustime=double(statusData(:,1))+ ...
+           double(statusData(:,2))./1.0+ ...
+           double(statusData(:,3))./24.0+...
+           double(statusData(:,4))./1440.0+...
+           double(statusData(:,5))./86400.0;
+
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+
+set(edMaster,'String',num2str(statusData(lastrow,15)));
+switch handles.device
+    case 0
+        set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+        set(handles.edGain,'String','NA');
+        set(handles.edGainWidth,'String','NA');
+        set(handles.edCounter,'String',num2str(statusData(lastrow,16)));
+    case 1
+        if bitget(statusData(lastrow,226),16)
+            set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
+        else
+            set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+        end
+        set(handles.edGain,'String',num2str(statusData(lastrow,226)));
+        set(handles.edGainWidth,'String',num2str(statusData(lastrow,227)));
+        set(handles.edCounter,'String',num2str(statusData(lastrow,225)));
+    case 2
+        if bitget(statusData(lastrow,435),16);
+            set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
+        else
+            set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+        end
+        set(handles.edGain,'String',num2str(statusData(lastrow,435)));
+        set(handles.edGainWidth,'String',num2str(statusData(lastrow,436)));
+        set(handles.edCounter,'String',num2str(statusData(lastrow,434)));
+end
+
+
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = CounterCards_OutputFcn(hObject, eventdata, handles) 
@@ -199,4 +256,117 @@ function Exit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 close(CounterCards);
+
+
+
+% --- Executes on button press in toggleGain.
+function toggleGain_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleGain (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleGain
+
+
+
+function edGain_Callback(hObject, eventdata, handles)
+% hObject    handle to edGain (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edGain as text
+%        str2double(get(hObject,'String')) returns contents of edGain as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edGain_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edGain (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+
+function edMaster_Callback(hObject, eventdata, handles)
+% hObject    handle to edMaster (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edMaster as text
+%        str2double(get(hObject,'String')) returns contents of edMaster as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edMaster_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edMaster (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+
+function edCounter_Callback(hObject, eventdata, handles)
+% hObject    handle to edCounter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edCounter as text
+%        str2double(get(hObject,'String')) returns contents of edCounter as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edCounter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edCounter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+
+
+
+function edGainWidth_Callback(hObject, eventdata, handles)
+% hObject    handle to edGainWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edGainWidth as text
+%        str2double(get(hObject,'String')) returns contents of edGainWidth as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edGainWidth_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edGainWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
 

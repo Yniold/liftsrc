@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-02 18:06:53 $ by $Author: martinez $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-11 12:36:12 $ by $Author: martinez $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.7  2005-02-02 18:06:53  martinez
+* Revision 1.8  2005-02-11 12:36:12  martinez
+* started including gatings in CounterCards, started including instrument action structure in elekIO.h and elekIOServ.c
+*
+* Revision 1.7  2005/02/02 18:06:53  martinez
 * debugged ADC for MCP1 and MCP2 plots
 *
 * Revision 1.6  2005/02/02 14:34:09  martinez
@@ -652,7 +655,11 @@ void InitModules(struct elekStatusType *ptrElekStatus) {
   char      buf[GENERIC_BUF_LEN];
   
   
-  
+
+  // set instrment action at the beginning to NOP
+  ptrElekStatus->InstrumentFlags.InstrumentAction=INSTRUMENT_ACTION_NOP;
+
+
   LoadModulesConfig(ptrElekStatus);
   
   if (INIT_MODULE_SUCCESS == (ret=InitCounterCard(ptrElekStatus))) {

@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 04-Feb-2005 16:28:01
+% Last Modified by GUIDE v2.5 08-Feb-2005 16:26:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -94,7 +94,7 @@ try     % start ReadAvgdata only if status.bin exists
     %[statusData,AvgData]=ReadDataAvg('filename',5*(time period to average in s),(min. online ref signal));
     [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,10);
 catch
-    disp(['error trying to read data from status.bin:',lasterr])
+    disp(['error trying to read data from status.bin: ',lasterr])
 end
 % check which child GUIs are active and color push buttons accordingly
 if isfield(data,'hADC')
@@ -130,6 +130,13 @@ if isfield(data,'hDetection')
         set(handles.Detection,'BackgroundColor','r');
     else
         set(handles.Detection,'BackgroundColor','c');
+    end
+end
+if isfield(data,'hSensors')
+    if ishandle(str2double(data.hSensors)) 
+        set(handles.Sensors,'BackgroundColor','r');
+    else
+        set(handles.Sensors,'BackgroundColor','c');
     end
 end
 
@@ -175,6 +182,7 @@ function ADC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
+% open ADC only if it is not already open
 if ~isfield(data,'hADC')
     handleADC=ADC('handle',num2str(gcbf,16));
     data.hADC=num2str(handleADC,16);
@@ -191,12 +199,17 @@ function CounterCards_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-if ~isfield(data,'hCounterCards')
-    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
-    data.hCounterCards=num2str(handleCounterCards,16);
-elseif ~ishandle(str2double(data.hCounterCards)) 
-    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
-    data.hCounterCards=num2str(handleCounterCards,16);
+% open CounterCards only if it is not already open and if Detection is open
+if isfield(data,'hDetection')
+    if ishandle(str2double(data.hDetection))
+        if ~isfield(data,'hCounterCards')
+            handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+            data.hCounterCards=num2str(handleCounterCards,16);
+        elseif ~ishandle(str2double(data.hCounterCards))
+            handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+            data.hCounterCards=num2str(handleCounterCards,16);
+        end
+    end
 end
 setappdata(gcbf, 'horusdata', data); 
 
@@ -256,7 +269,14 @@ end
 
 if isfield(data,'hCounterCards')
     hCounterCards=str2double(data.hCounterCards);
-    if ishandle(hCounterCards), close(hCounterCards); end
+    if ishandle(hCounterCards)
+        Gatedata = getappdata(hCounterCards, 'Gatedata');
+        if isfield(Gatedata,'Timer')
+            stop(Dyelaserdata.ActTimer);
+            delete(Dyelaserdata.ActTimer);
+        end
+        close(hCounterCards); 
+    end
 end
 
 %if isfield(data,'hEtalon')
@@ -287,6 +307,18 @@ if isfield(data,'hDetection')
     end
 end
 
+if isfield(data,'hSensors')
+    hSensors=str2double(data.hSensors);
+    if ishandle(hSensors), 
+        Sensdata = getappdata(hSensors, 'Sensdata');
+        if isfield(Sensdata,'Timer')
+            stop(Sensdata.Timer);
+            delete(Sensdata.Timer);
+        end
+        close(hSensors); 
+    end
+end
+
 delete(handles.ActTimer);
 close(gcbf);
 
@@ -299,6 +331,7 @@ function Dyelaser_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
+% open Dyelaser only if it is not already open
 if ~isfield(data,'hDyelaser')
     handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
     data.hDyelaser=num2str(handleDyelaser,16);
@@ -314,8 +347,8 @@ function Laser_Callback(hObject, eventdata, handles)
 % hObject    handle to Laser (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 data = getappdata(gcbf, 'horusdata');
+% open Laser only if it is not already open
 if ~isfield(data,'hLaser')
     handleLaser=Laser('handle',num2str(gcbf,16));
     data.hLaser=num2str(handleLaser,16);
@@ -335,6 +368,7 @@ function Detection_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of Detection
 data = getappdata(gcbf, 'horusdata');
+% open Detection only if it is not already open
 if ~isfield(data,'hDetection')
     handleDetection=Detection('handle',num2str(gcbf,16));
     data.hDetection=num2str(handleDetection,16);
@@ -343,4 +377,23 @@ elseif ~ishandle(str2double(data.hDetection))
     data.hDetection=num2str(handleDetection,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+
+
+
+% --- Executes on button press in Sensors.
+function Sensors_Callback(hObject, eventdata, handles)
+% hObject    handle to Sensors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+% open Sensors only if it is not already open
+if ~isfield(data,'hSensors')
+    handleSensors=Sensors('handle',num2str(gcbf,16));
+    data.hSensors=num2str(handleSensors,16);
+elseif ~ishandle(str2double(data.hSensors)) 
+    handleSensors=Sensors('handle',num2str(gcbf,16));
+    data.hSensors=num2str(handleSensors,16);
+end
+setappdata(gcbf, 'horusdata', data); 
+
 
