@@ -15,3 +15,4 @@ struct TaskListType {
 struct SyncFlagType {
 	BOOL MaskChange;
 };  /*SyncFlagType */
+
