@@ -1,3 +1,13 @@
+/*
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-01-31 10:06:03 $ by $Author: rudolf $
+*
+* $Log: elekStatus.c,v $
+* Revision 1.2  2005-01-31 10:06:03  rudolf
+* Added printing of GPS data, a 200 character wide display would be really nice.... :-/
+*
+*
+*/
+
 #define VERSION 0.8
 #define POSIX_SOURCE 1
 #define USE_POSIX
@@ -120,7 +130,34 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
 	     ptrElekStatus->TempSensCard[0].TempSensor[i].Field.TempFrac/16.0
 	     );
       //	     ptrElekStatus->TempSensCard[0].TempSensor[i].Word.WordTemp);
-    } 
+    }
+
+    // GPS Data
+
+    printf("GPS");
+    printf("%02d:",ptrElekStatus->GPSData.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
+    printf("%02d:",ptrElekStatus->GPSData.ucUTCMins);    /* binary, 0-59 decimal */
+    printf("%02d ",ptrElekStatus->GPSData.ucUTCSeconds); /* binary 0-59 decimal */
+
+    printf("%f ",ptrElekStatus->GPSData.dLongitude);     /* "Laengengrad" I always mix it up..
+                                                            signed notation,
+                                                            negative values mean "W - west of Greenwich"
+                                                            positive values mean "E - east of Greenwich" */
+
+    printf("%f ",ptrElekStatus->GPSData.dLatitude);      /* "Breitengrad" I always mix it up...
+                                                             signed notation,
+                                                             negative values mean "S - south of the equator
+                                                             positive values mean "N - north of the equator */
+
+    printf("%f ",ptrElekStatus->GPSData.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
+
+    printf("%d ",ptrElekStatus->GPSData.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
+    printf("%d ",ptrElekStatus->GPSData.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
+                                                               will stick at 255 if no data received for a long period */
+
+    printf("%d ",ptrElekStatus->GPSData.uiGroundSpeed);  /* speed in cm/s above ground */
+    printf("%d ",ptrElekStatus->GPSData.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+
 
     printf("\n");
 
