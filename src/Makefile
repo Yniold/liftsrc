@@ -38,7 +38,9 @@ all : $(modules) $(headers)
 	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
 	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
 #	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
+
 	chmod +x $(INSTDIR)* 
+
 #	cp $(INSTDIR)* ../bin
 	cp $(INSTDIR)eCmd ../bin
 	cp $(INSTDIR)elekIOServ ../bin
