@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-14 17:36:31 $ by $Author: martinez $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-15 17:28:00 $ by $Author: harder $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.10  2005-02-14 17:36:31  martinez
+* Revision 1.11  2005-02-15 17:28:00  harder
+* added comments
+*
+* Revision 1.10  2005/02/14 17:36:31  martinez
 * corrected numering for gate settings
 *
 * Revision 1.9  2005/02/11 13:44:00  harder
@@ -917,6 +920,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   int       Page;
   int       SumCounts;
   uint16_t  CounterStatus; 
+  uint16_t  ADCData; 
   long      TimeOut;
   int       ret;
   char buf[GENERIC_BUF_LEN];
@@ -924,13 +928,22 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   
   // Counter Card ADC Channel
   for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
-    ptrElekStatus->CounterCard.ADCData[i]=elkReadData(ELK_COUNTER_ADC+i*2);   
-  }
+      ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
+      // mask channel in upper 4 bits
+      if ((ADCData<<12)!=i) {
+	  sprintf(buf,"elekIOServ: ccADC tried to read channel %d, got channel %d",i,ADCData<<12 );
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	  ADCData=0xffff;
+      }      
+      ptrElekStatus->CounterCard.ADCData[i]=ADCData;   
+  } /* for i */
   
   // CounterCard ShiftDelays
   for(i=0; i<MAX_COUNTER_CHANNEL;i++)
-    ptrElekStatus->CounterCard.Channel[i].ShiftDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*i);
-  ptrElekStatus->CounterCard.MasterDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+6);  // MasterDelay
+      ptrElekStatus->CounterCard.Channel[i].ShiftDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*i);
+  
+  //Master Delay
+  ptrElekStatus->CounterCard.MasterDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+6);
   
   // CounterCard GateDelays
   for(i=1; i<MAX_COUNTER_CHANNEL;i++) {// skip channel 0 which is the PMT and has no gate register 
