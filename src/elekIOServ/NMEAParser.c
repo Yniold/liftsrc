@@ -3,12 +3,15 @@
 // Implementation
 // ============================================
 
-// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-01-27 18:16:12 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-01-31 11:36:31 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.c,v $
-// Revision 1.2  2005-01-27 18:16:12  rudolf
+// Revision 1.3  2005-01-31 11:36:31  rudolf
+// Added parsing of NMEA GPVTG datafield (groundspeed and heading)
+//
+// Revision 1.2  2005/01/27 18:16:12  rudolf
 // changed NMEA parser to work with elekIO serv
 //
 // Revision 1.1  2005/01/27 14:59:36  rudolf
@@ -163,7 +166,7 @@ void ProcessNMEA(unsigned char ucData)
 
 //=======================================================================
 // Process NMEA sentence - Use the NMEA address (*pCommand) and call the
-// appropriate sentense data prossor.
+// appropriate sentense data processor.
 //=======================================================================
 
 unsigned char ProcessCommand(unsigned char *pCommand, unsigned char *pData)
@@ -174,6 +177,14 @@ unsigned char ProcessCommand(unsigned char *pCommand, unsigned char *pData)
 	if( strcmp((char *)pCommand, "GPGGA") == 0)
 	{
 		ProcessGPGGA(pData);
+	}
+
+	//
+	// GPVTG
+	//
+	if( strcmp((char *)pCommand, "GPVTG") == 0)
+	{
+		ProcessGPVTG(pData);
 	}
 
 	dwCommandCount++;
@@ -377,7 +388,7 @@ void ProcessGPGGA(unsigned char *pData)
 	{
 		dGGAHDOP = atof((unsigned char *)pField);
 	}
-	
+
 	//
 	// Altitude
 	//
@@ -405,4 +416,73 @@ void ProcessGPGGA(unsigned char *pData)
 	if(ucGGAGPSQuality > 0)		// position fixes are valid
 		ucDataReadyFlag = TRUE;
 	dwGGACount++;
+}
+
+
+//===========================================================================
+// ProcessGPVTG: extract speed and heading
+//===========================================================================
+
+void ProcessGPVTG(unsigned char *pData)
+{
+   unsigned char pField[MAXFIELD];
+   unsigned char pBuff[10];
+
+   if(GetField(pData, pField, 0, MAXFIELD))
+   {
+      // True Heading
+
+      pBuff[0] = pField[0];
+      pBuff[1] = pField[1];
+      pBuff[2] = pField[2];
+      pBuff[3] = pField[3];
+      pBuff[4] = pField[4];
+      pBuff[5] = '\0';
+
+      dVTGTrueHeading = atof(pBuff);
+   }
+
+   if(GetField(pData, pField, 2, MAXFIELD))
+   {
+      // Magnetic Heading
+
+      pBuff[0] = pField[0];
+      pBuff[1] = pField[1];
+      pBuff[2] = pField[2];
+      pBuff[3] = pField[3];
+      pBuff[4] = pField[4];
+      pBuff[5] = '\0';
+
+      dVTGMagneticHeading = atof(pBuff);
+   }
+
+   if(GetField(pData, pField, 4, MAXFIELD))
+   {
+      // Groundspeed in knots
+
+      pBuff[0] = pField[0];
+      pBuff[1] = pField[1];
+      pBuff[2] = pField[2];
+      pBuff[3] = pField[3];
+      pBuff[4] = pField[4];
+      pBuff[5] = '\0';
+
+      dVTGSpeedInknots = atof(pBuff);
+   }
+
+   if(GetField(pData, pField, 6, MAXFIELD))
+   {
+      // Groundspeed in kmh
+
+      pBuff[0] = pField[0];
+      pBuff[1] = pField[1];
+      pBuff[2] = pField[2];
+      pBuff[3] = pField[3];
+      pBuff[4] = pField[4];
+      pBuff[5] = '\0';
+
+      dVTGSpeedInKmh = atof(pBuff);
+   }
+
+   dwVTGCount++;
 }
