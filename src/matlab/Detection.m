@@ -24,7 +24,7 @@ function varargout = Detection(varargin)
 
 % Edit the above text to modify the response to help Detection
 
-% Last Modified by GUIDE v2.5 03-Feb-2005 18:23:24
+% Last Modified by GUIDE v2.5 04-Feb-2005 18:34:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,10 +72,8 @@ data.Timer=handles.Timer;
 
 % Update handles structure
 guidata(hObject, handles);
-
-% UIWAIT makes Detection wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
 setappdata(handles.output, 'Detdata', data);
+start(handles.Timer);
 
 
 function DetRefresh(arg1,arg2,handles)
@@ -210,13 +208,13 @@ end
 MCP2SumCounts=statusData(:,MCP2MaskBase+12);
 
 % display counts and pulses
-set(handles.PMTCounts,'String',statusData(lastrow,PMTBase+204));
-set(handles.MCP1Counts,'String',statusData(lastrow,MCP1Base+204));
-set(handles.MCP2Counts,'String',statusData(lastrow,MCP2Base+204));
+set(handles.txtPMTCounts,'String',statusData(lastrow,PMTBase+204));
+set(handles.txtMCP1Counts,'String',statusData(lastrow,MCP1Base+204));
+set(handles.txtMCP2Counts,'String',statusData(lastrow,MCP2Base+204));
 
-set(handles.PMTPulses,'String',statusData(lastrow,PMTBase+205));
-set(handles.MCP1Pulses,'String',statusData(lastrow,MCP1Base+205));
-set(handles.MCP2Pulses,'String',statusData(lastrow,MCP2Base+205));
+set(handles.txtPMTPulses,'String',statusData(lastrow,PMTBase+205));
+set(handles.txtMCP1Pulses,'String',statusData(lastrow,MCP1Base+205));
+set(handles.txtMCP2Pulses,'String',statusData(lastrow,MCP2Base+205));
 
 % calculate running averages for online and both offlines
 OnlineFilter=AvgData(:,AVGBase)>0;
@@ -554,13 +552,13 @@ function chkWZin_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkWZin
 
 
-% --- Executes on button press in chkNO.
-function chkNO_Callback(hObject, eventdata, handles)
-% hObject    handle to chkNO (see GCBO)
+% --- Executes on button press in chkPNO.
+function chkPNO_Callback(hObject, eventdata, handles)
+% hObject    handle to chkPNO (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkNO
+% Hint: get(hObject,'Value') returns toggle state of chkPNO
 
 
 % --- Executes on button press in chkP20.
