@@ -129,6 +129,7 @@ switch char(xpar)
             x=double(statusData(:,col.DiodeEtalon)); eval(['xdata=',fcts2val.DiodeEtalon,';']);
         end
     case 'DiodeWZin' % not yet available
+        xdata=single(statusData(:,col.DiodeWZout));
         xdata(:)=NaN;
     case 'DiodeWZout'
         if get(handles.toggleX,'Value')
@@ -152,7 +153,7 @@ switch char(xpar)
         if get(handles.toggleX,'Value')
             xdata=statusData(:,col.P1000);
         else
-            x=double(statusData(:,col.P1000)); eval(['xdata=',fcts2val.P20,';']);
+            x=double(statusData(:,col.P1000)); eval(['xdata=',fcts2val.P1000,';']);
         end
     case 'PRef'
         if get(handles.toggleX,'Value')
@@ -317,7 +318,7 @@ switch char(xpar)
         xdata=double(statusData(:,col.GPSLongitude))/60-180 ...
             +double(statusData(:,col.GPSLongitudeDecimals))/10000;
     case 'GPSLatitude'
-        xdata=double(statusData(:,col.GPSLatitude))/60-180 ...
+        xdata=double(statusData(:,col.GPSLatitude))/60-90 ...
             +double(statusData(:,col.GPSLatitudeDecimals))/10000;
     case 'GPSAltitude'
         xdata=statusData(:,col.GPSAltitude);
@@ -360,6 +361,7 @@ switch char(ypar)
             x=double(statusData(:,col.DiodeEtalon)); eval(['ydata=',fcts2val.DiodeEtalon,';']);
         end
     case 'DiodeWZin' % not yet available
+        ydata=single(statusData(:,col.DiodeWZout));
         ydata(:)=NaN;
     case 'DiodeWZout'
         if get(handles.toggleY,'Value')
@@ -383,7 +385,7 @@ switch char(ypar)
         if get(handles.toggleY,'Value')
             ydata=statusData(:,col.P1000);
         else
-            x=double(statusData(:,col.P1000)); eval(['ydata=',fcts2val.P20,';']);
+            x=double(statusData(:,col.P1000)); eval(['ydata=',fcts2val.P1000,';']);
         end
     case 'PRef'
         if get(handles.toggleY,'Value')
@@ -548,7 +550,7 @@ switch char(ypar)
         ydata=double(statusData(:,col.GPSLongitude))/60-180 ...
             +double(statusData(:,col.GPSLongitudeDecimals))/10000;
     case 'GPSLatitude'
-        ydata=double(statusData(:,col.GPSLatitude))/60-180 ...
+        ydata=double(statusData(:,col.GPSLatitude))/60-90 ...
             +double(statusData(:,col.GPSLatitudeDecimals))/10000;
     case 'GPSAltitude'
         ydata=statusData(:,col.GPSAltitude);
