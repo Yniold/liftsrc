@@ -9,7 +9,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.2 $ */
+ /* $Revision: 1.3 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -69,6 +69,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 { 
   /*    unsigned int m,n;  */
   unsigned short *z,*ptrData;
+  float *ptrAvg;
   char *input_buf;
   int buflen;
   int status;
@@ -78,12 +79,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
   long flen;
   long nelements;
   int dims[2];
+  int dimaverages[2];
   unsigned char *Databuf;
-  long count;
+  long count, countAvg;
   struct tm *ptrTmZeit;
   time_t Seconds;
   int Channel;
   int RunAverageLen;
+  int RunAverageLenOffl;
   int MinRefCellCounts;
   
   struct elekStatusType *elekStatus;
@@ -95,14 +98,20 @@ void mexFunction( int nlhs, mxArray *plhs[],
   struct RunningAVGType OnlineAverage[MAX_COUNTER_CHANNEL];
   struct RunningAVGType OfflineLeftAverage[MAX_COUNTER_CHANNEL];
   struct RunningAVGType OfflineRightAverage[MAX_COUNTER_CHANNEL];
+  uint16_t *MCP1Counts;
+  uint16_t *MCP2Counts;
+/*  uint16_t *MCP1RayCounts;
+  uint16_t *MCP2RayCounts;
+  uint16_t Sum1;
+  uint16_t Sum2; */
  
   
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
-  } else if (nlhs > 1) {
-    mexErrMsgTxt("Too many output arguments."); 
+  } else if (nlhs != 2) {
+    mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
@@ -119,6 +128,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
   RunAverageLen = (int) *mxGetPr(prhs[1]);
   if (RunAverageLen>MAX_AVERAGE_TIME) 
     mexErrMsgTxt("AverageLen cannot be longer than 100");
+
+  RunAverageLenOffl = RunAverageLen/2;
 
   MinRefCellCounts =(int) *mxGetPr(prhs[2]); 
   if (MinRefCellCounts<1) 
@@ -139,7 +150,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     mexWarnMsgTxt("Not enough space. String is truncated.");  
   
 
-  fp=fopen(input_buf,"r");
+  fp=fopen(input_buf,"rb");
   
   if (fp==NULL) 
     mexErrMsgTxt("can't open file");
@@ -170,16 +181,24 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + MAX_DCDC4_CHANNEL_PER_CARD;  /* dcdc data */
   dims[1]= dims[1] + 4 + MAX_TEMP_SENSOR*3;  /* temp data */
   dims[1]= dims[1] + 1;  /* instrument flags */
-  dims[1]= dims[1] + MAX_COUNTER_CHANNEL*(7);  /* Online, OnlineNum,OfflineLeft, OfflineLeftNum, OfflineRight, OfflineRightNum, OnOffFlag */
+  dims[1]= dims[1] + 1;  /* OnOffFlag */
+  dims[1]= dims[1] + 1;  /* MCP2CountsOrg */
+  dims[1]= dims[1] + 1;  /* MCP2FibreRefCount3 */
 
   dims[1]= dims[1] + 3;  /* extra reserve */
-  
+
   plhs[0] = mxCreateNumericArray(2,dims,mxUINT16_CLASS,mxREAL);
+
+  dimaverages[0]=dims[0];
+  dimaverages[1]=MAX_COUNTER_CHANNEL*3;/* Online, OfflineLeft, OfflineRight */
+  plhs[1] = mxCreateNumericArray(2,dimaverages,mxSINGLE_CLASS,mxREAL);
   
   /* Assign pointers to each input and output. */
   z = mxGetPr(plhs[0]);
   ptrData=z;
   count=0;
+  ptrAvg=mxGetPr(plhs[1]);
+  countAvg=0;
   
   /* allocate mem for running Average arrays and init struct */
   for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
@@ -199,9 +218,29 @@ void mexFunction( int nlhs, mxArray *plhs[],
     OnlineAverage[Channel].OnOffFlag=(int*)mxCalloc(nelements, sizeof(int)); 
   } /* for */
 
+  MCP1Counts=(uint16_t*)mxCalloc(nelements, sizeof(uint16_t)); 
+  /* MCP1RayCounts=(uint16_t*)mxCalloc(nelements, sizeof(uint16_t)); */
+  MCP2Counts=(uint16_t*)mxCalloc(nelements, sizeof(uint16_t)); 
+  /* MCP2RayCounts=(uint16_t*)mxCalloc(nelements, sizeof(uint16_t)); */
+
   /* first we sort the data according to time */
   
   qsort(elekStatus,nelements,sizeof(struct elekStatusType),cmptimesort);
+  
+  for (i=0; i<nelements;i++) {
+    MCP1Counts[i]=elekStatus[i].CounterCard.Channel[1].Counts;
+	MCP2Counts[i]=elekStatus[i].CounterCard.Channel[2].Counts;
+	/* for the Rayleigh signals we recount the first 20 channels */
+/*    Sum1=0;
+	Sum2=0;
+    for(k=1; k<21;k++) {
+		Sum1=Sum1+elekStatus[i].CounterCard.Channel[1].Data[k];
+		Sum2=Sum2+elekStatus[i].CounterCard.Channel[2].Data[k]; 
+	} /* for k */
+/*    MCP1RayCounts[i]=Sum1;
+	MCP2RayCounts[i]=Sum2; */
+  } /* for i */
+
   
   /* Date */
   
@@ -627,7 +666,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are left side offline */
 		(elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
 	       (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
-	    OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLen ]=
+	    OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
 	      elekStatus[i].CounterCard.Channel[Channel].Counts;
 	    if (Channel==0) OfflineLeftCounter++;
 	    OnlineAverage[Channel].OnOffFlag[i]=2;
@@ -660,9 +699,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	} /* if OnlineCounter */
 	
 
-	if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Online Avg */
+	if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Offline Left Avg */
 	  OnlineOfflineCounts[Channel].OfflineLeftSum=0;
-	  maxSteps=(OfflineLeftCounter>RunAverageLen) ? RunAverageLen : OfflineLeftCounter;
+	  maxSteps=(OfflineLeftCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineLeftCounter;
 	  /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
 	  for (j=0; j<maxSteps; j++) {
 	    OnlineOfflineCounts[Channel].OfflineLeftSum+=OnlineOfflineCounts[Channel].OfflineLeft[j];
@@ -673,7 +712,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 	if (OfflineRightCounter>5) { /* do we have enough statistics for Calc Online Avg */
 	  OnlineOfflineCounts[Channel].OfflineRightSum=0;
-	  maxSteps=(OfflineRightCounter>RunAverageLen) ? RunAverageLen : OfflineRightCounter;
+	  maxSteps=(OfflineRightCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineRightCounter;
 	  /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
 	  for (j=0; j<maxSteps; j++) {
 	    OnlineOfflineCounts[Channel].OfflineRightSum+=OnlineOfflineCounts[Channel].OfflineRight[j];
@@ -690,43 +729,36 @@ void mexFunction( int nlhs, mxArray *plhs[],
     for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each Channel */
 
 #ifdef D_HEADER
-      mexPrintf("RAvgOnline #%d : %d\n",Channel,1+count/nelements);      
+      mexPrintf("RAvgOnline #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
 #endif 
     for (i=0; i<nelements;i++) {
-      *(z+count++)=OnlineAverage[Channel].Avg[i];      
+      if (OnlineAverage[Channel].Num[i]!=0){
+	*(ptrAvg+countAvg++)=(float)OnlineAverage[Channel].Avg[i]/(float)OnlineAverage[Channel].Num[i];      
+      } else {
+	*(ptrAvg+countAvg++)=0;
+      }
     }
 
 #ifdef D_HEADER
-      mexPrintf("RAvgOnlineNum #%d : %d\n",Channel,1+count/nelements);      
+      mexPrintf("RAvgOfflineLeft #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
 #endif 
     for (i=0; i<nelements;i++) {
-      *(z+count++)=OnlineAverage[Channel].Num[i];      
+      if (OfflineLeftAverage[Channel].Num[i]!=0){
+	*(ptrAvg+countAvg++)=(float)OfflineLeftAverage[Channel].Avg[i]/(float)OfflineLeftAverage[Channel].Num[i];      
+      } else {
+	*(ptrAvg+countAvg++)=0;
+      }
     }
 
 #ifdef D_HEADER
-      mexPrintf("RAvgOfflineLeft #%d : %d\n",Channel,1+count/nelements);      
+      mexPrintf("RAvgOfflineRight #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
 #endif 
     for (i=0; i<nelements;i++) {
-      *(z+count++)=OfflineLeftAverage[Channel].Avg[i];      
-    }
-#ifdef D_HEADER
-      mexPrintf("RAvgOfflineLeftNum #%d : %d\n",Channel,1+count/nelements);      
-#endif 
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=OfflineLeftAverage[Channel].Num[i];      
-    }
-
-#ifdef D_HEADER
-      mexPrintf("RAvgOfflineRight #%d : %d\n",Channel,1+count/nelements);      
-#endif 
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=OfflineRightAverage[Channel].Avg[i];      
-    }
-#ifdef D_HEADER
-      mexPrintf("RAvgOfflineRightNum #%d : %d\n",Channel,1+count/nelements);      
-#endif 
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=OfflineRightAverage[Channel].Num[i];      
+      if (OfflineRightAverage[Channel].Num[i]!=0){
+	*(ptrAvg+countAvg++)=(float)OfflineRightAverage[Channel].Avg[i]/(float)OfflineRightAverage[Channel].Num[i];      
+      } else {
+	*(ptrAvg+countAvg++)=0;
+      }      
     }
 
 } /* for Channel*/
@@ -738,8 +770,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     for (i=0; i<nelements;i++) {
       *(z+count++)=OnlineAverage[0].OnOffFlag[i];                       /* use PMT aka Ref Channel for on/offline reference */   
     }
-
-    
+   
     return;
 }
 
