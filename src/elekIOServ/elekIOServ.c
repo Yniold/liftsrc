@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-31 09:49:31 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-31 12:16:28 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.4  2005-01-31 09:49:31  rudolf
+* Revision 1.5  2005-01-31 12:16:28  rudolf
+* added evalution of true heading and groundspeed in kmh
+*
+* Revision 1.4  2005/01/31 09:49:31  rudolf
 * more work on GPS
 *
 * Revision 1.3  2005/01/28 17:41:44  rudolf
@@ -1071,10 +1074,28 @@ void GetGPSData ( struct elekStatusType *ptrElekStatus ) {
          ptrElekStatus->GPSData.fHDOP        = dGGAHDOP;       // normal range 0 to 100 ?
 
          ptrElekStatus->GPSData.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // normal range 1-12
-         ptrElekStatus->GPSData.ucLastValidData = 0;      // normal range 0 to 6
+         ptrElekStatus->GPSData.ucLastValidData = 0;           // normal range 0 to 6
 
-         ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
-         ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+         // speed
+
+         if(dVTGSpeedInKmh > 0)                                // check for positive speed
+         {
+            dVTGSpeedInKmh = dVTGSpeedInKmh / 3.6;             // will give metres per second
+            dVTGSpeedInKmh = dVTGSpeedInKmh * 100;             // will give cetimetres per second
+
+            ptrElekStatus->GPSData.uiGroundSpeed   = (uint16_t)dVTGSpeedInKmh;
+         }
+         else
+         {
+            ptrElekStatus->GPSData.uiGroundSpeed   = 0;        // no speed, sets to 0
+         };
+
+         // heading
+         // multiply heading by 10, will result in an int from 0 to 3599
+         dVTGTrueHeading = dVTGTrueHeading * 10;
+         ptrElekStatus->GPSData.uiHeading       = (uint16_t)dVTGTrueHeading;
+
+         ucDataReadyFlag = FALSE;
       }
       else
       {
