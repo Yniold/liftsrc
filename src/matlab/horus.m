@@ -44,7 +44,7 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
-end
+
 
 
 
@@ -80,7 +80,7 @@ guidata(hObject, handles);
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'horusdata', data);
 start(handles.ActTimer);
-end
+
 
 
 
@@ -93,7 +93,7 @@ function varargout = horus_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-end
+
 
 
 
@@ -106,10 +106,35 @@ function ReadStatus(arg1,arg2,handles)
 data = getappdata(handles.output, 'horusdata');
 try     % start ReadAvgdata only if status.bin exists
     %[statusData,AvgData]=ReadDataAvg('filename',5*(time period to average in s),(min. online ref signal));
-    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,10);
+    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,600);
 catch
     disp(['error trying to read data from status.bin: ',lasterr])
 end
+
+statusData=data.statusData;
+
+col=data.col;
+%fcts2val=data.fcts2val;
+
+statustime=double(statusData(:,1))+ ...
+           double(statusData(:,2))./1.0+ ...
+           double(statusData(:,3))./24.0+...
+           double(statusData(:,4))./1440.0+...
+           double(statusData(:,5))./86400.0;
+
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+
+% switch off filament if reference cell pressure is too high
+if bitget(statusData(lastrow,col.Valve),14)==1;
+    if statusData(lastrow,col.PRef)>10500 % check if pressure in reference cell is too high
+        Valveword=bitset(statusData(lastrow,col.Valve),14,0);
+        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+    end
+end
+
+
 % check which child GUIs are active and color push buttons accordingly
 if isfield(data,'hADC')
     if ishandle(str2double(data.hADC)) 
@@ -155,7 +180,7 @@ if isfield(data,'hSensors')
 end
 
 setappdata(handles.output, 'horusdata', data);
-end
+
 
 
 
@@ -174,7 +199,7 @@ elseif ~ishandle(str2double(data.hADC))
     data.hADC=num2str(handleADC,16);
 end
 setappdata(gcbf, 'horusdata', data); 
-end
+
 
 
 
@@ -199,7 +224,7 @@ if isfield(data,'hDetection')
     end
 end
 setappdata(gcbf, 'horusdata', data); 
-end
+
 
 
 
@@ -295,7 +320,7 @@ end
 
 delete(handles.ActTimer);
 close(gcbf);
-end
+
 
 
 
@@ -316,7 +341,7 @@ elseif ~ishandle(str2double(data.hDyelaser))
     data.hDyelaser=num2str(handleDyelaser,16);
 end
 setappdata(gcbf, 'horusdata', data); 
-end
+
 
 
 
@@ -338,7 +363,7 @@ elseif ~ishandle(str2double(data.hLaser))
     data.hLaser=num2str(handleLaser,16);
 end
 setappdata(gcbf, 'horusdata', data); 
-end
+
 
 
 
@@ -361,7 +386,7 @@ elseif ~ishandle(str2double(data.hDetection))
     data.hDetection=num2str(handleDetection,16);
 end
 setappdata(gcbf, 'horusdata', data);
-end
+
 
 
 
@@ -383,7 +408,7 @@ elseif ~ishandle(str2double(data.hSensors))
     data.hSensors=num2str(handleSensors,16);
 end
 setappdata(gcbf, 'horusdata', data); 
-end
+
 
 
 
