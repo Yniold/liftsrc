@@ -1,9 +1,14 @@
-/* header file for elekIO
-* created by HH Oct 2003 
-* changelog 
-
-24.05.2004    HH   added ADC Card structure
-
+/* $RCSfile: elekIO.h,v $ header file for elekIO
+*
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-01-27 15:48:10 $ by $Author: rudolf $
+*
+* $Log: elekIO.h,v $
+* Revision 1.3  2005-01-27 15:48:10  rudolf
+* Added header field for proper CVS version history
+*
+*
+* 24.05.2004    HH   added ADC Card structure
+*
 *
 *
 */
