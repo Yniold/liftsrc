@@ -194,12 +194,12 @@ function CounterCards_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open CounterCards only if it is not already open and if Detection is open
 if ~isfield(data,'hCounterCards') & isfield(data.hDetection)
-    if ishandle((str2double(data.hDetection))
+    if ishandle(str2double(data.hDetection))
         handleCounterCards=CounterCards('handle',num2str(gcbf,16));
         data.hCounterCards=num2str(handleCounterCards,16);
     end
 elseif ~ishandle(str2double(data.hCounterCards)) & isfield(data.hDetection)
-    if ishandle((str2double(data.hDetection))
+    if ishandle(str2double(data.hDetection))
         handleCounterCards=CounterCards('handle',num2str(gcbf,16));
         data.hCounterCards=num2str(handleCounterCards,16);
     end
