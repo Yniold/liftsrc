@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 31-Jan-2005 20:41:30
+% Last Modified by GUIDE v2.5 09-Feb-2005 18:25:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -130,9 +130,23 @@ Etalonhelp=int32(statusData(:,EtalonBase+4));
 EtalonEncPos=(Etalonhelp)+int32(statusData(:,EtalonBase+5)); 
 EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
+EtalonSpeed=statusData(:,EtalonBase+10);
+
+EtalonStatus=statusData(:,EtalonBase+11);
+set(handles.radLeftEnd,'Value',bitand(EtalonStatus(lastrow),1));
+set(GUI_handles.radRightEnd,'Value',bitand(EtalonStatus(lastrow),2));
+
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
+set(handles.scan_step,'String',EtalonSpeed(lastrow));
+if bitget(EtalonStatus(lastrow),1)
+    set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
+elseif bitget(EtalonStatus(lastrow),2)
+    set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
+else
+    set(handles.txtLimitSwitch,'String','none','BackgroundColor','b');
+end
 
 % plot parameters in graph 1
 
@@ -203,8 +217,6 @@ else
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minEtpos maxEtpos]);
 end
-    
-
 grid(handles.axes2);
 
 
@@ -215,6 +227,15 @@ if bitget(statusData(lastrow,724),14)==0;
 else 
     set(handles.toggleFilament,'Value',1,'string','Filament is ON');
     set(handles.toggleFilament,'BackgroundColor','r');
+end
+
+% check shutter status
+if bitget(statusData(lastrow,724),12)==0;
+    set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
+    set(handles.toggleShutter,'BackgroundColor','b');
+else 
+    set(handles.toggleShutter,'Value',1,'string','Shutter is CLOSED');
+    set(handles.toggleShutter,'BackgroundColor','r');
 end
 
 data.lastrow=lastrow;
@@ -623,5 +644,34 @@ function chkEtSetPos_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of chkEtSetPos
 
+
+
+
+
+% --- Executes on button press in toggleShutter.
+function toggleShutter_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleShutter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleShutter
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,724),12);
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to close shutter
+    system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+    system('sleep 1');
+    system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep shutter closed
+    set(hObject,'String','Shutter is CLOSED');
+    set(hObject,'BackgroundColor','r');
+else
+    Valveword=bitset(statusData(lastrow,724),12,0);
+    system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+    set(hObject,'String','Shutter is OPEN');
+    set(hObject,'BackgroundColor','b');
+end
 
 
