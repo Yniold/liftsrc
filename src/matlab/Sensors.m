@@ -209,6 +209,12 @@ switch char(xpar)
         xdata=EtalonEncPos;
     case 'EtaIndPos'
         xdata=EtalonIndPos;
+    case 'VSolenoids'
+        xdata=statusData(:,723);
+    case 'MFCSetFlow'
+        xdata=statusData(:,721);
+    case 'MFCFlow'
+        xdata=statusData(:,722);
 end
         
 % assign data to y-axis
@@ -288,6 +294,12 @@ switch char(ypar)
         ydata=EtalonEncPos;
     case 'EtaIndPos'
         ydata=EtalonIndPos;
+    case 'VSolenoids'
+        ydata=statusData(:,723);
+    case 'MFCSetFlow'
+        ydata=statusData(:,721);
+    case 'MFCFlow'
+        ydata=statusData(:,722);
 end
 
 % display latest x and y values
@@ -332,7 +344,8 @@ set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
     'TDet';'VHV';'PMTThr';'LastTrigThr';'MCP1Thr';'MCP2Thr';'+5V';'+28V';...
-    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos'};
+    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';...
+    'VSolenoids','MFCSetFlow','MFCFlow'};
 set(hObject,'String',vars);
 
 
@@ -358,7 +371,8 @@ set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
     'TDet';'VHV';'PMTThr';'LastTrigThr';'MCP1Thr';'MCP2Thr';'+5V';'+28V';...
-    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos'};
+    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';...
+    'VSolenoids','MFCSetFlow','MFCFlow'};
 set(hObject,'String',vars);
 
 

@@ -24,7 +24,7 @@ function varargout = Sensors(varargin)
 
 % Edit the above text to modify the response to help Sensors
 
-% Last Modified by GUIDE v2.5 08-Feb-2005 15:28:40
+% Last Modified by GUIDE v2.5 08-Feb-2005 17:19:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,14 +72,12 @@ data.Timer=handles.Timer;
 
 % Update handles structure
 guidata(hObject, handles);
-setappdata(handles.output, 'Detdata', data);
+setappdata(handles.output, 'Sensdata', data);
 
 start(handles.Timer);
 
 
 function SensRefresh(arg1,arg2,handles)
-
-data = getappdata(handles.output, 'Detdata');
 
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
@@ -95,20 +93,14 @@ statustime=double(statusData(:,1))+ ...
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
-PlotWidth=maxLen;
-stopPlot=maxLen;
-startPlot=1;
-iZeit=indexZeit(startPlot:stopPlot);
-minTime=statustime(iZeit(1));
-maxTime=statustime(iZeit(size(iZeit,1)));
+       
+% Calculate parameter values
 
 ccADCBase=7;
 ADCBase0=656;
 ADCBase1=689;
 TempBase=729;
 EtalonBase=643; 
-
-% Calculate parameter values
 
 DiodeUV=4.6863E-6*double(statusData(:,ADCBase0+2*3)).^2-8.5857E-2*double(statusData(:,ADCBase0+2*3))+390.41;
 DiodeWZout=(double(statusData(:,ADCBase1+5*3))-9790.0)/193.2836;
@@ -141,7 +133,7 @@ yvalue=get(handles.listboxY,'Value');
 ypar=yvars(yvalue);
 
 % assign data to x-axis
-switch xpar
+switch char(xpar)
     case 'Time'
         xdata=statustime;
     case 'DiodeGr'
@@ -167,7 +159,7 @@ switch xpar
         xdata=statusData(:,ADCBase1+7*3);
     case 'P20'
         if get(handles.toggleX,'Value')
-            xdata=statusData(:,ADCBase1+1*3)
+            xdata=statusData(:,ADCBase1+1*3);
         else
             xdata=P20;
         end
@@ -220,7 +212,7 @@ switch xpar
 end
         
 % assign data to y-axis
-switch ypar
+switch char(ypar)
     case 'Time'
         ydata=statustime;
     case 'DiodeGr'
@@ -246,7 +238,7 @@ switch ypar
         ydata=statusData(:,ADCBase1+7*3);
     case 'P20'
         if get(handles.toggleY,'Value')
-            ydata=statusData(:,ADCBase1+1*3)
+            ydata=statusData(:,ADCBase1+1*3);
         else
             ydata=P20;
         end
@@ -298,15 +290,11 @@ switch ypar
         ydata=EtalonIndPos;
 end
 
-dasortrows([xdata,ydata])
+% display latest x and y values
+set(handles.txtxvalue,'String',num2str(xdata(lastrow)));
+set(handles.txtyvalue,'String',num2str(ydata(lastrow)));
 
-        
-        
-if get(handles.chkWZout,'Value')
-    plot(handles.axes1,statustime(iZeit),DiodeWZout,'r');
-    hold(handles.axes1,'on');
-end 
-xlim(handles.axes1,[minTime maxTime]);
+plot(handles.axes1,xdata,ydata,'.');
 grid(handles.axes1);
 
 
@@ -330,7 +318,7 @@ function listboxX_Callback(hObject, eventdata, handles)
 
 % Hints: contents = get(hObject,'String') returns listboxX contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listboxX
-vars=get(hObject,'String')
+
 
 % --- Executes during object creation, after setting all properties.
 function listboxX_CreateFcn(hObject, eventdata, handles)
@@ -344,7 +332,8 @@ set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
     'TDet';'VHV';'PMTThr';'LastTrigThr';'MCP1Thr';'MCP2Thr';'+5V';'+28V';...
-    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos'};
+    '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';...
+    'VSolenoids','MFCSetFlow','MFCFlow};
 set(hObject,'String',vars);
 
 
@@ -401,5 +390,17 @@ if get(hObject,'Value')
 else
     set(hObject,'String','Value')
 end
+
+
+
+
+% --- Executes on button press in pshExit.
+function pshExit_Callback(hObject, eventdata, handles)
+% hObject    handle to pshExit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+stop(handles.Timer);
+delete(handles.Timer);
+close(handles.figure1);
 
 
