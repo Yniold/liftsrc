@@ -106,7 +106,7 @@ function ReadStatus(arg1,arg2,handles)
 data = getappdata(handles.output, 'horusdata');
 try     % start ReadAvgdata only if status.bin exists
     %[statusData,AvgData]=ReadDataAvg('filename',5*(time period to average in s),(min. online ref signal));
-    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,600);
+    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 catch
     disp(['error trying to read data from status.bin: ',lasterr])
 end

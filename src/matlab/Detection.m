@@ -1,3 +1,4 @@
+
 function varargout = Detection(varargin)
 % DETECTION M-file for Detection.fig
 %      DETECTION, by itself, creates a new DETECTION or raises the existing
@@ -24,7 +25,7 @@ function varargout = Detection(varargin)
 
 % Edit the above text to modify the response to help Detection
 
-% Last Modified by GUIDE v2.5 04-Feb-2005 18:34:32
+% Last Modified by GUIDE v2.5 11-Mar-2005 14:58:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -404,6 +405,44 @@ else
     set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
+% check solenoids
+if bitget(statusData(lastrow,col.Valve),1)==0;
+    set(handles.toggleC3F6,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleC3F6,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),2)==0;
+    set(handles.toggleN2,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleN2,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),3)==0;
+    set(handles.toggleHO2Inj,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleHO2Inj,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),4)==0;
+    set(handles.toggleOHInj,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleOHInj,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),5)==0;
+    set(handles.toggleNO1,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleNO1,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),6)==0;
+    set(handles.toggleNO2,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleNO2,'Value',1,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve),7)==0;
+    set(handles.toggleNOPurge,'Value',0,'BackgroundColor','c');
+else 
+    set(handles.toggleNOPurge,'Value',1,'BackgroundColor','g');
+end
+
+
 data.lastrow=lastrow;
 setappdata(handles.output, 'Detdata', data);
 
@@ -675,5 +714,181 @@ function chkVHV_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkVHV
+
+
+% --- Executes on button press in toggleOHInj.
+function toggleOHInj_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleOHInj (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleOHInj
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),4);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),4,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+
+% --- Executes on button press in toggleHO2Inj.
+function toggleHO2Inj_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleHO2Inj (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleHO2Inj
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),3);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),3,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+% --- Executes on button press in toggleN2.
+function toggleN2_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleN2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleN2
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),2);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),2,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+% --- Executes on button press in toggleC3F6.
+function toggleC3F6_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleC3F6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleC3F6
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),1);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),1,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+% --- Executes on button press in toggleNO1.
+function toggleNO1_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleNO1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleNO1
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),5);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),5,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+% --- Executes on button press in toggleNO2.
+function toggleNO2_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleNO2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleNO2
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),6);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),6,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+
+
+% --- Executes on button press in toggleNOPurge.
+function toggleNOPurge_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleNOPurge (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleNOPurge
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if get(hObject,'Value')
+    Valveword=bitset(statusData(lastrow,col.Valve),7);
+    set(hObject,'BackgroundColor','g');
+else
+    Valveword=bitset(statusData(lastrow,col.Valve),7,0);
+    set(hObject,'BackgroundColor','c');
+end
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
