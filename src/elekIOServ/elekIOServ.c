@@ -1,3 +1,13 @@
+/*
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-27 18:17:21 $ by $Author: rudolf $
+*
+* $Log: elekIOServ.c,v $
+* Revision 1.2  2005-01-27 18:17:21  rudolf
+* added InitGPSReceiver(), modifications for GPS
+*
+*
+*/
+
 #define VERSION 0.8
 #define POSIX_SOURCE 1
 
@@ -20,6 +30,8 @@
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
 #include "elekIOServ.h"
+#include "NMEAParser.h"
+#include "serial.h"
 
 #define STATUS_INTERVAL  200
 
@@ -58,7 +70,7 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={    // o
   {"Etalon",                UDP_ELEK_ETALON_OUTPORT, ELEK_ETALON_IN, IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
   {"EtalonStatus",   UDP_ELEK_ETALON_STATUS_OUTPORT,             -1, IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
   {"Script",                UDP_ELEK_SCRIPT_OUTPORT, ELEK_SCRIPT_IN, IP_SCRIPT_CLIENT, -1, 0,  UDP_OUT_PORT},
-  {"DebugPort",              UDP_ELEK_DEBUG_OUTPORT,             -1, IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT} 
+  {"DebugPort",              UDP_ELEK_DEBUG_OUTPORT,             -1, IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT}
 };
 
 static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]={     // order defines sequence of wake up after timer
@@ -89,9 +101,19 @@ static int StatusFlag=0;
 /* Signalhandler */
 void signalstatus(int signo)
 {
-  extern int StatusFlag;
-  ++StatusFlag;
-  /*    write(2,".",1); */
+   int iBytesRead = 0;
+   extern int StatusFlag;
+
+   ++StatusFlag;
+
+   if(ucPortOpened)	// check if main() has opened the port already
+   {
+      iBytesRead = read(fdGPS, pDataBuffer, 1024);	// nonblocking (!)
+
+      if(iBytesRead)
+         ParseBuffer(pDataBuffer,iBytesRead);	// feed some characters to the parser
+   };
+
 }
 
 /**********************************************************************************************************/
@@ -521,7 +543,7 @@ int InitDCDC4Card (struct elekStatusType *ptrElekStatus) {
 /**********************************************************************************************************/
 
 int InitTempCard (struct elekStatusType *ptrElekStatus) {
-  
+
   int ret;
   int Card;
 
@@ -530,7 +552,7 @@ int InitTempCard (struct elekStatusType *ptrElekStatus) {
   elkWriteData(ELK_TEMP_CTRL,0);
 
   ret=elkReadData(ELK_TEMP_CTRL);
-  
+
   // check if we got the same value that we wrote
   if (ret!=0) {
     return (INIT_MODULE_FAILED);
@@ -542,9 +564,62 @@ int InitTempCard (struct elekStatusType *ptrElekStatus) {
 
 
   return (INIT_MODULE_SUCCESS);
-  
+
 } /* Init TempCard */
 
+/**********************************************************************************************************/
+/* Init GPS receiver                                                                                   */
+/**********************************************************************************************************/
+
+int InitGPSReceiver(struct elekStatusType *ptrElekStatus) {
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   extern int fdGPS;
+   char debugbuf[GENERIC_BUF_LEN];
+
+   int ret;
+
+   // init NMEA parser statemachine etc.
+   NMEAParserInit();
+
+   // open TTY
+   fdGPS = serial_open(port , baud);
+
+   if(fdGPS == 1)
+   {
+      sprintf(debugbuf,"Error opening %s !\n\r", port);
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+      return (INIT_MODULE_FAILED);
+   };
+
+   // success
+   sprintf(debugbuf,"Opened %s with %d BAUD!\n\r", port, baud);
+   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+   // set data to initial values
+
+   ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
+   ptrElekStatus->GPSData.ucUTCMins    = 0;
+   ptrElekStatus->GPSData.ucUTCSeconds = 0;
+
+   ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
+   ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
+
+   ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
+   ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+
+   ptrElekStatus->GPSData.ucNumberOfSatellites = 0;   // normal range 1-12
+   ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+
+   ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+   ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+
+   ucPortOpened = 1;                                  // set global flag for timer service routine
+
+   return (INIT_MODULE_SUCCESS);
+} /* Init TempCard */
 
 
 /**********************************************************************************************************/
@@ -557,7 +632,7 @@ void InitModules(struct elekStatusType *ptrElekStatus) {
    
   extern struct MessagePortType MessageInPortList[];
   extern struct MessagePortType MessageOutPortList[];
-  
+
   int       ret; 
   char      buf[GENERIC_BUF_LEN];
   
@@ -565,46 +640,52 @@ void InitModules(struct elekStatusType *ptrElekStatus) {
   
   LoadModulesConfig(ptrElekStatus);
   
-  if (ret=InitCounterCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+  if (INIT_MODULE_SUCCESS == (ret=InitCounterCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init CounterCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init CounterCard failed !!");
   }
-  
-  if (ret=InitADCCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+
+  if (INIT_MODULE_SUCCESS == (ret=InitADCCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ADCCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ADCCard failed !!");
   }
 
-  if (ret=InitMFCCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+  if (INIT_MODULE_SUCCESS == (ret=InitMFCCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init MFCCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init MFCCard failed !!");
   }
-  
-  if (ret=InitEtalonCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+
+  if (INIT_MODULE_SUCCESS == (ret=InitEtalonCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init EtalonCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init EtalonCard failed !!");
   }
   
-  if (ret=InitValveCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+  if (INIT_MODULE_SUCCESS == (ret=InitValveCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ValveCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ValveCard failed !!");
   }
 
-  if (ret=InitDCDC4Card(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+  if (INIT_MODULE_SUCCESS == (ret=InitDCDC4Card(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init DCDC4Card successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init DCDC4Card failed !!");
   }
 
-  if (ret=InitTempCard(ptrElekStatus)==INIT_MODULE_SUCCESS) {
+  if (INIT_MODULE_SUCCESS == (ret=InitTempCard(ptrElekStatus))) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init TemperatureCard successfull");
   } else {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init TemperatureCard failed !!");
+  }
+
+  if (INIT_MODULE_SUCCESS == (ret=InitGPSReceiver(ptrElekStatus))) {
+    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init GPS successfull");
+  } else {
+    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init GPS failed !!");
   }
 
 
@@ -1353,7 +1434,7 @@ int main()
 	    break;
 
 	  case MSG_TYPE_CHANGE_MASK:
-	    if ((Message.Addr>=0) && (Message.Addr<MAX_COUNTER_CHANNEL*10)){
+	    if ((Message.Addr<MAX_COUNTER_CHANNEL*10)){
 	      Channel=(int)(Message.Addr/10);
 	      MaskAddr=Message.Addr%10;
 	      ElekStatus.CounterCard.Channel[Channel].Mask[MaskAddr]=Message.Value;
