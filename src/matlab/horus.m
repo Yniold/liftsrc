@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 04-Feb-2005 16:28:01
+% Last Modified by GUIDE v2.5 08-Feb-2005 16:26:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -130,6 +130,13 @@ if isfield(data,'hDetection')
         set(handles.Detection,'BackgroundColor','r');
     else
         set(handles.Detection,'BackgroundColor','c');
+    end
+end
+if isfield(data,'hSensors')
+    if ishandle(str2double(data.hSensors)) 
+        set(handles.Sensors,'BackgroundColor','r');
+    else
+        set(handles.Sensors,'BackgroundColor','c');
     end
 end
 
@@ -293,6 +300,18 @@ if isfield(data,'hDetection')
     end
 end
 
+if isfield(data,'hSensors')
+    hSensors=str2double(data.hSensors);
+    if ishandle(hSensors), 
+        Sensdata = getappdata(hSensors, 'Sensdata');
+        if isfield(Sensdata,'Timer')
+            stop(Sensdata.Timer);
+            delete(Sensdata.Timer);
+        end
+        close(hSensors); 
+    end
+end
+
 delete(handles.ActTimer);
 close(gcbf);
 
@@ -351,4 +370,23 @@ elseif ~ishandle(str2double(data.hDetection))
     data.hDetection=num2str(handleDetection,16);
 end
 setappdata(gcbf, 'horusdata', data); 
+
+
+
+% --- Executes on button press in Sensors.
+function Sensors_Callback(hObject, eventdata, handles)
+% hObject    handle to Sensors (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+% open Sensors only if it is not already open
+if ~isfield(data,'hSensors')
+    handleSensors=Sensors('handle',num2str(gcbf,16));
+    data.hSensors=num2str(handleSensors,16);
+elseif ~ishandle(str2double(data.hSensors)) 
+    handleSensors=Sensors('handle',num2str(gcbf,16));
+    data.hSensors=num2str(handleSensors,16);
+end
+setappdata(gcbf, 'horusdata', data); 
+
 
