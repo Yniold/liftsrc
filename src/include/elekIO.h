@@ -1,4 +1,4 @@
-/* header file for elekIO 
+/* header file for elekIO
 * created by HH Oct 2003 
 * changelog 
 
@@ -248,7 +248,31 @@ struct ValveCardType {
 struct DCDC4CardType {
   uint16_t    Channel[MAX_DCDC4_CHANNEL_PER_CARD];                         /* voltage applied for Channel */	
 };
-	
+
+struct GPSDataType {					/* data type for GPS data*/
+	unsigned char ucUTCHours;			/* binary, not BCD coded (!) 0 - 23 decimal*/
+	unsigned char ucUTCMins;			/* binary, 0-59 decimal */
+	unsigned char ucUTCSeconds;			/* binary 0-59 decimal */
+
+	double dLongitude;					/* "Laengengrad" I always mix it up...
+										signed notation,
+										negative values mean "W - west of Greenwich"
+										positive values mean "E - east of Greenwich" */
+
+	double dLatitude;					/* "Breitengrad" I always mix it up...
+										signed notation,
+										negative values mean "S - south of the equator"
+										positive values mean "N - north of the equator */
+	float fAltitude;					/* altitude above the geoid in metres */
+	float fHDOP;						/* Horizontal Dillution Of Precision, whatever it means....*/
+	unsigned char ucNumberOfSatellites; /* number of satellites seen by the GPS receiver */
+	unsigned char ucLastValidData;		/* number of data aquisitions (5Hz) with no valid GPS data
+										will stick at 255 if no data received for a long period */
+	uint16_t uiGroundSpeed;				/* speed in cm/s above ground */
+	uint16_t uiHeading;					/* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+
+};
+
 /*************************************************************************************************************/
 #define MAX_TEMP_SENSOR   23
 #define MAX_TEMP_SENSOR_CARD 1
@@ -334,6 +358,7 @@ struct elekStatusType {                                             /* combined 
   struct DCDC4CardType       DCDC4Card[MAX_DCDC4_CARD];             /* Valve Card */
   struct TempSensorCardType  TempSensCard[MAX_TEMP_SENSOR_CARD];    /* Temperature Sensor Card */
   struct InstrumentFlagsType InstrumentFlags;                       /* Instrument flags */
+  struct GPSDataType         GPSData;                               /* GPS Data */
 }; /* elekStatusType */
 
 
