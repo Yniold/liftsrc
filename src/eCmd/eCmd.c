@@ -1,3 +1,13 @@
+/************************************************************************/
+/* $RCSfile: eCmd.c,v $ $Revision: 1.2 $ last edit on $Date: 2005-01-21 14:13:03 $ by $Author: harder $                 */
+/* 
+$Log: eCmd.c,v $
+Revision 1.2  2005-01-21 14:13:03  harder
+update file description
+
+*/
+/************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
