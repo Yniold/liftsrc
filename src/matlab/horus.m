@@ -98,9 +98,9 @@ setappdata(gcbf, 'horusdata', data);
 
 
 
-% --- Executes on button press in Etalon.
+% --- Executes on button press in etalon.
 function Etalon_Callback(hObject, eventdata, handles)
-% hObject    handle to Etalon (see GCBO)
+% hObject    handle to etalon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
