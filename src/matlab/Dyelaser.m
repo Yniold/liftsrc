@@ -94,27 +94,14 @@ horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 %[statusData,AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
-statustime=double(statusData(:,2))./1.0+ ...
+statustime=double(statusData(:,1))+ ...
+           double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
            double(statusData(:,5))./86400.0;
 
-%lastrow=size(statusData,1);
-       
-ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
-    double(statusData(:,4))/1440.0+...
-    double(statusData(:,5))/86400.0+...
-    double(statusData(:,6))/86400000.0;
-Stunden=double(statusData(:,3))+...
-    double(statusData(:,4))/60.0+...
-    double(statusData(:,5))/3600.0+...
-    double(statusData(:,6))/3600000.0;
-Minuten=double(statusData(:,4))+...
-    double(statusData(:,5))/60.0+...
-    double(statusData(:,6))/60000.0;
-Zeit=Stunden/24.0;
-[SortZeit,indexZeit]=sort(ZeitTage);
-maxLen=size(ZeitTage,1);
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
 PlotWidth=maxLen;
@@ -123,8 +110,8 @@ stopPlot=maxLen;
 
 startPlot=1;
 iZeit=indexZeit(startPlot:stopPlot);
-minTime=Zeit(iZeit(1));
-maxTime=Zeit(iZeit(size(iZeit,1)));
+minTime=statustime(iZeit(1));
+maxTime=statustime(iZeit(size(iZeit,1)));
 
 ADCBase0=656;
 ADCBase1=689;
@@ -163,50 +150,44 @@ set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 hold(handles.axes1,'off'); 
 
 if get(handles.checkDiodeGr,'Value')
-    plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+5*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+5*3));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkDiodeUV,'Value')
-    plot(handles.axes1,Zeit(iZeit),DiodeUV(iZeit));
+    plot(handles.axes1,statustime(iZeit),DiodeUV(iZeit));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkDiodeEt,'Value')
-    plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+4*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+4*3));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPDyelaser,'Value')
-    plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+1*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+1*3));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
-    plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+7*3));
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,ADCBase0+7*3));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkEtCurPos,'Value')
-    plot(handles.axes1,Zeit(iZeit),EtalonCurPos(iZeit));
+    plot(handles.axes1,statustime(iZeit),EtalonCurPos(iZeit));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkEtSetPos,'Value')
-    plot(handles.axes1,Zeit(iZeit),EtalonSetPos(iZeit));
+    plot(handles.axes1,statustime(iZeit),EtalonSetPos(iZeit));
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkEtEncPos,'Value')
-    plot(handles.axes1,Zeit(iZeit),EtalonEncPos(iZeit));
+    plot(handles.axes1,statustime(iZeit),EtalonEncPos(iZeit));
     hold(handles.axes1,'on');
 end 
-
-timeStep=double(10.0/86400.0);
-if (maxTime-minTime>0.7/1400.0)
-    timeStep=1.0/1440.0;
-end
-timeXTick=[double(minTime):double(timeStep):double(maxTime)];
 
 xlim(handles.axes1,[minTime maxTime]);
 grid(handles.axes1);
@@ -224,7 +205,7 @@ maxEtpos=max(maxEtpos,minEtpos+1);
 
 if get(handles.radioTime,'Value');
     hold(handles.axes2,'off');
-    plot(handles.axes2,Zeit(iZeit),PMTSumCounts(iZeit)); 
+    plot(handles.axes2,statustime(iZeit),PMTSumCounts(iZeit)); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minTime maxTime]);
 else
@@ -574,7 +555,7 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-%    if str2double(get(handles.txtPRef,'String'))<1000
+%    if statusData(lastrow,ADCBase0+3*3)<=11000
         Valveword=bitset(statusData(lastrow,724),14);
         system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
         system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
@@ -582,6 +563,8 @@ if get(hObject,'Value')
         system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
         set(hObject,'String','Filament is ON');
         set(hObject,'BackgroundColor','r');
+%    else
+        %set(hObject,'Value',0);
 %    end
 else
     Valveword=bitset(statusData(lastrow,724),14,0);

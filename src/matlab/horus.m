@@ -104,7 +104,7 @@ setappdata(handles.output, 'horusdata', data);
 % if filament on check reference cell pressure 
 %ADCBase1=689;
 %if bitget(statusData(lastrow,724),14)
-%    if statusData(lastrow,ADCBase1+3*3)>1000
+%    if statusData(lastrow,ADCBase1+3*3)>11000
 %        Valveword=bitset(statusData(lastrow,724),14,0);
 %        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
 %    end
