@@ -1,4 +1,9 @@
 function varargout = Laser(varargin)
+% GUI for pump laser control
+% diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
+% diode temperature should be 26.1°C for PSSN 120865, HEADSN 2363/710
+% crystal temperature should be 151 for PSSN 120865, HEADSN 2363/710
+
 % LASER M-file for Laser.fig
 %      LASER, by itself, creates a new LASER or raises the existing
 %      singleton*.
@@ -24,7 +29,7 @@ function varargout = Laser(varargin)
 
 % Edit the above text to modify the response to help Laser
 
-% Last Modified by GUIDE v2.5 31-Jan-2005 16:26:02
+% Last Modified by GUIDE v2.5 04-Feb-2005 15:53:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,27 +68,38 @@ if length(varargin)==2 & varargin{1}=='handle'
 end
 
 % open tcpip port for communication with Laser
-%tcpdata = getappdata(gcbf, 'tcpdata'); 
 echotcpip('on',10001);
 tcpdata.tport=tcpip('10.111.111.20',10001);
 set(tcpdata.tport,'ReadAsyncMode','continuous');
 set(tcpdata.tport,'BytesAvailableFcn',{'tcpipdatacallback'});
 fopen(tcpdata.tport);
-%setup Timer function
-%handles.LaserTimer = timer('ExecutionMode','fixedDelay',...
-%          'Period',2,...    
-%          'BusyMode','drop',...
-%          'TimerFcn', {@LaserRefresh,handles});   
+tport=tcpdata.tport;
 
-%data.LaserTimer=handles.LaserTimer;
+% check which laser head and power supply is being used and display what
+% the settings should be
+fprintf(tport,'?PSSN'); 
+pause(0.5);
+PSSN=tport.UserData;
+fprintf(tport,'?HEADSN'); 
+pause(0.5);
+HEADSN=tport.UserData;
+% diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
+% diode temperature should be 26.1°C for PSSN 120865, HEADSN 2363/710
+% crystal temperature should be 151 for PSSN 120865, HEADSN 2363/710
+set(handles.txtsetReprate,'String','3000'); % pulses/s
+if PSSN(1:6)=='120865'
+    set(handles.txtsetDiodeCurrent,'String','35.4'); % A
+    set(handles.txtsetDiodeTemp,'String','26.1'); % °C
+    set(handles.txtsetDiodePower,'String','4.5'); % W IR intern
+end
+if HEADSN(1:8)=='2363/710'
+    set(handles.txtsetCrtemp,'String','151'); % ADC Counts
+end
 
 % Update handles structure
 guidata(hObject, handles);
 
 setappdata(handles.output, 'tcpdata', tcpdata); 
-
-% UIWAIT makes Laser wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -111,7 +127,7 @@ set(handles.txtDiodeCurrent,'ForegroundColor','r');
 set(handles.txtDiodePower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 
-
+% switch laser on or off
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
 if get(hObject,'Value')
@@ -129,6 +145,7 @@ pause(3)
 fprintf(tport,'?D'); 
 pause(0.5);
 DiodeStatus=tport.UserData;
+% check if switching was successfull and update laser toggle
 if strcmp(DiodeStatus(1:2),'ON')
     set(hObject,'Value',1)
     set(hObject,'BackgroundColor','r');
@@ -141,27 +158,36 @@ end
 
 % check diode parameters
 
-fprintf(tport,'?C1'); 
+% diode current
+fprintf(tport,'?C1');
 pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
-    
+% check diode current setting and update power toggle 
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
-if str2double(DiodeCurrentSet)==35.4
-    set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
-elseif str2double(DiodeCurrentSet)==14
-    set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
-else
-    set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+% current depends on power supply
+fprintf(tport,'?PSSN'); 
+pause(0.5);
+PSSN=tport.UserData;
+if PSSN(1:6)=='120865'
+    if str2double(DiodeCurrentSet)==35.4
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
 
+% diode power
 fprintf(tport,'?P');
 pause(0.5);
 DiodePower=tport.UserData;
 set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
 
+% diode temperature
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
@@ -178,6 +204,7 @@ function toggleShutter_Callback(hObject, eventdata, handles)
 set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
+% switch shutter on or off
 if get(hObject,'Value')
     fprintf(tport,'SHT:1'); 
     set(hObject,'BackgroundColor','r')
@@ -189,6 +216,7 @@ else
     set(hObject,'String','Shutter closed')
     pause(0.5);
 end
+%check if switching was successfull
 fprintf(tport,'?SHT'); 
 pause(3);
 ShutterStatus=tport.UserData;
@@ -227,7 +255,9 @@ tcpdata = getappdata(handles.output, 'tcpdata');
 tport=tcpdata.tport;
 
 LaserCmd=get(hObject,'String');
-if LaserCmd(1)=='d' % laser switching should show on the Laser toggle button
+
+% if the command is laser switching, update Laser toggle button
+if LaserCmd(1)=='d' 
     if LaserCmd(2)=='1'
         set(handles.toggleLaser,'BackgroundColor','r');
         set(handles.toggleLaser,'String','Laser switched ON')
@@ -236,13 +266,15 @@ if LaserCmd(1)=='d' % laser switching should show on the Laser toggle button
         set(handles.toggleLaser,'String','Laser switched OFF')
     end    
 end
+% send command and read answer, if any
 fprintf(tport,LaserCmd);
 pause(4);
 LaserAns=tport.UserData;
+% if command is a query, display answer 
 if LaserCmd(1)=='?'
     set(handles.txtCommandAnswer,'String',LaserAns);
-else
-    fprintf(tport,['?',LaserCmd(isletter(LaserCmd))]); %check effect of previous command
+else %if command is not a query, send query to check effect and display answer
+    fprintf(tport,['?',LaserCmd(isletter(LaserCmd))]);
     pause(0.5);
     LaserAns=tport.UserData;
     if isempty(deblank(LaserAns)) % some queries require specifying #
@@ -257,7 +289,7 @@ end
 Zeit=clock;
 set(handles.txtZeit,'String',datestr(Zeit,13));
 
-% check diode switch status
+% check diode switch status and update laser toggle
 fprintf(tport,'?D');
 pause(0.5);
 DiodeStatus=tport.UserData;
@@ -271,7 +303,7 @@ elseif strcmp(DiodeStatus(1:3),'OFF')
     set(handles.toggleLaser,'String','Laser is OFF')
 end
 
-%check shutter
+%check shutter and update shutter toggle
 fprintf(tport,'?SHT');
 pause(0.5);
 ShutterStatus=tport.UserData;
@@ -285,42 +317,54 @@ elseif strcmp(ShutterStatus(1:4),'OPEN')
     set(handles.toggleShutter,'String','Shutter is OPEN')
 end
 
+%check diode current
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
-
+%check diode current setting and update power toggle
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
-if str2double(DiodeCurrentSet)==35.4
-    set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
-elseif str2double(DiodeCurrentSet)==14
-    set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
-else
-    set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+% current depends on power supply
+fprintf(tport,'?PSSN'); 
+pause(0.5);
+PSSN=tport.UserData;
+if PSSN(1:6)=='120865'
+    if str2double(DiodeCurrentSet)==35.4
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
-    
+
+% check repetition rate
 fprintf(tport,'?Q'); 
 pause(0.5);
 RepRate=tport.UserData;
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
+% check crystal temp.
 fprintf(tport,'?SHG'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check max. allowed diode current
 fprintf(tport,'?DCL1');
 pause(0.5);
 DiodeMaxCurrent=tport.UserData;
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent,'ForegroundColor','k');
     
+% check diode temp.
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
+% check diode power
 fprintf(tport,'?P');
 pause(0.5);
 DiodePower=tport.UserData;
@@ -341,10 +385,6 @@ tport=tcpdata.tport;
 fclose(tcpdata.tport);
 delete(tcpdata.tport);
 echotcpip('off');
-% shut down timer
-%stop(handles.LaserTimer);
-%delete(handles.LaserTimer);
-% close figure
 close(handles.figure1);
 
 
@@ -372,10 +412,8 @@ set(handles.txtDiodeMaxCurrent,'ForegroundColor','r');
 set(handles.txtDiodePower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 
-% check diode switch status
-
+% check diode switch status and update laser toggle
 fprintf(tport,'?D');
-%disp('?D')
 pause(0.5);
 DiodeStatus=tport.UserData;
 if strcmp(DiodeStatus(1:2),'ON')
@@ -388,12 +426,11 @@ elseif strcmp(DiodeStatus(1:3),'OFF')
     set(handles.toggleLaser,'String','Laser is OFF')
 end
 
-%check shutter
+% check shutter and update shutter toggle
 fprintf(tport,'?SHT');
-%disp('?SHT')
 pause(0.5);
 ShutterStatus=tport.UserData;
-if strcmp(ShutterStatus(1:6),'CLOSED') %shutter is open
+if strcmp(ShutterStatus(1:6),'CLOSED')
     set(handles.toggleShutter,'Value',0)
     set(handles.toggleShutter,'BackgroundColor','g')
     set(handles.toggleShutter,'String','Shutter is CLOSED')
@@ -403,53 +440,61 @@ elseif strcmp(ShutterStatus(1:4),'OPEN')
     set(handles.toggleShutter,'String','Shutter is OPEN')
 end
 
+% check diode current
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
-
+%check diode current setting and update power toggle
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
-if str2double(DiodeCurrentSet)==35.4
-    set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
-elseif str2double(DiodeCurrentSet)==14
-    set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
-else
-    set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+% current depends on power supply
+fprintf(tport,'?PSSN'); 
+pause(0.5);
+PSSN=tport.UserData;
+if PSSN(1:6)=='120865'
+    if str2double(DiodeCurrentSet)==35.4
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
     
+% check repetition rate
 fprintf(tport,'?Q'); 
-%disp('?Q')
 pause(0.5);
 RepRate=tport.UserData;
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
+% check crystal temperature
 fprintf(tport,'?SHG'); 
-%disp('?SHG')
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check max. allowed diode current
 fprintf(tport,'?DCL1');
-%disp('?DCL1')
 pause(0.5);
 DiodeMaxCurrent=tport.UserData;
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent,'ForegroundColor','k');
     
+% check diode temperature
 fprintf(tport,'?T1');
-%disp('?T')
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
+% check diode power
 fprintf(tport,'?P');
-%disp('?DP')
 pause(0.5);
 DiodePower=tport.UserData;
 set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
+
 
 
 % --- Executes on button press in togglePower.
@@ -464,52 +509,64 @@ set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
 
-%mark strings to be updated
+% mark strings to be updated
 set(handles.txtDiodeCurrent,'ForegroundColor','r');
 set(handles.txtDiodePower,'ForegroundColor','r');
 set(handles.txtCrtemp,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 
-
-if get(hObject,'Value')
-    fprintf(tport,'C1:35.4'); % full power
-else
-    fprintf(tport,'C1:14'); % lowest green power 
-end    
+% current depends on power supply
+fprintf(tport,'?PSSN'); 
+pause(0.5);
+PSSN=tport.UserData;
+if PSSN(1:6)=='120865'
+    if get(hObject,'Value')
+        fprintf(tport,'C1:35.4'); % full power
+    else
+        fprintf(tport,'C1:14'); % lowest green power 
+    end    
+end
 
 % check effect
 pause(0.5)
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
-if str2double(DiodeCurrentSet)==35.4
-    set(handles.togglePower,'Value',1)
-    set(handles.togglePower,'BackgroundColor','c');
-    set(handles.togglePower,'String','FULL Power')
-else
-    set(handles.togglePower,'Value',0)
-    set(handles.togglePower,'BackgroundColor','b');
-    set(handles.togglePower,'String','LOW Power')
-    if str2double(DiodeCurrentSet)~=14
-        set(handles.togglePower,'String','medium Power')
+% current depends on power supply
+if PSSN(1:6)=='120865'
+    if str2double(DiodeCurrentSet)==35.4
+        set(handles.togglePower,'Value',1)
+        set(handles.togglePower,'BackgroundColor','c');
+        set(handles.togglePower,'String','FULL Power')
+    else
+        set(handles.togglePower,'Value',0)
+        set(handles.togglePower,'BackgroundColor','b');
+        set(handles.togglePower,'String','LOW Power')
+        if str2double(DiodeCurrentSet)~=14
+            set(handles.togglePower,'String','medium Power')
+        end
     end
 end
 
+% check crystal temp.
 fprintf(tport,'?SHG'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check diode temp.
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
+% check diode current
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 
+% check diode power
 fprintf(tport,'?P');
 pause(0.5);
 DiodePower=tport.UserData;
