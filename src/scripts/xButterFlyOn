@@ -1,10 +1,10 @@
 echo Blower off
-./BlowerOff
+BlowerOff
 sleep 3
 echo open Butterfly valve
-./bin/eCmd w 0xa462 0
+eCmd w 0xa462 0
 sleep 6
-./BlowerOn
+BlowerOn
 sleep 5
-./HVOn
-./FilamentOn
+HVOn
+FilamentOn

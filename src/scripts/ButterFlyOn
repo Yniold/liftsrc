@@ -1,2 +1,2 @@
 echo open Butterfly valve
-./bin/eCmd w 0xa462 0
+eCmd w 0xa462 0

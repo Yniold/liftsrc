@@ -1,2 +1,2 @@
 echo switch Blower On
-./bin/eCmd w 0xa464 1800
+eCmd w 0xa464 1800

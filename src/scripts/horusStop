@@ -1,17 +1,17 @@
 echo move etalon to 0
-./bin/eCmd w 0xa510 0
+eCmd w 0xa510 0
 
 echo switch off HV
-./HVOff
+HVOff
 
 echo switch off Filament
-./FilamentOff
+FilamentOff
 
 echo close Buterfly
-./ButterFlyOff
+ButterFlyOff
 
 echo turn off Blower
-./BlowerOff
+BlowerOff
 
 killall etalon     
 #cp /mnt/magera/etalon ./bin

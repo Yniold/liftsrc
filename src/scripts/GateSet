@@ -15,15 +15,15 @@ MCP2Gain=0x8060
 MCP2GainWidth=1000
 
 
-./bin/eCmd w 0xa310 $PMTCounts
-./bin/eCmd w 0xa312 $MCP1Counts
-./bin/eCmd w 0xa314 $MCP2Counts
-./bin/eCmd w 0xa316 $Master
+eCmd w 0xa310 $PMTCounts
+eCmd w 0xa312 $MCP1Counts
+eCmd w 0xa314 $MCP2Counts
+eCmd w 0xa316 $Master
 
-./bin/eCmd w 0xa318 $MCP1Gain
-./bin/eCmd w 0xa31a $MCP1GainWidth
-./bin/eCmd w 0xa31c $MCP2Gain
-./bin/eCmd w 0xa31e $MCP2GainWidth
+eCmd w 0xa318 $MCP1Gain
+eCmd w 0xa31a $MCP1GainWidth
+eCmd w 0xa31c $MCP2Gain
+eCmd w 0xa31e $MCP2GainWidth
 
 echo Master $Master 
 echo Shift counter delays PMT $PMTCounts MCP1 $MCP1Counts MCP2 $MCP2Counts
