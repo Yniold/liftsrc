@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.5 $ 
-last change on $Date: 2005-01-21 14:57:25 $ by $Author: rudolf $ 
+$RCSfile: eCmd.c,v $ $Revision: 1.6 $ 
+last change on $Date: 2005-01-21 14:57:44 $ by $Author: rudolf $ 
 
 $Log: eCmd.c,v $
-Revision 1.5  2005-01-21 14:57:25  rudolf
+Revision 1.6  2005-01-21 14:57:44  rudolf
+test
+
+Revision 1.5  2005/01/21 14:57:25  rudolf
 test
 
 Revision 1.4  2005/01/21 14:18:07  harder
@@ -19,7 +22,6 @@ update file description
 
 */
 /************************************************************************/
-
 
 #include <stdio.h>
 #include <stdlib.h>
