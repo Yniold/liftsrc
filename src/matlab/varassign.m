@@ -1,4 +1,4 @@
-function [varnames,col,fcts2val]=varassign();
+function [col,fcts2val]=varassign();
 % defines cell array with variable names and columns and creates structures
 % col and fcts2val with fields named after the variables
 
