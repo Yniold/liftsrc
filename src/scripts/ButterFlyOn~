@@ -1,0 +1,2 @@
+echo switch Butterfly open
+./bin/eCmd w 0xa462 0

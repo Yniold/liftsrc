@@ -1,0 +1,8 @@
+set -x
+#./bin/eCmd s etalononline   23374
+./bin/eCmd s etalonscanstart 15000
+./bin/eCmd s etalonscanstop  25000
+./bin/eCmd s etalonscanstep  32
+./bin/eCmd s etalonscan
+#sleep 300
+#./bin/eCmd s etalontoggle

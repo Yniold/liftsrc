@@ -1,0 +1,31 @@
+#!/bin/sh
+echo set gate timings and delays
+
+Master=80
+
+PMTCounts=33
+MCP1Counts=50
+MCP2Counts=50
+
+# add 0x8000 to MCP?Gain to activate gain switching
+MCP1Gain=0x0010
+MCP1GainWidth=500
+
+MCP2Gain=0x8010
+MCP2GainWidth=500
+
+
+./bin/eCmd w 0xa308 $PMTCounts
+./bin/eCmd w 0xa312 $MCP1Counts
+./bin/eCmd w 0xa314 $MCP2Counts
+./bin/eCmd w 0xa316 $Master
+
+./bin/eCmd w 0xa318 $MCP1Gain
+./bin/eCmd w 0xa31a $MCP1GainWidth
+./bin/eCmd w 0xa31c $MCP2Gain
+./bin/eCmd w 0xa31e $MCP2GainWidth
+
+echo Master $Master 
+echo Shift counter delays PMT $PMTCounts MCP1 $MCP1Counts MCP2 $MCP2Counts
+echo Gain delay MCP1 $MCP1Gain MCP2 $MCP2Gain
+echo Gain width MCP1 $MCP1GainWidth MCP2 $MCP2GainWidth

@@ -1,0 +1,6 @@
+set -x
+./bin/eCmd s etalononline 28600
+./bin/eCmd s etalonofflineleft 1000
+./bin/eCmd s etalonofflineright 1000
+./bin/eCmd s etalondither 8
+./bin/eCmd s etalontoggle

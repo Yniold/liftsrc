@@ -1,0 +1,3 @@
+/usr/local/matlab/etc/lmstart -u lift
+nice -20 matlab -nodesktop -nosplash
+

@@ -1,0 +1,6 @@
+echo switch filament ON
+./bin/eCmd w 0xa468 2000
+./bin/eCmd w 0xa408 0x2000
+sleep 1
+./bin/eCmd w 0xa468 1000
+

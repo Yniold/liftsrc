@@ -1,0 +1,5 @@
+konsole --nomenubar --notabbar --geometry 320x600+0+0 -title 'DebugMon' -e nice ./bin/debugMon 1300 &
+konsole --nomenubar --notabbar --geometry 640x120+316+160 -title 'elekStatus' -e nice ./bin/elekStatus &
+konsole --nomenubar --notabbar --geometry 320x120+650+0 -title 'etalon' -e nice ./bin/etalon 500 64 16 &
+konsole --nomenubar --notabbar --geometry 320x120+316+0 -title 'elekIOServ' -e nice -n-20 ./bin/elekIOServ &
+  

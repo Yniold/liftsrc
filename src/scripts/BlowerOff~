@@ -1,0 +1,3 @@
+echo switch HV Off
+./bin/eCmd w 0xa460 0x0000
+./bin/eCmd w 0xa31C 0x0010
