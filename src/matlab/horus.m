@@ -120,7 +120,14 @@ data = getappdata(gcbf, 'horusdata');
 
 if isfield(data,'hADC')
     hADC=str2double(data.hADC);
-    if ishandle(hADC), close(hADC); end
+    if ishandle(hADC), 
+        ADCdata = getappdata(hADC, 'ADCdata');
+        if isfield(ADCdata,'ActTimer')
+            stop(ADCdata.ActTimer);
+            delete(ADCdata.ActTimer);
+        end
+        close(hADC); 
+    end
 end
 
 if isfield(data,'hCounterCards')
