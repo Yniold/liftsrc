@@ -32,6 +32,7 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_OutputFcn',  @ADC_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
+
 if nargin & isstr(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -85,7 +86,7 @@ data = getappdata(GUI_handles.output, 'ADCdata');
 %set(GUI_handles.figDataGUI,'Visible','on');
 
 %statusData=ReadDataAvg('status.bin',50,2500);
-horusdata = getappdata(handles.parenthandle, 'horusdata');
+horusdata = getappdata(GUI_handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 %[statusData,AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);

@@ -62,6 +62,8 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
       'TimerFcn', {@ReadStatus,handles});   
+  
+start(handles.ActTimer);
 
 data.ActTimer=handles.ActTimer;
 
@@ -87,7 +89,7 @@ varargout{1} = handles.output;
 
 function ReadStatus(arg1,arg2,handles)
 data = getappdata(handles.output, 'horusdata');
-[horusdata.statusData,horusdata.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
+[data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 setappdata(handles.output, 'horusdata', data);
 
 
@@ -134,6 +136,7 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
 
+stop(handles.ActTimer);
 if isfield(data,'hADC')
     hADC=str2double(data.hADC);
     if ishandle(hADC), 
@@ -156,9 +159,8 @@ if isfield(data,'hEtalon')
     if ishandle(hEtalon), close(hEtalon); end
 end
 
-stop(handles.ActTimer);
 delete(handles.ActTimer);
 
-close(horus);
+close(gcbf);
 
 
