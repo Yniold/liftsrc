@@ -71,6 +71,7 @@ guidata(hObject, handles);
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'horusdata', data);
+start(handles.ActTimer);
 
 
 
@@ -91,24 +92,45 @@ data = getappdata(handles.output, 'horusdata');
 [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 setappdata(handles.output, 'horusdata', data);
 
-statusData=data.statusData;
-ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
-    double(statusData(:,4))/1440.0+...
-    double(statusData(:,5))/86400.0+...
-    double(statusData(:,6))/86400000.0;
-[SortZeit,indexZeit]=sort(ZeitTage);
-maxLen=size(ZeitTage,1);
-lastrow=indexZeit(maxLen);
+%statusData=data.statusData;
+%statustime=double(statusData(:,1))+ ...
+%           double(statusData(:,2))./1.0+ ...
+%           double(statusData(:,3))./24.0+...
+%           double(statusData(:,4))./1440.0+...
+%           double(statusData(:,5))./86400.0;
+%[SortZeit,indexZeit]=sort(statustime);
+%maxLen=size(statustime,1);
+%lastrow=indexZeit(maxLen);
+%ADCBase1=689;
 
-% if filament on check reference cell pressure 
-ADCBase1=689;
-if bitget(statusData(lastrow,724),14+1)
-    if statusData(lastrow,ADCBase1+3*3)>1000
-        Valveword=bitset(statusData(lastrow,724),14+1,0);
-        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    end
-end
+% if filament is on check reference cell pressure 
+%if bitget(statusData(lastrow,724),14)
+%    if statusData(lastrow,ADCBase1+3*3)>11000
+%        Valveword=bitset(statusData(lastrow,724),14,0);
+%        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+%    end
+%end
 
+% if HV is on check cell pressure P20
+%if single(statusData(lastrow,725))==1
+%    if single(statusData(lastrow,ADCBase1+1*3))>=13000
+%        system('/lift/bin/eCmd w 0xa460 0');
+%    end
+%end
+
+% if Blower is on check cell pressure P1000
+%if single(statusData(lastrow,?))==1
+%    if single(statusData(lastrow,ADCBase1+1*3))>=13000
+%        system('/lift/bin/eCmd w 0xa460 0');
+%    end
+%end
+%if single(statusData(lastrow,?))==0
+%    set(handles.togBlower,'Value',0)
+%    set(handles.togBlower,'BackgroundColor','b','String','Blower OFF');
+%else
+%    set(handles.togBlower,'Value',1)
+%    set(handles.togBlower,'BackgroundColor','r','String','Blower ON');
+%end
 
 
 % --- Executes on button press in ADC.
@@ -117,8 +139,13 @@ function ADC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleADC=ADC('handle',num2str(gcbf,16));
-data.hADC=num2str(handleADC,16);
+if ~isfield(data,'hADC')
+    handleADC=ADC('handle',num2str(gcbf,16));
+    data.hADC=num2str(handleADC,16);
+elseif ~ishandle(str2double(data.hADC)) 
+    handleADC=ADC('handle',num2str(gcbf,16));
+    data.hADC=num2str(handleADC,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -128,8 +155,13 @@ function CounterCards_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleCounterCards=CounterCards('handle',num2str(gcbf,16));
-data.hCounterCards=num2str(handleCounterCards,16);
+if ~isfield(data,'hCounterCards')
+    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+    data.hCounterCards=num2str(handleCounterCards,16);
+elseif ~ishandle(str2double(data.hCounterCards)) 
+    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+    data.hCounterCards=num2str(handleCounterCards,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -200,14 +232,9 @@ if isfield(data,'hLaser')
     hLaser=str2double(data.hLaser);
     if ishandle(hLaser), 
         Laserdata = getappdata(hLaser, 'tcpdata');
-        if isfield(Laserdata,'LaserTimer')
-            tport=Laserdata.tport;
-            fclose(tcpdata.tport);
-delete(tcpdata.tport);
-echotcpip('off');
-stop(Laserdata.LaserTimer);
-            delete(Laserdata.LaserTimer);
-        end
+        fclose(Laserdata.tport);
+        delete(Laserdata.tport);
+        echotcpip('off');
         close(hLaser); 
     end
 end
@@ -225,8 +252,13 @@ function Dyelaser_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
-data.hDyelaser=num2str(handleDyelaser,16);
+if ~isfield(data,'hDyelaser')
+    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
+    data.hDyelaser=num2str(handleDyelaser,16);
+elseif ~ishandle(str2double(data.hDyelaser)) 
+    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
+    data.hDyelaser=num2str(handleDyelaser,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -235,17 +267,17 @@ function Laser_Callback(hObject, eventdata, handles)
 % hObject    handle to Laser (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 data = getappdata(gcbf, 'horusdata');
-handleLaser=Laser('handle',num2str(gcbf,16));
-data.hLaser=num2str(handleLaser,16);
+if ~isfield(data,'hLaser')
+    handleLaser=Laser('handle',num2str(gcbf,16));
+    data.hLaser=num2str(handleLaser,16);
+elseif ~ishandle(str2double(data.hLaser)) 
+    handleLaser=Laser('handle',num2str(gcbf,16));
+    data.hLaser=num2str(handleLaser,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
 
 
-% --- Executes on button press in Start.
-function Start_Callback(hObject, eventdata, handles)
-% hObject    handle to Start (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-start(handles.ActTimer);

@@ -93,24 +93,37 @@ data = getappdata(handles.output, 'horusdata');
 setappdata(handles.output, 'horusdata', data);
 
 %statusData=data.statusData;
-%ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
-%    double(statusData(:,4))/1440.0+...
-%    double(statusData(:,5))/86400.0+...
-%    double(statusData(:,6))/86400000.0;
-%[SortZeit,indexZeit]=sort(ZeitTage);
-%maxLen=size(ZeitTage,1);
+%statustime=double(statusData(:,1))+ ...
+%           double(statusData(:,2))./1.0+ ...
+%           double(statusData(:,3))./24.0+...
+%           double(statusData(:,4))./1440.0+...
+%           double(statusData(:,5))./86400.0;
+%[SortZeit,indexZeit]=sort(statustime);
+%maxLen=size(statustime,1);
 %lastrow=indexZeit(maxLen);
-
-% if filament on check reference cell pressure 
 %ADCBase1=689;
+
+% if filament is on check reference cell pressure 
 %if bitget(statusData(lastrow,724),14)
-%    if statusData(lastrow,ADCBase1+3*3)>11000
+%    if statusData(lastrow,ADCBase1+3*3)>?
 %        Valveword=bitset(statusData(lastrow,724),14,0);
 %        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
 %    end
 %end
 
+% if HV is on check cell pressure P20
+%if single(statusData(lastrow,725))==1
+%    if single(statusData(lastrow,ADCBase1+1*3))>=?
+%        system('/lift/bin/eCmd w 0xa460 0');
+%    end
+%end
 
+% if Blower is on check cell pressure P1000
+%if single(statusData(lastrow,727))==1
+%    if single(statusData(:,ADCBase1))>?
+%        system('/lift/bin/eCmd w 0xa464 0');
+%    end
+%end
 
 % --- Executes on button press in ADC.
 function ADC_Callback(hObject, eventdata, handles)

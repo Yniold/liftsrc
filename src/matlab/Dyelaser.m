@@ -82,18 +82,9 @@ setappdata(handles.output, 'Dyelaserdata', data);
 function DyelaserRefresh(arg1,arg2,handles)
 data = getappdata(handles.output, 'Dyelaserdata');
 
-%[s,w] = system('tail -n-10 data/ccStatus.txt > data/status_sub.txt');
-%clear status_sub;
-%load 'data/status_sub.txt';
-
-%figure(GUI_handles.figDataGUI);
-%set(GUI_handles.figDataGUI,'Visible','on');
-
-%statusData=ReadDataAvg('status.bin',50,2500);
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
-%[statusData,AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 statustime=double(statusData(:,1))+ ...
            double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
@@ -105,9 +96,7 @@ maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
 PlotWidth=maxLen;
-
 stopPlot=maxLen;
-
 startPlot=1;
 iZeit=indexZeit(startPlot:stopPlot);
 minTime=statustime(iZeit(1));
@@ -116,7 +105,7 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 ADCBase0=656;
 ADCBase1=689;
 
-% put data values in text fields
+% display ADC values
 
 DiodeUV=4.6863E-6*double(statusData(iZeit,ADCBase0+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase0+2*3))+390.41;
 
@@ -145,7 +134,7 @@ set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 
-% plot data values in graph 1
+% plot parameters in graph 1
 
 hold(handles.axes1,'off'); 
 

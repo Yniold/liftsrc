@@ -133,15 +133,15 @@ function MaskApply_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
-ADCdata = getappdata(str2double(horusdata.hADC),'ADCdata');
+Detdata = getappdata(str2double(horusdata.hADC),'Detdata');
 
 switch handles.device
     case 0
-        Mask=ADCdata.PMTMask;
+        Mask=Detdata.PMTMask;
     case 1
-        Mask=ADCdata.MCP1Mask;
+        Mask=Detdata.MCP1Mask;
     case 2
-        Mask=ADCdata.MCP2Mask;
+        Mask=Detdata.MCP2Mask;
 end
 
 MaskOption=get(handles.ToggleMaskUnmask,'Value');
