@@ -1,2 +1,2 @@
 echo close Butterfly
-./bin/eCmd w 0xa462 0x1800
+./bin/eCmd w 0xa462 1800

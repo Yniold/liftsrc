@@ -8,7 +8,7 @@ echo switch off Filament
 ./FilamentOff
 
 echo close Buterfly
-./ButterlyOff
+./ButterFlyOff
 
 echo turn off Blower
 ./BlowerOff
