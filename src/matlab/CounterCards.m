@@ -111,7 +111,7 @@ if isfield(handles,'device')
             else
                 set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             end
-            set(handles.txtGain,'String',num2str(statusData(lastrow,226)));
+            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,226),16,0)));
             set(handles.txtGainWidth,'String',num2str(statusData(lastrow,227)));
             set(handles.txtCounter,'String',num2str(statusData(lastrow,225)));
         case 3
@@ -120,7 +120,7 @@ if isfield(handles,'device')
             else
                 set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             end
-            set(handles.txtGain,'String',num2str(statusData(lastrow,435)));
+            set(handles.txtGain,'String',num2str(bitset(statusData(lastrow,435),16,0)));
             set(handles.txtGainWidth,'String',num2str(statusData(lastrow,436)));
             set(handles.txtCounter,'String',num2str(statusData(lastrow,434)));
     end
@@ -243,7 +243,6 @@ end
 
 function device_Callback(hObject, eventdata, handles)
 set(hObject,'BackgroundColor','white');
-get(hObject,'Value')
 guidata(hObject, handles);
 
 
