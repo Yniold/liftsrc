@@ -114,6 +114,8 @@ end
 guidata(hObject, handles);
 
 setappdata(handles.output, 'tcpdata', tcpdata); 
+Update_Callback(hObject, eventdata, handles)
+
 
 
 % --- Outputs from this function are returned to the command line.
@@ -463,11 +465,11 @@ pause(0.5);
 DiodeStatus=tport.UserData;
 if strcmp(DiodeStatus(1:2),'ON')
     set(handles.toggleLaser,'Value',1)
-    set(handles.toggleLaser,'BackgroundColor','r');
+    set(handles.toggleLaser,'BackgroundColor','g');
     set(handles.toggleLaser,'String','Laser is ON')
 elseif strcmp(DiodeStatus(1:3),'OFF')
     set(handles.toggleLaser,'Value',0)
-    set(handles.toggleLaser,'BackgroundColor','g');
+    set(handles.toggleLaser,'BackgroundColor','c');
     set(handles.toggleLaser,'String','Laser is OFF')
 end
 
