@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-11 12:36:12 $ by $Author: martinez $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-11 13:44:00 $ by $Author: harder $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.8  2005-02-11 12:36:12  martinez
+* Revision 1.9  2005-02-11 13:44:00  harder
+* added InstrumentAction to elekStatus, added support in elekIOServ & eCmd
+*
+* Revision 1.8  2005/02/11 12:36:12  martinez
 * started including gatings in CounterCards, started including instrument action structure in elekIO.h and elekIOServ.c
 *
 * Revision 1.7  2005/02/02 18:06:53  martinez
@@ -1479,6 +1482,16 @@ int main()
 	    Message.MsgType=MSG_TYPE_ACK;			    
 	    SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 			sizeof(struct ElekMessageType), &Message);
+
+	    break;
+
+	  case MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION:
+	      ElekStatus.InstrumentFlags.InstrumentAction=Message.Value;
+	      sprintf(buf,"elekIOServ: Set InstrumentAction to %d",ElekStatus.InstrumentFlags.InstrumentAction);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
 
 	    break;
 

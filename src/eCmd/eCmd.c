@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.12 $ 
-last change on $Date: 2005-01-24 16:32:09 $ by $Author: harder $ 
+$RCSfile: eCmd.c,v $ $Revision: 1.13 $ 
+last change on $Date: 2005-02-11 13:44:00 $ by $Author: harder $ 
 
 $Log: eCmd.c,v $
-Revision 1.12  2005-01-24 16:32:09  harder
+Revision 1.13  2005-02-11 13:44:00  harder
+added InstrumentAction to elekStatus, added support in elekIOServ & eCmd
+
+Revision 1.12  2005/01/24 16:32:09  harder
 revision information included in file header
 
 Revision 1.3  2005/01/21 14:17:47  harder
@@ -143,6 +146,27 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, uint16_t Value) {
 } /* SetStatusCommand */
 
 	
+/*************************************************************************************/
+/* FindInstrumentAction                                                              */
+/* Input: String to look for                                                         */
+/* Return: Value of enum InstrumentActionType to correspond to input string          */
+/*************************************************************************************/
+
+int FindInstrumentAction ( char *InstrumentAction)
+{
+
+    if (strcasecmp(InstrumentAction,"nop")==0) return (INSTRUMENT_ACTION_NOP);
+    if (strcasecmp(InstrumentAction,"measure")==0) return (INSTRUMENT_ACTION_MEASURE);
+    if (strcasecmp(InstrumentAction,"cal")==0) return (INSTRUMENT_ACTION_CAL);
+    if (strcasecmp(InstrumentAction,"diag")==0) return (INSTRUMENT_ACTION_DIAG);
+    if (strcasecmp(InstrumentAction,"powerup")==0) return (INSTRUMENT_ACTION_POWERUP);
+    if (strcasecmp(InstrumentAction,"powerdown")==0) return (INSTRUMENT_ACTION_POWERDOWN);
+    if (strcasecmp(InstrumentAction,"lasermirrortune")==0) return (INSTRUMENT_ACTION_LASERMIRRORTUNE);
+    return(-1);
+
+} /* FindInstrumentAction */
+
+
 
 int main(int argc, char *argv[])
 {
@@ -249,6 +273,21 @@ int main(int argc, char *argv[])
 		Addr=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
 		Value=1;
 	    };
+
+	    if (strcasecmp(argv[ArgCount],"instrumentaction")==0) {
+		if (argc>ArgCount+1) { // do we still have a given parameter ?
+		    if ( (ret=FindInstrumentAction(argv[ArgCount+1]))>-1) {
+			MsgType=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
+			Addr=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
+			Value=(uint16_t)ret;
+		    } else { // no valid paramter
+			printf("Error: invalid parameter %s for %s \n",argv[ArgCount], argv[ArgCount+1]);
+		    } /* if FindInstrumentAction */
+		} else { // we don't have enough parameter 
+		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
+		} /* if ArgC> */
+	    } 
+
 	    /* Etalon commands */	    
 	    if (strcasecmp(argv[ArgCount],"etalonnop")==0) {
 	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;

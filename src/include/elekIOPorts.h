@@ -42,12 +42,13 @@
 enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_READ_DATA,
     MSG_TYPE_WRITE_DATA,
-    MSG_TYPE_ACK,                          // ACKNOLEDGE of execution
-    MSG_TYPE_SIGNAL,                       // signals action
-    MSG_TYPE_CHANGE_FLAG_STATUS_QUERY,     // change StatusQueryFlag
-    MSG_TYPE_CHANGE_FLAG_STATUS_SAVE,      // change StatusSave
-    MSG_TYPE_CHANGE_FLAG_ETALON_ACTION,    // change EtalonAction
-    MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, // change system parameter
+    MSG_TYPE_ACK,                              // ACKNOLEDGE of execution
+    MSG_TYPE_SIGNAL,                           // signals action
+    MSG_TYPE_CHANGE_FLAG_STATUS_QUERY,         // change StatusQueryFlag
+    MSG_TYPE_CHANGE_FLAG_STATUS_SAVE,          // change StatusSave
+    MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION,    // change InstrumentAction
+    MSG_TYPE_CHANGE_FLAG_ETALON_ACTION,        // change EtalonAction
+    MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,     // change system parameter
     MSG_TYPE_CHANGE_MASK,				   // change counter mask
 
     MAX_MSG_TYPE }; 
