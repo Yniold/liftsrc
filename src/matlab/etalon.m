@@ -24,7 +24,7 @@ function varargout = etalon(varargin)
 
 % Edit the above text to modify the response to help etalon
 
-% Last Modified by GUIDE v2.5 25-Jan-2005 11:11:29
+% Last Modified by GUIDE v2.5 27-Jan-2005 16:35:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -224,4 +224,15 @@ function Exit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 close(etalon);
+
+
+
+% --- Executes on button press in toggleFilament.
+function toggleFilament_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleFilament (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleFilament
+
 

@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 24-Jan-2005 19:11:29
+% Last Modified by GUIDE v2.5 27-Jan-2005 16:17:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -88,9 +88,29 @@ varargout{1} = handles.output;
 
 
 function ReadStatus(arg1,arg2,handles)
+
 data = getappdata(handles.output, 'horusdata');
 [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 setappdata(handles.output, 'horusdata', data);
+
+statusData=data.statusData;
+ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
+    double(statusData(:,4))/1440.0+...
+    double(statusData(:,5))/86400.0+...
+    double(statusData(:,6))/86400000.0;
+[SortZeit,indexZeit]=sort(ZeitTage);
+maxLen=size(ZeitTage,1);
+lastrow=indexZeit(maxLen);
+
+% if filament on check reference cell pressure 
+ADCBase1=689;
+if bitget(statusData(lastrow,724),14+1)
+    if statusData(lastrow,ADCBase1+3*3)>1000
+        Valveword=bitset(statusData(lastrow,724),14+1,0);
+        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+    end
+end
+
 
 
 % --- Executes on button press in ADC.
@@ -117,14 +137,14 @@ setappdata(gcbf, 'horusdata', data);
 
 
 % --- Executes on button press in etalon.
-function Etalon_Callback(hObject, eventdata, handles)
+%function Etalon_Callback(hObject, eventdata, handles)
 % hObject    handle to etalon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-data = getappdata(gcbf, 'horusdata');
-handleEtalon=etalon('handle',num2str(gcbf,16));
-data.hEtalon=num2str(handleEtalon,16);
-setappdata(gcbf, 'horusdata', data); 
+%data = getappdata(gcbf, 'horusdata');
+%handleEtalon=etalon('handle',num2str(gcbf,16));
+%data.hEtalon=num2str(handleEtalon,16);
+%setappdata(gcbf, 'horusdata', data); 
 
 
 
@@ -137,6 +157,14 @@ function Exit_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 
 stop(handles.ActTimer);
+
+% shut Filament and Valves Off
+system('/lift/bin/eCmd w 0xa408 0x0000');
+% home etalon 
+system('/lift/bin/eCmd w 0xa510 0');
+
+% close child GUIs
+
 if isfield(data,'hADC')
     hADC=str2double(data.hADC);
     if ishandle(hADC), 
@@ -149,18 +177,54 @@ if isfield(data,'hADC')
     end
 end
 
+if isfield(data,'hDyelaser')
+    hDyelaser=str2double(data.hDyelaser);
+    if ishandle(hDyelaser), 
+        Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+        if isfield(Dyelaserdata,'ActTimer')
+            stop(Dyelaserdata.ActTimer);
+            delete(Dyelaserdata.ActTimer);
+        end
+        close(hDyelaser); 
+    end
+end
+
 if isfield(data,'hCounterCards')
     hCounterCards=str2double(data.hCounterCards);
     if ishandle(hCounterCards), close(hCounterCards); end
 end
 
-if isfield(data,'hEtalon')
-    hEtalon=str2double(data.hEtalon);
-    if ishandle(hEtalon), close(hEtalon); end
-end
+%if isfield(data,'hEtalon')
+%    hEtalon=str2double(data.hEtalon);
+%    if ishandle(hEtalon), close(hEtalon); end
+%end
 
 delete(handles.ActTimer);
 
 close(gcbf);
+
+
+
+
+% --- Executes on button press in Dyelaser.
+function Dyelaser_Callback(hObject, eventdata, handles)
+% hObject    handle to Dyelaser (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
+data.hDyelaser=num2str(handleDyelaser,16);
+setappdata(gcbf, 'horusdata', data); 
+
+
+% --- Executes on button press in Laser.
+function Laser_Callback(hObject, eventdata, handles)
+% hObject    handle to Laser (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+handleLaser=Laser('handle',num2str(gcbf,16));
+data.hLaser=num2str(handleLaser,16);
+setappdata(gcbf, 'horusdata', data); 
 
 

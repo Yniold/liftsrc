@@ -55,6 +55,7 @@ function ADC_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ADC
 handles.output = hObject;
 
+% get horus handle
 if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
