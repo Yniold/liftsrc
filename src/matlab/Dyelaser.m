@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 27-Jan-2005 17:33:40
+% Last Modified by GUIDE v2.5 31-Jan-2005 20:41:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,7 +79,7 @@ guidata(hObject, handles);
 setappdata(handles.output, 'Dyelaserdata', data);
 
 
-function PlotRefresh(arg1,arg2,handles)
+function DyelaserRefresh(arg1,arg2,handles)
 data = getappdata(handles.output, 'Dyelaserdata');
 
 %[s,w] = system('tail -n-10 data/ccStatus.txt > data/status_sub.txt');
@@ -131,13 +131,32 @@ ADCBase1=689;
 
 % put data values in text fields
 
+DiodeUV=4.6863E-6*double(statusData(iZeit,ADCBase0+2*3)).^2-8.5857E-2*double(statusData(iZeit,ADCBase0+2*3))+390.41;
+
 set(handles.txtDiodeGr,'String',statusData(lastrow,ADCBase0+5*3));
-set(handles.txtDiodeUV,'String',statusData(lastrow,ADCBase0+1*3));
+set(handles.txtDiodeUV,'String',statusData(lastrow,ADCBase0+2*3));
 set(handles.txtDiodeEt,'String',statusData(lastrow,ADCBase0+4*3));
 set(handles.txtPDyelaser,'String',statusData(lastrow,ADCBase0+1*3));
 set(handles.txtPVent,'String',statusData(lastrow,ADCBase0+7*3));
 set(handles.txtIFilament,'String',statusData(lastrow,ADCBase1+6*3));
 set(handles.txtPRef,'String',statusData(lastrow,ADCBase1+3*3));
+
+EtalonBase=643; 
+Etalonhelp=int32(statusData(:,EtalonBase));
+EtalonSetPos=(Etalonhelp)+int32(statusData(:,EtalonBase+1));
+EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
+
+Etalonhelp=int32(statusData(:,EtalonBase+2));
+EtalonCurPos=(Etalonhelp)+int32(statusData(:,EtalonBase+3)); 
+EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
+
+Etalonhelp=int32(statusData(:,EtalonBase+4)); 
+EtalonEncPos=(Etalonhelp)+int32(statusData(:,EtalonBase+5)); 
+EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+
+set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
+set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
+set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 
 % plot data values in graph 1
 
@@ -145,27 +164,42 @@ hold(handles.axes1,'off');
 
 if get(handles.checkDiodeGr,'Value')
     plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+5*3));
-    hold(GUI_handles.axeADC,'on');
+    hold(handles.axes1,'on');
 end 
 
 if get(handles.checkDiodeUV,'Value')
-    plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+1*3));
-    hold(GUI_handles.axeADC,'on');
+    plot(handles.axes1,Zeit(iZeit),DiodeUV(iZeit));
+    hold(handles.axes1,'on');
 end 
 
 if get(handles.checkDiodeEt,'Value')
     plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+4*3));
-    hold(GUI_handles.axeADC,'on');
+    hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPDyelaser,'Value')
     plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+1*3));
-    hold(GUI_handles.axeADC,'on');
+    hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
     plot(handles.axes1,Zeit(iZeit),statusData(iZeit,ADCBase0+7*3));
-    hold(GUI_handles.axeADC,'on');
+    hold(handles.axes1,'on');
+end 
+
+if get(handles.chkEtCurPos,'Value')
+    plot(handles.axes1,Zeit(iZeit),EtalonCurPos(iZeit));
+    hold(handles.axes1,'on');
+end 
+
+if get(handles.chkEtSetPos,'Value')
+    plot(handles.axes1,Zeit(iZeit),EtalonSetPos(iZeit));
+    hold(handles.axes1,'on');
+end 
+
+if get(handles.chkEtEncPos,'Value')
+    plot(handles.axes1,Zeit(iZeit),EtalonEncPos(iZeit));
+    hold(handles.axes1,'on');
 end 
 
 timeStep=double(10.0/86400.0);
@@ -182,11 +216,25 @@ grid(handles.axes1);
 PMTMaskBase=211;
 PMTSumCounts=statusData(:,PMTMaskBase+12);
 
-hold(handles.axes2,'off');
-plot(handles.axes2,Zeit(iZeit),PMTSumCounts(iZeit)); 
-hold(handles.axes2,'on');
+[SortEtpos,indexEtpos]=sort(EtalonCurPos);
+iEtpos=indexEtpos(startPlot:stopPlot);
+minEtpos=EtalonCurPos(iEtpos(1));
+maxEtpos=EtalonCurPos(iEtpos(size(iEtpos,1)));
+maxEtpos=max(maxEtpos,minEtpos+1);
 
-xlim(handles.axes2,[minTime maxTime]);
+if get(handles.radioTime,'Value');
+    hold(handles.axes2,'off');
+    plot(handles.axes2,Zeit(iZeit),PMTSumCounts(iZeit)); 
+    hold(handles.axes2,'on');
+    xlim(handles.axes2,[minTime maxTime]);
+else
+    hold(handles.axes2,'off');
+    plot(handles.axes2,EtalonCurPos(iEtpos),PMTSumCounts(iEtpos)); 
+    hold(handles.axes2,'on');
+    xlim(handles.axes2,[minEtpos maxEtpos]);
+end
+    
+
 grid(handles.axes2);
 
 
@@ -480,6 +528,16 @@ else
 end
 
 
+% --- Executes on button press in home_pushbutton.
+function home_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to home_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+system(['/lift/bin/eCmd s etalonnop']);    
+system('/lift/bin/eCmd w 0xa510 0');
+
+
+
 % --- Executes on button press in toggleFilament.
 function toggleFilament_Callback(hObject, eventdata, handles)
 % hObject    handle to toggleFilament (see GCBO)
@@ -494,15 +552,76 @@ if get(hObject,'Value')
         system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
         system('sleep 1');
         system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
-        set(hObject,'string','Filament On');
+        set(hObject,'string','Filament is ON');
         set(hObject,'BackgroundColor','r');
     end
 else
     Valveword=bitset(statusData(lastrow,724),14+1,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    set(hObject,'string','Filament Off');
+    set(hObject,'string','Filament is OFF');
     set(hObject,'BackgroundColor','b');
 end
         
+
+
+% --- Executes on button press in radioTime.
+function radioTime_Callback(hObject, eventdata, handles)
+% hObject    handle to radioTime (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radioTime
+if get(hObject,'Value')
+    set(handles.radioEtpos,'Value',0);
+end
+
+
+% --- Executes on button press in radioEtpos.
+function radioEtpos_Callback(hObject, eventdata, handles)
+% hObject    handle to radioEtpos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radioEtpos
+if get(hObject,'Value')
+    set(handles.radioTime,'Value',0);
+end
+
+
+% --- Executes on button press in chkEtCurPos.
+function chkEtCurPos_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtCurPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtCurPos
+
+
+% --- Executes on button press in chkEtSetPos.
+function c_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtSetPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtSetPos
+
+
+% --- Executes on button press in chkEtEncPos.
+function chkEtEncPos_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtEncPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
+
+
+% --- Executes on button press in chkEtSetPos.
+function chkEtSetPos_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtSetPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtSetPos
+
 
 
