@@ -24,7 +24,7 @@ function varargout = etalon(varargin)
 
 % Edit the above text to modify the response to help etalon
 
-% Last Modified by GUIDE v2.5 18-Jan-2005 16:40:06
+% Last Modified by GUIDE v2.5 25-Jan-2005 11:11:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -216,3 +216,12 @@ else
     system('/lift/bin/eCmd s etalondither 8');
     system('/lift/bin/eCmd s etalontoggle');
 end
+
+
+% --- Executes on button press in Exit.
+function Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+close(etalon);
+

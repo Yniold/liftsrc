@@ -120,17 +120,17 @@ data = getappdata(gcbf, 'horusdata');
 
 if isfield(data,'hADC')
     hADC=str2double(data.hADC);
-    close(hADC);
+    if ishandle(hADC), close(hADC); end
 end
 
 if isfield(data,'hCounterCards')
     hCounterCards=str2double(data.hCounterCards);
-    close(hCounterCards);
+    if ishandle(hCounterCards), close(hCounterCards); end
 end
 
 if isfield(data,'hADC')
     hEtalon=str2double(data.hEtalon);
-    close(hEtalon);
+    if ishandle(hEtalon), close(hEtalon); end
 end
 
 close(horus);

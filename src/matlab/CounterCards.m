@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 12-Jan-2005 14:47:40
+% Last Modified by GUIDE v2.5 25-Jan-2005 11:08:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -189,4 +189,13 @@ guidata(hObject, handles);
 
 
 
+
+
+
+% --- Executes on button press in Exit.
+function Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+close(CounterCards);
 
