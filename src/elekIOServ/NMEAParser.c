@@ -3,12 +3,15 @@
 // Implementation
 // ============================================
 
-// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-01-27 14:59:36 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-01-27 18:16:12 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.c,v $
-// Revision 1.1  2005-01-27 14:59:36  rudolf
+// Revision 1.2  2005-01-27 18:16:12  rudolf
+// changed NMEA parser to work with elekIO serv
+//
+// Revision 1.1  2005/01/27 14:59:36  rudolf
 // added files for GPS receiver connection
 //
 //
@@ -26,7 +29,7 @@ extern volatile unsigned char ucDataReadyFlag;
 // Init NMEA Parser
 // ==================
 
-NMEAParserInit()
+void NMEAParserInit()
 {
 	nState = NP_STATE_SOM;	// Reset Statemachine
 	dwCommandCount = 0;

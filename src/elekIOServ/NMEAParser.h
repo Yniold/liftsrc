@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: NMEAParser.h,v $ last changed on $Date: 2005-01-27 14:59:36 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.h,v $ last changed on $Date: 2005-01-27 18:16:29 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.h,v $
-// Revision 1.1  2005-01-27 14:59:36  rudolf
+// Revision 1.2  2005-01-27 18:16:29  rudolf
+// changed NMEA parser to work with elekIO serv
+//
+// Revision 1.1  2005/01/27 14:59:36  rudolf
 // added files for GPS receiver connection
 //
 //
@@ -16,8 +19,14 @@
 #ifndef _NMEAPARSER_H_
 #define _NMEAPARSER_H_
 
+#ifndef TRUE
 #define TRUE (1)
+#endif
+
+#ifndef FALSE
 #define FALSE (0)
+#endif
+
 enum NP_STATE {
 				NP_STATE_SOM,		// Search for start of message
 				NP_STATE_CMD,		// Get command
@@ -73,11 +82,12 @@ double dGGAVertSpeed;					//
 // Prototypes
 // ==============
 
-void ProcessGPGGA(unsigned char *pData);
-void Reset();
-unsigned char GetField(unsigned char *pData, unsigned char *pField, int nFieldNum, int nMaxFieldLen);
-unsigned char ProcessCommand(unsigned char *pCommand, unsigned char *pData);
-void ProcessNMEA(unsigned char ucData);
-unsigned char ParseBuffer(unsigned char *pBuff, int dwLen);
+extern void NMEAParserInit();
+extern void ProcessGPGGA(unsigned char *pData);
+extern void Reset();
+extern unsigned char GetField(unsigned char *pData, unsigned char *pField, int nFieldNum, int nMaxFieldLen);
+extern unsigned char ProcessCommand(unsigned char *pCommand, unsigned char *pData);
+extern void ProcessNMEA(unsigned char ucData);
+extern unsigned char ParseBuffer(unsigned char *pBuff, int dwLen);
 
 #endif // _NMEAPARSER_H_
