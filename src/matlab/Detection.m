@@ -102,7 +102,7 @@ minTime=statustime(iZeit(1));
 maxTime=statustime(iZeit(size(iZeit,1)));
 
 % display system time
-set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow)/24.0,13),'_',num2str(statusData(lastrow,6))));
+set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
 ADCBase0=656;

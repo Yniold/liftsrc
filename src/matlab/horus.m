@@ -298,7 +298,7 @@ end
 if isfield(data,'hDetection')
     hDetection=str2double(data.hDetection);
     if ishandle(hDetection), 
-        Detdata = getappdata(hDetection, 'Detectiondata');
+        Detdata = getappdata(hDetection, 'Detdata');
         if isfield(Detdata,'Timer')
             stop(Detdata.Timer);
             delete(Detdata.Timer);
