@@ -29,7 +29,7 @@ function varargout = Laser(varargin)
 
 % Edit the above text to modify the response to help Laser
 
-% Last Modified by GUIDE v2.5 04-Feb-2005 15:53:52
+% Last Modified by GUIDE v2.5 09-Feb-2005 14:06:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,21 +79,35 @@ tport=tcpdata.tport;
 % the settings should be
 fprintf(tport,'?PSSN'); 
 pause(0.5);
-PSSN=tport.UserData
+PSSN=tport.UserData;
 fprintf(tport,'?HEADSN'); 
 pause(0.5);
 HEADSN=tport.UserData;
+
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
 % diode temperature should be 26.1°C for PSSN 120865, HEADSN 2363/710
 % crystal temperature should be 151 for PSSN 120865, HEADSN 2363/710
-set(handles.txtsetReprate,'String','3000'); % pulses/s
+
+% diode current should be 36.0 for PSSN 120881, HEADSN 2366/712
+% diode temperature should be 28.6°C for PSSN 120881, HEADSN 2366/712
+% crystal temperature should be 130 for PSSN 120881, HEADSN 2366/712
+
+set(handles.txtsetReprate,'String','3000 kHz'); % pulses/s
 if PSSN(1:6)=='120865'
-    set(handles.txtsetDiodeCurrent,'String','35.4'); % A
-    set(handles.txtsetDiodeTemp,'String','26.1'); % °C
-    set(handles.txtsetDiodePower,'String','4.5'); % W IR intern
+    set(handles.txtsetDiodeCurrent,'String','35.4 A');
+    set(handles.txtsetDiodeTemp,'String','26.1°C');
+    set(handles.txtsetIRPower,'String','4.5 W'); % IR intern
+elseif PSSN(1:6)=='120881'
+    set(handles.txtsetDiodeCurrent,'String','36.0 A');
+    set(handles.txtsetDiodeTemp,'String','28.6°C');
+    set(handles.txtsetIRPower,'String','4.45 W'); % IR intern
 end
 if HEADSN(1:8)=='2363/710'
     set(handles.txtsetCrtemp,'String','151'); % ADC Counts
+    set(handles.txtsetTowerTemp,'String','???°C');
+elseif HEADSN(1:8)=='2366/712'
+    set(handles.txtsetCrtemp,'String','130'); % ADC Counts
+    set(handles.txtsetTowerTemp,'String','28.6°C');    
 end
 
 % Update handles structure
@@ -124,8 +138,9 @@ set(handles.txtZeit,'String',datestr(Zeit,13));
 
 %mark strings to be updated
 set(handles.txtDiodeCurrent,'ForegroundColor','r');
-set(handles.txtDiodePower,'ForegroundColor','r');
+set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
+set(handles.txtTowerTemp,'ForegroundColor','r');
 
 % switch laser on or off
 tcpdata = getappdata(handles.output, 'tcpdata'); 
@@ -179,19 +194,33 @@ if PSSN(1:6)=='120865'
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
     end
+elseif PSSN(1:6)=='120881'
+    if str2double(DiodeCurrentSet)==36.0
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
 
-% diode power
+% IR power
 fprintf(tport,'?P');
 pause(0.5);
-DiodePower=tport.UserData;
-set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
+IRPower=tport.UserData;
+set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 % diode temperature
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
+
+% tower temperature
+fprintf(tport,'?TT');
+pause(0.5);
+TowerTemp=tport.UserData;
+set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
 
@@ -248,8 +277,9 @@ set(handles.txtReprate,'ForegroundColor','r');
 set(handles.txtCrtemp,'ForegroundColor','r');
 set(handles.txtDiodeCurrent,'ForegroundColor','r');
 set(handles.txtDiodeMaxCurrent,'ForegroundColor','r');
-set(handles.txtDiodePower,'ForegroundColor','r');
+set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
+set(handles.txtTowerTemp,'ForegroundColor','r');
 
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
@@ -338,6 +368,14 @@ if PSSN(1:6)=='120865'
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
     end
+elseif PSSN(1:6)=='120881'
+    if str2double(DiodeCurrentSet)==36.0
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
 
 % check repetition rate
@@ -352,6 +390,12 @@ pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check tower temperature
+fprintf(tport,'?TT');
+pause(0.5);
+TowerTemp=tport.UserData;
+set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
+
 % check max. allowed diode current
 fprintf(tport,'?DCL1');
 pause(0.5);
@@ -364,11 +408,11 @@ pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
-% check diode power
+% check IR power
 fprintf(tport,'?P');
 pause(0.5);
-DiodePower=tport.UserData;
-set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
+IRPower=tport.UserData;
+set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
 
@@ -409,8 +453,9 @@ set(handles.txtReprate,'ForegroundColor','r');
 set(handles.txtCrtemp,'ForegroundColor','r');
 set(handles.txtDiodeCurrent,'ForegroundColor','r');
 set(handles.txtDiodeMaxCurrent,'ForegroundColor','r');
-set(handles.txtDiodePower,'ForegroundColor','r');
+set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
+set(handles.txtTowerTemp,'ForegroundColor','r');
 
 % check diode switch status and update laser toggle
 fprintf(tport,'?D');
@@ -461,6 +506,14 @@ if PSSN(1:6)=='120865'
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
     end
+elseif PSSN(1:6)=='120881'
+    if str2double(DiodeCurrentSet)==36.0
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+    elseif str2double(DiodeCurrentSet)==14
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+    else
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+    end
 end
     
 % check repetition rate
@@ -471,31 +524,36 @@ set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
 % check crystal temperature
 fprintf(tport,'?SHG'); 
-%disp('?SHG')
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check tower temperature
+fprintf(tport,'?TT');
+pause(0.5);
+TowerTemp=tport.UserData;
+set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
+
+% check max. allowed diode current
 fprintf(tport,'?DCL1');
-%disp('?DCL1')
 pause(0.5);
 DiodeMaxCurrent=tport.UserData;
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent,'ForegroundColor','k');
     
-% diode temperature, should be 26.1°C for PSSN 120865, HEADSN 2363/710
+% check diode temperature
 fprintf(tport,'?T1');
-%disp('?T')
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
+% check IR power
 fprintf(tport,'?P');
-%disp('?DP')
 pause(0.5);
-DiodePower=tport.UserData;
-set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
+IRPower=tport.UserData;
+set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
+
 
 
 % --- Executes on button press in togglePower.
@@ -510,11 +568,12 @@ set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
 
-%mark strings to be updated
+% mark strings to be updated
 set(handles.txtDiodeCurrent,'ForegroundColor','r');
-set(handles.txtDiodePower,'ForegroundColor','r');
+set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtCrtemp,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
+set(handles.txtTowerTemp,'ForegroundColor','r');
 
 % current depends on power supply
 fprintf(tport,'?PSSN'); 
@@ -526,6 +585,12 @@ if PSSN(1:6)=='120865'
     else
         fprintf(tport,'C1:14'); % lowest green power 
     end    
+elseif PSSN(1:6)=='120881'
+    if get(hObject,'Value')
+        fprintf(tport,'C1:36.0'); % full power
+    else
+        fprintf(tport,'C1:14'); % lowest green power 
+    end    
 end
 
 % check effect
@@ -534,39 +599,48 @@ fprintf(tport,'?CS1');
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
 % current depends on power supply
-if PSSN(1:6)=='120865'
-    if str2double(DiodeCurrentSet)==35.4
-        set(handles.togglePower,'Value',1)
-        set(handles.togglePower,'BackgroundColor','c');
-        set(handles.togglePower,'String','FULL Power')
-    else
-        set(handles.togglePower,'Value',0)
-        set(handles.togglePower,'BackgroundColor','b');
-        set(handles.togglePower,'String','LOW Power')
-        if str2double(DiodeCurrentSet)~=14
-            set(handles.togglePower,'String','medium Power')
-        end
+if (PSSN(1:6)=='120865' & str2double(DiodeCurrentSet)==35.4)...
+    | (PSSN(1:6)=='120881' & str2double(DiodeCurrentSet)==36.0)
+    set(handles.togglePower,'Value',1)
+    set(handles.togglePower,'BackgroundColor','c');
+    set(handles.togglePower,'String','FULL Power')
+else
+    set(handles.togglePower,'Value',0)
+    set(handles.togglePower,'BackgroundColor','b');
+    set(handles.togglePower,'String','LOW Power')
+    if str2double(DiodeCurrentSet)~=14
+        set(handles.togglePower,'String','medium Power')
     end
 end
 
+% check crystal temp.
 fprintf(tport,'?SHG'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check tower temperature
+fprintf(tport,'?TT');
+pause(0.5);
+TowerTemp=tport.UserData;
+set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
+
+% check diode temp.
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
+% check diode current
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 
+% check IR power
 fprintf(tport,'?P');
 pause(0.5);
-DiodePower=tport.UserData;
-set(handles.txtDiodePower,'String',DiodePower,'ForegroundColor','k');
+IRPower=tport.UserData;
+set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
