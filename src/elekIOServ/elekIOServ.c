@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-31 12:16:28 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-02 14:34:09 $ by $Author: martinez $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.5  2005-01-31 12:16:28  rudolf
+* Revision 1.6  2005-02-02 14:34:09  martinez
+* using only one mask init routine in elekIOServ
+*
+* Revision 1.5  2005/01/31 12:16:28  rudolf
 * added evalution of true heading and groundspeed in kmh
 *
 * Revision 1.4  2005/01/31 09:49:31  rudolf
@@ -310,7 +313,7 @@ void SetCounterCardMask(struct elekStatusType *ptrElekStatus)
     CounterStatus=(Channel <<4);
     elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
     
-    // setup Channel Masks
+    // setup Channel Masks, but only ten words because of depth of shift register
     for (i=0;i<10; i++) {
       elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCard.Channel[Channel].Mask[i]);
     } // for i
@@ -358,16 +361,15 @@ int InitCounterCard (struct elekStatusType *ptrElekStatus) {
     ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*Channel,ptrElekStatus->CounterCard.Channel[Channel].GateDelay);
     ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*Channel+2,ptrElekStatus->CounterCard.Channel[Channel].GateWidth);	
   }
+
+  // initialize mask shift register for all channels
+  SetCounterCardMask(ptrElekStatus);
   
+  // initialize data counter registers  
   for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
     
     CounterStatus=(Channel <<4);
     elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
-    
-    // setup Channel Masks
-    for (i=0;i<COUNTER_MASK_WIDTH; i++) {
-      elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCard.Channel[Channel].Mask[i]);
-    } // for i
     
     // init Data to 0
     TimeSlot=0;
@@ -386,7 +388,8 @@ int InitCounterCard (struct elekStatusType *ptrElekStatus) {
     
   }/*Channel*/
   
-  // req. switch of banks
+  // request switch of banks so we add upcoming 
+  // counts into the initialized registers 
   
   elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );
   
