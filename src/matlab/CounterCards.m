@@ -133,11 +133,11 @@ else % if no device was chosen then show values for PMT
 end
 % check HV
 if single(statusData(lastrow,col.HVSwitchV))==0
-    set(handles.togHV,'Value',0)
-    set(handles.togHV,'BackgroundColor','c','String','HV OFF');
+    set(handles.toggleHV,'Value',0)
+    set(handles.toggleHV,'BackgroundColor','c','String','HV OFF');
 else
-    set(handles.togHV,'Value',1)
-    set(handles.togHV,'BackgroundColor','g','String','HV ON');
+    set(handles.toggleHV,'Value',1)
+    set(handles.toggleHV,'BackgroundColor','g','String','HV ON');
 end
 
 

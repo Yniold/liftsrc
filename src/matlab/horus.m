@@ -179,6 +179,7 @@ if isfield(data,'hSensors')
     end
 end
 
+data.lastrow=lastrow;
 setappdata(handles.output, 'horusdata', data);
 
 
@@ -238,6 +239,10 @@ function Exit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
+statusData=data.statusData;
+col=data.col;
+lastrow=data.lastrow;
+
 stop(handles.ActTimer);
 
 % shut Filament and Valves Off

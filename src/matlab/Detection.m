@@ -622,8 +622,8 @@ if get(hObject,'Value')
         system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
         set(hObject,'BackgroundColor','g','String','HV ON');
         % switch gain on for MCP1
-        word=bitset(statusData(lastrow,col.ccGateDelay1),16);
-        system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        %word=bitset(statusData(lastrow,col.ccGateDelay1),16);
+        %system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
         % switch gain on for MCP2
         word=bitset(statusData(lastrow,col.ccGateDelay2),16);
         system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);

@@ -104,7 +104,7 @@ elseif PSSN(1:6)=='120881'
 end
 if HEADSN(1:8)=='2363/710'
     set(handles.txtsetCrtemp,'String','151'); % ADC Counts
-    set(handles.txtsetTowerTemp,'String','??? C');
+    set(handles.txtsetTowerTemp,'String','31 C');
 elseif HEADSN(1:8)=='2366/712'
     set(handles.txtsetCrtemp,'String','130'); % ADC Counts
     set(handles.txtsetTowerTemp,'String','28.6 C');    
@@ -253,7 +253,7 @@ pause(3);
 ShutterStatus=tport.UserData;
 if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
     set(hObject,'Value',1)
-    set(hObject,'BackgroundColor','r')
+    set(hObject,'BackgroundColor','g')
     set(hObject,'String','Shutter is OPEN')
 elseif strcmp(ShutterStatus(1:6),'CLOSED')
     set(hObject,'Value',0)

@@ -119,7 +119,7 @@ set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
-    set(handles.txtPRef,'BackgroundColor',[0.25,0.25,0.25]);
+    set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
