@@ -68,6 +68,7 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'BusyMode','drop',...
       'TimerFcn', {@DyelaserRefresh,handles});   
 
+start(handles.ActTimer);
 data.ActTimer=handles.ActTimer;
 
 % Update handles structure
@@ -338,7 +339,7 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
-close(handles.figDataGUI);
+close(handles.figure1);
 
 
 

@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 27-Jan-2005 16:17:25
+% Last Modified by GUIDE v2.5 28-Jan-2005 17:43:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,8 +63,6 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'BusyMode','drop',...
       'TimerFcn', {@ReadStatus,handles});   
   
-start(handles.ActTimer);
-
 data.ActTimer=handles.ActTimer;
 
 % Update handles structure
@@ -73,6 +71,7 @@ guidata(hObject, handles);
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'horusdata', data);
+start(handles.ActTimer);
 
 
 
@@ -155,7 +154,6 @@ function Exit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-
 stop(handles.ActTimer);
 
 % shut Filament and Valves Off
@@ -199,6 +197,17 @@ end
 %    if ishandle(hEtalon), close(hEtalon); end
 %end
 
+if isfield(data,'hLaser')
+    hLaser=str2double(data.hLaser);
+    if ishandle(hLaser), 
+        Laserdata = getappdata(hLaser, 'tcpdata');
+        fclose(Laserdata.tport);
+        delete(Laserdata.tport);
+        echotcpip('off');
+        close(hLaser); 
+    end
+end
+
 delete(handles.ActTimer);
 
 close(gcbf);
@@ -226,5 +235,7 @@ data = getappdata(gcbf, 'horusdata');
 handleLaser=Laser('handle',num2str(gcbf,16));
 data.hLaser=num2str(handleLaser,16);
 setappdata(gcbf, 'horusdata', data); 
+
+
 
 
