@@ -380,28 +380,28 @@ grid(handles.axeCounts);
 % check HV
 if single(statusData(lastrow,col.HVSwitchV))==0
     set(handles.togHV,'Value',0)
-    set(handles.togHV,'BackgroundColor','b','String','HV OFF');
+    set(handles.togHV,'BackgroundColor','c','String','HV OFF');
 else
     set(handles.togHV,'Value',1)
-    set(handles.togHV,'BackgroundColor','r','String','HV ON');
+    set(handles.togHV,'BackgroundColor','g','String','HV ON');
 end
 
 % check Blower
 if single(statusData(lastrow,col.BlowerSwitchV))==0
     set(handles.togBlower,'Value',0)
-    set(handles.togBlower,'BackgroundColor','b','String','Blower OFF');
+    set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
 else
     set(handles.togBlower,'Value',1)
-    set(handles.togBlower,'BackgroundColor','r','String','Blower ON');
+    set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
 end
 
 % check Butterfly
 if single(statusData(lastrow,col.ButterflySwitchV))==0
     set(handles.togButterfly,'Value',1)
-    set(handles.togButterfly,'BackgroundColor','r','String','Butterfly OPEN');
+    set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
 else
     set(handles.togButterfly,'Value',0)
-    set(handles.togButterfly,'BackgroundColor','b','String','Butterfly CLOSED');
+    set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
 data.lastrow=lastrow;
@@ -593,17 +593,19 @@ col=horusdata.col;
 if get(hObject,'Value')
 %    if single(statusData(lastrow,col.P1000))<? % switch on Blower only if cell pressure P1000 is low enough
         system('/lift/bin/eCmd w 0xa464 1800');
-        set(hObject,'BackgroundColor','r','String','Blower ON');
+        set(hObject,'BackgroundColor','g','String','Blower ON');
 %    end
 else
     system('/lift/bin/eCmd w 0xa464 0');
-    set(hObject,'BackgroundColor','b','String','Blower OFF');
+    set(hObject,'BackgroundColor','c','String','Blower OFF');
 end
 
 
 
 % --- Executes on button press in togHV.
 function togHV_Callback(hObject, eventdata, handles)
+% switches HV and Gain
+
 % hObject    handle to togHV (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -618,12 +620,26 @@ col=horusdata.col;
 if get(hObject,'Value')
 %    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
         system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
-        set(hObject,'BackgroundColor','r','String','HV ON');
+        set(hObject,'BackgroundColor','g','String','HV ON');
+        % switch gain on for MCP1
+        word=bitset(statusData(lastrow,col.ccGateDelay1),16);
+        system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+        % switch gain on for MCP2
+        word=bitset(statusData(lastrow,col.ccGateDelay2),16);
+        system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
 %    end
 else
     system('/lift/bin/eCmd w 0xa460 0');
-    set(hObject,'BackgroundColor','b','String','HV OFF');
+    set(hObject,'BackgroundColor','c','String','HV OFF');
+    % switch gain off for MCP1
+    word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+    system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+    % switch gain off for MCP2
+    word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+    system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
 end
+
+
 
 
 % --- Executes on button press in togglebutton5.
@@ -635,10 +651,10 @@ function togButterfly_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of togglebutton5
 if get(hObject,'Value')
     system(['/lift/bin/eCmd w 0xa462 0']);
-    set(hObject,'BackgroundColor','r','String','Butterfly OPEN');
+    set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
 else
     system('/lift/bin/eCmd w 0xa462 1800'); 
-    set(hObject,'BackgroundColor','b','String','Butterfly CLOSED');
+    set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
 

@@ -147,12 +147,12 @@ tcpdata = getappdata(handles.output, 'tcpdata');
 tport=tcpdata.tport;
 if get(hObject,'Value')
     fprintf(tport,'D1'); 
-    set(hObject,'BackgroundColor','r');
+    set(hObject,'BackgroundColor','g');
     set(hObject,'String','Laser switched ON')
     pause(0.5);
 else
     fprintf(tport,'D0');
-    set(hObject,'BackgroundColor','y');
+    set(hObject,'BackgroundColor','r');
     set(hObject,'String','Laser switched OFF')
     pause(0.5);
 end
@@ -163,11 +163,11 @@ DiodeStatus=tport.UserData;
 % check if switching was successfull and update laser toggle
 if strcmp(DiodeStatus(1:2),'ON')
     set(hObject,'Value',1)
-    set(hObject,'BackgroundColor','r');
+    set(hObject,'BackgroundColor','g');
     set(hObject,'String','Laser is ON')
 elseif strcmp(DiodeStatus(1:3),'OFF')
     set(hObject,'Value',0)
-    set(hObject,'BackgroundColor','g');
+    set(hObject,'BackgroundColor','c');
     set(hObject,'String','Laser is OFF')
 end
 
@@ -188,19 +188,19 @@ pause(0.5);
 PSSN=tport.UserData;
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 end
 
@@ -241,7 +241,7 @@ if get(hObject,'Value')
     pause(0.5);
 else
     fprintf(tport,'SHT:0');
-    set(hObject,'BackgroundColor','y')
+    set(hObject,'BackgroundColor','r')
     set(hObject,'String','Shutter closed')
     pause(0.5);
 end
@@ -255,7 +255,7 @@ if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
     set(hObject,'String','Shutter is OPEN')
 elseif strcmp(ShutterStatus(1:6),'CLOSED')
     set(hObject,'Value',0)
-    set(hObject,'BackgroundColor','g')
+    set(hObject,'BackgroundColor','c')
     set(hObject,'String','Shutter is CLOSED')
 end
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
@@ -289,10 +289,10 @@ LaserCmd=get(hObject,'String');
 % if the command is laser switching, update Laser toggle button
 if LaserCmd(1)=='d' 
     if LaserCmd(2)=='1'
-        set(handles.toggleLaser,'BackgroundColor','r');
+        set(handles.toggleLaser,'BackgroundColor','g');
         set(handles.toggleLaser,'String','Laser switched ON')
     elseif LaserCmd(2)=='0'
-        set(handles.toggleLaser,'BackgroundColor','y');
+        set(handles.toggleLaser,'BackgroundColor','r');
         set(handles.toggleLaser,'String','Laser switched OFF')
     end    
 end
@@ -325,11 +325,11 @@ pause(0.5);
 DiodeStatus=tport.UserData;
 if strcmp(DiodeStatus(1:2),'ON')
     set(handles.toggleLaser,'Value',1)
-    set(handles.toggleLaser,'BackgroundColor','r');
+    set(handles.toggleLaser,'BackgroundColor','g');
     set(handles.toggleLaser,'String','Laser is ON')
 elseif strcmp(DiodeStatus(1:3),'OFF')
     set(handles.toggleLaser,'Value',0)
-    set(handles.toggleLaser,'BackgroundColor','g');
+    set(handles.toggleLaser,'BackgroundColor','c');
     set(handles.toggleLaser,'String','Laser is OFF')
 end
 
@@ -339,11 +339,11 @@ pause(0.5);
 ShutterStatus=tport.UserData;
 if strcmp(ShutterStatus(1:6),'CLOSED')
     set(handles.toggleShutter,'Value',0)
-    set(handles.toggleShutter,'BackgroundColor','g')
+    set(handles.toggleShutter,'BackgroundColor','c')
     set(handles.toggleShutter,'String','Shutter is CLOSED')
 elseif strcmp(ShutterStatus(1:4),'OPEN')
     set(handles.toggleShutter,'Value',1)
-    set(handles.toggleShutter,'BackgroundColor','r')
+    set(handles.toggleShutter,'BackgroundColor','g')
     set(handles.toggleShutter,'String','Shutter is OPEN')
 end
 
@@ -362,19 +362,19 @@ pause(0.5);
 PSSN=tport.UserData;
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 end
 
@@ -477,11 +477,11 @@ pause(0.5);
 ShutterStatus=tport.UserData;
 if strcmp(ShutterStatus(1:6),'CLOSED')
     set(handles.toggleShutter,'Value',0)
-    set(handles.toggleShutter,'BackgroundColor','g')
+    set(handles.toggleShutter,'BackgroundColor','c')
     set(handles.toggleShutter,'String','Shutter is CLOSED')
 elseif strcmp(ShutterStatus(1:4),'OPEN')
     set(handles.toggleShutter,'Value',1)
-    set(handles.toggleShutter,'BackgroundColor','r')
+    set(handles.toggleShutter,'BackgroundColor','g')
     set(handles.toggleShutter,'String','Shutter is OPEN')
 end
 
@@ -500,19 +500,19 @@ pause(0.5);
 PSSN=tport.UserData;
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
-        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','c');
+        set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
     elseif str2double(DiodeCurrentSet)==14
-        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
-        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','b');
+        set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
     end
 end
     
@@ -602,11 +602,11 @@ DiodeCurrentSet=tport.UserData;
 if (PSSN(1:6)=='120865' & str2double(DiodeCurrentSet)==35.4)...
     | (PSSN(1:6)=='120881' & str2double(DiodeCurrentSet)==36.0)
     set(handles.togglePower,'Value',1)
-    set(handles.togglePower,'BackgroundColor','c');
+    set(handles.togglePower,'BackgroundColor','g');
     set(handles.togglePower,'String','FULL Power')
 else
     set(handles.togglePower,'Value',0)
-    set(handles.togglePower,'BackgroundColor','b');
+    set(handles.togglePower,'BackgroundColor','c');
     set(handles.togglePower,'String','LOW Power')
     if str2double(DiodeCurrentSet)~=14
         set(handles.togglePower,'String','medium Power')

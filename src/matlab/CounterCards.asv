@@ -24,7 +24,7 @@ function varargout = CounterCards(varargin)
 
 % Edit the above text to modify the response to help guidetemplate0
 
-% Last Modified by GUIDE v2.5 14-Feb-2005 16:17:12
+% Last Modified by GUIDE v2.5 18-Feb-2005 13:06:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -203,14 +203,15 @@ function MaskApply_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
-Detdata = getappdata(str2double(horusdata.hADC),'Detdata');
+Detdata = getappdata(str2double(horusdata.hDetection),'Detdata');
+device = get(handles.device,'Value')-1;
 
-switch get(handles.device,'Value')
-    case 1
+switch device
+    case 0
         Mask=Detdata.PMTMask;
-    case 2
+    case 1
         Mask=Detdata.MCP1Mask;
-    case 3
+    case 2
         Mask=Detdata.MCP2Mask;
 end
 
@@ -237,14 +238,14 @@ else
     for i=StartAddr:StopAddr
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
-        system(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
+        system(['/lift/bin/eCmd s setmask ',num2str(i-1+device*10),word]);
     end
 end
 
 
 function device_Callback(hObject, eventdata, handles)
 set(hObject,'BackgroundColor','white');
-guidata(hObject, handles);
+
 
 
 
@@ -309,6 +310,8 @@ function edGain_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edGain as a double
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
+col=horusdata.col;
+
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
 
@@ -321,7 +324,7 @@ else
     switch get(handles.device,'Value')
         case 1
         case 2
-            gainstatus=bitget(statusData(lastrow,colccGateDelay1),16);
+            gainstatus=bitget(statusData(lastrow,col.ccGateDelay1),16);
             word=bitset(gaindelay,16,gainstatus);
             system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);            
         case 3
@@ -397,6 +400,23 @@ else
     end
 end
 
+
+% --- Executes on button press in toggleHV.
+function toggleHV_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleHV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggleHV
+if get(hObject,'Value')
+%    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
+        system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
+        set(hObject,'BackgroundColor','g','String','HV ON');
+%    end
+else
+    system('/lift/bin/eCmd w 0xa460 0');
+    set(hObject,'BackgroundColor','c','String','HV OFF');
+end
 
 
 

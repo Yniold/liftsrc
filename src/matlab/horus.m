@@ -138,42 +138,42 @@ end
 % check which child GUIs are active and color push buttons accordingly
 if isfield(data,'hADC')
     if ishandle(str2double(data.hADC)) 
-        set(handles.ADC,'BackgroundColor','r');
+        set(handles.ADC,'BackgroundColor','g');
     else
         set(handles.ADC,'BackgroundColor','c');
     end
 end
 if isfield(data,'hCounterCards')
     if ishandle(str2double(data.hCounterCards)) 
-        set(handles.CounterCards,'BackgroundColor','r');
+        set(handles.CounterCards,'BackgroundColor','g');
     else
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
 if isfield(data,'hDyelaser')
     if ishandle(str2double(data.hDyelaser)) 
-        set(handles.Dyelaser,'BackgroundColor','r');
+        set(handles.Dyelaser,'BackgroundColor','g');
     else
         set(handles.Dyelaser,'BackgroundColor','c');
     end
 end
 if isfield(data,'hLaser')
     if ishandle(str2double(data.hLaser)) 
-        set(handles.Laser,'BackgroundColor','r');
+        set(handles.Laser,'BackgroundColor','g');
     else
         set(handles.Laser,'BackgroundColor','c');
     end
 end
 if isfield(data,'hDetection')
     if ishandle(str2double(data.hDetection)) 
-        set(handles.Detection,'BackgroundColor','r');
+        set(handles.Detection,'BackgroundColor','g');
     else
         set(handles.Detection,'BackgroundColor','c');
     end
 end
 if isfield(data,'hSensors')
     if ishandle(str2double(data.hSensors)) 
-        set(handles.Sensors,'BackgroundColor','r');
+        set(handles.Sensors,'BackgroundColor','g');
     else
         set(handles.Sensors,'BackgroundColor','c');
     end
@@ -242,7 +242,15 @@ stop(handles.ActTimer);
 
 % shut Filament and Valves Off
 system('/lift/bin/eCmd w 0xa408 0x0000');
-% home etalon 
+% shut HV Off
+system('/lift/bin/eCmd w 0xa460 0');
+% switch Gain off for MCP1
+word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+% switch Gain off for MCP2
+word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+% home Etalon 
 system('/lift/bin/eCmd w 0xa510 0');
 
 % close child GUIs

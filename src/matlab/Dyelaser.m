@@ -119,7 +119,7 @@ set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
-    set(handles.txtPRef,'BackgroundColor',[0.5,0.5,0.5]);
+    set(handles.txtPRef,'BackgroundColor',[0.25,0.25,0.25]);
 end
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
@@ -146,7 +146,7 @@ if bitget(EtalonStatus(lastrow),9)
 elseif bitget(EtalonStatus(lastrow),10)
     set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
 else
-    set(handles.txtLimitSwitch,'String','none','BackgroundColor','b');
+    set(handles.txtLimitSwitch,'String','none','BackgroundColor','c');
 end
 
 % plot parameters in graph 1
@@ -221,19 +221,19 @@ grid(handles.axes2);
 % check filament status (e.g. if it was swiched off by horus)
 if bitget(statusData(lastrow,col.Valve),14)==0;
     set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
-    set(handles.toggleFilament,'BackgroundColor','b');
+    set(handles.toggleFilament,'BackgroundColor','c');
 else 
     set(handles.toggleFilament,'Value',1,'string','Filament is ON');
-    set(handles.toggleFilament,'BackgroundColor','r');
+    set(handles.toggleFilament,'BackgroundColor','g');
 end
 
 % check shutter status
 if bitget(statusData(lastrow,col.Valve),13)==0;
     set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
-    set(handles.toggleShutter,'BackgroundColor','b');
+    set(handles.toggleShutter,'BackgroundColor','g');
 else 
     set(handles.toggleShutter,'Value',1,'string','Shutter is CLOSED');
-    set(handles.toggleShutter,'BackgroundColor','r');
+    set(handles.toggleShutter,'BackgroundColor','c');
 end
 
 data.lastrow=lastrow;
@@ -311,10 +311,10 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,col.Valve),10+1);
-    set(hObject,'BackgroundColor','r','String','Valve Dyelaser ON');
+    set(hObject,'BackgroundColor','g','String','Valve Dyelaser ON');
 else
     Valveword=bitset(statusData(lastrow,col.Valve),10+1,0);
-    set(hObject,'BackgroundColor','b','String','Valve Dyelaser OFF');
+    set(hObject,'BackgroundColor','c','String','Valve Dyelaser OFF');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
@@ -336,10 +336,10 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,col.Valve),7+1);
-    set(hObject,'BackgroundColor','r','String','Valve Vacuum ON');
+    set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
 else
     Valveword=bitset(statusData(lastrow,col.Valve),7+1,0);
-    set(hObject,'BackgroundColor','b','String','Valve Vacuum OFF');
+    set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
@@ -361,10 +361,10 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,col.Valve),9+1);
-    set(hObject,'BackgroundColor','r','String','Valve N2 ON');
+    set(hObject,'BackgroundColor','g','String','Valve N2 ON');
 else
     Valveword=bitset(statusData(lastrow,col.Valve),9+1,0);
-    set(hObject,'BackgroundColor','b','String','Valve N2 OFF');
+    set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
@@ -386,10 +386,10 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,col.Valve),8+1);
-    set(hObject,'BackgroundColor','r','String','Valve Ambient ON');
+    set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
 else
     Valveword=bitset(statusData(lastrow,col.Valve),8+1,0);
-    set(hObject,'BackgroundColor','b','String','Valve Ambient OFF');
+    set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
 end
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
@@ -575,7 +575,7 @@ if get(hObject,'Value')
         system('sleep 1');
         system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
         set(hObject,'String','Filament is ON');
-        set(hObject,'BackgroundColor','r');
+        set(hObject,'BackgroundColor','g');
     else 
         set(hObject,'Value',0);
     end
@@ -583,7 +583,7 @@ else
     Valveword=bitset(statusData(lastrow,col.Valve),14,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Filament is OFF');
-    set(hObject,'BackgroundColor','b');
+    set(hObject,'BackgroundColor','c');
 end
         
 
@@ -659,14 +659,14 @@ if get(hObject,'Value')
     system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is CLOSED');
-    set(hObject,'BackgroundColor','r');
+    set(hObject,'BackgroundColor','c');
     system('sleep 1');
     system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 else    
     Valveword=bitset(statusData(lastrow,col.Valve),13,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
-    set(hObject,'BackgroundColor','b');
+    set(hObject,'BackgroundColor','g');
 end
 
 

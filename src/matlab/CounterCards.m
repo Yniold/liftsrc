@@ -131,6 +131,15 @@ else % if no device was chosen then show values for PMT
     set(handles.txtGainWidth,'String','NA');
     set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
 end
+% check HV
+if single(statusData(lastrow,col.HVSwitchV))==0
+    set(handles.togHV,'Value',0)
+    set(handles.togHV,'BackgroundColor','c','String','HV OFF');
+else
+    set(handles.togHV,'Value',1)
+    set(handles.togHV,'BackgroundColor','g','String','HV ON');
+end
+
 
 data.lastrow=lastrow;
 setappdata(handles.output, 'Gatedata', data);
@@ -408,32 +417,15 @@ function toggleHV_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleHV
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-col=horusdata.col;
-
-data = getappdata(handles.output, 'Gatedata');
-lastrow=data.lastrow;
-
 if get(hObject,'Value')
-    set(hObject,'String','HV is ON','BackgroundColor','g');
-            word=bitset(statusData(lastrow,col.ccGateDelay1),16);
-            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 3
-            word=bitset(statusData(lastrow,col.ccGateDelay2),16);
-            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
-    end
+%    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
+        system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
+        set(hObject,'BackgroundColor','g','String','HV ON');
+%    end
 else
-    set(hObject,'String','Gain is OFF','BackgroundColor','c');
-    switch get(handles.device,'Value')
-        case 1
-        case 2
-            word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 3
-            word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
-            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
-    end
-end    
+    system('/lift/bin/eCmd w 0xa460 0');
+    set(hObject,'BackgroundColor','c','String','HV OFF');
+end
+
 
 
