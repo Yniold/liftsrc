@@ -1,15 +1,17 @@
 /*=================================================================
  *
- * READData.c
+ * READDataAvg.c
  *	        
  *  Read binary data from instrument software
  * The calling syntax is:
  *
- *		[yp] = ReadData('filename')
+ *   [statusdata,Avgdata] = ReadData('filename',RunAverageLen,MinRefCellCounts)
+ *   where RunAvglength is number of 1/5 s data -> average time period in s = RunAverageLen/5
+ *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  *
  *=================================================================*/
 
- /* $Revision: 1.4 $ */
+ /* $Revision: 1.5 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
