@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-28 17:41:44 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-01-31 09:49:31 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.3  2005-01-28 17:41:44  rudolf
+* Revision 1.4  2005-01-31 09:49:31  rudolf
+* more work on GPS
+*
+* Revision 1.3  2005/01/28 17:41:44  rudolf
 * Added GetGPSData() to fill the structure with (dummy) values, but at leat it still compiles :-)
 *
 * Revision 1.2  2005/01/27 18:17:21  rudolf
@@ -1051,25 +1054,56 @@ void GetGPSData ( struct elekStatusType *ptrElekStatus ) {
   uint16_t       Control;
   char           buf[GENERIC_BUF_LEN];
 
-   // set data to initial values
+  if(1 == ucDataReadyFlag)
+  {
+      if(ucGGAGPSQuality > 0) // check if data valid
+      {
+         // copy values into structure
 
-   ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
-   ptrElekStatus->GPSData.ucUTCMins    = 0;
-   ptrElekStatus->GPSData.ucUTCSeconds = 0;
+         ptrElekStatus->GPSData.ucUTCHours   = ucGGAHour;      // Time UTC
+         ptrElekStatus->GPSData.ucUTCMins    = ucGGAMinute;
+         ptrElekStatus->GPSData.ucUTCSeconds = ucGGASecond;
 
-   ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
-   ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
+         ptrElekStatus->GPSData.dLongitude   = dGGALongitude;  // Longitude (Laengengrad)
+         ptrElekStatus->GPSData.dLatitude    = dGGALatitude;   // Latitude (Breitengrad)
 
-   ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
-   ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+         ptrElekStatus->GPSData.fAltitude    = dGGAAltitude;   // normal range 0 to 18000 m
+         ptrElekStatus->GPSData.fHDOP        = dGGAHDOP;       // normal range 0 to 100 ?
 
-   ptrElekStatus->GPSData.ucNumberOfSatellites = 0;   // normal range 1-12
-   ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+         ptrElekStatus->GPSData.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // normal range 1-12
+         ptrElekStatus->GPSData.ucLastValidData = 0;      // normal range 0 to 6
 
-   ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
-   ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+         ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+         ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+      }
+      else
+      {
+         // set data to initial values, which normaly cannot exist
+/*
+         ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
+         ptrElekStatus->GPSData.ucUTCMins    = 0;
+         ptrElekStatus->GPSData.ucUTCSeconds = 0;
 
+         ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
+         ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
 
+         ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
+         ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+
+         ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+
+         ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+         ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+*/
+         // no valid data, so increment counter up to 255
+
+         if(ptrElekStatus->GPSData.ucLastValidData < 255)
+         {
+            ptrElekStatus->GPSData.ucLastValidData++;
+            ptrElekStatus->GPSData.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // copy number of sats to see where problem is
+         }
+      };
+   };
 } /* GetGPSData */
 
 /**********************************************************************************************************/

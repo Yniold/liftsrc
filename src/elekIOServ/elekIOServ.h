@@ -1,4 +1,16 @@
-/* private header file for ElekIOServ */
+// ============================================
+// elekIOServ.h
+// Headerfile
+// ============================================
+
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-01-31 09:49:31 $ by $Author: rudolf $
+
+// History:
+//
+// $Log: elekIOServ.h,v $
+// Revision 1.5  2005-01-31 09:49:31  rudolf
+// more work on GPS
+//
 
 #define SIGNAL_STATUS SIGRTMAX
 
