@@ -92,23 +92,23 @@ data = getappdata(handles.output, 'horusdata');
 [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,500);
 setappdata(handles.output, 'horusdata', data);
 
-statusData=data.statusData;
-ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
-    double(statusData(:,4))/1440.0+...
-    double(statusData(:,5))/86400.0+...
-    double(statusData(:,6))/86400000.0;
-[SortZeit,indexZeit]=sort(ZeitTage);
-maxLen=size(ZeitTage,1);
-lastrow=indexZeit(maxLen);
+%statusData=data.statusData;
+%ZeitTage=double(statusData(:,2))/1.0+double(statusData(:,3))/24.0+...
+%    double(statusData(:,4))/1440.0+...
+%    double(statusData(:,5))/86400.0+...
+%    double(statusData(:,6))/86400000.0;
+%[SortZeit,indexZeit]=sort(ZeitTage);
+%maxLen=size(ZeitTage,1);
+%lastrow=indexZeit(maxLen);
 
 % if filament on check reference cell pressure 
-ADCBase1=689;
-if bitget(statusData(lastrow,724),14+1)
-    if statusData(lastrow,ADCBase1+3*3)>1000
-        Valveword=bitset(statusData(lastrow,724),14+1,0);
-        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    end
-end
+%ADCBase1=689;
+%if bitget(statusData(lastrow,724),14)
+%    if statusData(lastrow,ADCBase1+3*3)>1000
+%        Valveword=bitset(statusData(lastrow,724),14,0);
+%        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+%    end
+%end
 
 
 
@@ -118,8 +118,13 @@ function ADC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleADC=ADC('handle',num2str(gcbf,16));
-data.hADC=num2str(handleADC,16);
+if ~isfield(data,'hADC')
+    handleADC=ADC('handle',num2str(gcbf,16));
+    data.hADC=num2str(handleADC,16);
+elseif ~ishandle(str2double(data.hADC)) 
+    handleADC=ADC('handle',num2str(gcbf,16));
+    data.hADC=num2str(handleADC,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -129,8 +134,13 @@ function CounterCards_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleCounterCards=CounterCards('handle',num2str(gcbf,16));
-data.hCounterCards=num2str(handleCounterCards,16);
+if ~isfield(data,'hCounterCards')
+    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+    data.hCounterCards=num2str(handleCounterCards,16);
+elseif ~ishandle(str2double(data.hCounterCards)) 
+    handleCounterCards=CounterCards('handle',num2str(gcbf,16));
+    data.hCounterCards=num2str(handleCounterCards,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -221,8 +231,13 @@ function Dyelaser_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
-handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
-data.hDyelaser=num2str(handleDyelaser,16);
+if ~isfield(data,'hDyelaser')
+    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
+    data.hDyelaser=num2str(handleDyelaser,16);
+elseif ~ishandle(str2double(data.hDyelaser)) 
+    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
+    data.hDyelaser=num2str(handleDyelaser,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
@@ -231,9 +246,15 @@ function Laser_Callback(hObject, eventdata, handles)
 % hObject    handle to Laser (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 data = getappdata(gcbf, 'horusdata');
-handleLaser=Laser('handle',num2str(gcbf,16));
-data.hLaser=num2str(handleLaser,16);
+if ~isfield(data,'hLaser')
+    handleLaser=Laser('handle',num2str(gcbf,16));
+    data.hLaser=num2str(handleLaser,16);
+elseif ~ishandle(str2double(data.hLaser)) 
+    handleLaser=Laser('handle',num2str(gcbf,16));
+    data.hLaser=num2str(handleLaser,16);
+end
 setappdata(gcbf, 'horusdata', data); 
 
 

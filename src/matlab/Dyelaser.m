@@ -139,7 +139,7 @@ set(handles.txtDiodeEt,'String',statusData(lastrow,ADCBase0+4*3));
 set(handles.txtPDyelaser,'String',statusData(lastrow,ADCBase0+1*3));
 set(handles.txtPVent,'String',statusData(lastrow,ADCBase0+7*3));
 set(handles.txtIFilament,'String',statusData(lastrow,ADCBase1+6*3));
-set(handles.txtPRef,'String',statusData(lastrow,ADCBase1+3*3));
+set(handles.txtPRef,'String',statusData(lastrow,ADCBase0+3*3));
 
 EtalonBase=643; 
 Etalonhelp=int32(statusData(:,EtalonBase));
@@ -238,14 +238,17 @@ end
 grid(handles.axes2);
 
 
-% check if filament was swiched off by horus
-if get(handles.toggleFilament,'Value') & bitget(statusData(lastrow,724),14+1)==0;
-        set(handles.toggleFilament,'string','Filament Off');
-        set(hObject,'BackgroundColor','b');
+% check filament status (e.g. if it was swiched off by horus)
+if bitget(statusData(lastrow,724),14)==0;
+    set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
+    set(handles.toggleFilament,'BackgroundColor','b');
+else 
+    set(handles.toggleFilament,'Value',1,'string','Filament is ON');
+    set(handles.toggleFilament,'BackgroundColor','r');
 end
 
-
-%setappdata(handles.output, 'Dyelaserdata', data);
+data.lastrow=lastrow;
+setappdata(handles.output, 'Dyelaserdata', data);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -311,16 +314,21 @@ function toggleDyelaser_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleDyelaser
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),7+1);
+    Valveword=bitset(statusData(lastrow,724),10+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),7+1,0);
-    set(hObject,'BackgroundColor','c');
+    Valveword=bitset(statusData(lastrow,724),10+1,0);
+    set(hObject,'BackgroundColor','b');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleVacuum.
@@ -330,16 +338,21 @@ function toggleVacuum_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleVacuum
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),8+1);
+    Valveword=bitset(statusData(lastrow,724),7+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),8+1,0);
-    set(hObject,'BackgroundColor','c');
+    Valveword=bitset(statusData(lastrow,724),7+1,0);
+    set(hObject,'BackgroundColor','b');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleN2.
@@ -349,16 +362,21 @@ function toggleN2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleN2
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,724),9+1);
     set(hObject,'BackgroundColor','r');
 else
     Valveword=bitset(statusData(lastrow,724),9+1,0);
-    set(hObject,'BackgroundColor','c');
+    set(hObject,'BackgroundColor','b');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleAmbient.
@@ -368,16 +386,21 @@ function toggleAmbient_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleAmbient
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,724),10+1);
+    Valveword=bitset(statusData(lastrow,724),8+1);
     set(hObject,'BackgroundColor','r');
 else
-    Valveword=bitset(statusData(lastrow,724),10+1,0);
-    set(hObject,'BackgroundColor','c');
+    Valveword=bitset(statusData(lastrow,724),8+1,0);
+    set(hObject,'BackgroundColor','b');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
+system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in Exit.
@@ -545,20 +568,25 @@ function toggleFilament_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleFilament
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 if get(hObject,'Value')
-    if str2double(get(handles.txtPRef,'String'))<1000
-        Valveword=bitset(statusData(lastrow,724),14+1);
-        system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);
+%    if str2double(get(handles.txtPRef,'String'))<1000
+        Valveword=bitset(statusData(lastrow,724),14);
+        system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
         system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
         system('sleep 1');
-        system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(6*140))]);
-        set(hObject,'string','Filament is ON');
+        system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+        set(hObject,'String','Filament is ON');
         set(hObject,'BackgroundColor','r');
-    end
+%    end
 else
-    Valveword=bitset(statusData(lastrow,724),14+1,0);
+    Valveword=bitset(statusData(lastrow,724),14,0);
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-    set(hObject,'string','Filament is OFF');
+    set(hObject,'String','Filament is OFF');
     set(hObject,'BackgroundColor','b');
 end
         
