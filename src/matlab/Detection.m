@@ -107,10 +107,10 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
-x=statusData(:,col.TDetaxis); eval(['TDetaxis=',fcts2val.TDetaxis]);
-x=statusData(:,col.P20); eval(['P20=',fcts2val.P20]);
-x=statusData(:,col.P1000); eval(['P1000=',fcts2val.P1000]);
-x=statusData(:,col.DiodeWZout); eval(['DiodeWZout=',fcts2val.DiodeWZout]);
+%x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
+x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
+%x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
+x=double(statusData(:,col.DiodeWZout)); eval(['DiodeWZout=',fcts2val.DiodeWZout,';']);
 
 % display ADC counts
 set(handles.txtWZin,'String','NA');
@@ -132,15 +132,15 @@ end
 % plot checked parameters vs. time
 hold(handles.axes1,'off'); 
 %if get(handles.chkWZin,'Value')
-%    plot(handles.axes1,statustime(iZeit),DiodeWZin,'r');
+%    plot(handles.axes1,statustime(iZeit),DiodeWZin(iZeit),'r');
     %hold(handles.axes1,'on');
 %end 
 if get(handles.chkWZout,'Value')
-    plot(handles.axes1,statustime(iZeit),DiodeWZout,'r');
+    plot(handles.axes1,statustime(iZeit),DiodeWZout(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkP1000,'Value')
-    plot(handles.axes1,statustime(iZeit),P1000(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.P1000),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkP20,'Value')
@@ -148,16 +148,15 @@ if get(handles.chkP20,'Value')
     hold(handles.axes1,'on');
 end 
 if get(handles.chkPNO,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PNO),'b');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PNO),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkVHV,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.VHV),'b');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.VHV),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkTDet,'Value')
-% as we don't have the conversion factor for TDet yet, for now we plot TDetaxis instead
-    plot(handles.axes1,statustime(iZeit),TempDetaxis(iZeit),'b');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TDet),'r');
     hold(handles.axes1,'on');
 end 
 xlim(handles.axes1,[minTime maxTime]);
