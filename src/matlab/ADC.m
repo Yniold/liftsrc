@@ -64,18 +64,19 @@ if nargin & isstr(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
+data.ActTimer=handles.ActTimer;
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
+setappdata(handles.output, 'ADCdata', data);
 
 
 
 
 function PlotRefresh(arg1,arg2,GUI_handles)
 data = getappdata(GUI_handles.output, 'ADCdata');
-
 
 %[s,w] = system('tail -n-10 data/ccStatus.txt > data/status_sub.txt');
 %clear status_sub;
@@ -344,7 +345,7 @@ if ~isfield(data,'PMTMask')| ...
     end
 end
     
-PMTSumCounts=statusData(:,223);
+PMTSumCounts=statusData(:,PMTMaskBase+12);
 
 % MCP1: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'MCP1Mask')| ...
@@ -355,7 +356,7 @@ if ~isfield(data,'MCP1Mask')| ...
     end
 end
 
-MCP2SumCounts=statusData(:,641);
+MCP1SumCounts=statusData(:,MCP1MaskBase+12);
 
 % MCP2: Hat sich Maske ge?ndert ? Dann neue Maske einlesen.
 if ~isfield(data,'MCP2Mask')| ...
@@ -366,7 +367,7 @@ if ~isfield(data,'MCP2Mask')| ...
     end
 end
 
-MCP2SumCounts=statusData(:,641);
+MCP2SumCounts=statusData(:,MCP2MaskBase+12);
 
 set(GUI_handles.PMTCounts,'String',statusData(lastrow,PMTBase+204));
 set(GUI_handles.MCP1Counts,'String',statusData(lastrow,MCP1Base+204));
