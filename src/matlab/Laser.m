@@ -106,13 +106,13 @@ tcpdata = getappdata(handles.output, 'tcpdata');
 tport=tcpdata.tport;
 if get(hObject,'Value')
     fprintf(tport,'D1'); 
-    pause(0.2);
+    pause(0.5);
 else
     fprintf(tport,'D0');
-    pause(0.2);
+    pause(0.5);
 end
 fprintf(tport,'?D'); 
-pause(0.2);
+pause(0.5);
 DiodeStatus=tport.UserData;
 if strcmp(DiodeStatus(1:2),'ON')
     set(hObject,'Value',1)
@@ -133,14 +133,14 @@ function toggleShutter_Callback(hObject, eventdata, handles)
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
 if get(hObject,'Value')
-    fprintf(tport,'SHT1'); 
-    pause(0.2);
+    fprintf(tport,'SHT:1'); 
+    pause(0.5);
 else
-    fprintf(tport,'SHT0');
-    pause(0.2);
+    fprintf(tport,'SHT:0');
+    pause(0.5);
 end
 fprintf(tport,'?SHT'); 
-pause(0.2);
+pause(0.5);
 ShutterStatus=tport.UserData;
 if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
     set(hObject,'Value',1)
@@ -164,13 +164,13 @@ tcpdata = getappdata(handles.output, 'tcpdata');
 tport=tcpdata.tport;
 LaserCmd=get(hObject,'String');
 fprintf(tport,LaserCmd);
-pause(0.2);
+pause(0.5);
 if LaserCmd(1)=='?'
     LaserAns=tport.UserData;
     set(handles.txtCommandAnswer,'String',LaserAns);
 else
     fprintf(tport,['?',LaserCmd(isletter(LaserCmd))]);
-    pause(0.2);
+    pause(0.5);
     LaserAns=tport.UserData;
     set(handles.txtCommandAnswer,'String',LaserAns);
 end
@@ -213,8 +213,8 @@ set(handles.txtStatus,'String','Query Status');
 
 fprintf(tport,'?D');
 %disp('?D')
-pause(0.2);
-DiodeStatus=tport.UserData;
+pause(0.5);
+DiodeStatus=tport.UserData
 if strcmp(DiodeStatus(1:2),'ON')
     set(handles.toggleLaser,'Value',1)
     set(handles.toggleLaser,'BackgroundColor','r');
@@ -228,7 +228,7 @@ end
 %check shutter
 fprintf(tport,'?SHT');
 %disp('?SHT')
-pause(0.2);
+pause(0.5);
 ShutterStatus=tport.UserData;
 if strcmp(ShutterStatus(1:6),'CLOSED') %shutter is open
     set(handles.toggleShutter,'Value',0)
@@ -240,37 +240,37 @@ end
 
 fprintf(tport,'?Q'); 
 %disp('?Q')
-pause(0.2);
+pause(0.5);
 RepRate=tport.UserData;
 set(handles.txtReprate,'String',RepRate);
 
 fprintf(tport,'?SHG'); 
 %disp('?SHG')
-pause(0.2);
+pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp);
 
-fprintf(tport,'?C'); 
-%disp('?C')
-pause(0.2);
+fprintf(tport,'?C1'); 
+%disp('?C1')
+pause(0.5);
 DiodeCurrent=tport.UserData;
 set(handles.txtDiodeCurrent,'String',DiodeCurrent);
     
-fprintf(tport,'?DCL');
-%disp('?DCL')
-pause(0.2);
+fprintf(tport,'?DCL1');
+%disp('?DCL1')
+pause(0.5);
 DiodeMaxCurrent=tport.UserData;
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent);
     
-fprintf(tport,'?T');
+fprintf(tport,'?T1');
 %disp('?T')
-pause(0.2);
+pause(0.5);
 DiodeTemp=tport.UserData;
 set(handles.txtDiodeTemp,'String',DiodeTemp);
 
-fprintf(tport,'?DP');
+fprintf(tport,'?DP1');
 %disp('?DP')
-pause(0.2);
+pause(0.5);
 DiodePower=tport.UserData;
 set(handles.txtDiodePower,'String',DiodePower);
 
