@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: NMEAParser.h,v $ last changed on $Date: 2005-01-31 11:27:18 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.h,v $ last changed on $Date: 2005-01-31 11:28:31 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.h,v $
-// Revision 1.3  2005-01-31 11:27:18  rudolf
+// Revision 1.4  2005-01-31 11:28:31  rudolf
+// fixed syntax errors
+//
+// Revision 1.3  2005/01/31 11:27:18  rudolf
 // Beautifications and added variables for GPVTG NMEA sentence
 //
 // Revision 1.2  2005/01/27 18:16:29  rudolf
@@ -83,9 +86,9 @@ double dGGAOldVSpeedAlt;                  // (but better use $GPVTG dataset)
 double dGGAVertSpeed;                     // vertical speed
 
 double dVTGTrueHeading;                   // true heading
-double dVTGMagneticHeading                // magnetic heading
-double dVTGSpeedInknots                   // groundspeed in knots
-double dVTGSpeedInKmh                     // groundspeed in kmh
+double dVTGMagneticHeading;               // magnetic heading
+double dVTGSpeedInknots;                  // groundspeed in knots
+double dVTGSpeedInKmh;                    // groundspeed in kmh
 
 
 // ==============
