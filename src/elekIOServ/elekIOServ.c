@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-02 14:34:09 $ by $Author: martinez $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-02 18:06:53 $ by $Author: martinez $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.6  2005-02-02 14:34:09  martinez
+* Revision 1.7  2005-02-02 18:06:53  martinez
+* debugged ADC for MCP1 and MCP2 plots
+*
+* Revision 1.6  2005/02/02 14:34:09  martinez
 * using only one mask init routine in elekIOServ
 *
 * Revision 1.5  2005/01/31 12:16:28  rudolf
@@ -1535,10 +1538,13 @@ int main()
 	      Channel=(int)(Message.Addr/10);
 	      MaskAddr=Message.Addr%10;
 	      ElekStatus.CounterCard.Channel[Channel].Mask[MaskAddr]=Message.Value;
+  	      sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	    } else { // we found that Message.Addr is larger than MAX_COUNTER_CHANNEL*10
+  	      sprintf(buf,"elekIOServ: Set Mask : Addr %d is larger than %d", MaskAddr, MAX_COUNTER_CHANNEL*10);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    } /* if Message.Addr >=0 ... */
 
-	    sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
-	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    Message.MsgType=MSG_TYPE_ACK;			    
 	    SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 			sizeof(struct ElekMessageType), &Message);

@@ -499,7 +499,7 @@ if get(GUI_handles.chkMCP1,'Value')
     plot(GUI_handles.axeRay,statusData(lastrow,MCP1Base+1:MCP1Base+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.MCP1Mask==0);
-    MCP1Data1=double(statusData(lastrow,MCP1Base+1:MCP1Base+160));
+    MCP1data1=double(statusData(lastrow,MCP1Base+1:MCP1Base+160));
     MCP1data1(z)=NaN;
     plot(GUI_handles.axeRay,MCP1data1); 
     xlim(GUI_handles.axeRay,[1,160]); 
@@ -512,7 +512,7 @@ if get(GUI_handles.chkMCP1,'Value')
     z=find(y==0);
     MCP1data2=double(statusData(lastrow,MCP1Base+40:MCP1Base+160));
     MCP1data2(z)=NaN;
-    plot(GUI_handles.axeFluo,xaxis,MCP1data1); 
+    plot(GUI_handles.axeFluo,xaxis,MCP1data2); 
     xlim(GUI_handles.axeFluo,[40,160]); 
 
     WhichPlot=get(GUI_handles.popMCP1Plot,'Value');
@@ -536,7 +536,7 @@ if get(GUI_handles.chkMCP2,'Value')
     plot(GUI_handles.axeRay,statusData(lastrow,MCP2Base+1:MCP2Base+160),'r'); 
     hold(GUI_handles.axeRay,'on'); 
     z=find(data.MCP2Mask==0);
-    MCP2Data1=double(statusData(lastrow,MCP2Base+1:MCP2Base+160));
+    MCP2data1=double(statusData(lastrow,MCP2Base+1:MCP2Base+160));
     MCP2data1(z)=NaN;
     plot(GUI_handles.axeRay,MCP2data1); 
     xlim(GUI_handles.axeRay,[1,160]); 

@@ -168,6 +168,7 @@ else
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
         handles.device;
+        disp(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
         system(['/lift/bin/eCmd s setmask ',num2str(i-1+handles.device*10),word]);
     end
 end
