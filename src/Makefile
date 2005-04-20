@@ -1,20 +1,36 @@
 #
-# Makefile for ELectronic Konverter test tool 
+# Makefile for ELectronic Konverter test tool
 #
+# Notes:
+#
+# If an environment variable named ARMBUILD is set to 1
+# the tools will be cross compiled for the ARM9 board
+#
+# Note that there will be a preprocessor variable defined
+# RUNONARM if the tools are crosscompiled for ARM and
+# RUNONPC if the tools are built for the i386 environment
+# this will allow to use ifdefs for platform dependend code
 
 VERSION=08
 PROJECT=all
 
-
-CC:=gcc
 SHELL:=/bin/sh
 INSTDIR:=$(shell /bin/pwd)/bin/
 LIBDIR:=$(shell /bin/pwd)/lib/
 
+ifeq ($(ARMBUILD),1)
+CPPFLAGS :=-DRUNONARM
+CROSS_COMPILE=arm-linux-
+else
+CROSS_COMPILE=
+CPPFLAGS :=-DRUNONPC
+endif
 
-flags= -j -k 
+CC := $(CROSS_COMPILE)gcc
 
-CFLAGS=-fpack-struct
+flags= -j -k
+
+CFLAGS+=-fpack-struct
 
 #modules=lib/elekIO.o lib/udptools.o
 #headers=include/elekIO.h include/elekIOPorts.h
@@ -27,17 +43,17 @@ headers=
 
 all : $(modules) $(headers)
 
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C cfgnear 
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C commTools 
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C elekIO
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C cfgnear
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C commTools
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(LIBDIR) $(flags) -C elekIO
 
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekStatus
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
-	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
-#	$(MAKE) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekStatus
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
+#	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
 
 	chmod +x $(INSTDIR)* 
 
