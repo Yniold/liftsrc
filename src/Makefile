@@ -27,6 +27,7 @@ CPPFLAGS :=-DRUNONPC
 endif
 
 CC := $(CROSS_COMPILE)gcc
+export CC
 
 flags= -j -k
 
