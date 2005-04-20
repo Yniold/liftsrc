@@ -8,7 +8,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 /**********************************************************************/
 /* bitset function to set bit N in WORD to VAL                        */

@@ -8,7 +8,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 #include "../include/elekIOPorts.h"
 

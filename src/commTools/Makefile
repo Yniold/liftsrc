@@ -1,8 +1,7 @@
 #
-# Makefile for ELectronic Konverter test tool 
+# Makefile for ELectronic Konverter test tool
 #
 
-CC=gcc
 SHELL=/bin/sh
 
 .SUFFIXES:
@@ -11,9 +10,9 @@ SHELL=/bin/sh
 all:
 
 #udptools : udptools.c ../include/elekIOPorts.h
-	$(CC) $(CFLAGS) -c udptools.c   -lrt -ggdb
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c udptools.c   -lrt -ggdb
 	cp udptools.o ../lib
- 
+
 #bitop:	bitop.c
-	$(CC) $(CFLAGS) -c bitop.c   -lrt -ggdb
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c bitop.c   -lrt -ggdb
 	cp bitop.o ../lib
