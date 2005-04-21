@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-21 13:53:31 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-21 16:29:38 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.3  2005-04-21 13:53:31  rudolf
+* Revision 1.4  2005-04-21 16:29:38  rudolf
+* Added Revision in startup output
+*
+* Revision 1.3  2005/04/21 13:53:31  rudolf
 * more work on conditional compile
 *
 * Revision 1.2  2005/01/31 10:06:03  rudolf
@@ -405,9 +408,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f (CVS: $RCSfile: elekStatus.c,v $ $Revision: 1.4 $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f (CVS: $RCSfile: elekStatus.c,v $ $Revision: 1.4 $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
