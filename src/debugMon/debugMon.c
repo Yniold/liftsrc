@@ -1,5 +1,12 @@
 /*
-** DebugPort Monitor
+* $RCSfile: debugMon.c,v $ last changed on $Date: 2005-04-21 13:48:32 $ by $Author: rudolf $
+*
+* $Log: debugMon.c,v $
+* Revision 1.2  2005-04-21 13:48:32  rudolf
+* more work on conditional compile, added revision history
+*
+*
+*
 */
 
 #include <stdio.h>
@@ -12,7 +19,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <time.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 #include "../include/elekIOPorts.h"
 

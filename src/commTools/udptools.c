@@ -1,3 +1,14 @@
+/*
+* $RCSfile: udptools.c,v $ last changed on $Date: 2005-04-21 13:48:01 $ by $Author: rudolf $
+*
+* $Log: udptools.c,v $
+* Revision 1.3  2005-04-21 13:48:01  rudolf
+* more work on conditional compile, added revision history
+*
+*
+*
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

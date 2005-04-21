@@ -1,3 +1,14 @@
+/*
+* $RCSfile: eRead.c,v $ last changed on $Date: 2005-04-21 13:49:36 $ by $Author: rudolf $
+*
+* $Log: eRead.c,v $
+* Revision 1.2  2005-04-21 13:49:36  rudolf
+* more work on conditional compile, added revision history
+*
+*
+*
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,7 +20,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 #include "../include/elekIOPorts.h"
 #include "../include/elekIO.h"
@@ -51,8 +65,9 @@ int ReadCommand(uint16_t Addr) {
     uint64_t TSC;
     struct ElekMessageType Message;    
     
-
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
@@ -80,7 +95,9 @@ int WriteCommand(uint16_t Addr, uint16_t Value) {
     struct ElekMessageType Message;    
     
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
@@ -107,7 +124,9 @@ int SetStatusCommand(uint16_t Addr, uint16_t Value) {
     struct ElekMessageType Message;    
     
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;

@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.13 $ 
-last change on $Date: 2005-02-11 13:44:00 $ by $Author: harder $ 
+$RCSfile: eCmd.c,v $ $Revision: 1.14 $
+last change on $Date: 2005-04-21 13:48:55 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.13  2005-02-11 13:44:00  harder
+Revision 1.14  2005-04-21 13:48:55  rudolf
+more work on conditional compile, added revision history
+
+Revision 1.13  2005/02/11 13:44:00  harder
 added InstrumentAction to elekStatus, added support in elekIOServ & eCmd
 
 Revision 1.12  2005/01/24 16:32:09  harder
@@ -30,7 +33,10 @@ update file description
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 #include "../include/elekIOPorts.h"
 #include "../include/elekIO.h"
@@ -69,14 +75,15 @@ int ReadCommand(uint16_t Addr) {
     extern struct MessagePortType MessageOutPortList[];
     extern struct MessagePortType MessageInPortList[];
 
+    struct ElekMessageType Message;
     uint64_t TSC;
-    struct ElekMessageType Message;    
-    
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
-    Message.MsgTime=TSC;
+    Message.MsgTime=TSC; /* will put zero into struct on ARM */
     Message.MsgType=MSG_TYPE_READ_DATA;
     Message.Addr=Addr;
     Message.Value=0;
@@ -98,10 +105,11 @@ int WriteCommand(uint16_t Addr, uint16_t Value) {
     extern struct MessagePortType MessageInPortList[];
 
     uint64_t TSC;
-    struct ElekMessageType Message;    
-    
+    struct ElekMessageType Message;
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
@@ -125,10 +133,11 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, uint16_t Value) {
     extern struct MessagePortType MessageInPortList[];
 
     uint64_t TSC;
-    struct ElekMessageType Message;    
-    
+    struct ElekMessageType Message;
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
