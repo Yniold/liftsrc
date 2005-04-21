@@ -1,4 +1,12 @@
-// program to test  access on port 0x200
+/*
+* $RCSfile: elekIO.c,v $ last changed on $Date: 2005-04-21 14:11:42 $ by $Author: rudolf $
+*
+* $Log: elekIO.c,v $
+* Revision 1.2  2005-04-21 14:11:42  rudolf
+* added revision history field
+*
+*
+*/
 
 #include <stdio.h>
 #include <stdlib.h>

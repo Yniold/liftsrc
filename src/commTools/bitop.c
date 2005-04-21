@@ -1,3 +1,12 @@
+/*
+* $RCSfile: bitop.c,v $ last changed on $Date: 2005-04-21 14:08:18 $ by $Author: rudolf $
+*
+* $Log: bitop.c,v $
+* Revision 1.3  2005-04-21 14:08:18  rudolf
+* added revision history field
+*
+*
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
