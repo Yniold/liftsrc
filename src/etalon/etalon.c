@@ -1,3 +1,14 @@
+/*
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-04-21 13:58:42 $ by $Author: rudolf $
+*
+* $Log: etalon.c,v $
+* Revision 1.2  2005-04-21 13:58:42  rudolf
+* more work on conditional compile
+*
+*
+*
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,7 +20,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
 
 #include "../include/elekGeneral.h"
 #include "../include/elekIOPorts.h"
@@ -88,10 +102,11 @@ int ReadCommand(uint16_t Addr) {
     extern struct MessagePortType MessageInPortList[];
 
     uint64_t TSC;
-    struct ElekMessageType Message;    
-    
+    struct ElekMessageType Message;
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
@@ -119,7 +134,9 @@ int WriteCommand(uint16_t Addr, uint64_t Value) {
     struct ElekMessageType Message;    
     
 
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
@@ -145,8 +162,9 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, uint64_t Value) {
     uint64_t TSC;
     struct ElekMessageType Message;    
     
-
+    #ifdef RUNONPC
     rdtscll(TSC);
+    #endif
 
     Message.MsgID=MessageNumber++;
     Message.MsgTime=TSC;
