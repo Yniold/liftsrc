@@ -8,6 +8,21 @@ PROJECT=statView
 CC=gcc
 SHELL=/bin/sh
 
+ifeq ($(ARMBUILD),1)
+CPPFLAGS :=-DRUNONARM
+CROSS_COMPILE=arm-linux-
+else
+CROSS_COMPILE=
+CPPFLAGS :=-DRUNONPC
+LDFLAGS :=-lrt
+endif
+
+CC := $(CROSS_COMPILE)gcc
+export CC
+
+LDFLAGS+=-ggdb
+
+
 modules=
 
 headers=
@@ -17,6 +32,6 @@ headers=
  
 $(PROJECT) : $(PROJECT).c $(modules) $(headers)
 	     echo $(PROJECT) $(VERSION)
-	     $(CC)  $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) -lrt -ggdb
+	     $(CC)  $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
 	     cp $(PROJECT) $(INSTDIR)
 
