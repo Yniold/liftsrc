@@ -76,22 +76,24 @@ clean:
 	rm -f ./elekIO/*.o
 	rm -f ./eCmd/eCmd
 	rm -f ./bin/eCmd
-	rm -f ../bin/eCmd
 	rm -f ./elekIOServ/elekIOServ
+	rm -f ./elekIOServ/*.o
 	rm -f ./bin/elekIOServ
-	rm -f ../bin/elekIOServ
 	rm -f ./elekStatus/elekStatus
 	rm -f ./bin/elekStatus
-	rm -f ../bin/elekStatus
 	rm -f ./statView/statView
 	rm -f ./bin/statView
-	rm -f ../bin/statView
 	rm -f ./etalon/etalon
 	rm -f ./bin/etalon
-	rm -f ../bin/etalon
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
 	rm -f ../bin/debugMon
+	rm -f ../bin/eCmd
+	rm -f ../bin/elekIOServ
+	rm -f ../bin/elekStatus
+	rm -f ../bin/statView
+	rm -f ../bin/etalon
+
 #	$(MAKE) INSTDIR=$(INSTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o
 #       rm ./instServer/instServer

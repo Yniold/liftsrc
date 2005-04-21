@@ -1,12 +1,25 @@
 #
-# Makefile for ELectronic Konverter test tool 
+# Makefile for ELectronic Konverter test tool
 #
 
 VERSION = 0.1
 PROJECT = elekStatus
 
-CC=gcc
 SHELL=/bin/sh
+
+ifeq ($(ARMBUILD),1)
+CPPFLAGS :=-DRUNONARM
+CROSS_COMPILE=arm-linux-
+else
+CROSS_COMPILE=
+CPPFLAGS :=-DRUNONPC
+LDFLAGS :=-lrt
+endif
+
+CC := $(CROSS_COMPILE)gcc
+export CC
+
+LDFLAGS+=-ggdb
 
 modules=../lib/udptools.o
 
@@ -17,6 +30,6 @@ headers=../include/elekIO.h ../include/elekIOPorts.h
  
 elekStatus : elekStatus.c $(modules) $(headers)
 	     echo $(PROJECT) $(VERSION)
-	     $(CC) $(CFLAGS) elekStatus.c $(modules) -o elekStatus -lrt -ggdb
+	     $(CC) $(CPPFLAGS) $(CFLAGS) elekStatus.c $(modules) -o elekStatus $(LDFLAGS)
 	     cp elekStatus $(INSTDIR)
 

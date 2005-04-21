@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-02-17 21:36:00 $ by $Author: martinez $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-04-21 13:51:17 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.13  2005-02-17 21:36:00  martinez
+* Revision 1.14  2005-04-21 13:51:17  rudolf
+* more work on conditional compile
+*
+* Revision 1.13  2005/02/17 21:36:00  martinez
 * corrected Mask Address calculation by editing device number
 *
 * Revision 1.12  2005/02/15 18:09:59  harder
@@ -51,10 +54,15 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#ifdef RUNONPC
 #include <asm/msr.h>
+#endif
+
 #include <signal.h>
 #include <errno.h>
 #include <sched.h>
@@ -1311,12 +1319,23 @@ int main()
   struct sigaction  SignalAction;
   struct sigevent   SignalEvent;
   sigset_t          SignalMask;
+
+  #ifdef RUNONARM
+  struct itimerval  StatusTimer;
+  #else
   struct itimerspec StatusTimer;
+  #endif
+
   timer_t           StatusTimer_id;
   clock_t           clock = CLOCK_REALTIME;
   int               StatusInterval=STATUS_INTERVAL;
 
-  struct timespec timeout;         // timeout 
+  #ifdef RUNONARM
+  struct timeval select_timeout;         // timeout
+  #else
+  struct timespec pselect_timeout;
+  #endif
+
   struct timespec RealTime;         // Real time clock 
   struct sockaddr_in my_addr;     // my address information
   struct sockaddr_in their_addr;  // connector's address information
@@ -1343,8 +1362,13 @@ int main()
   InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
   addr_len = sizeof(struct sockaddr);
-   
-  sprintf(buf,"This is elekIOServ Version %3.2f\n",VERSION);
+
+  #ifdef RUNONARM
+  sprintf(buf,"This is elekIOServ Version %3.2f for ARM\n",VERSION);
+  #else
+  sprintf(buf,"This is elekIOServ Version %3.2f for i386\n",VERSION);
+  #endif
+
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
   /* init all modules */
@@ -1362,33 +1386,52 @@ int main()
   SignalEvent.sigev_notify = SIGEV_SIGNAL;
   SignalEvent.sigev_signo = SIGNAL_STATUS;
   SignalEvent.sigev_value.sival_int = 0;
-#ifndef DEBUG_NOTIMER 
+
+#ifdef RUNONPC
   ret= timer_create(clock, &SignalEvent, &StatusTimer_id);
   if (ret < 0) {
     perror("timer_create");
     return EXIT_FAILURE;
   }
-#endif
 
   /* Start timer: */
   StatusTimer.it_interval.tv_sec =   StatusInterval / 1000;
   StatusTimer.it_interval.tv_nsec = (StatusInterval % 1000) * 1000000;
   StatusTimer.it_value = StatusTimer.it_interval;
-#ifndef DEBUG_NOTIMER 
+#endif
+
+#ifdef RUNONARM
+  /* Start timer: */
+  StatusTimer.it_interval.tv_sec =   0; //StatusInterval / 1000;
+  StatusTimer.it_interval.tv_usec = 190000;
+  StatusTimer.it_value = StatusTimer.it_interval;
+#endif
+
+#ifdef RUNONPC
   ret = timer_settime(StatusTimer_id, 0, &StatusTimer, NULL);
   if (ret < 0) {
     perror("timer_settime");
     return EXIT_FAILURE;
   }
-   
 #endif
 
+#ifdef RUNONPC
+  ret = setitimer(ITIMER_REAL, (const struct itimerval*)(&StatusTimer), NULL);
+  if (ret < 0) {
+    perror("settimer");
+    return EXIT_FAILURE;
+  }
+
+#endif
+
+#ifdef RUNONPC
   // change scheduler and set priority
   if (-1==(ret=ChangePriority())) {
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: cannot set Priority");
   } 
 
- 
+#endif
+
   sigemptyset(&SignalMask);
   //    sigsuspend(&SignalMask);
     
@@ -1397,11 +1440,22 @@ int main()
   while (!EndOfSession) {
     write(2,"Wait for data..\r",16);
 	
-    fdsSelect=fdsMaster;        
-    timeout.tv_sec= UDP_SERVER_TIMEOUT;
-    timeout.tv_nsec=0;
-    
-    ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &timeout, &SignalMask);             // wiat until incoming udp or Signal
+    fdsSelect=fdsMaster;
+
+    #ifdef RUNONPC
+    pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
+    pselect_timeout.tv_nsec=0;
+    #else
+    select_timeout.tv_sec = UDP_SERVER_TIMEOUT;
+	 select_timeout.tv_usec = 0;
+    #endif
+
+    #ifdef RUNONPC
+    ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
+    #else
+    ret=select(fdMax+1, &fdsSelect, NULL, NULL, &select_timeout);             // wiat until incoming udp or Signal
+    #endif
+
     gettimeofday(&StartAction, NULL);
 	  
     //	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
@@ -1612,7 +1666,9 @@ int main()
 	    break;
 			    
 	  } /* switch MsgType */
+     #ifdef RUNONPC
 	  rdtscll(TSC);
+     #endif
 	  //		    printf("%lld got Message on Port %d from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
 	  //		    printf("packet is %d bytes long\n",numbytes);
 	  TSCin=Message.MsgTime;
@@ -1632,12 +1688,13 @@ int main()
       write(2,"timeout........\r",16);
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: TimeOut");	    
     }
-	
-    
+
+    #ifdef RUNONPC
     if (timer_getoverrun(StatusTimer_id)>0) {
       printf("OVERRUN");
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Overrun");
     } /* if overrun */
+    #endif
 
     gettimeofday(&StopAction, NULL);
     
@@ -1650,10 +1707,10 @@ int main()
     LastAction=StartAction;
   } /* while */
     
-
+  #ifdef RUNONPC
     /* delete timer */
   timer_delete(StatusTimer_id);
-
+  #endif
 
   // close all in bound sockets
   for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) {	
