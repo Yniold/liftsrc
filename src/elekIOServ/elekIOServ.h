@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-04-21 15:51:52 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-04-21 15:59:21 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.6  2005-04-21 15:51:52  rudolf
+// Revision 1.7  2005-04-21 15:59:21  rudolf
+// fixed stupid typo
+//
+// Revision 1.6  2005/04/21 15:51:52  rudolf
 // fix for ARM version
 //
 // Revision 1.5  2005/01/31 09:49:31  rudolf
@@ -18,7 +21,7 @@
 #ifdef RUNONPC
 #define SIGNAL_STATUS SIGRTMAX
 #else
-#define SIGANL_STATUS SIGALRM
+#define SIGNAL_STATUS SIGALRM
 #endif
 
 
