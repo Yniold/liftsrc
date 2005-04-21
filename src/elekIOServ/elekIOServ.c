@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-04-21 13:51:17 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-04-21 16:17:18 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.14  2005-04-21 13:51:17  rudolf
+* Revision 1.15  2005-04-21 16:17:18  rudolf
+* fixed bug which led to a udp timeout in ARM version. timer is now initialized properly
+*
+* Revision 1.14  2005/04/21 13:51:17  rudolf
 * more work on conditional compile
 *
 * Revision 1.13  2005/02/17 21:36:00  martinez
@@ -1364,9 +1367,9 @@ int main()
   addr_len = sizeof(struct sockaddr);
 
   #ifdef RUNONARM
-  sprintf(buf,"This is elekIOServ Version %3.2f for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.15 $) for ARM\n",VERSION);
   #else
-  sprintf(buf,"This is elekIOServ Version %3.2f for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.15 $) for i386\n",VERSION);
   #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1415,7 +1418,7 @@ int main()
   }
 #endif
 
-#ifdef RUNONPC
+#ifdef RUNONARM
   ret = setitimer(ITIMER_REAL, (const struct itimerval*)(&StatusTimer), NULL);
   if (ret < 0) {
     perror("settimer");
