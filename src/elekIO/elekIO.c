@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIO.c,v $ last changed on $Date: 2005-04-21 14:11:42 $ by $Author: rudolf $
+* $RCSfile: elekIO.c,v $ last changed on $Date: 2005-04-21 15:01:58 $ by $Author: rudolf $
 *
 * $Log: elekIO.c,v $
-* Revision 1.2  2005-04-21 14:11:42  rudolf
+* Revision 1.3  2005-04-21 15:01:58  rudolf
+* made elekIO work with ARM controller. Added routines to open device driver for read and write to the backplane
+*
+* Revision 1.2  2005/04/21 14:11:42  rudolf
 * added revision history field
 *
 *
@@ -14,8 +17,27 @@
 #include <asm/io.h>
 #include <stdint.h>
 
+#include <ctype.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/time.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "../include/elekIO.h"
 
+#ifdef RUNONARM
+	#define SERBUS_IOCSDEBUGON    0x40047301
+	#define SERBUS_IOCSDEBUGOFF   0x40047302
+	#define SERBUS_IOCTWRITEWORD  0x40047303
+	#define SERBUS_IOCHREADWORD   0x40047304
+#endif
+
+#ifdef RUNONPC
+//=====================================================================================================
+// PC Version
 
 int elkInit (void) {
 
@@ -25,6 +47,45 @@ int elkInit (void) {
     return (ret);
 }
 //=====================================================================================================
+#endif
+
+#ifdef RUNONARM
+//=====================================================================================================
+// ARM9 version
+int fd = 0;
+
+int elkInit (void)
+{
+	printf("Trying to open /dev/serbus...\n\r");
+    fd = open("/dev/serbus",O_RDWR);
+
+	if(fd < 0)
+	{
+		printf("Failed...\n\r");
+    	return (1);
+	}
+	else
+	{
+		printf("Success!\n\r");
+		ioctl(fd, SERBUS_IOCSDEBUGOFF);
+		return (0);
+	}
+}
+//=====================================================================================================
+#endif
+
+#ifdef RUNONARM
+//=====================================================================================================
+// ARM9 Version
+int elkExit (void)
+{
+	close(fd);
+	return (0);
+}
+//=====================================================================================================
+#endif
+
+#ifdef RUNONPC
 int elkExit (void) {
 
     int ret;
@@ -33,8 +94,11 @@ int elkExit (void) {
     return (ret);
 }
 //=====================================================================================================
+#endif
 
-int elkWriteData(uint16_t Adress, uint16_t Data) {
+#ifdef RUNONPC
+int elkWriteData(uint16_t Adress, uint16_t Data)
+{
 
     unsigned Counter=ELK_TIMEOUT;
     uint16_t ElkQToDo=1;
@@ -54,7 +118,7 @@ int elkWriteData(uint16_t Adress, uint16_t Data) {
 #if (DEBUGLEVEL > 5)
     printf("ElkTodo ");
 #endif
-    
+
     while (ElkQToDo && Counter) {
 	Counter--;
 	ElkQStatus = inw(ELK_TODO);
@@ -67,36 +131,37 @@ int elkWriteData(uint16_t Adress, uint16_t Data) {
 #if (DEBUGLEVEL > 5)
     printf("\n");
 #endif
-    
+
     if ((unsigned)0==Counter) { // did we run into a timeout ?
 	ret=ELK_STAT_TIMEOUT;
 	return(ret);
-    } 
-    
-    // in the case of a write command to the ELK we remove the command from the 
+    }
+
+    // in the case of a write command to the ELK we remove the command from the
     // ELK Queue as soon as it is processed
-    
+
     ElkReadData  = inw(ELK_DATA);                        // read on data increase Tailptr
     ElkQStatus   = inw(ELK_TODO);                        // let see if it worked
     ElkQReadyNew = ElkQStatus & 0x000f;
     ElkQToDo     = ElkQStatus>>8;
-    
+
 #if (DEBUGLEVEL > 0)
 	printf("QStat %04x QReady %x QReadyNew %x\n",ElkQStatus,ElkQReady,ElkQReadyNew);
 #endif
-    
+
     if (((ElkQReady-1) % ELK_QSIZE)!=ElkQReadyNew ) { // we have a problem with the Q
 
 #if (DEBUGLEVEL > 0)
 	printf("Problem in ELKQueue, QReady QReadyNew \n");
 #endif
-	
+
     }
-} // end elkWriteData(uint16_t Adress, uint16_t Data) 
+} // end elkWriteData(uint16_t Adress, uint16_t Data)
 
 //=====================================================================================================
+#endif
 
-
+#ifdef RUNONPC
 int elkReadData(uint16_t Adress) {
 
     unsigned Counter=ELK_TIMEOUT;
@@ -176,11 +241,23 @@ int elkReadData(uint16_t Adress) {
     return(ElkReadData);
 
 
-} // end elkReadData(uint16_t Adress, uint16_t Data) 
+} // end elkReadData(uint16_t Adress, uint16_t Data)
 
 //======================================================================================================
+#endif
 
+#ifdef RUNONARM
+int elkWriteData(uint16_t Adress, uint16_t Data)
+{
+	return (ioctl(fd, SERBUS_IOCTWRITEWORD, (unsigned long)(Adress) + (unsigned long)(Data<<16)));
+}
 
+int elkReadData(uint16_t Adress)
+{
+	return (ioctl(fd, SERBUS_IOCHREADWORD, (unsigned long)(Adress)));
+}
+
+#endif
 
     
     
