@@ -1,8 +1,11 @@
 /*
-* $RCSfile: debugMon.c,v $ last changed on $Date: 2005-04-21 13:48:32 $ by $Author: rudolf $
+* $RCSfile: debugMon.c,v $ last changed on $Date: 2005-04-22 13:13:58 $ by $Author: rudolf $
 *
 * $Log: debugMon.c,v $
-* Revision 1.2  2005-04-21 13:48:32  rudolf
+* Revision 1.3  2005-04-22 13:13:58  rudolf
+* added timestamp to debugMon (local time)
+*
+* Revision 1.2  2005/04/21 13:48:32  rudolf
 * more work on conditional compile, added revision history
 *
 *
@@ -35,10 +38,14 @@ int main(int argc, char *argv[])
     short Port;
     struct sockaddr_in my_addr;    // my address information
     struct sockaddr_in their_addr; // connector's address information
-    struct timespec RealTime;         // Real time clock 
+    struct timespec RealTime;         // Real time clock
     int addr_len, numbytes;
     char buf[MAXBUFLEN];
+    char timebuf[MAXBUFLEN];
     uint64_t TSC;
+
+    struct tm DateNow;           // for timestamps
+    time_t SecondsNow;
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
         perror("socket");
@@ -57,24 +64,28 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    while (1) {
+    while (1)
+    {
 //	printf("wait for data ....\n");
-	if ((numbytes=recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
-			       (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-	    perror("recvfrom");
-	    exit(1);
-	}
+      if ((numbytes=recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
+          (struct sockaddr *)&their_addr, &addr_len)) == -1)
+      {
+	      perror("recvfrom");
+	      exit(1);
+      }
 //	rdtscll(TSC);
 //	printf("%lld got packet from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
 //	clock_gettime(CLOCK_REALTIME,&RealTime);
 //	printf("%ld %ld got packet from %s\n",RealTime.tv_sec,RealTime.tv_nsec,inet_ntoa(their_addr.sin_addr));
 //	printf("packet is %d bytes long\n",numbytes);
-	buf[numbytes] = '\0';
-	printf("%s\n",buf);
-	
-	// check for end signature
-    }
-    close(sockfd);
-    
-    return 0;
+	   buf[numbytes] = '\0';
+      time(&SecondsNow);
+	   localtime_r(&SecondsNow,&DateNow);
+
+      sprintf(timebuf,"[%02d:%02d:%02d]", DateNow.tm_hour, DateNow.tm_min, DateNow.tm_sec);
+
+	   printf("%s %s\n",timebuf,buf);
+   }
+   close(sockfd);
+   return 0;
 }
