@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-22 10:45:04 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-22 11:30:18 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.6  2005-04-22 10:45:04  rudolf
+* Revision 1.7  2005-04-22 11:30:18  rudolf
+* don't return from WriteElekStatus() with error if no datafile could be created, continue with status.bin
+*
+* Revision 1.6  2005/04/22 10:45:04  rudolf
 * changed Revision Info to be more verbose
 *
 * Revision 1.5  2005/04/22 10:36:24  rudolf
@@ -193,8 +196,8 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
 } /*PrintElekStatus*/
 
 
-int WriteElekStatus(char *Path, char *FileName, struct elekStatusType *ptrElekStatus) {
-    
+int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *ptrElekStatus) {
+
     extern struct MessagePortType MessageOutPortList[];
     extern struct MessagePortType MessageInPortList[];
 
@@ -219,12 +222,12 @@ int WriteElekStatus(char *Path, char *FileName, struct elekStatusType *ptrElekSt
     if ((fp=fopen(FileName,"a"))==NULL) {
 	sprintf(buf,"ElekStatus: can't open %s",FileName);
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-	return (-1);
+
     } else {
 	ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
 	if (ret!=1) {
 	    sprintf(buf,"ElekStatus: wrote %d\n",ret);
-	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write statusBin.dat");
+	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write to DATAFILE");
 	}	    
 //	sprintf(buf,"ElekStatus: wrote %d\n",ret);
 //	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -233,7 +236,7 @@ int WriteElekStatus(char *Path, char *FileName, struct elekStatusType *ptrElekSt
     
 
     //    strncpy(buf,Path,GENERIC_BUF_LEN);
-    strncpy(buf,"/lift/ramdisk",GENERIC_BUF_LEN);
+    strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
     strcat(buf,"/status.bin");
     if ((fp=fopen(buf,"r+"))==NULL) {
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.bin does not exist");
@@ -256,7 +259,7 @@ int WriteElekStatus(char *Path, char *FileName, struct elekStatusType *ptrElekSt
     
 
 
-    strncpy(buf,"/lift/ramdisk",GENERIC_BUF_LEN);
+    strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
     strcat(buf,"/chPMT.txt");
     if ((fp=fopen(buf,"w"))==NULL) {
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't open chPMT.txt");
@@ -414,9 +417,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.6 2005-04-22 10:45:04 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.7 2005-04-22 11:30:18 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.6 2005-04-22 10:45:04 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.7 2005-04-22 11:30:18 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -424,7 +427,7 @@ int main()
 //    GenerateFileName(DATAPATH,StatusFileName,NULL);
 
     // Check Status ringfile buffer and initialize the pointer to the appropriate position
-    InitStatusFile(DATAPATH);
+    InitStatusFile(RAMDISKPATH);
     
     EndOfSession=FALSE;
     while (!EndOfSession) {
@@ -463,10 +466,10 @@ int main()
 
 			    GenerateFileName(DATAPATH,StatusFileName,NULL);
 
-			    if (ElekStatus.InstrumentFlags.StatusSave) 
-			      WriteElekStatus(DATAPATH, StatusFileName,&ElekStatus);
-			    else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!"); 
-			    
+			    if (ElekStatus.InstrumentFlags.StatusSave)
+			      WriteElekStatus(RAMDISKPATH, StatusFileName,&ElekStatus);
+			    else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
+
 			    // Send Statusdata to other interested clients
 			    
 			    // SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"141.5.1.178",ElekStatus_len,&ElekStatus);
