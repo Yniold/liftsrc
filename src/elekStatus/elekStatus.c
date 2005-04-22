@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-22 10:36:24 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-22 10:45:04 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.5  2005-04-22 10:36:24  rudolf
+* Revision 1.6  2005-04-22 10:45:04  rudolf
+* changed Revision Info to be more verbose
+*
+* Revision 1.5  2005/04/22 10:36:24  rudolf
 * changed path for chPMT.txt to /lift /ramdisk
 *
 * Revision 1.4  2005/04/21 16:29:38  rudolf
@@ -411,9 +414,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f (CVS: $RCSfile: elekStatus.c,v $ $Revision: 1.5 $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.6 2005-04-22 10:45:04 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f (CVS: $RCSfile: elekStatus.c,v $ $Revision: 1.5 $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.6 2005-04-22 10:45:04 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
