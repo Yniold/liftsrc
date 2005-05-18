@@ -1,8 +1,11 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2005-04-21 13:48:01 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2005-05-18 18:26:13 $ by $Author: rudolf $
 *
 * $Log: udptools.c,v $
-* Revision 1.3  2005-04-21 13:48:01  rudolf
+* Revision 1.4  2005-05-18 18:26:13  rudolf
+* small fixes
+*
+* Revision 1.3  2005/04/21 13:48:01  rudolf
 * more work on conditional compile, added revision history
 *
 *
@@ -99,8 +102,9 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
     memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
        
     if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
-		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
-        printf("problem with sendto MsgPort: %d %s ",ptrMessagePort->PortNumber,ptrMessagePort->PortName);
+		     (struct sockaddr_in *)&their_addr, sizeof(struct sockaddr_in))) == -1){
+        printf("\nproblem with sendto MsgPort: %d %s\n",
+	ptrMessagePort->PortNumber,ptrMessagePort->PortName);
         perror("sendto");
         exit(1);
     }
@@ -186,7 +190,7 @@ int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void 
     }
     
 #if DEBUGLEVEL>0
-   printf("recieve %d bytes to %s:%d\n", numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
+   printf("receive %d bytes from %s:%d\n", numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
 } /* RecieveUDPData */
