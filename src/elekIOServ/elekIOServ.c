@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-04-21 16:17:18 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-18 18:26:45 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.15  2005-04-21 16:17:18  rudolf
+* Revision 1.16  2005-05-18 18:26:45  rudolf
+* added debug output
+*
+* Revision 1.15  2005/04/21 16:17:18  rudolf
 * fixed bug which led to a udp timeout in ARM version. timer is now initialized properly
 *
 * Revision 1.14  2005/04/21 13:51:17  rudolf
@@ -147,6 +150,7 @@ void signalstatus(int signo)
 {
    int iBytesRead = 0;
    extern int StatusFlag;
+   char buf[GENERIC_BUF_LEN];
 
    ++StatusFlag;
 
@@ -154,8 +158,23 @@ void signalstatus(int signo)
    {
       iBytesRead = read(fdGPS, pDataBuffer, 1024);	// nonblocking (!)
 
-      if(iBytesRead)
+      // check if the read failed for any reason
+      if(iBytesRead < 0)
+      {
+         char* pErrorMessage = strerror(errno);
+         sprintf(buf,"elekIOServ: GPS read() returned with error %d: ",iBytesRead);
+         strcat(buf,pErrorMessage);
+         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+      }
+      
+      // if bytes received, process them
+      if(iBytesRead>0)
+      {
+         sprintf(buf,"Got Data!\n");
+         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
          ParseBuffer(pDataBuffer,iBytesRead);	// feed some characters to the parser
+      }
    };
 
 }
@@ -1367,9 +1386,9 @@ int main()
   addr_len = sizeof(struct sockaddr);
 
   #ifdef RUNONARM
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.15 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.16 $) for ARM\n",VERSION);
   #else
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.15 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.16 $) for i386\n",VERSION);
   #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1524,6 +1543,7 @@ int main()
 		    
 	  switch (Message.MsgType) {
 	  case MSG_TYPE_READ_DATA:
+	    printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
 	    Message.Value=elkReadData(Message.Addr);
 	    Message.MsgType=MSG_TYPE_ACK;
 	    
@@ -1546,6 +1566,9 @@ int main()
 		      Message.Addr,Message.Value,Message.Value);
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    } /* if MessagePort */
+	    
+    	    printf("elekIOServ: manual write to Address %04x\n", Message.Addr, Message.Value);
+
 	    Message.Status=elkWriteData(Message.Addr,Message.Value);
 	    Message.MsgType=MSG_TYPE_ACK;			    
 	    SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
