@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.15 $
-last change on $Date: 2005-05-18 16:48:44 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.16 $
+last change on $Date: 2005-05-18 18:25:37 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.15  2005-05-18 16:48:44  rudolf
+Revision 1.16  2005-05-18 18:25:37  rudolf
+replaced strtod() with strtol() which is capable of handling hex input also on the ARM9 platform
+
+Revision 1.15  2005/05/18 16:48:44  rudolf
 fixed buffer overflow in cmdline parsing
 
 Revision 1.14  2005/04/21 13:48:55  rudolf
@@ -213,7 +216,7 @@ int main(int argc, char *argv[])
     //   printf("%s %s %s\n",argv[0],argv[1],argv[2]);
     
 
-//    Value=strtod(argv[ArgCount],NULL);
+//    Value=strtol(argv[ArgCount],NULL,0);
 //    ArgCount++;
 
     // setup wait time between checks
@@ -254,7 +257,7 @@ int main(int argc, char *argv[])
     
     switch(argv[ArgCount++][0]) {
 	case 'r':
-	    Addr=strtod(argv[ArgCount],NULL);
+	    Addr=strtol(argv[ArgCount],NULL,0);
 	    ArgCount++;
 	    Value=ReadCommand(Addr);
 	    printf("Read %4x(%5d) : %4x(%5d)\n",Addr,Addr, Value, Value);
@@ -264,10 +267,10 @@ int main(int argc, char *argv[])
 	case 'w':
 	    if(argc>3) // better check here before messing around with argv[], hartwig :)
 	    {
-		Addr=strtod(argv[ArgCount],NULL);
+		Addr=strtol(argv[ArgCount],NULL,0);
 		ArgCount++;
 	//    printf("%s %s %s\n",argv[0],argv[1],argv[2]);
-		Value=strtod(argv[ArgCount],NULL);
+		Value=strtol(argv[ArgCount],NULL,0);
 		ArgCount++;
 		ret=WriteCommand(Addr,Value);
 		printf("Wrote %4x=%4x(%5d) : %4x(%5d)\n",ret,Addr,Addr,Value,Value);
@@ -347,7 +350,7 @@ int main(int argc, char *argv[])
 
 	    if (strcasecmp(argv[ArgCount],"etalonscanstart")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_SCAN_START;
 	      } else { // we don't have enough parameter
@@ -357,7 +360,7 @@ int main(int argc, char *argv[])
 	    
 	    if (strcasecmp(argv[ArgCount],"etalonscanstop")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_SCAN_STOP;
 	      } else { // we don't have enough parameter
@@ -367,7 +370,7 @@ int main(int argc, char *argv[])
 	    
 	    if (strcasecmp(argv[ArgCount],"etalonscanstep")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_SCAN_STEP;
 	      } else { // we don't have enough parameter
@@ -377,7 +380,7 @@ int main(int argc, char *argv[])
 	    
 	    if (strcasecmp(argv[ArgCount],"etalononline")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_ONLINE;
 	      } else { // we don't have enough parameter
@@ -387,7 +390,7 @@ int main(int argc, char *argv[])
   	    
 	    if (strcasecmp(argv[ArgCount],"etalondither")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_DITHER;
 	      } else { // we don't have enough parameter
@@ -396,7 +399,7 @@ int main(int argc, char *argv[])
 	    };	    	    
 	    if (strcasecmp(argv[ArgCount],"etalonofflineleft")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_OFFLINE_LEFT;
 	      } else { // we don't have enough parameter
@@ -406,7 +409,7 @@ int main(int argc, char *argv[])
 
 	    if (strcasecmp(argv[ArgCount],"etalonofflineright")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+1],NULL);
+		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_OFFLINE_RIGHT;
 	      } else { // we don't have enough parameter
@@ -416,10 +419,10 @@ int main(int argc, char *argv[])
 
 	    if (strcasecmp(argv[ArgCount],"setmask")==0) {
 	      if (argc>ArgCount+2) { // do we still have a given parameter ?
-		Value=strtod(argv[ArgCount+2],NULL);
+		Value=strtol(argv[ArgCount+2],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_MASK;
 		// Addr 0-9 for word 0-9 of Channel 0, 10-19 for Channel 1, 20-29 for Channel 2
-		Addr=strtod(argv[ArgCount+1],NULL); 
+		Addr=strtol(argv[ArgCount+1],NULL,0); 
 	      } else { // we don't have enough parameter
 		printf("Error please supply parameters for %s\n",argv[ArgCount]);
 	      }
