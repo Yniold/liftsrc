@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.14 $
-last change on $Date: 2005-04-21 13:48:55 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.15 $
+last change on $Date: 2005-05-18 16:48:44 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.14  2005-04-21 13:48:55  rudolf
+Revision 1.15  2005-05-18 16:48:44  rudolf
+fixed buffer overflow in cmdline parsing
+
+Revision 1.14  2005/04/21 13:48:55  rudolf
 more work on conditional compile, added revision history
 
 Revision 1.13  2005/02/11 13:44:00  harder
@@ -259,13 +262,19 @@ int main(int argc, char *argv[])
 	    break;
 
 	case 'w':
-	    Addr=strtod(argv[ArgCount],NULL);
-	    ArgCount++;
-//    printf("%s %s %s\n",argv[0],argv[1],argv[2]);
-	    Value=strtod(argv[ArgCount],NULL);
-	    ArgCount++;
-	    ret=WriteCommand(Addr,Value);
-	    printf("Wrote %4x=%4x(%5d) : %4x(%5d)\n",ret,Addr,Addr,Value,Value);
+	    if(argc>3) // better check here before messing around with argv[], hartwig :)
+	    {
+		Addr=strtod(argv[ArgCount],NULL);
+		ArgCount++;
+	//    printf("%s %s %s\n",argv[0],argv[1],argv[2]);
+		Value=strtod(argv[ArgCount],NULL);
+		ArgCount++;
+		ret=WriteCommand(Addr,Value);
+		printf("Wrote %4x=%4x(%5d) : %4x(%5d)\n",ret,Addr,Addr,Value,Value);
+	    }
+	    else
+		printf("Usage :\t%s w addr data\n", argv[0]);
+	    
 	    break;
 
 	case 's':
