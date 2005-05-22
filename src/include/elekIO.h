@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-02-11 12:36:12 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-05-22 19:10:24 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.4  2005-02-11 12:36:12  martinez
+* Revision 1.5  2005-05-22 19:10:24  rudolf
+* extended structure to hold data from the wingpod ARM9 as well
+*
+* Revision 1.4  2005/02/11 12:36:12  martinez
 * started including gatings in CounterCards, started including instrument action structure in elekIO.h and elekIOServ.c
 *
 * Revision 1.3  2005/01/27 15:48:10  rudolf
@@ -19,17 +22,24 @@
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
 
-#define MAX_ADC_CARD             2             /* number of MFC Cards in System */
-#define MAX_ADC_CHANNEL_PER_CARD 8             /* number of Channels on each MFC Card */
+#define MAX_ADC_CARD_LIFT              2       /* number of 16bit ADC Cards in Lift */
+#define MAX_ADC_CARD_WP                2       /* number of 16bit ADC Cards in Wingpod */
+#define MAX_ADC_CHANNEL_PER_CARD       8       /* number of Channels on each 16bit ADC Card */
 
-#define MAX_MFC_CARD             1             /* number of MFC Cards in System */
-#define MAX_MFC_CHANNEL_PER_CARD 4             /* number of Channels on each MFC Card */
+#define MAX_24BIT_ADC_CARDS_LIFT       0       /* number of 24bit ADC Cards in Lift */
+#define MAX_24BIT_ADC_CARDS_WP         1       /* number of 24bit ADC Cards in Wingpod */
+#define MAX_24BIT_ADC_CHANNEL_PER_CARD 8       /* number of Channels on each 24bit ADC card */
 
-#define MAX_VALVE_CARD     2                                         /* number of Valve Cards */
-#define MAX_VALVE_CHANNEL_PER_CARD 14                                        /* number of Valves on Card */
+#define MAX_MFC_CARD_LIFT              1       /* number of MFC Cards in Lift */
+#define MAX_MFC_CARD_WP                1       /* number of MFC Cards in Lift */
+#define MAX_MFC_CHANNEL_PER_CARD       4       /* number of Channels on each MFC Card */
 
-#define MAX_DCDC4_CARD     1                                         /* number of DCDC4 */
-#define MAX_DCDC4_CHANNEL_PER_CARD 4                                       /* number of Channels on DCDC4 */
+#define MAX_VALVE_CARD_LIFT            2       /* number of Valve Cards in Lift */
+#define MAX_VALVE_CARD_WP              2       /* number of Valve Cards in WP */
+#define MAX_VALVE_CHANNEL_PER_CARD     14      /* number of Valves on Card */
+
+#define MAX_DCDC4_CARD_LIFT            1       /* number of DCDC4 in Lift */
+#define MAX_DCDC4_CHANNEL_PER_CARD     4       /* number of Channels on DCDC4 */
 
 
 
@@ -214,6 +224,12 @@ struct ADCCardType {
 
 /*************************************************************************************************************/
 
+struct ADC24CardType {                                               
+  uint16_t NumSamples;                                                    /* number of Samples for statistik */
+  struct ADCChannelDataType ADCChannelData[MAX_24BIT_ADC_CHANNEL_PER_CARD];
+ }; /* ADCCardType */
+
+/*************************************************************************************************************/
 
 
 struct MFCChannelConfigBitType {
@@ -260,7 +276,8 @@ struct DCDC4CardType {
 
 /*************************************************************************************************************/
 #define MAX_TEMP_SENSOR   23
-#define MAX_TEMP_SENSOR_CARD 1
+#define MAX_TEMP_SENSOR_CARD_LIFT 1
+#define MAX_TEMP_SENSOR_CARD_WP 1
 #define MAX_TEMP_TIMEOUT  100                                         /* maximum Timeout to wait for Temperature Card to be ready */
 #define MAX_TEMP_MISSED_READING 5                                    /* number of maximal reading failures before removing a temperature */
 #define ELK_TEMP_BASE           0xb000                                /* Base of Temperature Card */
@@ -374,16 +391,33 @@ struct GPSDataType {					/* data type for GPS data*/
 
 
 struct elekStatusType {                                             /* combined status information of instrument */
-  struct timeval             TimeOfDay;                             /* time of data */
-  struct CounterCardType     CounterCard;                           /* Counter Card for Ref, OH and HO2 */
+
+  /* data structures for the Master Box (lift / pentium 3) */
+  
+  struct timeval             TimeOfDayMaster;                       /* time of data */
+  struct CounterCardType     CounterCardMaster;                     /* Counter Card for Reference */
   struct EtalonDataType      EtalonData;                            /* All Etalonstepper data */
-  struct ADCCardType         ADCCard[MAX_ADC_CARD];                 /* ADC Card */
-  struct MFCCardType         MFCCard[MAX_MFC_CARD];                 /* MFC Card */
-  struct ValveCardType       ValveCard[MAX_VALVE_CARD];             /* Valve Card */
-  struct DCDC4CardType       DCDC4Card[MAX_DCDC4_CARD];             /* Valve Card */
-  struct TempSensorCardType  TempSensCard[MAX_TEMP_SENSOR_CARD];    /* Temperature Sensor Card */
+  struct ADCCardType         ADCCardMaster[MAX_ADC_CARD_LIFT];                 /* ADC Card */
+  struct MFCCardType         MFCCardMaster[MAX_MFC_CARD_LIFT];                 /* MFC Card */
+  struct ValveCardType       ValveCardMaster[MAX_VALVE_CARD_LIFT];             /* Valve Card */
+  struct DCDC4CardType       DCDC4CardMaster[MAX_DCDC4_CARD_LIFT];             /* Valve Card */
+  struct TempSensorCardType  TempSensCardMaster[MAX_TEMP_SENSOR_CARD_LIFT];    /* Temperature Sensor Card */
   struct InstrumentFlagsType InstrumentFlags;                       /* Instrument flags */
-  struct GPSDataType         GPSData;                               /* GPS Data */
+  struct GPSDataType         GPSDataMaster; 
+
+  /* data structures for the Slave Box (Wingpod / ARM9) */
+  
+  struct timeval             TimeOfDaySlave;
+  struct CounterCardType     CounterCardSlave;                            /* OH and HO2*/
+  struct ADCCardType         ADCCardSlave[MAX_ADC_CARD_WP];
+  struct ADC24CardType       ADC24CardsSlave[MAX_24BIT_ADC_CARDS_WP];
+  struct MFCCardType         MFCCardSlave[MAX_ADC_CARD_WP];
+  struct ValveCardType       ValveCardSlave[MAX_VALVE_CARD_WP];
+  struct TempSensorCardType  TempSensCardSlave[MAX_TEMP_SENSOR_CARD_WP];
+  struct GPSDataType         GPSDataSlave;
+  
+                                  
+										  /* GPS Data */
 }; /* elekStatusType */
 
 
