@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-04-21 15:59:21 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-05-22 15:02:43 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.7  2005-04-21 15:59:21  rudolf
+// Revision 1.8  2005-05-22 15:02:43  rudolf
+// changed BaudRate and ttyX, changed debug output if commands are sent via eCmd
+//
+// Revision 1.7  2005/04/21 15:59:21  rudolf
 // fixed stupid typo
 //
 // Revision 1.6  2005/04/21 15:51:52  rudolf
@@ -49,7 +52,7 @@ char aProgramName[] = "GPS";              // needed for serial.c 's debug output
 char *progname = (char *) aProgramName;   // export pointer to debug string
 
 int verbose = 255;                        // be very verbose
-long baud = 9600;                         // serial baudrate
+long baud = 4800;                         // serial baudrate
 volatile char ucDataReadyFlag = 0;        // Data ready flag
 int fdGPS = -1;                           // file descriptor for serial communication
 char ucPortOpened = 0;                    // flag for the timer routine wether port is available or not

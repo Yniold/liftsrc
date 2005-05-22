@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-18 18:26:45 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-22 15:02:43 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.16  2005-05-18 18:26:45  rudolf
+* Revision 1.17  2005-05-22 15:02:43  rudolf
+* changed BaudRate and ttyX, changed debug output if commands are sent via eCmd
+*
+* Revision 1.16  2005/05/18 18:26:45  rudolf
 * added debug output
 *
 * Revision 1.15  2005/04/21 16:17:18  rudolf
@@ -1386,9 +1389,9 @@ int main()
   addr_len = sizeof(struct sockaddr);
 
   #ifdef RUNONARM
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.16 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.17 $) for ARM\n",VERSION);
   #else
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.16 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.17 $) for i386\n",VERSION);
   #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1567,7 +1570,7 @@ int main()
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    } /* if MessagePort */
 	    
-    	    printf("elekIOServ: manual write to Address %04x\n", Message.Addr, Message.Value);
+    	    printf("elekIOServ: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
 
 	    Message.Status=elkWriteData(Message.Addr,Message.Value);
 	    Message.MsgType=MSG_TYPE_ACK;			    

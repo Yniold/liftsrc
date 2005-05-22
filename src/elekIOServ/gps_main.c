@@ -3,12 +3,15 @@
 // simple wrapper program around NMEA parser
 // ============================================
 
-// $RCSfile: gps_main.c,v $ last changed on $Date: 2005-01-27 14:59:36 $ by $Author: rudolf $
+// $RCSfile: gps_main.c,v $ last changed on $Date: 2005-05-22 15:02:43 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: gps_main.c,v $
-// Revision 1.1  2005-01-27 14:59:36  rudolf
+// Revision 1.2  2005-05-22 15:02:43  rudolf
+// changed BaudRate and ttyX, changed debug output if commands are sent via eCmd
+//
+// Revision 1.1  2005/01/27 14:59:36  rudolf
 // added files for GPS receiver connection
 //
 //
@@ -37,14 +40,14 @@
 // Globals
 // ========================
 
-unsigned char port[256] = "/dev/ttyS1";	// serial device used for the incoming GPS data
+unsigned char port[256] = "/dev/ttyS0";	// serial device used for the incoming GPS data
 unsigned char pDataBuffer[1024];
 
 char aProgramName[] = "GPS";		// needed for serial.c 's debug output
 char *progname = (char *) aProgramName;		// export pointer to debug string
 
 int verbose = 255;					// be very verbose
-long baud = 9600;					// serial baudrate
+long baud = 4800;					// serial baudrate
 volatile char ucDataReadyFlag = 0;	// Data ready flag
 int fd = -1;						// file descriptor for serial communication
 char ucPortOpened = 0;				// flag for the timer routine wether port is available or not
