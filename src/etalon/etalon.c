@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-04-21 13:58:42 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-05-22 19:11:37 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.2  2005-04-21 13:58:42  rudolf
+* Revision 1.3  2005-05-22 19:11:37  rudolf
+* fixes for new elekStatus structure
+*
+* Revision 1.2  2005/04/21 13:58:42  rudolf
 * more work on conditional compile
 *
 *
@@ -235,12 +238,12 @@ int SortAndAddCounts(struct AverageDataType *ptrOnlineLeftCounts,
 		 struct elekStatusType  *ptrElekStatus) {
 
   if (ptrElekStatus->EtalonData.Current.Position==ptrElekStatus->EtalonData.Online.Position) // do we dither on left ?
-    AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCard.Channel[CHANNEL_REF_CELL].Counts);
+    AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
 
   if (ptrElekStatus->EtalonData.Current.Position==
       (ptrElekStatus->EtalonData.Online.Position) + 
       (ptrElekStatus->EtalonData.DitherStepWidth) ) // do we dither on right ?
-    AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCard.Channel[CHANNEL_REF_CELL].Counts);
+    AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
 
 } /* SortAndAddCounts */
 
@@ -381,7 +384,7 @@ int main(int argc, char *argv[])
     
 
     // zero TimeOfDay to indicate invalid status
-    ElekStatus.TimeOfDay.tv_sec=0L;
+    ElekStatus.TimeOfDayMaster.tv_sec=0L;
 
     // Init On-Offline Counter
 
@@ -601,7 +604,7 @@ int main(int argc, char *argv[])
 		    break; /* default */		  
 		  } /* switch state */
 		  
-		  if (ElekStatus.TimeOfDay.tv_sec) {   // do we have a valid status ?
+		  if (ElekStatus.TimeOfDayMaster.tv_sec) {   // do we have a valid status ?
 		    // SetPosition=(SetPosition-ElekStatus.EtalonData.Current.Position)+ElekStatus.EtalonData.Encoder.Position;
 		    //		  printf("Deviation : %d\n",(ElekStatus.EtalonData.Encoder.Position-ElekStatus.EtalonData.Current.Position));		    
 		  } /*if ElekStatus.TimeOfDay */

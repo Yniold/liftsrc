@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-04-22 12:38:48 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-05-22 19:09:45 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.8  2005-04-22 12:38:48  rudolf
+* Revision 1.9  2005-05-22 19:09:45  rudolf
+* fixes for new elekStatus structure
+*
+* Revision 1.8  2005/04/22 12:38:48  rudolf
 * fixed handling if instrument data could not be written due to lack of diskspace etc.
 *
 * Revision 1.7  2005/04/22 11:30:18  rudolf
@@ -93,12 +96,12 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
     int Channel;
     int Card;
 
-    Seconds=ptrElekStatus->TimeOfDay.tv_sec;
+    Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
     localtime_r(&Seconds,&tmZeit);
 
     
     printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
-	   tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDay.tv_usec/1000);
+	   tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDayMaster.tv_usec/1000);
     printf("E%ld(%d %d)/%ld %ld %d %4x",ptrElekStatus->EtalonData.Current.Position,
 	   ptrElekStatus->EtalonData.Current.PositionWord.High,
 	   ptrElekStatus->EtalonData.Current.PositionWord.Low,
@@ -110,28 +113,28 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
     printf("cA");
     // Counter Card ADC Channel
     for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
-	printf("%4x ",ptrElekStatus->CounterCard.ADCData[i]);   
+	printf("%4x ",ptrElekStatus->CounterCardMaster.ADCData[i]);   
     }
 
-    printf("cD%4x ",ptrElekStatus->CounterCard.MasterDelay);
+    printf("cD%4x ",ptrElekStatus->CounterCardMaster.MasterDelay);
 
     for(i=0; i<MAX_COUNTER_CHANNEL;i++)
-        printf("%4x ",ptrElekStatus->CounterCard.Channel[i].ShiftDelay);
+        printf("%4x ",ptrElekStatus->CounterCardMaster.Channel[i].ShiftDelay);
 
     for(i=0; i<MAX_COUNTER_GATE;i++) {
-	printf("%4x/%4x ",ptrElekStatus->CounterCard.Channel[i].GateDelay,
-	       ptrElekStatus->CounterCard.Channel[i].GateWidth);
+	printf("%4x/%4x ",ptrElekStatus->CounterCardMaster.Channel[i].GateDelay,
+	       ptrElekStatus->CounterCardMaster.Channel[i].GateWidth);
     }
 
     for(i=0; i<MAX_COUNTER_CHANNEL;i++) {
-	printf("%d ",ptrElekStatus->CounterCard.Channel[i].Counts);
+	printf("%d ",ptrElekStatus->CounterCardMaster.Channel[i].Counts);
     }
 
     // normal ADC Card
     printf("eA");
-    for (Card=0; Card<MAX_ADC_CARD; Card ++) {
+    for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) {
 	for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {	    
-	    printf("%4x ",ptrElekStatus->ADCCard[Card].ADCChannelData[Channel].ADCData);
+	    printf("%4x ",ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].ADCData);
 	} /* for Channel */
     } /* for Card */    
   
@@ -139,17 +142,17 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
     // temperature Sensor
 
     printf("T");
-    printf("%d ",ptrElekStatus->TempSensCard[0].NumSensor);
-    printf("%d ",ptrElekStatus->TempSensCard[0].NumErrCRC);
-    printf("%d ",ptrElekStatus->TempSensCard[0].NumErrNoResponse);
-    printf("%d ",ptrElekStatus->TempSensCard[0].NumMissed);
+    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumSensor);
+    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumErrCRC);
+    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumErrNoResponse);
+    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumMissed);
     //    printf("%x;",ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp);
 
     for (i=0;i<MAX_TEMP_SENSOR;i++) {
       printf("%x %3.2f,",
-	     ptrElekStatus->TempSensCard[0].TempSensor[i].Field.aROMCode[0],
-	     ptrElekStatus->TempSensCard[0].TempSensor[i].Field.TempMain+
-	     ptrElekStatus->TempSensCard[0].TempSensor[i].Field.TempFrac/16.0
+	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.aROMCode[0],
+	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempMain+
+	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempFrac/16.0
 	     );
       //	     ptrElekStatus->TempSensCard[0].TempSensor[i].Word.WordTemp);
     }
@@ -157,28 +160,28 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
     // GPS Data
 
     printf("GPS");
-    printf("%02d:",ptrElekStatus->GPSData.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
-    printf("%02d:",ptrElekStatus->GPSData.ucUTCMins);    /* binary, 0-59 decimal */
-    printf("%02d ",ptrElekStatus->GPSData.ucUTCSeconds); /* binary 0-59 decimal */
+    printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
+    printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCMins);    /* binary, 0-59 decimal */
+    printf("%02d ",ptrElekStatus->GPSDataMaster.ucUTCSeconds); /* binary 0-59 decimal */
 
-    printf("%f ",ptrElekStatus->GPSData.dLongitude);     /* "Laengengrad" I always mix it up..
+    printf("%f ",ptrElekStatus->GPSDataMaster.dLongitude);     /* "Laengengrad" I always mix it up..
                                                             signed notation,
                                                             negative values mean "W - west of Greenwich"
                                                             positive values mean "E - east of Greenwich" */
 
-    printf("%f ",ptrElekStatus->GPSData.dLatitude);      /* "Breitengrad" I always mix it up...
+    printf("%f ",ptrElekStatus->GPSDataMaster.dLatitude);      /* "Breitengrad" I always mix it up...
                                                              signed notation,
                                                              negative values mean "S - south of the equator
                                                              positive values mean "N - north of the equator */
 
-    printf("%f ",ptrElekStatus->GPSData.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
+    printf("%f ",ptrElekStatus->GPSDataMaster.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
 
-    printf("%d ",ptrElekStatus->GPSData.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
-    printf("%d ",ptrElekStatus->GPSData.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
+    printf("%d ",ptrElekStatus->GPSDataMaster.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
+    printf("%d ",ptrElekStatus->GPSDataMaster.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
                                                                will stick at 255 if no data received for a long period */
 
-    printf("%d ",ptrElekStatus->GPSData.uiGroundSpeed);  /* speed in cm/s above ground */
-    printf("%d ",ptrElekStatus->GPSData.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+    printf("%d ",ptrElekStatus->GPSDataMaster.uiGroundSpeed);  /* speed in cm/s above ground */
+    printf("%d ",ptrElekStatus->GPSDataMaster.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
 
 
     printf("\n");
@@ -217,7 +220,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
     time_t    Seconds;
     char buf[GENERIC_BUF_LEN];
 
-    Seconds=ptrElekStatus->TimeOfDay.tv_sec;
+    Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
     localtime_r(&Seconds,&tmZeit);
 
     strncpy(buf,FileName,GENERIC_BUF_LEN);
@@ -285,7 +288,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
       for(i=0; i<MAX_COUNTER_TIMESLOT;i++) {
 	fprintf(fp,"%3d ",i);
 	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
-	  fprintf(fp,"%4d ",ptrElekStatus->CounterCard.Channel[Channel].Data[i]);
+	  fprintf(fp,"%4d ",ptrElekStatus->CounterCardMaster.Channel[Channel].Data[i]);
 	} // for channel
 	fprintf(fp,"\n");
       } // for i
@@ -359,11 +362,11 @@ int InitStatusFile(char *Path) {
       //	      LastTime.tv_sec);
       //      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	    
-      if ((LastTime.tv_sec<elekStatus.TimeOfDay.tv_sec) && 
-	  (LastTime.tv_sec<elekStatus.TimeOfDay.tv_sec)) {
+      if ((LastTime.tv_sec<elekStatus.TimeOfDayMaster.tv_sec) && 
+	  (LastTime.tv_sec<elekStatus.TimeOfDayMaster.tv_sec)) {
 	
 	LastStatusNumber=RecordNo;
-	LastTime=elekStatus.TimeOfDay;
+	LastTime=elekStatus.TimeOfDayMaster;
       }/* if time */
       
       RecordNo++;
@@ -434,9 +437,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.8 2005-04-22 12:38:48 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.9 2005-05-22 19:09:45 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.8 2005-04-22 12:38:48 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.9 2005-05-22 19:09:45 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
