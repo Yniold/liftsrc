@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-22 19:09:22 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-23 15:05:48 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.18  2005-05-22 19:09:22  rudolf
+* Revision 1.19  2005-05-23 15:05:48  rudolf
+* changed initialisation of cards to distinguish between Master and Slave mode
+*
+* Revision 1.18  2005/05/22 19:09:22  rudolf
 * fixes for new elekStatus structure
 *
 * Revision 1.17  2005/05/22 15:02:43  rudolf
@@ -364,8 +367,135 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	ptrElekStatus->InstrumentFlags.EtalonAction=ETALON_ACTION_NOP; // do nothing with the etalon for now
   }
 	else
+	// ----------
+	// SLAVE Mode 
+	// ----------
  {
-   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : in "__FUNCTION__"() :Slave Mode not yet implemented !\n");
+	// ADC Channels
+	for (Card=0; Card<MAX_ADC_CARD_WP; Card ++) {
+		ptrElekStatus->ADCCardSlave[Card].NumSamples=0;
+		
+		for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].ADCData                         =0x00;	    
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].SumDat                          =0x00;	    
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].SumSqr                          =0x00;	    
+			
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x00;
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x00;
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x00;
+			ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
+		} /* for Channel */
+	} /* for Card */
+	
+	// for bridge pressure sensors we need two adc channels, one for the signal, the other for the bridge power 
+	// those pairs are set here
+	Card=0; Channel=0;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
+	
+	Card=0; Channel=1;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
+	
+	Card=0; Channel=6;  
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
+	
+	Card=0; Channel=7; 
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
+	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
+	
+	
+	// ADC 24 bit
+	for (Card=0; Card<MAX_24BIT_ADC_CARDS_WP; Card ++) 
+	{
+		ptrElekStatus->ADC24CardsSlave[Card].NumSamples=0;
+		
+		for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+		{
+			ptrElekStatus->ADC24CardsSlave[Card].ADCChannelData[Channel].ADCChannelData = 0x00;	    
+		} /* for Channel */
+	} /* for Card */
+	
+	// MFC Channels
+	for (Card=0; Card<MAX_MFC_CARD_WP; Card ++) {
+		ptrElekStatus->MFCCardSlave[Card].NumSamples=0;
+		for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SetFlow                         =0x00;	    
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].Flow                            =0x00;	    
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SumDat                          =0x00;	    
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SumSqr                          =0x00;	    
+	
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.Unused    =0x00;	    
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.Ch0       =0x00;   // all valve forcings off
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.Ch1       =0x00;
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.Ch2       =0x00;
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.Ch3       =0x00;
+			ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfigBit.MuxChannel=Channel;
+		} /* for Channel */
+	} /* for Card */
+	
+	// Valve Channels
+	for (Card=0; Card<MAX_VALVE_CARD_WP; Card ++) {
+		for (Channel=0;Channel<MAX_VALVE_CHANNEL_PER_CARD; Channel++) {
+			ptrElekStatus->ValveCardSlave[Card].Valve=bitset(ptrElekStatus->ValveCardSlave[Card].Valve,Channel,0); 	    
+		} /* for Channel */
+	} /* for Card */
+	
+// Counter Card
+	
+	// init Mask for now all 1
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+		// setup Channel Masks
+		for (i=0;i<COUNTER_MASK_WIDTH; i++) {
+			ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]=0x0ffff;   
+		} // for i
+		// we do not want to count the first data word in the sumcounts which are the number of lasershots
+		ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[0]=0x0fffe;
+	} // for Channel
+	
+	
+	ptrElekStatus->CounterCardSlave.MasterDelay=0x50;                                                   // master delay
+		
+	for (i=0;i<COUNTER_MASK_WIDTH;i++) {
+		sprintf(buf,"Mask #%d %x",i,ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	} /* for i */
+		// set CounterCard ShiftDelays for now 1
+	//  for(i=0; i<MAX_COUNTER_CHANNEL;i++) ptrElekStatus->CounterCard.Channel[i].ShiftDelay=1;     // channel delay
+	
+	ptrElekStatus->CounterCardSlave.Channel[0].ShiftDelay=0x21;  //PMT shift
+	ptrElekStatus->CounterCardSlave.Channel[1].ShiftDelay=0x32;  //MCP1 shift
+	ptrElekStatus->CounterCardSlave.Channel[2].ShiftDelay=0x32;  //MCP2 shift
+	
+	// set CounterCard GateDelays 
+	// set to zero for channel 0, which is the PMT and has no gate register 
+	ptrElekStatus->CounterCardSlave.Channel[0].GateDelay=0; 
+	ptrElekStatus->CounterCardSlave.Channel[0].GateWidth=0;	
+	for(i=1; i<MAX_COUNTER_CHANNEL;i++) {// skip channel 0 which is the PMT and has no gate register 
+		ptrElekStatus->CounterCardSlave.Channel[i].GateDelay=0x10;
+		ptrElekStatus->CounterCardSlave.Channel[i].GateWidth=1000;	
+	}	
+	
+	// init InstrumentFlags
+	
+	ptrElekStatus->InstrumentFlags.StatusSave=1;                   // we do want to store data
+	ptrElekStatus->InstrumentFlags.StatusQuery=1;                  // we want to query the Status
+	ptrElekStatus->InstrumentFlags.EtalonAction=ETALON_ACTION_NOP; // do nothing with the etalon for now
+	
  };
 } /* LoadModulesConfig */  
 
@@ -374,23 +504,44 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 /* SetCounterCardMask                                                                                     */
 /**********************************************************************************************************/
                                                                                     
-void SetCounterCardMask(struct elekStatusType *ptrElekStatus)
+void SetCounterCardMask(struct elekStatusType *ptrElekStatus, int IsMaster)
 {
 
   int Channel; 
   uint16_t CounterStatus;
   int i;
   
-  for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
-    
-    CounterStatus=(Channel <<4);
-    elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
-    
-    // setup Channel Masks, but only ten words because of depth of shift register
-    for (i=0;i<10; i++) {
-      elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
-    } // for i
-  } // for Channel
+  // MASTER
+  
+  if(IsMaster)
+  {
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+		
+		CounterStatus=(Channel <<4);
+		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+		
+		// setup Channel Masks, but only ten words because of depth of shift register
+		for (i=0;i<10; i++) {
+			elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
+		} // for i
+	} // for Channel
+  }
+  
+  // SLAVE
+  else
+  {
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+		
+		CounterStatus=(Channel <<4);
+		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+		
+		// setup Channel Masks, but only ten words because of depth of shift register
+		for (i=0;i<10; i++) {
+			elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
+		} // for i
+	} // for Channel
+  }
+  
 } /*SetCounterCardMask*/
  
 
@@ -399,7 +550,7 @@ void SetCounterCardMask(struct elekStatusType *ptrElekStatus)
 /* Init CounterCard                                                                                       */
 /**********************************************************************************************************/
 
-int InitCounterCard (struct elekStatusType *ptrElekStatus) {
+int InitCounterCard (struct elekStatusType *ptrElekStatus,int IsMaster) {
 
   int Channel;
   int i;
@@ -411,101 +562,181 @@ int InitCounterCard (struct elekStatusType *ptrElekStatus) {
   uint16_t  CounterStatus;
 
 
-
-  // Now program
-
-  // CounterCard ShiftDelays
-  // MasterDelay
-
-  ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL, 
-		   ptrElekStatus->CounterCardMaster.MasterDelay);
-  // proofread
-  ret=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL);
-  if (ret!=ptrElekStatus->CounterCardMaster.MasterDelay) {
-    // failed to init CC
-    return(INIT_MODULE_FAILED);
+  if(IsMaster)
+  {
+	// Now program
+	
+	// CounterCard ShiftDelays
+	// MasterDelay
+	
+	ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL, 
+				ptrElekStatus->CounterCardMaster.MasterDelay);
+	// proofread
+	ret=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL);
+	if (ret!=ptrElekStatus->CounterCardMaster.MasterDelay) {
+		// failed to init CC
+		return(INIT_MODULE_FAILED);
+	}
+	
+	for(Channel=0; Channel<MAX_COUNTER_CHANNEL;Channel++) 
+		ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*Channel,ptrElekStatus->CounterCardMaster.Channel[Channel].ShiftDelay);
+	
+	// CounterCard GateDelays
+	for(Channel=1; Channel<MAX_COUNTER_CHANNEL;Channel++) { // skip channel 0 which is the PMT and has no gate register 
+		ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1),ptrElekStatus->CounterCardMaster.Channel[Channel].GateDelay);
+		ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1)+2,ptrElekStatus->CounterCardMaster.Channel[Channel].GateWidth);	
+	}
+	
+	// initialize mask shift register for all channels
+	SetCounterCardMask(ptrElekStatus, IsMaster);
+	
+	// initialize data counter registers  
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+		
+		CounterStatus=(Channel <<4);
+		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+		
+		// init Data to 0
+		TimeSlot=0;
+		for (Page=0; Page<MAX_COUNTER_PAGE; Page++) {
+			// set page and Channel in status register
+			CounterStatus=(Channel <<4) | Page;
+			elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+			
+			for(TimeSlotinPage=0; TimeSlotinPage<MAX_COUNTER_SLOTS_PER_PAGE; TimeSlotinPage++, TimeSlot++) {
+		// clear buffer for now write test pattern
+		elkWriteData(ELK_COUNTER_COUNTS+TimeSlotinPage*2,TimeSlot+Channel);
+		// printf("C %d T %d %3d \n",Channel,TimeSlot,TimeSlotinPage);
+			}/* for TimeSlotinPage*/
+		} /*Page*/
+		
+		
+	}/*Channel*/
+	
+	// request switch of banks so we add upcoming 
+	// counts into the initialized registers 
+	
+	elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );
+	
+	return (INIT_MODULE_SUCCESS);
   }
-
-  for(Channel=0; Channel<MAX_COUNTER_CHANNEL;Channel++) 
-    ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*Channel,ptrElekStatus->CounterCardMaster.Channel[Channel].ShiftDelay);
-  
-  // CounterCard GateDelays
-  for(Channel=1; Channel<MAX_COUNTER_CHANNEL;Channel++) { // skip channel 0 which is the PMT and has no gate register 
-    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1),ptrElekStatus->CounterCardMaster.Channel[Channel].GateDelay);
-    ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1)+2,ptrElekStatus->CounterCardMaster.Channel[Channel].GateWidth);	
+  else // SLAVE Mode
+  {
+	ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL, 
+				ptrElekStatus->CounterCardSlave.MasterDelay);
+	// proofread
+	ret=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*MAX_COUNTER_CHANNEL);
+	if (ret!=ptrElekStatus->CounterCardSlave.MasterDelay) {
+		// failed to init CC
+		return(INIT_MODULE_FAILED);
+	}
+	
+	for(Channel=0; Channel<MAX_COUNTER_CHANNEL;Channel++) 
+		ret=elkWriteData(ELK_COUNTER_DELAY_SHIFT+2*Channel,ptrElekStatus->CounterCardSlave.Channel[Channel].ShiftDelay);
+	
+	// CounterCard GateDelays
+	for(Channel=1; Channel<MAX_COUNTER_CHANNEL;Channel++) { // skip channel 0 which is the PMT and has no gate register 
+		ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1),ptrElekStatus->CounterCardSlave.Channel[Channel].GateDelay);
+		ret=elkWriteData(ELK_COUNTER_DELAY_GATE+4*(Channel-1)+2,ptrElekStatus->CounterCardSlave.Channel[Channel].GateWidth);	
+	}
+	
+	// initialize mask shift register for all channels
+	SetCounterCardMask(ptrElekStatus, IsMaster);
+	
+	// initialize data counter registers  
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+		
+		CounterStatus=(Channel <<4);
+		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+		
+		// init Data to 0
+		TimeSlot=0;
+		for (Page=0; Page<MAX_COUNTER_PAGE; Page++) {
+			// set page and Channel in status register
+			CounterStatus=(Channel <<4) | Page;
+			elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+			
+			for(TimeSlotinPage=0; TimeSlotinPage<MAX_COUNTER_SLOTS_PER_PAGE; TimeSlotinPage++, TimeSlot++) {
+		// clear buffer for now write test pattern
+		elkWriteData(ELK_COUNTER_COUNTS+TimeSlotinPage*2,TimeSlot+Channel);
+		// printf("C %d T %d %3d \n",Channel,TimeSlot,TimeSlotinPage);
+			}/* for TimeSlotinPage*/
+		} /*Page*/
+		
+		
+	}/*Channel*/
+	
+	// request switch of banks so we add upcoming 
+	// counts into the initialized registers 
+	
+	elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );
+	
+	return (INIT_MODULE_SUCCESS);
   }
-
-  // initialize mask shift register for all channels
-  SetCounterCardMask(ptrElekStatus);
-  
-  // initialize data counter registers  
-  for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
-    
-    CounterStatus=(Channel <<4);
-    elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
-    
-    // init Data to 0
-    TimeSlot=0;
-    for (Page=0; Page<MAX_COUNTER_PAGE; Page++) {
-      // set page and Channel in status register
-      CounterStatus=(Channel <<4) | Page;
-      elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
-      
-      for(TimeSlotinPage=0; TimeSlotinPage<MAX_COUNTER_SLOTS_PER_PAGE; TimeSlotinPage++, TimeSlot++) {
-	// clear buffer for now write test pattern
-	elkWriteData(ELK_COUNTER_COUNTS+TimeSlotinPage*2,TimeSlot+Channel);
-	// printf("C %d T %d %3d \n",Channel,TimeSlot,TimeSlotinPage);
-      }/* for TimeSlotinPage*/
-    } /*Page*/
-    
-    
-  }/*Channel*/
-  
-  // request switch of banks so we add upcoming 
-  // counts into the initialized registers 
-  
-  elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );
-  
-  return (INIT_MODULE_SUCCESS);
-  
 } /* Init CounterCard */
 
 /**********************************************************************************************************/
 /* Init ADCCardMaster                                                                                       */
 /**********************************************************************************************************/
 
-int InitADCCard (struct elekStatusType *ptrElekStatus) {
+int InitADCCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
 
   int       Channel;
   int       Card;
   int       ret=1;
   unsigned  ADC_CfgAddress;
   
-  // configure ADC Card
   
-  for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) {
-    ADC_CfgAddress=ELK_ADC_BASE+ELK_ADC_CONFIG+Card*ELK_ADC_NUM_ADR;
-    for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {	    
-      ret=elkWriteData(ADC_CfgAddress+2*Channel,
-		       ptrElekStatus->ADCCardMaster[Card].ADCChannelConfig[Channel].ADCChannelConfig);
-      // proof read
-      if (elkReadData(ADC_CfgAddress+2*Channel)!=
-	  ptrElekStatus->ADCCardMaster[Card].ADCChannelConfig[Channel].ADCChannelConfig) {
-	return (INIT_MODULE_FAILED); // mark ret=0;
-      } /* if elkRead */
-      
-    } /* for Channel */
-  } /* for Card */
+  if(IsMaster)
+  {
+	// configure ADC Card (Master)
+	
+	for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) {
+		ADC_CfgAddress=ELK_ADC_BASE+ELK_ADC_CONFIG+Card*ELK_ADC_NUM_ADR;
+		for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {	    
+			ret=elkWriteData(ADC_CfgAddress+2*Channel,
+					ptrElekStatus->ADCCardMaster[Card].ADCChannelConfig[Channel].ADCChannelConfig);
+			// proof read
+			if (elkReadData(ADC_CfgAddress+2*Channel)!=
+		ptrElekStatus->ADCCardMaster[Card].ADCChannelConfig[Channel].ADCChannelConfig) {
+		return (INIT_MODULE_FAILED); // mark ret=0;
+			} /* if elkRead */
+			
+		} /* for Channel */
+	} /* for Card */
+	
+	return (INIT_MODULE_SUCCESS);
+  }
+  else /*IsMaster*/
+  {
+		// configure ADC Card (Slave)
+		
+		for (Card=0; Card<MAX_ADC_CARD_WP; Card ++) 
+		{
+			ADC_CfgAddress=ELK_ADC_BASE_WP+ELK_ADC_CONFIG+Card*ELK_ADC_NUM_ADR;
+			for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+			{	    
+				ret=elkWriteData(ADC_CfgAddress+2*Channel,
+						ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfig);
+				// proof read
+				if (elkReadData(ADC_CfgAddress+2*Channel)!=
+					ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfig) 
+				{
+					return (INIT_MODULE_FAILED); // mark ret=0;
+				} /* if elkRead */
+				
+			} /* for Channel */
+		} /* for Card */
+		return (INIT_MODULE_SUCCESS);
+	};
   
-  return (INIT_MODULE_SUCCESS);
-
 } /* Init ADCCardMaster */
 
 /**********************************************************************************************************/
 /* Init MFCCard                                                                                       */
 /**********************************************************************************************************/
 
-int InitMFCCard (struct elekStatusType *ptrElekStatus) {
+int InitMFCCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
 
   int       Channel;
   int       Card;
@@ -513,34 +744,68 @@ int InitMFCCard (struct elekStatusType *ptrElekStatus) {
   unsigned  MFC_CfgAddress;
   unsigned  DAC_CfgAddress;
   
-  // configure MFC Card
   
-  for (Card=0; Card<MAX_MFC_CARD_LIFT; Card ++) {
-    MFC_CfgAddress=ELK_MFC_BASE+ELK_MFC_CONFIG+Card*ELK_MFC_NUM_ADR;
-    DAC_CfgAddress=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
-    for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {
-      // init ADC part of each channel
-      ret=elkWriteData(MFC_CfgAddress+2*Channel,
-		       ptrElekStatus->MFCCardMaster[Card].MFCChannelConfig[Channel].MFCChannelConfig);
-      // proof read
-      if (elkReadData(MFC_CfgAddress+2*Channel)!=
-	  ptrElekStatus->MFCCardMaster[Card].MFCChannelConfig[Channel].MFCChannelConfig) {
-	return (INIT_MODULE_FAILED); // mark ret=0;
-      } /* if elkRead */
-      
-      // init DAC part
-      ret=elkWriteData(DAC_CfgAddress+2*Channel,
-		       ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SetFlow);
-      
-    } /* for Channel */
-  } /* for Card */
-
-  // enable DACPWM
-  ret=elkWriteData(ELK_DACPWM_BASE,0xff);
+  if(IsMaster)
+  {
+	// configure MFC Card Lift
+	
+	for (Card=0; Card<MAX_MFC_CARD_LIFT; Card ++) {
+		MFC_CfgAddress=ELK_MFC_BASE+ELK_MFC_CONFIG+Card*ELK_MFC_NUM_ADR;
+		DAC_CfgAddress=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+		for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {
+			// init ADC part of each channel
+			ret=elkWriteData(MFC_CfgAddress+2*Channel,
+					ptrElekStatus->MFCCardMaster[Card].MFCChannelConfig[Channel].MFCChannelConfig);
+			// proof read
+			if (elkReadData(MFC_CfgAddress+2*Channel)!=
+		ptrElekStatus->MFCCardMaster[Card].MFCChannelConfig[Channel].MFCChannelConfig) {
+		return (INIT_MODULE_FAILED); // mark ret=0;
+			} /* if elkRead */
+			
+			// init DAC part
+			ret=elkWriteData(DAC_CfgAddress+2*Channel,
+					ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SetFlow);
+			
+		} /* for Channel */
+	} /* for Card */
+	
+	// enable DACPWM
+	ret=elkWriteData(ELK_DACPWM_BASE,0xff);
+	
+	
+	return (INIT_MODULE_SUCCESS);
+  }
+  else // SLAVE
+  {
+	// configure MFC Card Wingpod
+	
+	for (Card=0; Card<MAX_MFC_CARD_WP; Card ++) {
+		MFC_CfgAddress=ELK_MFC_BASE+ELK_MFC_CONFIG+Card*ELK_MFC_NUM_ADR;
+		DAC_CfgAddress=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+		for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {
+			// init ADC part of each channel
+			ret=elkWriteData(MFC_CfgAddress+2*Channel,
+					ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfig);
+			// proof read
+			if (elkReadData(MFC_CfgAddress+2*Channel)!=
+		ptrElekStatus->MFCCardSlave[Card].MFCChannelConfig[Channel].MFCChannelConfig) {
+		return (INIT_MODULE_FAILED); // mark ret=0;
+			} /* if elkRead */
+			
+			// init DAC part
+			ret=elkWriteData(DAC_CfgAddress+2*Channel,
+					ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SetFlow);
+			
+		} /* for Channel */
+	} /* for Card */
+	
+	// enable DACPWM
+	ret=elkWriteData(ELK_DACPWM_BASE,0xff);
+	
+	
+	return (INIT_MODULE_SUCCESS);
+  }
   
-  
-  return (INIT_MODULE_SUCCESS);
-
 } /* Init MFCCard */
 
 /**********************************************************************************************************/
@@ -574,25 +839,45 @@ int InitEtalonCard (struct elekStatusType *ptrElekStatus) {
 /* Init ValveCard                                                                                        */
 /**********************************************************************************************************/
 
-int InitValveCard (struct elekStatusType *ptrElekStatus) {
+int InitValveCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
   
   int Card;
   int ret;
 
-  // configure Valve Card
-  
-  for (Card=0; Card<MAX_VALVE_CARD_LIFT; Card ++) {
-    // switch all Valves off
-    ret=elkWriteData(ELK_VALVE_BASE+Card*2,0);
-  // set voltage to 0
-    ret=elkWriteData(ELK_PWM_VALVE_BASE+Card*2,0);
-    ret=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
-    if (ret!=0) {
-      return (INIT_MODULE_FAILED);
-    }
-  } /* for Card */
-  
-  return (INIT_MODULE_SUCCESS);
+  if(IsMaster)
+  {
+	// configure Valve Card for LIFT
+	
+	for (Card=0; Card<MAX_VALVE_CARD_LIFT; Card ++) {
+		// switch all Valves off
+		ret=elkWriteData(ELK_VALVE_BASE+Card*2,0);
+	// set voltage to 0
+		ret=elkWriteData(ELK_PWM_VALVE_BASE+Card*2,0);
+		ret=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
+		if (ret!=0) {
+			return (INIT_MODULE_FAILED);
+		}
+	} /* for Card */
+	
+	return (INIT_MODULE_SUCCESS);
+  }
+  else
+  {
+	// configure Valve Card for Wingpod
+	
+	for (Card=0; Card<MAX_VALVE_CARD_WP; Card ++) {
+		// switch all Valves off
+		ret=elkWriteData(ELK_VALVE_BASE+Card*2,0);
+	// set voltage to 0
+		ret=elkWriteData(ELK_PWM_VALVE_BASE+Card*2,0);
+		ret=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
+		if (ret!=0) {
+			return (INIT_MODULE_FAILED);
+		}
+	} /* for Card */
+	
+	return (INIT_MODULE_SUCCESS);
+  }
   
 } /* Init ValveCard */
 
@@ -627,36 +912,58 @@ int InitDCDC4Card (struct elekStatusType *ptrElekStatus) {
 /* Init TemperatureCard                                                                                        */
 /**********************************************************************************************************/
 
-int InitTempCard (struct elekStatusType *ptrElekStatus) {
+int InitTempCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
 
   int ret;
   int Card;
 
-  // configure Temperature Card
-  // reset Busy bit
-  elkWriteData(ELK_TEMP_CTRL,0);
-
-  ret=elkReadData(ELK_TEMP_CTRL);
-
-  // check if we got the same value that we wrote
-  if (ret!=0) {
-    return (INIT_MODULE_FAILED);
+  if(IsMaster)
+  {
+	// configure Temperature Card
+	// reset Busy bit
+	elkWriteData(ELK_TEMP_CTRL,0);
+	
+	ret=elkReadData(ELK_TEMP_CTRL);
+	
+	// check if we got the same value that we wrote
+	if (ret!=0) {
+		return (INIT_MODULE_FAILED);
+	}
+	
+	for (Card=0; Card<MAX_TEMP_SENSOR_CARD_LIFT; Card++) {
+		ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
+	};
+	
+	
+	return (INIT_MODULE_SUCCESS);
   }
-
-  for (Card=0; Card<MAX_TEMP_SENSOR_CARD_LIFT; Card++) {
-    ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
-  };
-
-
-  return (INIT_MODULE_SUCCESS);
-
+  else // SLAVE
+  {
+	// configure Temperature Card
+	// reset Busy bit
+	elkWriteData(ELK_TEMP_CTRL,0);
+	
+	ret=elkReadData(ELK_TEMP_CTRL);
+	
+	// check if we got the same value that we wrote
+	if (ret!=0) {
+		return (INIT_MODULE_FAILED);
+	}
+	
+	for (Card=0; Card<MAX_TEMP_SENSOR_CARD_WP; Card++) {
+		ptrElekStatus->TempSensCardSlave[Card].NumMissed=0;              // reset Missed Reading Counter
+	};
+	
+	
+	return (INIT_MODULE_SUCCESS);
+  }
 } /* Init TempCard */
 
 /**********************************************************************************************************/
 /* Init GPS receiver                                                                                   */
 /**********************************************************************************************************/
 
-int InitGPSReceiver(struct elekStatusType *ptrElekStatus) {
+int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
 
    extern struct MessagePortType MessageInPortList[];
    extern struct MessagePortType MessageOutPortList[];
@@ -665,45 +972,91 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus) {
 
    int ret;
 
-   // init NMEA parser statemachine etc.
-   NMEAParserInit();
-
-   // open TTY
-   fdGPS = serial_open(port , baud);
-
-   if(fdGPS == 1)
-   {
-      sprintf(debugbuf,"Error opening %s !\n\r", port);
-      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
-
-      return (INIT_MODULE_FAILED);
-   };
-
-   // success
-   sprintf(debugbuf,"Opened %s with %d BAUD!\n\r", port, baud);
-   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
-
-   // set data to initial values
-
-   ptrElekStatus->GPSDataMaster.ucUTCHours   = 0;           // Time -> 00:00:00
-   ptrElekStatus->GPSDataMaster.ucUTCMins    = 0;
-   ptrElekStatus->GPSDataMaster.ucUTCSeconds = 0;
-
-   ptrElekStatus->GPSDataMaster.dLongitude   = 999.99;      // normal range -180 to +180
-   ptrElekStatus->GPSDataMaster.dLatitude    = 99.99;       // normal range -90 to +90
-
-   ptrElekStatus->GPSDataMaster.fAltitude    = -99999;      // normal range 0 to 18000 m
-   ptrElekStatus->GPSDataMaster.fHDOP        = 999;         // normal range 0 to 100 ?
-
-   ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = 0;   // normal range 1-12
-   ptrElekStatus->GPSDataMaster.ucLastValidData = 255;      // normal range 0 to 6
-
-   ptrElekStatus->GPSDataMaster.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
-   ptrElekStatus->GPSDataMaster.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
-
-   ucPortOpened = 1;                                  // set global flag for timer service routine
-
-   return (INIT_MODULE_SUCCESS);
+	if(IsMaster)
+	{
+	
+		// init NMEA parser statemachine etc.
+		NMEAParserInit();
+	
+		// open TTY
+		fdGPS = serial_open(port , baud);
+	
+		if(fdGPS == 1)
+		{
+			sprintf(debugbuf,"ElekIOServ(M): Error opening %s !\n\r", port);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+			return (INIT_MODULE_FAILED);
+		};
+	
+		// success
+		sprintf(debugbuf,"ElekIOServ(M): Opened %s with %d BAUD!\n\r", port, baud);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+		// set data to initial values
+	
+		ptrElekStatus->GPSDataMaster.ucUTCHours   = 0;           // Time -> 00:00:00
+		ptrElekStatus->GPSDataMaster.ucUTCMins    = 0;
+		ptrElekStatus->GPSDataMaster.ucUTCSeconds = 0;
+	
+		ptrElekStatus->GPSDataMaster.dLongitude   = 999.99;      // normal range -180 to +180
+		ptrElekStatus->GPSDataMaster.dLatitude    = 99.99;       // normal range -90 to +90
+	
+		ptrElekStatus->GPSDataMaster.fAltitude    = -99999;      // normal range 0 to 18000 m
+		ptrElekStatus->GPSDataMaster.fHDOP        = 999;         // normal range 0 to 100 ?
+	
+		ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = 0;   // normal range 1-12
+		ptrElekStatus->GPSDataMaster.ucLastValidData = 255;      // normal range 0 to 6
+	
+		ptrElekStatus->GPSDataMaster.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+		ptrElekStatus->GPSDataMaster.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+	
+		ucPortOpened = 1;                                  // set global flag for timer service routine
+	
+		return (INIT_MODULE_SUCCESS);
+	}
+	else // SLAVE
+	{
+		// init NMEA parser statemachine etc.
+		NMEAParserInit();
+	
+		// open TTY
+		fdGPS = serial_open(port , baud);
+	
+		if(fdGPS == 1)
+		{
+			sprintf(debugbuf,"ElekIOServ(S): Error opening %s !\n\r", port);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+			return (INIT_MODULE_FAILED);
+		};
+	
+		// success
+		sprintf(debugbuf,"ElekIOServ(S): Opened %s with %d BAUD!\n\r", port, baud);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+		// set data to initial values
+	
+		ptrElekStatus->GPSDataSlave.ucUTCHours   = 0;           // Time -> 00:00:00
+		ptrElekStatus->GPSDataSlave.ucUTCMins    = 0;
+		ptrElekStatus->GPSDataSlave.ucUTCSeconds = 0;
+	
+		ptrElekStatus->GPSDataSlave.dLongitude   = 999.99;      // normal range -180 to +180
+		ptrElekStatus->GPSDataSlave.dLatitude    = 99.99;       // normal range -90 to +90
+	
+		ptrElekStatus->GPSDataSlave.fAltitude    = -99999;      // normal range 0 to 18000 m
+		ptrElekStatus->GPSDataSlave.fHDOP        = 999;         // normal range 0 to 100 ?
+	
+		ptrElekStatus->GPSDataSlave.ucNumberOfSatellites = 0;   // normal range 1-12
+		ptrElekStatus->GPSDataSlave.ucLastValidData = 255;      // normal range 0 to 6
+	
+		ptrElekStatus->GPSDataSlave.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+		ptrElekStatus->GPSDataSlave.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+	
+		ucPortOpened = 1;                                  // set global flag for timer service routine
+	
+		return (INIT_MODULE_SUCCESS);
+	}
 } /* Init TempCard */
 
 
@@ -731,58 +1084,95 @@ void InitModules(struct elekStatusType *ptrElekStatus, int IsMaster) {
   
   if(IsMaster)
   {
-	if (INIT_MODULE_SUCCESS == (ret=InitCounterCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init CounterCard successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitCounterCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init CounterCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init CounterCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init CounterCard failed !!");
 	}
 	
-	if (INIT_MODULE_SUCCESS == (ret=InitADCCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ADCCard successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitADCCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init ADCCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ADCCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init ADCCard failed !!");
 	}
 	
-	if (INIT_MODULE_SUCCESS == (ret=InitMFCCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init MFCCard successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitMFCCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init MFCCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init MFCCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init MFCCard failed !!");
 	}
 	
 	if (INIT_MODULE_SUCCESS == (ret=InitEtalonCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init EtalonCard successfull");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init EtalonCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init EtalonCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init EtalonCard failed !!");
 	}
 	
-	if (INIT_MODULE_SUCCESS == (ret=InitValveCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ValveCard successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitValveCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init ValveCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init ValveCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init ValveCard failed !!");
 	}
 	
 	if (INIT_MODULE_SUCCESS == (ret=InitDCDC4Card(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init DCDC4Card successfull");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init DCDC4Card successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init DCDC4Card failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init DCDC4Card failed !!");
 	}
 	
-	if (INIT_MODULE_SUCCESS == (ret=InitTempCard(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init TemperatureCard successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitTempCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init TemperatureCard successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init TemperatureCard failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init TemperatureCard failed !!");
 	}
 	
-	if (INIT_MODULE_SUCCESS == (ret=InitGPSReceiver(ptrElekStatus))) {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init GPS successfull");
+	if (INIT_MODULE_SUCCESS == (ret=InitGPSReceiver(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init GPS successfull");
 	} else {
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : init GPS failed !!");
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init GPS failed !!");
 	}
   }
-  else
+  else // SLAVE
   {
-   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ : in "__FUNCTION__"() :Slave Mode not yet implemented !\n");
-  };
+	if (INIT_MODULE_SUCCESS == (ret=InitCounterCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init CounterCard successfull");
+	} else {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init CounterCard failed !!");
+	}
+	
+	if (INIT_MODULE_SUCCESS == (ret=InitADCCard(ptrElekStatus,IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init ADCCard successfull");
+	} else {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init ADCCard failed !!");
+	}
+	
+	if (INIT_MODULE_SUCCESS == (ret=InitMFCCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init MFCCard successfull");
+	} else {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init MFCCard failed !!");
+	}
+	
+	if (INIT_MODULE_SUCCESS == (ret=InitValveCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init ValveCard successfull");
+	} else {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init ValveCard failed !!");
+	}
+	
+	if (INIT_MODULE_SUCCESS == (ret=InitTempCard(ptrElekStatus, IsMaster))) {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init TemperatureCard successfull");
+	} else {
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init TemperatureCard failed !!");
+	}
+	
+	if (INIT_MODULE_SUCCESS == (ret=InitGPSReceiver(ptrElekStatus, IsMaster))) 
+	{
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init GPS successfull");
+	} 
+	else 
+	{
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init GPS failed !!");
+   }
+ };
 } /* InitModules */
 
 /**********************************************************************************************************/
@@ -1423,13 +1813,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
   #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.18 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.18 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for ARM\n",VERSION);
   #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.18 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.18 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for i386\n",VERSION);
   #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1546,7 +1936,7 @@ int main(int argc, char *argv[])
 	} /* if Query */
        
 	if (SyncFlag.MaskChange==TRUE){
-	  SetCounterCardMask(&ElekStatus);
+	  SetCounterCardMask(&ElekStatus, IsMaster);
 	} /* if Syncflag.MaskChange */
 
 	// let the other tasks know that we are done with retrieving the status
