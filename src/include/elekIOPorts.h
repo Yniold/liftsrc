@@ -1,6 +1,10 @@
-/* header file for elekIO 
-* created by HH Oct 2003 
-* changelog 
+/*
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-05-23 17:05:02 $ by $Author: rudolf $
+*
+* $Log: elekIOPorts.h,v $
+* Revision 1.3  2005-05-23 17:05:02  rudolf
+* added new command for requesting data from slave elekIOServ
+*
 *
 *
 */
@@ -49,7 +53,8 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION,    // change InstrumentAction
     MSG_TYPE_CHANGE_FLAG_ETALON_ACTION,        // change EtalonAction
     MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,     // change system parameter
-    MSG_TYPE_CHANGE_MASK,				   // change counter mask
+    MSG_TYPE_CHANGE_MASK,                      // change counter mask
+    MSG_TYPE_FETCH_DATA,                       // request data from slave elekIOServ
 
     MAX_MSG_TYPE }; 
 
