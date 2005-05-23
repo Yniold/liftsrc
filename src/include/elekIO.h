@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-05-22 19:10:24 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-05-23 15:06:33 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.5  2005-05-22 19:10:24  rudolf
+* Revision 1.6  2005-05-23 15:06:33  rudolf
+* changed some #defines for ARM
+*
+* Revision 1.5  2005/05/22 19:10:24  rudolf
 * extended structure to hold data from the wingpod ARM9 as well
 *
 * Revision 1.4  2005/02/11 12:36:12  martinez
@@ -64,20 +67,30 @@
 #define ELK_STEP_MODE        (ELK_STEP_BASE + 0x001c) /* mode, 4=copy encoder to index with next index */
 
 
-#define ELK_DACPWM_BASE    (ELK_BACKPLANE_BASE+0x04)
-#define ELK_VALVE_BASE     (ELK_BACKPLANE_BASE+0x08)
-#define ELK_DAC_BASE       (ELK_BACKPLANE_BASE+0x40)
-#define ELK_PWM_BASE       (ELK_BACKPLANE_BASE+0x60)
-#define ELK_PWM_DCDC4_BASE    (ELK_PWM_BASE)
-#define ELK_PWM_VALVE_BASE    (ELK_PWM_BASE+0x08)
-#define ELK_ADC_BASE       (ELK_BACKPLANE_BASE+0x80)
-#define ELK_MFC_BASE       (ELK_BACKPLANE_BASE+0xa0)
+#define ELK_DACPWM_BASE      (ELK_BACKPLANE_BASE+0x04)
+#define ELK_VALVE_BASE       (ELK_BACKPLANE_BASE+0x08)
+#define ELK_DAC_BASE         (ELK_BACKPLANE_BASE+0x40)
+#define ELK_PWM_BASE         (ELK_BACKPLANE_BASE+0x60)
+#define ELK_PWM_DCDC4_BASE   (ELK_PWM_BASE)
+#define ELK_PWM_VALVE_BASE   (ELK_PWM_BASE+0x08)
+
+#define ELK_ADC_BASE         (ELK_BACKPLANE_BASE+0x80)
+#define ELK_ADC_BASE_WP      (ELK_BACKPLANE_BASE+0x80)
+
+#define ELK_MFC_BASE         (ELK_BACKPLANE_BASE+0xa0)
 
 #define ELK_ADC_CONFIG          (0x0010)                        /* add to base addr */
 #define ELK_ADC_NUM_ADR         (0x0020)                        /* number of addresses each ADC channel has */
 #define ELK_MFC_CONFIG          (ELK_ADC_CONFIG)                /* base addr for MFC Config*/
 #define ELK_MFC_NUM_ADR         (ELK_ADC_NUM_ADR)               /* number of addresses each MFC channel has */
 #define ELK_DAC_NUM_ADR         (MAX_DCDC4_CHANNEL_PER_CARD<<1) /* number of addresses each MFC channel has */
+
+/* defines for the 24bit ADC */
+
+#define ELK_ADC_24_BASE        0xa500                           /* Base Address of 24bit ADC */
+#define ELK_ADC_24_POWER       (ELK_ADC_24_BASE + 0x0010)       /* Power register for the DCDC */
+#define ELK_ADC_24_DATA        (ELK_ADC_24_BASE + 0x0020)       /* Channel Data registers */
+
 
 
 
@@ -216,6 +229,16 @@ struct ADCChannelDataType {
     unsigned SumSqr;
 }; /* ADCChannelType */
 
+struct ADCChannel24DWType {
+    uint16_t ADCDataLow;
+    uint16_t ADCDataHigh;
+};
+
+union ADCChannel24DataType {
+    struct ADCChannel24DWType ADCChannelDataLowHigh;
+	 int32_t ADCChannelData;
+}; /* ADCChannelType */
+
 struct ADCCardType {                                               
   uint16_t NumSamples;                                                    /* number of Samples for statistik */
   struct ADCChannelDataType ADCChannelData[MAX_ADC_CHANNEL_PER_CARD];
@@ -226,7 +249,7 @@ struct ADCCardType {
 
 struct ADC24CardType {                                               
   uint16_t NumSamples;                                                    /* number of Samples for statistik */
-  struct ADCChannelDataType ADCChannelData[MAX_24BIT_ADC_CHANNEL_PER_CARD];
+  union ADCChannel24DataType ADCChannelData[MAX_24BIT_ADC_CHANNEL_PER_CARD];
  }; /* ADCCardType */
 
 /*************************************************************************************************************/
