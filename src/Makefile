@@ -57,7 +57,7 @@ all : $(modules) $(headers)
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
 
 	chmod +x $(INSTDIR)* 
-
+	chmod +x ./scripts/*
 #	cp $(INSTDIR)* ../bin
 	cp $(INSTDIR)eCmd ../bin
 	cp $(INSTDIR)elekIOServ ../bin
