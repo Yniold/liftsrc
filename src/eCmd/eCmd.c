@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.16 $
-last change on $Date: 2005-05-18 18:25:37 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.17 $
+last change on $Date: 2005-05-29 22:15:48 $ by $Author: harder $
 
 $Log: eCmd.c,v $
-Revision 1.16  2005-05-18 18:25:37  rudolf
+Revision 1.17  2005-05-29 22:15:48  harder
+added address support for eCmd
+
+Revision 1.16  2005/05/18 18:25:37  rudolf
 replaced strtod() with strtol() which is capable of handling hex input also on the ARM9 platform
 
 Revision 1.15  2005/05/18 16:48:44  rudolf
@@ -39,6 +42,7 @@ update file description
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <time.h>
+#include <netdb.h>
 
 #ifdef RUNONPC
 #include <asm/msr.h>
@@ -203,6 +207,11 @@ int main(int argc, char *argv[])
     long TimeOut;
 
     struct timespec SleepTime; 
+    struct hostent *ptrHostAddr;
+    
+    char DestAddress[LEN_IP_ADDR];
+    char *ptr;
+    char **pptr;
 
     int ArgCount;
 
@@ -252,9 +261,29 @@ int main(int argc, char *argv[])
 //    printf("done init ports\n");
 
 
-    ArgCount=1;
-
+    // command line parsing
+    ArgCount=1;                           // start with first Argument, we checked above if argc<2
     
+    // first argument can be either address of destination or defaults to localhost
+    // address can be given as @ADR while ADR is an address
+
+    // this command line parsing can be done much more elegant in a while loop, but for now...
+
+    strncpy(DestAddress,IP_ELEK_SERVER,LEN_IP_ADDR); // copy default address
+    
+    if ('@'==argv[ArgCount][0]) { // do we want a different address
+	if (NULL==(ptrHostAddr=gethostbyname(argv[ArgCount]+1))) {
+	    printf("error cannot resolve %s\n",(argv[ArgCount]+1));
+	    exit(EXIT_FAILURE);	    
+	}
+	pptr=ptrHostAddr->h_addr_list;
+	
+	ptr=inet_ntop(ptrHostAddr->h_addrtype,*pptr,DestAddress,LEN_IP_ADDR); // copy default address
+	printf("sending command to %s\n",DestAddress);
+
+	ArgCount++; // next argument
+    }
+
     switch(argv[ArgCount++][0]) {
 	case 'r':
 	    Addr=strtol(argv[ArgCount],NULL,0);
