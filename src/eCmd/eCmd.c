@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.17 $
-last change on $Date: 2005-05-29 22:15:48 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.19 $
+last change on $Date: 2005-06-08 17:33:44 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.17  2005-05-29 22:15:48  harder
+Revision 1.19  2005-06-08 17:33:44  rudolf
+prepared sockets for sending the data structure between master and slave
+
+Revision 1.17  2005/05/29 22:15:48  harder
 added address support for eCmd
 
 Revision 1.16  2005/05/18 18:25:37  rudolf
@@ -72,7 +75,7 @@ static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // orde
 
 static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={ // order in list defines sequence of polling
     /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
-    {"StatusReq",   UDP_ELEK_MANUAL_INPORT, ELEK_ELEKIO_IN,IP_ELEK_SERVER,  -1,  0, UDP_OUT_PORT},
+    {"ElekIOServer",   UDP_ELEK_MANUAL_INPORT, ELEK_ELEKIO_IN,IP_ELEK_SERVER,  -1,  0, UDP_OUT_PORT},
     {"DebugPort",   UDP_ELEK_DEBUG_OUTPORT,             -1,IP_DEBUG_CLIENT, -1,  0, UDP_OUT_PORT}
 };
 
