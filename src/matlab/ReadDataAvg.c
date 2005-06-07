@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.10 $ */
+ /* $Revision: 1.11 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -59,8 +59,8 @@ int cmptimesort(struct elekStatusType *ptrElekStatus1,
     int ret;
     
     ret=0;
-    if (ptrElekStatus1->TimeOfDay.tv_sec>ptrElekStatus2->TimeOfDay.tv_sec) ret=1;
-    if (ptrElekStatus2->TimeOfDay.tv_sec>ptrElekStatus1->TimeOfDay.tv_sec) ret=-1;
+    if (ptrElekStatus1->TimeOfDayMaster.tv_sec>ptrElekStatus2->TimeOfDayMaster.tv_sec) ret=1;
+    if (ptrElekStatus2->TimeOfDayMaster.tv_sec>ptrElekStatus1->TimeOfDayMaster.tv_sec) ret=-1;
     
     return (ret);
 } /* timesort */
@@ -171,21 +171,22 @@ void mexFunction( int nlhs, mxArray *plhs[],
   
   dims[0]= nelements;
 
-  dims[1]= 6;              /* Jahr JulTag Stunde Minute Sekunde Mikrosek */
-  dims[1]= dims[1] + ADC_CHANNEL_COUNTER_CARD+1+ 
+  dims[1]= 6 * 2;              /* Jahr JulTag Stunde Minute Sekunde Mikrosek für Master und Slave*/
+  dims[1]= dims[1] + (ADC_CHANNEL_COUNTER_CARD+1)*2 + 
     MAX_COUNTER_CHANNEL*(5+MAX_COUNTER_TIMESLOT+COUNTER_MASK_WIDTH);
   dims[1]= dims[1] + 12;   /* etalon data type */
-  dims[1]= dims[1] + MAX_ADC_CARD*(1+MAX_ADC_CHANNEL_PER_CARD*3+MAX_ADC_CHANNEL_PER_CARD*1);
-  dims[1]= dims[1] + 2;  /* mfc data */
-  dims[1]= dims[1] + 2;  /* valve data */  
+  dims[1]= dims[1] + (MAX_ADC_CARD_LIFT+MAX_ADC_CARD_WP)*(1+MAX_ADC_CHANNEL_PER_CARD*3+MAX_ADC_CHANNEL_PER_CARD*1);
+  dims[1]= dims[1] + MAX_24BIT_ADC_CARDS_WP*(1+2*MAX_24BIT_ADC_CHANNEL_PER_CARD);
+  dims[1]= dims[1] + 2;  /* mfc data Master*/
+  dims[1]= dims[1] + 2*2;  /* valve data Master and Slave*/  
   dims[1]= dims[1] + MAX_DCDC4_CHANNEL_PER_CARD;  /* dcdc data */
-  dims[1]= dims[1] + 4 + MAX_TEMP_SENSOR*3;  /* temp data */
+  dims[1]= dims[1] + (4 + MAX_TEMP_SENSOR*3)*2;  /* temp data Master and Slave*/
   dims[1]= dims[1] + 1;  /* EtalonAction */
   dims[1]= dims[1] + 1;  /* EtalonOnlinePos high */
   dims[1]= dims[1] + 1;  /* EtalonOnlinePos low */
   
   dims[1]= dims[1] + 1;  /* InstrumentAction */
-  dims[1]= dims[1] + 11;  /* GPS */
+  dims[1]= dims[1] + 2*11;  /* GPS Masterand Slave*/
 
   dims[1]= dims[1] + 3;  /* extra reserve */
 
@@ -243,15 +244,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
 /*    Sum1=0;
 	Sum2=0;
     for(k=1; k<21;k++) {
-		Sum1=Sum1+elekStatus[i].CounterCard.Channel[1].Data[k];
-		Sum2=Sum2+elekStatus[i].CounterCard.Channel[2].Data[k]; 
+		Sum1=Sum1+elekStatus[i].CounterCardSlave.Channel[1].Data[k];
+		Sum2=Sum2+elekStatus[i].CounterCardSlave.Channel[2].Data[k]; 
 	} /* for k */
 /*    MCP1RayCounts[i]=Sum1;
 	MCP2RayCounts[i]=Sum2; */
 /*  } /* for i */
 
   
-  /* Date */
+  /* Date Master*/
 
   #ifdef X_DEBUG  
     mexPrintf("fill year....%d elements\n",nelements);
@@ -259,7 +260,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
   
   for (i=0; i<nelements;i++) {
-    Seconds=elekStatus[i].TimeOfDay.tv_sec;
+    Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
     #ifdef X_DEBUG  
       mexPrintf("%lu ",Seconds);
     #endif
@@ -277,27 +278,27 @@ void mexFunction( int nlhs, mxArray *plhs[],
     mexPrintf("fill yday....\n");
   #endif
   for (i=0; i<nelements;i++) {
-    Seconds=elekStatus[i].TimeOfDay.tv_sec;
+    Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
     ptrTmZeit=localtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_yday;
   }
   for (i=0; i<nelements;i++) {
-    Seconds=elekStatus[i].TimeOfDay.tv_sec;
+    Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
     ptrTmZeit=localtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_hour;
   }
   for (i=0; i<nelements;i++) {
-    Seconds=elekStatus[i].TimeOfDay.tv_sec;
+    Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
     ptrTmZeit=localtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_min;
   }
   for (i=0; i<nelements;i++) {
-    Seconds=elekStatus[i].TimeOfDay.tv_sec;
+    Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
     ptrTmZeit=localtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_sec;
   }
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].TimeOfDay.tv_usec/1000;
+    *(z+count++)=elekStatus[i].TimeOfDayMaster.tv_usec/1000;
   }
 
 
@@ -306,49 +307,67 @@ void mexFunction( int nlhs, mxArray *plhs[],
     mexPrintf("fill int16 array....\n");
   #endif
 
-  /******************* Counter Card ***************************/ 
+  /******************* Counter Cards ***************************/ 
   /* mexPrintf("%d %d %d\n",sizeof(uint16_t),sizeof(struct timeval),sizeof(struct elekStatusType));
   mexPrintf("%d/%d %d %d %d\n",count,dims[0]*dims[1],dims[0],dims[1],ADC_CHANNEL_COUNTER_CARD);
   */
 
   #ifdef D_HEADER
-    mexPrintf("ccADC %f\n",1+(double)count/(double)nelements);
+    mexPrintf("ccADC Master %f\n",1+(double)count/(double)nelements);
   #endif
   for (j=0;j<ADC_CHANNEL_COUNTER_CARD;j++) {
     for (i=0; i<nelements;i++) {
-	*(z+count++)=elekStatus[i].CounterCard.ADCData[j];       
+	*(z+count++)=elekStatus[i].CounterCardMaster.ADCData[j];       
 	/*       mexPrintf("%d %",elekStatus[i].CounterCard.ADCData[j]); */
     }	
   }
 
   #ifdef D_HEADER
-    mexPrintf("ccMasterDelay  %d %d\n",count,1+count/nelements);      
+    mexPrintf("ccMasterDelay Master  %d %d\n",count,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].CounterCard.MasterDelay;       
+    *(z+count++)=elekStatus[i].CounterCardMaster.MasterDelay;       
   }
   
 
-  for (j=0;j<MAX_COUNTER_CHANNEL;j++) { 
+  #ifdef D_HEADER
+    mexPrintf("ccADC Slave %f\n",1+(double)count/(double)nelements);
+  #endif
+  for (j=0;j<ADC_CHANNEL_COUNTER_CARD;j++) {
+    for (i=0; i<nelements;i++) {
+	*(z+count++)=elekStatus[i].CounterCardSlave.ADCData[j];       
+	/*       mexPrintf("%d %",elekStatus[i].CounterCard.ADCData[j]); */
+    }	
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("ccMasterDelay Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardSlave.MasterDelay;       
+  }
+
+
+  j=0;  
 	#ifdef D_HEADER
       mexPrintf("ccShiftDelay #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCard.Channel[j].ShiftDelay;       
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].ShiftDelay;       
     }	
 
 	#ifdef D_HEADER
 	  mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].CounterCard.Channel[j].GateDelay;       
+	  *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateDelay;       
     }
     
 	#ifdef D_HEADER
 	  mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCard.Channel[j].GateWidth;       
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateWidth;       
     }
     
 	#ifdef D_HEADER
@@ -356,7 +375,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	#endif
     for (k=0; k<MAX_COUNTER_TIMESLOT;k++) {
       for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCard.Channel[j].Data[k];       
+		*(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Data[k];       
 	  }	
     }
     
@@ -365,7 +384,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	#endif
     for (k=0; k<COUNTER_MASK_WIDTH;k++) {
       for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCard.Channel[j].Mask[k];       
+		*(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Mask[k];       
 	  }	
     }
     
@@ -373,17 +392,71 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCard.Channel[j].Counts;       
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Counts;       
     }	
     
 	#ifdef D_HEADER
 	  mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCard.Channel[j].Pulses;       
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Pulses;       
+    }	   
+   
+ 
+  for (j=1;j<MAX_COUNTER_CHANNEL;j++) { 
+	#ifdef D_HEADER
+      mexPrintf("ccShiftDelay #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].ShiftDelay;       
+    }	
+
+	#ifdef D_HEADER
+	  mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+	  *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].GateDelay;       
+    }
+    
+	#ifdef D_HEADER
+	  mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].GateWidth;       
+    }
+    
+	#ifdef D_HEADER
+	  mexPrintf("ccData #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (k=0; k<MAX_COUNTER_TIMESLOT;k++) {
+      for (i=0; i<nelements;i++) {
+		*(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Data[k];       
+	  }	
+    }
+    
+	#ifdef D_HEADER
+	  mexPrintf("ccMask #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (k=0; k<COUNTER_MASK_WIDTH;k++) {
+      for (i=0; i<nelements;i++) {
+		*(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Mask[k];       
+	  }	
+    }
+    
+	#ifdef D_HEADER
+	  mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Counts;       
+    }	
+    
+	#ifdef D_HEADER
+	  mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Pulses;       
     }	   
   } 
- 
       
 
 /******************* etalon ***************************/  
@@ -486,42 +559,42 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
 /*  mexPrintf("%d/%d\n",count,dims[1]); */
 
-/******************* ADC Cards ***************************/     	 
+/******************* ADC Cards Master***************************/     	 
     
-  for (k=0; k<MAX_ADC_CARD; k++) {
+  for (k=0; k<MAX_ADC_CARD_LIFT; k++) {
 
 	#ifdef D_HEADER
-	  mexPrintf("NumSamples  %d %d\n",count,1+count/nelements);      
+	  mexPrintf("NumSamples Master %d %d\n",count,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) 
-	  *(z+count++)=elekStatus[i].ADCCard[k].NumSamples;       
+	  *(z+count++)=elekStatus[i].ADCCardMaster[k].NumSamples;       
     
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {       	
 	  #ifdef D_HEADER
-		mexPrintf("adcData #%d.%d %d\n",k,j,1+count/nelements);      
+		mexPrintf("adcData Master #%d.%d %d\n",k,j,1+count/nelements);      
 	  #endif
       for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].ADCData;       
+	    *(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].ADCData;       
 
 	  #ifdef D_HEADER
-		mexPrintf("adcSumDat  %d %d\n",count,1+count/nelements);      
+		mexPrintf("adcSumDat Master  %d %d\n",count,1+count/nelements);      
 	  #endif
 	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].SumDat;       
+		*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumDat;       
 	
 	  #ifdef D_HEADER
-		mexPrintf("adcSumSqr  %d %d\n",count,1+count/nelements);      
+		mexPrintf("adcSumSqr Master  %d %d\n",count,1+count/nelements);      
 	  #endif
 	  for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCard[k].ADCChannelData[j].SumSqr;                              	
+	    *(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumSqr;                              	
 	}
       
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {  
 	  #ifdef D_HEADER
-		mexPrintf("adcConfig #%d.%d %d\n",k,j,1+count/nelements);      
+		mexPrintf("adcConfig Master #%d.%d %d\n",k,j,1+count/nelements);      
 	  #endif
 	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCard[k].ADCChannelConfig[j].ADCChannelConfig;
+		*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelConfig[j].ADCChannelConfig;
 	}
       
   }
@@ -533,38 +606,38 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     
 /******************* MFC Card ***************************/  
-  /* we are only interested in Data of Card 0 */
+  /* we are only interested in the one Card for Slave, nothing connected to the card on Master */
   Card=0;
   #ifdef D_HEADER
 	mexPrintf("MFCSetFlow  %d %d\n",count,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].MFCCard[Card].MFCChannelData[0].SetFlow;       
+    *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[0].SetFlow;       
   }
 
   #ifdef D_HEADER
     mexPrintf("MFCFlow  %d %d\n",count,1+count/nelements); 
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].MFCCard[Card].MFCChannelData[0].Flow;    
+    *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[0].Flow;    
   }
 
-/******************* Valve Cards ***************************/     
-  /* for (k=0; k<MAX_VALVE_CARD; k++) { */
+/******************* Valve Cards Master***************************/     
+  /* for (k=0; k<MAX_VALVE_CARD_LIFT; k++) { */
   /* we are only interested in Data of Card 0 */
   Card=0;
   #ifdef D_HEADER
-	mexPrintf("ValveVolt  %d %d\n",count,1+count/nelements);      
+	mexPrintf("ValveVolt Master %d %d\n",count,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCard[Card].ValveVolt;       
+    *(z+count++)=elekStatus[i].ValveCardMaster[Card].ValveVolt;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("Valve  %d %d\n",count,1+count/nelements);      
+    mexPrintf("Valve Master  %d %d\n",count,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCard[Card].Valve;       
+    *(z+count++)=elekStatus[i].ValveCardMaster[Card].Valve;       
   } 
   /* }*/
 
@@ -577,64 +650,64 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("DCDC4channel #%d %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].DCDC4Card[Card].Channel[j];       
+	  *(z+count++)=elekStatus[i].DCDC4CardMaster[Card].Channel[j];       
     }
   }
 
-/******************* TempSensor Card ***************************/  
-  /* we are only interested in Data of Card 0 */
+/******************* TempSensor Card Master ***************************/  
+  /* there is only one Card */
   Card=0;   
   #ifdef D_HEADER
-    mexPrintf("TempMissed %d\n",1+count/nelements);      
+    mexPrintf("TempMissed Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].TempSensCard[Card].NumMissed;       
+    *(z+count++)=elekStatus[i].TempSensCardMaster[Card].NumMissed;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("TempNumber %d\n",1+count/nelements);      
+    mexPrintf("TempNumber Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].TempSensCard[Card].NumSensor;       
+    *(z+count++)=elekStatus[i].TempSensCardMaster[Card].NumSensor;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("TempErrCRC %d\n",1+count/nelements);      
+    mexPrintf("TempErrCRC Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].TempSensCard[Card].NumErrCRC;       
+    *(z+count++)=elekStatus[i].TempSensCardMaster[Card].NumErrCRC;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("TempNoResponse %d\n",1+count/nelements);      
+    mexPrintf("TempNoResponse Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].TempSensCard[Card].NumErrNoResponse;       
+    *(z+count++)=elekStatus[i].TempSensCardMaster[Card].NumErrNoResponse;       
   }
 
   for (j=0; j<MAX_TEMP_SENSOR; j++) { 
 
 	#ifdef D_HEADER
-	  mexPrintf("Temp #%d %d\n",j,1+count/nelements);      
+	  mexPrintf("Temp Master #%d %d\n",j,1+count/nelements);      
 	#endif
     /* we represent the temperature in 1/100K) */
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCard[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
-		elekStatus[i].TempSensCard[Card].TempSensor[j].Field.TempMain*100)+27320);  
+	  *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
+		elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Field.TempMain*100)+27320);  
     }
 
 	#ifdef D_HEADER
-	  mexPrintf("Temp #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
+	  mexPrintf("Temp Master #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCard[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position */
+	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position */
     }
 
 	#ifdef D_HEADER
-	  mexPrintf("Temp #%d ID %d\n",j,1+count/nelements);      
+	  mexPrintf("Temp Master #%d ID %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCard[Card].TempSensor[j].Word.WordID[1];       
+	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordID[1];       
     }
   }
 
@@ -671,7 +744,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   OfflineLeftCounter=0;
   OfflineRightCounter=0;
   for (i=0; i<nelements;i++) {
-    for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each Channel */
+    Channel=0;       /* PMT */
       /* reset fields */
 	  OnlineAverage[Channel].Num[i]=0;
 	  OfflineLeftAverage[Channel].Num[i]=0;
@@ -682,7 +755,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
 	  /* first decide if we are on or offline */
-	  if ( (elekStatus[i].CounterCard.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
+	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
 		   (abs(elekStatus[i].EtalonData.Current.Position-                  /* not further than Dithersteps of OnlienPos */
 	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
 		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
@@ -690,7 +763,90 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	     
 		 ) {             /* so we are online */
 		OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=
-	    elekStatus[i].CounterCard.Channel[Channel].Counts;
+	    elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+	    OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
+	    OnlineAverage[Channel].OnOffFlag[i]=3;
+	  } else { /* if not, are we offline ? */
+		if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are left side offline */
+			     (elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
+	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
+		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
+	      elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+		  OfflineLeftCounter++;
+	      OnlineAverage[Channel].OnOffFlag[i]=2;
+	      /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+		} else { 
+	    /* are we right side offline ? */
+	    
+	      if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are right side offline */
+					(elekStatus[i].EtalonData.Online.Position+elekStatus[i].EtalonData.OfflineStepRight)) && /* left steps away from Online */
+			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
+	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
+				elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+			if (Channel==0) OfflineRightCounter++;
+			OnlineAverage[Channel].OnOffFlag[i]=1;
+			/* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	      
+		  } /* if offline right */
+		} /* if offline left */
+	  } /* if on/offline */
+	
+	  if (OnlineCounter>5) { /* do we have enough statistics for Calc Online Avg */	  
+	    OnlineOfflineCounts[Channel].OnlineSum=0;
+	    maxSteps=(OnlineCounter>RunAverageLen ) ? RunAverageLen : OnlineCounter;
+	  
+	    for (j=0; j<maxSteps; j++) {
+	      OnlineOfflineCounts[Channel].OnlineSum+=OnlineOfflineCounts[Channel].Online[j];
+		} /* for j */
+	    OnlineAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OnlineSum;
+	    OnlineAverage[Channel].Num[i]=j;
+	  } /* if OnlineCounter */
+	
+
+	  if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Offline Left Avg */
+	    OnlineOfflineCounts[Channel].OfflineLeftSum=0;
+	    maxSteps=(OfflineLeftCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineLeftCounter;
+	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	    for (j=0; j<maxSteps; j++) {
+	      OnlineOfflineCounts[Channel].OfflineLeftSum+=OnlineOfflineCounts[Channel].OfflineLeft[j];
+		} /* for j */
+	    OfflineLeftAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineLeftSum;
+	    OfflineLeftAverage[Channel].Num[i]=j;
+	  } /* if OfflineCounter */
+
+      if (OfflineRightCounter>5) { /* do we have enough statistics for Calc Online Avg */
+	    OnlineOfflineCounts[Channel].OfflineRightSum=0;
+	    maxSteps=(OfflineRightCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineRightCounter;
+	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	    for (j=0; j<maxSteps; j++) {
+	      OnlineOfflineCounts[Channel].OfflineRightSum+=OnlineOfflineCounts[Channel].OfflineRight[j];
+		} /* for j */
+	    OfflineRightAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineRightSum;
+	    OfflineRightAverage[Channel].Num[i]=j;
+	  } /* if OfflineCounter */
+
+      
+
+    for (Channel=1; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each MCP Channel */
+      /* reset fields */
+	  OnlineAverage[Channel].Num[i]=0;
+	  OfflineLeftAverage[Channel].Num[i]=0;
+	  OfflineRightAverage[Channel].Num[i]=0;
+	  OnlineAverage[Channel].Avg[i]=0;
+	  OfflineLeftAverage[Channel].Avg[i]=0;
+	  OfflineRightAverage[Channel].Avg[i]=0;
+
+	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
+	  /* first decide if we are on or offline */
+	  if ( (elekStatus[i].CounterCardSlave.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
+		   (abs(elekStatus[i].EtalonData.Current.Position-                  /* not further than Dithersteps of OnlienPos */
+	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
+		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
+			  elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
+	     
+		 ) {             /* so we are online */
+		OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=
+	    elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
 	    if (Channel==0) OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
 	    OnlineAverage[Channel].OnOffFlag[i]=3;
 	  } else { /* if not, are we offline ? */
@@ -698,7 +854,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			     (elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
 	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
 		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
-	      elekStatus[i].CounterCard.Channel[Channel].Counts;
+	      elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
 		  if (Channel==0) OfflineLeftCounter++;
 	      OnlineAverage[Channel].OnOffFlag[i]=2;
 	      /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
@@ -709,7 +865,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 					(elekStatus[i].EtalonData.Online.Position+elekStatus[i].EtalonData.OfflineStepRight)) && /* left steps away from Online */
 			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
 	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
-				elekStatus[i].CounterCard.Channel[Channel].Counts;
+				elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
 			if (Channel==0) OfflineRightCounter++;
 			OnlineAverage[Channel].OnOffFlag[i]=1;
 			/* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
@@ -753,6 +909,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  } /* if OfflineCounter */
 	} /* for Channel*/
       
+
   } /* for i */
     
   /* now we copy them into the array */
@@ -813,93 +970,400 @@ void mexFunction( int nlhs, mxArray *plhs[],
     *(z+count++)=elekStatus[i].InstrumentFlags.InstrumentAction;       
   }
 
-/******************* GPS Data ***************************/     
+/******************* GPS Data Master***************************/     
   #ifdef D_HEADER
-    mexPrintf("GPSsecondsUTC  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSsecondsUTC Master  %d %d\n",count,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucUTCHours*3600+elekStatus[i].GPSData.ucUTCMins*60
-	  +elekStatus[i].GPSData.ucUTCSeconds;       
+    *(z+count++)=elekStatus[i].GPSDataMaster.ucUTCHours*3600+elekStatus[i].GPSDataMaster.ucUTCMins*60
+	  +elekStatus[i].GPSDataMaster.ucUTCSeconds;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSLongitude  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSLongitude Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* we represent the longitude 2 words */
   /* the first word contains degrees and mins */
   /* 0 means 180,0°W, 15*60+30 means 74°30'W */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=((int)(elekStatus[i].GPSData.dLongitude/100)+180)*60+
-	  (int)(elekStatus[i].GPSData.dLongitude-((int)(elekStatus[i].GPSData.dLongitude/100))*100);       
+    *(z+count++)=((int)(elekStatus[i].GPSDataMaster.dLongitude/100)+180)*60+
+	  (int)(elekStatus[i].GPSDataMaster.dLongitude-((int)(elekStatus[i].GPSDataMaster.dLongitude/100))*100);       
   }
   /* the second word contains 4 post decimal positions*/
   for (i=0; i<nelements;i++) {
-    *(z+count++)=(elekStatus[i].GPSData.dLongitude-(int)(elekStatus[i].GPSData.dLongitude))*10000;       
+    *(z+count++)=(elekStatus[i].GPSDataMaster.dLongitude-(int)(elekStatus[i].GPSDataMaster.dLongitude))*10000;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSLatitude  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSLatitude Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* we represent the latitude 2 words */
   /* the first word contains degrees and mins */
   /* 0 means 90,0°S, 15*60+30 means 74°30'S */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=((int)(elekStatus[i].GPSData.dLatitude/100)+90)*60+
-	  (int)(elekStatus[i].GPSData.dLatitude-((int)(elekStatus[i].GPSData.dLatitude/100))*100);       
+    *(z+count++)=((int)(elekStatus[i].GPSDataMaster.dLatitude/100)+90)*60+
+	  (int)(elekStatus[i].GPSDataMaster.dLatitude-((int)(elekStatus[i].GPSDataMaster.dLatitude/100))*100);       
   }
   /* the second word contains 4 post decimal positions*/
   for (i=0; i<nelements;i++) {
-    *(z+count++)=(elekStatus[i].GPSData.dLatitude-(int)(elekStatus[i].GPSData.dLatitude))*10000;       
+    *(z+count++)=(elekStatus[i].GPSDataMaster.dLatitude-(int)(elekStatus[i].GPSDataMaster.dLatitude))*10000;       
   }
   
   #ifdef D_HEADER
-    mexPrintf("GPSAltitude  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSAltitude Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* altitude above the geoid in metres */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.fAltitude;
+    *(z+count++)=elekStatus[i].GPSDataMaster.fAltitude;
   }
  
   #ifdef D_HEADER
-    mexPrintf("GPSHDOP  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSHDOP Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* Horizontal Dillution Of Precision, whatever it means....*/
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.fHDOP;
+    *(z+count++)=elekStatus[i].GPSDataMaster.fHDOP;
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSnumSat  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSnumSat Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* number of satellites seen by the GPS receiver */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucNumberOfSatellites;
+    *(z+count++)=elekStatus[i].GPSDataMaster.ucNumberOfSatellites;
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSLastValidData  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSLastValidData Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* number of data aquisitions (5Hz) with no valid GPS data */
   /* will stick at 255 if no data received for a long period */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.ucLastValidData;
+    *(z+count++)=elekStatus[i].GPSDataMaster.ucLastValidData;
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSGroundSpeed  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSGroundSpeed Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* speed in cm/s above ground */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.uiGroundSpeed;
+    *(z+count++)=elekStatus[i].GPSDataMaster.uiGroundSpeed;
   }
 
   #ifdef D_HEADER
-    mexPrintf("GPSHeading  %d %d\n",count,1+count/nelements);      
+    mexPrintf("GPSHeading Master  %d %d\n",count,1+count/nelements);      
   #endif
   /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].GPSData.uiHeading;
+    *(z+count++)=elekStatus[i].GPSDataMaster.uiHeading;
   }
+
+
+
+
+  /* Date Slave*/
+
+  #ifdef X_DEBUG  
+    mexPrintf("fill year....%d elements\n",nelements);
+  #endif
+
+  
+  for (i=0; i<nelements;i++) {
+    Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
+    #ifdef X_DEBUG  
+      mexPrintf("%lu ",Seconds);
+    #endif
+    ptrTmZeit=(struct tm *)localtime(&Seconds); 
+    #ifdef X_DEBUG  
+      mexPrintf("%d ",ptrTmZeit->tm_year);
+    #endif
+    *(z+count++)=(uint16_t)ptrTmZeit->tm_year;
+    #ifdef X_DEBUG  
+      mexPrintf("%d ",i);
+    #endif
+  }
+  
+  #ifdef X_DEBUG  
+    mexPrintf("fill yday....\n");
+  #endif
+  for (i=0; i<nelements;i++) {
+    Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
+    ptrTmZeit=localtime(&Seconds);
+    *(z+count++)=ptrTmZeit->tm_yday;
+  }
+  for (i=0; i<nelements;i++) {
+    Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
+    ptrTmZeit=localtime(&Seconds);
+    *(z+count++)=ptrTmZeit->tm_hour;
+  }
+  for (i=0; i<nelements;i++) {
+    Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
+    ptrTmZeit=localtime(&Seconds);
+    *(z+count++)=ptrTmZeit->tm_min;
+  }
+  for (i=0; i<nelements;i++) {
+    Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
+    ptrTmZeit=localtime(&Seconds);
+    *(z+count++)=ptrTmZeit->tm_sec;
+  }
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].TimeOfDaySlave.tv_usec/1000;
+  }
+
+
+  
+  #ifdef X_DEBUG  
+    mexPrintf("fill int16 array....\n");
+  #endif
+
+
+ 
+
+
+/******************* ADC Cards Slave ***************************/     	 
+    
+  for (k=0; k<MAX_ADC_CARD_LIFT; k++) {
+
+	#ifdef D_HEADER
+	  mexPrintf("NumSamples Slave %d %d\n",count,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) 
+	  *(z+count++)=elekStatus[i].ADCCardSlave[k].NumSamples;       
+    
+    for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {       	
+	  #ifdef D_HEADER
+		mexPrintf("adcData Slave #%d.%d %d\n",k,j,1+count/nelements);      
+	  #endif
+      for (i=0; i<nelements;i++) 
+	    *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].ADCData;       
+
+	  #ifdef D_HEADER
+		mexPrintf("adcSumDat Slave  %d %d\n",count,1+count/nelements);      
+	  #endif
+	  for (i=0; i<nelements;i++) 
+		*(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumDat;       
+	
+	  #ifdef D_HEADER
+		mexPrintf("adcSumSqr Slave  %d %d\n",count,1+count/nelements);      
+	  #endif
+	  for (i=0; i<nelements;i++) 
+	    *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumSqr;                              	
+	}
+      
+    for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {  
+	  #ifdef D_HEADER
+		mexPrintf("adcConfig Slave #%d.%d %d\n",k,j,1+count/nelements);      
+	  #endif
+	  for (i=0; i<nelements;i++) 
+		*(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelConfig[j].ADCChannelConfig;
+	}
+      
+  }
+    
+
+  /*  mexPrintf("%d/%d %d %d\n",count,dims[0]*dims[1],dims[0],dims[1]);
+  */
+
+
+    
+/******************* ADC24 Cards Slave ***************************/     	 
+    
+  for (k=0; k<MAX_24BIT_ADC_CARDS_WP; k++) {
+
+	#ifdef D_HEADER
+	  mexPrintf("NumSamples ADC24 Slave %d %d\n",count,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) 
+	  *(z+count++)=elekStatus[i].ADC24CardsSlave[k].NumSamples;       
+    
+    for (j=0;j<MAX_24BIT_ADC_CHANNEL_PER_CARD;j++) {       	
+	  #ifdef D_HEADER
+		mexPrintf("adc24Data Low Slave #%d.%d %d\n",k,j,1+count/nelements);      
+	  #endif
+      for (i=0; i<nelements;i++) 
+	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelDataLowHigh[j].ADCDataLow;       
+
+	  #ifdef D_HEADER
+		mexPrintf("adc24Data High Slave #%d.%d %d\n",k,j,1+count/nelements);      
+	  #endif
+      for (i=0; i<nelements;i++) 
+	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelDataLowHigh[j].ADCDataHigh;       
+
+	}
+      
+      
+  }
+    
+
+
+    
+/******************* Valve Cards ***************************/     
+  /* for (k=0; k<MAX_VALVE_CARD_WP; k++) { */
+  /* we are only interested in Data of Card 0 */
+  Card=0;
+  #ifdef D_HEADER
+	mexPrintf("ValveVolt Slave %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ValveCardSlave[Card].ValveVolt;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("Valve Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ValveCardSlave[Card].Valve;       
+  } 
+  /* }*/
+
+/******************* TempSensor Card Slave ***************************/  
+  /* there is only one Card */
+  Card=0;   
+  #ifdef D_HEADER
+    mexPrintf("TempMissed Slave %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].TempSensCardSlave[Card].NumMissed;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("TempNumber Slave %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].TempSensCardSlave[Card].NumSensor;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("TempErrCRC Slave %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].TempSensCardSlave[Card].NumErrCRC;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("TempNoResponse Slave %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].TempSensCardSlave[Card].NumErrNoResponse;       
+  }
+
+  for (j=0; j<MAX_TEMP_SENSOR; j++) { 
+
+	#ifdef D_HEADER
+	  mexPrintf("Temp Slave #%d %d\n",j,1+count/nelements);      
+	#endif
+    /* we represent the temperature in 1/100K) */
+    for (i=0; i<nelements;i++) {
+	  *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
+		elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Field.TempMain*100)+27320);  
+    }
+
+	#ifdef D_HEADER
+	  mexPrintf("Temp Slave #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position */
+    }
+
+	#ifdef D_HEADER
+	  mexPrintf("Temp Slave #%d ID %d\n",j,1+count/nelements);      
+	#endif
+    for (i=0; i<nelements;i++) {
+	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordID[1];       
+    }
+  }
+
+
+
+/******************* GPS Data Slave ***************************/     
+  #ifdef D_HEADER
+    mexPrintf("GPSsecondsUTC Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.ucUTCHours*3600+elekStatus[i].GPSDataSlave.ucUTCMins*60
+	  +elekStatus[i].GPSDataSlave.ucUTCSeconds;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLongitude Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* we represent the longitude 2 words */
+  /* the first word contains degrees and mins */
+  /* 0 means 180,0°W, 15*60+30 means 74°30'W */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=((int)(elekStatus[i].GPSDataSlave.dLongitude/100)+180)*60+
+	  (int)(elekStatus[i].GPSDataSlave.dLongitude-((int)(elekStatus[i].GPSDataSlave.dLongitude/100))*100);       
+  }
+  /* the second word contains 4 post decimal positions*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=(elekStatus[i].GPSDataSlave.dLongitude-(int)(elekStatus[i].GPSDataSlave.dLongitude))*10000;       
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLatitude Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* we represent the latitude 2 words */
+  /* the first word contains degrees and mins */
+  /* 0 means 90,0°S, 15*60+30 means 74°30'S */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=((int)(elekStatus[i].GPSDataSlave.dLatitude/100)+90)*60+
+	  (int)(elekStatus[i].GPSDataSlave.dLatitude-((int)(elekStatus[i].GPSDataSlave.dLatitude/100))*100);       
+  }
+  /* the second word contains 4 post decimal positions*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=(elekStatus[i].GPSDataSlave.dLatitude-(int)(elekStatus[i].GPSDataSlave.dLatitude))*10000;       
+  }
+  
+  #ifdef D_HEADER
+    mexPrintf("GPSAltitude Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* altitude above the geoid in metres */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.fAltitude;
+  }
+ 
+  #ifdef D_HEADER
+    mexPrintf("GPSHDOP Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* Horizontal Dillution Of Precision, whatever it means....*/
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.fHDOP;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSnumSat Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* number of satellites seen by the GPS receiver */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.ucNumberOfSatellites;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSLastValidData Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* number of data aquisitions (5Hz) with no valid GPS data */
+  /* will stick at 255 if no data received for a long period */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.ucLastValidData;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSGroundSpeed Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* speed in cm/s above ground */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.uiGroundSpeed;
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("GPSHeading Slave  %d %d\n",count,1+count/nelements);      
+  #endif
+  /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].GPSDataSlave.uiHeading;
+  }
+
+
 
   
   return;
