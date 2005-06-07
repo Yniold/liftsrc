@@ -69,20 +69,20 @@ end
 
 % open tcpip port for communication with Laser
 echotcpip('on',10001);
-tcpdata.tport=tcpip('10.111.111.20',10001);
+tcpdata.tport=tcpip('xpLaser',10001);
 set(tcpdata.tport,'ReadAsyncMode','continuous');
 set(tcpdata.tport,'BytesAvailableFcn',{'tcpipdatacallback'});
-fopen(tcpdata.tport);
-tport=tcpdata.tport;
+try fopen(tcpdata.tport);
+    tport=tcpdata.tport;
 
 % check which laser head and power supply is being used and display what
 % the settings should be
-fprintf(tport,'?PSSN'); 
-pause(0.5);
-PSSN=tport.UserData;
-fprintf(tport,'?HEADSN'); 
-pause(0.5);
-HEADSN=tport.UserData;
+    fprintf(tport,'?PSSN'); 
+    pause(0.5);
+    PSSN=tport.UserData;
+    fprintf(tport,'?HEADSN'); 
+    pause(0.5);
+    HEADSN=tport.UserData;
 
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
 % diode temperature should be 26.1?C for PSSN 120865, HEADSN 2363/710
@@ -92,29 +92,38 @@ HEADSN=tport.UserData;
 % diode temperature should be 28.6?C for PSSN 120881, HEADSN 2366/712
 % crystal temperature should be 130 for PSSN 120881, HEADSN 2366/712
 
-set(handles.txtsetReprate,'String','3000 kHz'); % pulses/s
-if PSSN(1:6)=='120865'
-    set(handles.txtsetDiodeCurrent,'String','35.4 A');
-    set(handles.txtsetDiodeTemp,'String','26.1 C');
-    set(handles.txtsetIRPower,'String','4.5 W'); % IR intern
-elseif PSSN(1:6)=='120881'
-    set(handles.txtsetDiodeCurrent,'String','36.0 A');
-    set(handles.txtsetDiodeTemp,'String','28.6 C');
-    set(handles.txtsetIRPower,'String','4.45 W'); % IR intern
-end
-if HEADSN(1:8)=='2363/710'
-    set(handles.txtsetCrtemp,'String','151'); % ADC Counts
-    set(handles.txtsetTowerTemp,'String','31 C');
-elseif HEADSN(1:8)=='2366/712'
-    set(handles.txtsetCrtemp,'String','130'); % ADC Counts
-    set(handles.txtsetTowerTemp,'String','28.6 C');    
+    set(handles.txtsetReprate,'String','3000 kHz'); % pulses/s
+    if PSSN(1:6)=='120865'
+        set(handles.txtsetDiodeCurrent,'String','35.4 A');
+        set(handles.txtsetDiodeTemp,'String','26.1 C');
+        set(handles.txtsetIRPower,'String','4.5 W'); % IR intern
+    elseif PSSN(1:6)=='120881'
+        set(handles.txtsetDiodeCurrent,'String','36.0 A');
+        set(handles.txtsetDiodeTemp,'String','28.6 C');
+        set(handles.txtsetIRPower,'String','4.45 W'); % IR intern
+    end
+    if HEADSN(1:8)=='2363/710'
+        set(handles.txtsetCrtemp,'String','151'); % ADC Counts
+        set(handles.txtsetTowerTemp,'String','31 C');
+    elseif HEADSN(1:8)=='2366/712'
+        set(handles.txtsetCrtemp,'String','130'); % ADC Counts
+        set(handles.txtsetTowerTemp,'String','28.6 C');    
+    end
+
+% if communication with laser did not work
+catch 
+    delete(tcpdata.tport);
+    echotcpip('off');
+    set(handles.txtCommandAnswer,'String','communication FAILED','BackgroundColor','r');
 end
 
 % Update handles structure
 guidata(hObject, handles);
 
 setappdata(handles.output, 'tcpdata', tcpdata); 
-Update_Callback(hObject, eventdata, handles)
+if isvalid(tcpdata.tport)
+    Update_Callback(hObject, eventdata, handles);
+end
 
 
 
@@ -427,10 +436,11 @@ function pubExit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % shut down tcpip connection
 tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
-fclose(tcpdata.tport);
-delete(tcpdata.tport);
-echotcpip('off');
+if isvalid(tcpdata.tport)
+    fclose(tcpdata.tport);
+    delete(tcpdata.tport);
+    echotcpip('off');
+end
 close(handles.figure1);
 
 
