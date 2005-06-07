@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.12 $ */
+ /* $Revision: 1.13 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -1182,13 +1182,12 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		mexPrintf("adc24Data Low Slave #%d.%d %d\n",k,j,1+count/nelements);      
 	  #endif
       for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelDataLowHigh[j].ADCDataLow;       
-
+          *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelData[j].ADCChannelDataLowHigh.ADCDataLow;
 	  #ifdef D_HEADER
 		mexPrintf("adc24Data High Slave #%d.%d %d\n",k,j,1+count/nelements);      
 	  #endif
       for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelDataLowHigh[j].ADCDataHigh;       
+	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelData[j].ADCChannelDataLowHigh.ADCDataHigh;       
 
 	}
       
