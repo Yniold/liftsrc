@@ -11,7 +11,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.11 $ */
+ /* $Revision: 1.12 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -28,6 +28,7 @@
 #else
 typedef unsigned short uint16_t;
 typedef unsigned uint32_t;
+typedef int int32_t;
 struct timeval {
   long    tv_sec; 
   long    tv_usec;
