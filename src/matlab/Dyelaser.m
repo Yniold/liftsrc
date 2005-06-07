@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 09-Feb-2005 18:25:05
+% Last Modified by GUIDE v2.5 06-Jun-2005 12:01:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,7 +62,7 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
-%setup Timer function
+% setup Timer function
 handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
@@ -70,6 +70,16 @@ handles.ActTimer = timer('ExecutionMode','fixedDelay',...
 
 start(handles.ActTimer);
 data.ActTimer=handles.ActTimer;
+
+
+% open communication with picomotors
+handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+try fopen(handles.serport);
+catch 
+    delete(handles.serport);
+    rmfield(handles,'serport');
+end;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -134,12 +144,17 @@ Etalonhelp=int32(statusData(:,col.etaEncoderPosLow));
 EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
 EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
+Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
+OnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
+OnlinePos(Etalonhelp>32767)=OnlinePos(Etalonhelp>32767)-65535;
+
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
+set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
     set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
@@ -237,6 +252,7 @@ else
 end
 
 data.lastrow=lastrow;
+data.OnlinePos=OnlinePos;
 setappdata(handles.output, 'Dyelaserdata', data);
 
 
@@ -403,19 +419,23 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
+if isvalid(handles.serport)
+    fclose(handles.serport);
+    delete(handles.serport);
+end;
 close(handles.figure1);
 
 
 
 
 
-function online_pos_Callback(hObject, eventdata, handles)
-% hObject    handle to online_pos (see GCBO)
+function set_pos_Callback(hObject, eventdata, handles)
+% hObject    handle to set_pos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of online_pos as text
-%        str2double(get(hObject,'String')) returns contents of online_pos as a double
+% Hints: get(hObject,'String') returns contents of set_pos as text
+%        str2double(get(hObject,'String')) returns contents of set_pos as a double
 onlinepos=uint16(str2double(get(hObject,'String')));
 if isnan(onlinepos)
     set(hObject,'BackgroundColor','red');
@@ -501,13 +521,23 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-onlinepos=uint16(str2double(get(handles.online_pos,'String')));
-if isnan(onlinepos)
-    error('invalid values');
-else
+data = getappdata(handles.output, 'Dyelaserdata');
+% read in current online position from gui txt-field
+curonlinepos=str2double(get(handles.txtonline,'String'));
+% find last data point when etalon was in online position
+i=find(data.OnlinePos==onlinepos,1,'last');
+% find maximum reference Signal and corresponding data point 
+[calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
+% if the maximum reference signal is bigger than the last online reference signal
+% set new online and go there
+if calcOnlSign>statusdata(i,col.ccCounts0) 
     system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd w 0xa510 ',num2str(onlinepos)]);
-    system(['/lift/bin/eCmd s etalononline ',num2str(onlinepos)]);
+    system(['/lift/bin/eCmd w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
+    set(handles.txtonline,'String',num2str(data.OnlinePos(icalcOnlSign)));
+else % go to old online position
+    system(['/lift/bin/eCmd s etalonnop']);    
+    system(['/lift/bin/eCmd w 0xa510 ',num2str(curonlinepos)]);
 end
 
 
@@ -516,7 +546,7 @@ function offline_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to offline_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-onlinepos=uint16(str2double(get(handles.online_pos,'String')));
+onlinepos=uint16(str2double(get(handles.set_pos,'String')));
 offlinepos=onlinepos+1000;
 if isnan(onlinepos)
     error('invalid values');
@@ -531,17 +561,13 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to toggle_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-onlinepos=uint16(str2double(get(handles.online_pos,'String')));
-if isnan(onlinepos)
-    error('invalid values');
-else
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd s etalononline ',num2str(onlinepos)]);
-    system(['/lift/bin/eCmd s etalonofflineleft 1000']);
-    system(['/lift/bin/eCmd s etalonofflineright 1000']);
-    system('/lift/bin/eCmd s etalondither 8');
-    system('/lift/bin/eCmd s etalontoggle');
-end
+onlinepos=uint16(str2double(get(handles.txtonline,'String')));
+system(['/lift/bin/eCmd s etalonnop']);    
+system(['/lift/bin/eCmd s etalononline ',num2str(onlinepos)]);
+system(['/lift/bin/eCmd s etalonofflineleft 1000']);
+system(['/lift/bin/eCmd s etalonofflineright 1000']);
+system('/lift/bin/eCmd s etalondither 8');
+system('/lift/bin/eCmd s etalontoggle');
 
 
 % --- Executes on button press in home_pushbutton.
@@ -667,6 +693,170 @@ else
     system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
     set(hObject,'BackgroundColor','g');
+end
+
+
+% --- Executes on selection change in popupmirror.
+function popupmirror_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmirror (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popupmirror contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmirror
+set(handles.textPos,'String','0');
+
+% --- Executes during object creation, after setting all properties.
+function popupmirror_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmirror (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+set(hObject,'Value',2);
+
+% --- Executes on button press in radiohor.
+function radiohor_Callback(hObject, eventdata, handles)
+% hObject    handle to radiohor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(handles.radiover,'Value',0);
+end
+set(handles.textPos,'String','0');
+
+
+% --- Executes on button press in radiover.
+function radiover_Callback(hObject, eventdata, handles)
+% hObject    handle to radiover (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(handles.radiohor,'Value',0);
+end
+set(handles.textPos,'String','0');
+
+
+% --- Executes on button press in radiofor.
+function radiofor_Callback(hObject, eventdata, handles)
+% hObject    handle to radiofor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(handles.radiorev,'Value',0);
+end
+
+
+% --- Executes on button press in radiorev.
+function radiorev_Callback(hObject, eventdata, handles)
+% hObject    handle to radiorev (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'Value')
+    set(handles.radiofor,'Value',0);
+end
+
+
+function editsteps_Callback(hObject, eventdata, handles)
+% hObject    handle to editsteps (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editsteps as text
+%        str2double(get(hObject,'String')) returns contents of editsteps as a double
+steps=uint16(str2double(get(hObject,'String')));
+if isnan(steps)
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','white');
+    set(hObject,'string',num2str(steps));
+end
+
+
+
+% --- Executes on button press in pushgo.
+function pushgo_Callback(hObject, eventdata, handles)
+% hObject    handle to pushgo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.textPos,'BackgroundColor','r');
+set(handles.pushgo,'BackgroundColor','r');
+
+serport=handles.serport;
+steps=get(handles.editsteps,'String');
+hor=get(handles.radiohor,'Value');
+forw=get(handles.radiofor,'Value');
+oldpos=str2double(get(handles.textPos,'String'));
+
+switch get(handles.popupmirror,'Value')
+    case 1
+        driver='a1';
+        if hor==1 chl='0';
+        else chl='1';
+        end
+    case 2
+        if hor==1;
+            driver='a1';
+            chl='2';
+        else 
+            driver='a2';
+            chl='0';
+        end
+    case 3 
+        driver='a2';
+        if hor==1 chl='1';
+        else chl='2';
+        end
+end
+fprintf(serport,['chl ',driver,'=',chl]);
+if forw==1
+    fprintf(serport,['rel ',driver,' ',steps]);
+else
+    fprintf(serport,['rel ',driver,' -',steps]);
+end
+fprintf(serport,['go ',driver]);
+
+% check if motor is still moving
+fprintf(serport,['pos ',driver]);
+x=find(serport.UserData=='=');
+pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+%serport.UserData
+pos1=pos2-1;
+while pos2~=pos1
+    pos1=pos2;
+    pause(1);
+    fprintf(serport,['pos ',driver]);
+    x=find(serport.UserData=='=');
+    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+end
+% display new motor position after motor has stopped
+newpos=oldpos+pos2;
+set(handles.textPos,'String',num2str(newpos),'BackgroundColor','w');
+set(handles.pushgo,'BackgroundColor','w');
+
+
+
+
+% --- Executes on button press in pushStop.
+function pushStop_Callback(hObject, eventdata, handles)
+% hObject    handle to pushStop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+fprintf(handles.serport,'hal');
+
+
+% --- Executes on button press in pushgoto.
+function pushgoto_Callback(hObject, eventdata, handles)
+% hObject    handle to pushgoto (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+setpos=uint16(str2double(get(handles.set_pos,'String')));
+if isnan(setpos)
+    error('invalid values');
+else
+    system(['/lift/bin/eCmd s etalonnop']);    
+    system(['/lift/bin/eCmd w 0xa510 ',num2str(setpos)]);
 end
 
 

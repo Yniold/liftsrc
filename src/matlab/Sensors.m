@@ -24,7 +24,7 @@ function varargout = Sensors(varargin)
 
 % Edit the above text to modify the response to help Sensors
 
-% Last Modified by GUIDE v2.5 08-Feb-2005 17:19:41
+% Last Modified by GUIDE v2.5 03-Jun-2005 10:13:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -574,7 +574,13 @@ end
 set(handles.txtxvalue,'String',num2str(xdata(lastrow)));
 set(handles.txtyvalue,'String',num2str(ydata(lastrow)));
 
+xlim1=uint8(str2double(get(handles.editxlim1,'String')));
+xlim2=uint8(str2double(get(handles.editxlim2,'String')));
+ylim1=uint8(str2double(get(handles.editylim1,'String')));
+ylim2=uint8(str2double(get(handles.editylim2,'String')));
 plot(handles.axes1,xdata,ydata,'.');
+xlim([xlim1*(max(xdata)-min(xdata))+min(xdata), xlim2*(max(xdata)-min(xdata))+min(xdata)]);
+ylim([ylim1*(max(ydata)-min(ydata))+min(ydata), ylim2*(max(ydata)-min(ydata))+min(ydata)]);
 grid(handles.axes1);
 
 
@@ -686,5 +692,60 @@ function pshExit_Callback(hObject, eventdata, handles)
 stop(handles.Timer);
 delete(handles.Timer);
 close(handles.figure1);
+
+
+
+function editxlim1_Callback(hObject, eventdata, handles)
+% hObject    handle to editxlim1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editxlim1 as text
+%        str2double(get(hObject,'String')) returns contents of editxlim1 as a double
+xlim1=uint8(str2double(get(hObject,'String')));
+if (xlim1>100) set(hObject,'String','100');
+else set(hObject,'String',num2str(xlim1));
+end
+
+
+
+function editxlim2_Callback(hObject, eventdata, handles)
+% hObject    handle to editxlim2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editxlim2 as text
+%        str2double(get(hObject,'String')) returns contents of editxlim2 as a double
+xlim2=uint8(str2double(get(hObject,'String')));
+if xlim2>100 set(hObject,'String','100');
+else set(hObject,'String',num2str(xlim2));
+end
+
+
+
+function editylim1_Callback(hObject, eventdata, handles)
+% hObject    handle to editylim1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editylim1 as text
+%        str2double(get(hObject,'String')) returns contents of editylim1 as a double
+ylim1=uint8(str2double(get(hObject,'String')));
+if ylim1>100 set(hObject,'String','100');
+else set(hObject,'String',num2str(ylim1));
+end
+
+
+function editylim2_Callback(hObject, eventdata, handles)
+% hObject    handle to editylim2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editylim2 as text
+%        str2double(get(hObject,'String')) returns contents of editylim2 as a double
+ylim2=uint8(str2double(get(hObject,'String')));
+if ylim2>100 set(hObject,'String','100');
+else set(hObject,'String',num2str(ylim2));
+end
 
 
