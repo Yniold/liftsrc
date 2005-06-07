@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-05-23 15:06:33 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-07 18:49:44 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.6  2005-05-23 15:06:33  rudolf
+* Revision 1.7  2005-06-07 18:49:44  martinez
+* *** empty log message ***
+*
+* Revision 1.6  2005/05/23 15:06:33  rudolf
 * changed some #defines for ARM
 *
 * Revision 1.5  2005/05/22 19:10:24  rudolf
@@ -236,7 +239,7 @@ struct ADCChannel24DWType {
 
 union ADCChannel24DataType {
     struct ADCChannel24DWType ADCChannelDataLowHigh;
-	 int32_t ADCChannelData;
+	int32_t ADCChannelData;
 }; /* ADCChannelType */
 
 struct ADCCardType {                                               
