@@ -25,8 +25,6 @@ function varargout = Detection(varargin)
 
 % Edit the above text to modify the response to help Detection
 
-% Last Modified by GUIDE v2.5 11-Mar-2005 14:58:44
-
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -103,6 +101,10 @@ startPlot=1;
 iZeit=indexZeit(startPlot:stopPlot);
 minTime=statustime(iZeit(1));
 maxTime=statustime(iZeit(size(iZeit,1)));
+xlim1=str2double(get(handles.editxlim1,'String'));
+xlim2=str2double(get(handles.editxlim2,'String'));
+limTime1=maxTime-xlim1./86400.0;
+limTime2=maxTime-xlim2./86400.0;
 
 % display system time
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
@@ -114,8 +116,10 @@ x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 x=double(statusData(:,col.DiodeWZout)); eval(['DiodeWZout=',fcts2val.DiodeWZout,';']);
 
 % display ADC counts
-set(handles.txtWZin,'String','NA');
-set(handles.txtWZout,'String',statusData(lastrow,col.DiodeWZout));
+set(handles.txtWZ1in,'String','NA');
+set(handles.txtWZ1out,'String',statusData(lastrow,col.DiodeWZout));
+set(handles.txtWZ2in,'String','NA');
+set(handles.txtWZ1out,'String','NA');
 set(handles.txtP1000,'String',statusData(lastrow,col.P1000));
 set(handles.txtP20,'String',statusData(lastrow,col.P20));
 set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
@@ -127,16 +131,16 @@ if P20(lastrow)<3 | P20(lastrow)>6
     set(handles.txtP20,'BackgroundColor','r');
 end
 if DiodeWZout(lastrow)<2
-    set(handles.txtWZout,'BackgroundColor','r');
+    set(handles.txtWZ1out,'BackgroundColor','r');
 end
 
 % plot checked parameters vs. time
 hold(handles.axes1,'off'); 
-%if get(handles.chkWZin,'Value')
+%if get(handles.chkWZ1in,'Value')
 %    plot(handles.axes1,statustime(iZeit),DiodeWZin(iZeit),'r');
     %hold(handles.axes1,'on');
 %end 
-if get(handles.chkWZout,'Value')
+if get(handles.chkWZ1out,'Value')
     plot(handles.axes1,statustime(iZeit),DiodeWZout(iZeit),'b');
     hold(handles.axes1,'on');
 end 
@@ -160,7 +164,7 @@ if get(handles.chkTDet,'Value')
     plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TDet),'r');
     hold(handles.axes1,'on');
 end 
-xlim(handles.axes1,[minTime maxTime]);
+xlim(handles.axes1,[limTime1 limTime2]);
 grid(handles.axes1);
 
 %plot PMT and MCP signals
@@ -277,6 +281,41 @@ set(handles.txtPMTOnline,'String',PMTOnlineAvg(lastrow));
 set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
 set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
 
+%calculate OH and HO2 mixing ratios
+radlife=1.45e6;			% Radiative lifetime (Hz) from D. Heard data
+% THESE PARAMETERS NEED TO BE CONSIDERED WHEN RUNNING THE INSTRUMENT IN A
+% DIFFERENT SETUP
+gate1=200e-9;			   % Approximate gate setting for rising edge (sec)
+gate2=620e-9;		   	% ...for falling edge (sec)
+Tcal=293;			      % Cell Temperature during lab calibration (K)
+Pcal=4.0;
+PowCal=4.0;		%OHUVPower during lab calibration (mW)
+PowCalb=4.0;		%HO2UVPower during lab calibration (mW)
+PowDep=0.0;		%sensitivity decrease per mW as a fraction from value at 0 mW
+wmrcal=8E-3;	         % Calibration reference water concentration
+cOH=12.5;    %The following parameters are sensitivity
+cHO2b=12.5;		%HO2 axis
+
+k_qcal=getq(Tcal,wmrcal);
+GAMMAcal= k_qcal*Pcal + radlife;  
+densCal=(6.022E+23/22400)*273/Tcal*4.9/1013;
+
+bc=boltzcorr(Tcal,TDet(lastrow)+273);
+k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String'))*0.01);
+GAMMA = k_q*P20(lastrow) + radlife;
+quen = (1/GAMMA).*((exp(-gate1*GAMMA)-exp(-gate2*GAMMA)));
+
+Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
+
+COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
+COH=COH.*DiodeWZout(lastrow).*[1-PowDep*DiodeWZout(lastrow)]/[1-PowDep*PowCal];
+
+CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
+CHO2b=CHO2b.*DiodeWZout(lastrow).*[1-PowDep*DiodeWZout(lastrow)]/[1-PowDep*PowCal];
+
+XOH = MCP1OnlineAvg./COH;
+XHOx = MCP2OnlineAvg/CHO2b;
+
 % make plots 
 hold(handles.axeRay,'off');
 hold(handles.axeFluo,'off');
@@ -305,6 +344,12 @@ if get(handles.chkPMT,'Value')
     switch WhichPlot
         case 1
            plot(handles.axeCounts,statustime(iZeit),PMTSumCounts(iZeit)); %statusData(iZeit,PMTBase+204));
+           xlim1=str2double(get(handles.editxlim1,'String'));
+           xlim2=str2double(get(handles.editxlim2,'String'));
+           limTime1=maxTime-xlim1./86400.0;
+           limTime2=maxTime-xlim2./86400.0;
+           xlim(handles.axes1,[limTime1 limTime2]);
+
            hold(handles.axeCounts,'on');
         case 2           
            plot(handles.axeCounts,statustime(30:end),PMTAvg(30:end),'b');   
@@ -340,6 +385,9 @@ if get(handles.chkMCP1,'Value')
         case 2           
            plot(handles.axeCounts,statustime(30:end),MCP1Avg(30:end),'b');   
            hold(handles.axeCounts,'on');
+        case 3           
+           plot(handles.axeCounts,statustime(30:end),XOH(30:end),'b');   
+           hold(handles.axeCounts,'on');
     end
     hold(handles.axeCounts,'on');
 end
@@ -371,11 +419,14 @@ if get(handles.chkMCP2,'Value')
         case 2           
            plot(handles.axeCounts,statustime(30:end),MCP2Avg(30:end),'b');   
            hold(handles.axeCounts,'on');
+        case 3           
+           plot(handles.axeCounts,statustime(30:end),XHOx(30:end),'b');   
+           hold(handles.axeCounts,'on');
     end
     hold(handles.axeCounts,'on');
 end
 
-xlim(handles.axeCounts,[minTime maxTime]);
+xlim(handles.axeCounts,[limTime1 limTime2]);
 grid(handles.axeCounts);
 
 % check HV
@@ -571,22 +622,22 @@ else
 end
 
 
-% --- Executes on button press in chkWZout.
-function chkWZout_Callback(hObject, eventdata, handles)
-% hObject    handle to chkWZout (see GCBO)
+% --- Executes on button press in chkWZ1out.
+function chkWZ1out_Callback(hObject, eventdata, handles)
+% hObject    handle to chkWZ1out (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkWZout
+% Hint: get(hObject,'Value') returns toggle state of chkWZ1out
 
 
-% --- Executes on button press in chkWZin.
-function chkWZin_Callback(hObject, eventdata, handles)
-% hObject    handle to chkWZin (see GCBO)
+% --- Executes on button press in chkWZ1in.
+function chkWZ1in_Callback(hObject, eventdata, handles)
+% hObject    handle to chkWZ1in (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkWZin
+% Hint: get(hObject,'Value') returns toggle state of chkWZ1in
 
 
 % --- Executes on button press in chkPNO.
@@ -714,6 +765,7 @@ function chkVHV_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkVHV
+
 
 
 % --- Executes on button press in toggleOHInj.
@@ -891,4 +943,68 @@ system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to s
 system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
 system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
+
+
+function editxlim1_Callback(hObject, eventdata, handles)
+% hObject    handle to editxlimit1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editxlimit1 as text
+%        str2double(get(hObject,'String')) returns contents of editxlimit1 as a double
+xlim1=uint8(str2double(get(hObject,'String')));
+if (xlim1>200) set(hObject,'String','200');
+else set(hObject,'String',num2str(xlim1));
+end
+
+
+
+function editxlim2_Callback(hObject, eventdata, handles)
+% hObject    handle to editxlim2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editxlim2 as text
+%        str2double(get(hObject,'String')) returns contents of editxlim2 as a double
+xlim2=uint8(str2double(get(hObject,'String')));
+if xlim2>200 set(hObject,'String','200');
+else set(hObject,'String',num2str(xlim2));
+end
+
+
+% --- Executes on button press in chkWZ2out.
+function chkWZ2out_Callback(hObject, eventdata, handles)
+% hObject    handle to chkWZ2out (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkWZ2out
+
+
+% --- Executes on button press in chkWZ2in.
+function chkWZ2in_Callback(hObject, eventdata, handles)
+% hObject    handle to chkWZ2in (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkWZ2in
+
+
+
+function editH2O_Callback(hObject, eventdata, handles)
+% hObject    handle to editH2O (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editH2O as text
+%        str2double(get(hObject,'String')) returns contents of editH2O as a double
+
+
+function editC_Callback(hObject, eventdata, handles)
+% hObject    handle to editC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editC as text
+%        str2double(get(hObject,'String')) returns contents of editC as a double
 
