@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-05-22 15:02:43 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-08 17:31:51 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.8  2005-05-22 15:02:43  rudolf
+// Revision 1.9  2005-06-08 17:31:51  rudolf
+// prepared sockets for sending the data structure between master and slave
+//
+// Revision 1.8  2005/05/22 15:02:43  rudolf
 // changed BaudRate and ttyX, changed debug output if commands are sent via eCmd
 //
 // Revision 1.7  2005/04/21 15:59:21  rudolf
@@ -30,6 +33,17 @@
 
 #define MAX_TASKS_TO_WAKE 10
 
+enum TimerSignalStateEnum {   // states of signal timer
+  
+  TIMER_SIGNAL_STATE_INITIAL,    // wait for signal to occur
+  TIMER_SIGNAL_STATE_GATHER,     // wake up and gather data
+  TIMER_SIGNAL_STATE_REQ,        // request data from slave and instruments
+
+  TIMER_SIGNAL_STATE_MAX
+  
+};
+
+
 typedef unsigned char BOOL;
 struct TaskListType {
   char TaskName[MAX_PORT_NAME_LEN];
@@ -40,6 +54,17 @@ struct TaskListType {
 struct SyncFlagType {
 	BOOL MaskChange;
 };  /*SyncFlagType */
+
+
+
+#define MAXSLAVES 3
+/* struct to keep a list of slaves */
+struct SlaveListType {
+  char *SlaveName;                /* name for debug messages */  
+  char *SlaveIP;                  /* IP Address */
+};
+
+
 
 // ========================
 // Globals for GPS
@@ -56,3 +81,5 @@ long baud = 4800;                         // serial baudrate
 volatile char ucDataReadyFlag = 0;        // Data ready flag
 int fdGPS = -1;                           // file descriptor for serial communication
 char ucPortOpened = 0;                    // flag for the timer routine wether port is available or not
+
+

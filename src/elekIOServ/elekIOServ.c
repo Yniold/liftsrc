@@ -1,9 +1,9 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-08 17:29:49 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-08 17:31:51 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.20  2005-06-08 17:29:49  rudolf
-* work in progress Markus before leaving to Hohn
+* Revision 1.21  2005-06-08 17:31:51  rudolf
+* prepared sockets for sending the data structure between master and slave
 *
 * Revision 1.19  2005/05/23 15:05:48  rudolf
 * changed initialisation of cards to distinguish between Master and Slave mode
@@ -101,30 +101,36 @@
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
-    ELEK_MANUAL_IN,      // port for incoming commands from eCmd
-    ELEK_ETALON_IN,      // port for incoming commands from etalon
-    ELEK_SCRIPT_IN,      // port for incoming commands from scripting host (not yet existing, HH, Feb2005
+    ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
+    ELEK_ETALON_IN,       // port for incoming commands from  etalon
+    ELEK_SCRIPT_IN,       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
+    ELEK_STATUS_IN,       // port to receive status data from slaves
     MAX_MESSAGE_INPORTS }; 
 
 enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
-    ELEK_STATUS_OUT,      // port for outgoing messages to status
-  ELEK_MANUAL_OUT,        // port for outgoing messages to eCmd
-  ELEK_ETALON_OUT,        // port for outgoing messages to etalon
-  ELEK_ETALON_STATUS_OUT, // port for outgoing messages to etalon status, so etalon is directly informed of the status
-  ELEK_SCRIPT_OUT,        // port for outgoing messages to script 
-  ELEK_DEBUG_OUT,         // port for outgoing messages to debug
+  ELEK_STATUS_OUT,         // port for outgoing messages to status
+  ELEK_ELEKIO_STATUS_OUT,  // port for outgoing status to elekIO
+  ELEK_ELEKIO_SLAVE_OUT,   // port for outgoing messages to slaves
+  ELEK_MANUAL_OUT,         // port for outgoing messages to eCmd
+  ELEK_ETALON_OUT,         // port for outgoing messages to etalon
+  ELEK_ETALON_STATUS_OUT,  // port for outgoing messages to etalon status, so etalon is directly informed of the status
+  ELEK_SCRIPT_OUT,         // port for outgoing messages to script 
+  ELEK_DEBUG_OUT,          // port for outgoing messages to debug
   MAX_MESSAGE_OUTPORTS }; 
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling 
   /* Name, PortNo, ReversePort, IPAddr, fdSocket, MaxMessages, Direction */
-  {"Manual",   UDP_ELEK_MANUAL_INPORT, ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
-  {"Etalon",   UDP_ELEK_ETALON_INPORT, ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
-  {"Script",   UDP_ELEK_SCRIPT_INPORT, ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT}
+  {"Manual",   UDP_ELEK_MANUAL_INPORT,        ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
+  {"Etalon",   UDP_ELEK_ETALON_INPORT,        ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
+  {"Script",   UDP_ELEK_SCRIPT_INPORT,        ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT},
+  {"ElekIOIn", UDP_ELEK_ELEKIO_STATUS_OUTPORT,      -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
 };
 
 static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={    // order in list defines sequence of polling 
   /* Name, PortNo, ReversePort, IPAddr, fdSocket, MaxMessages, Direction */
   {"Status",         UDP_ELEK_STATUS_STATUS_OUTPORT,             -1, IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
+  {"ElekIOStatus",   UDP_ELEK_ELEKIO_STATUS_OUTPORT,             -1, IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
+  {"ElekIOServer",           UDP_ELEK_MANUAL_INPORT, ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER,   -1, 0,  UDP_OUT_PORT}, 
   {"Manual",                UDP_ELEK_MANUAL_OUTPORT, ELEK_MANUAL_IN, IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT}, 
   {"Etalon",                UDP_ELEK_ETALON_OUTPORT, ELEK_ETALON_IN, IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
   {"EtalonStatus",   UDP_ELEK_ETALON_STATUS_OUTPORT,             -1, IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
@@ -137,6 +143,12 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]={     // order defi
   {"Etalon",     ELEK_ETALON_OUT,ELEK_ETALON_STATUS_OUT},    // Etalon Task needs Status info
   {"Script",     ELEK_SCRIPT_OUT,                    -1},
   {      "",                  -1,                    -1}
+};
+
+static struct SlaveListType SlaveList[MAXSLAVES]={               // list of slave elekIO units like wingpod or cal box
+  /* SlaveName  SlaveIP */
+  {"WingPod",   IP_WINGPOD},
+  {NULL,NULL}
 };
 
 
@@ -156,6 +168,7 @@ static char *strSysParameterDescription[MAX_SYS_PARAMETER]={
 /**********************************************************************************************************/
 
 static int StatusFlag=0;
+static TimerSignalStateEnum TimerState=TIMER_SIGNAL_STATE_INITIAL;
 
 /* Signalhandler */
 void signalstatus(int signo)
@@ -165,6 +178,7 @@ void signalstatus(int signo)
    char buf[GENERIC_BUF_LEN];
 
    ++StatusFlag;
+   TimerState=TIMER_SIGNAL_STATE_GATHER;
 
    if(ucPortOpened)	// check if main() has opened the port already
    {
@@ -1773,6 +1787,7 @@ int main(int argc, char *argv[])
   int    MessageNumber;
   struct ElekMessageType Message;
 
+  int SlaveNum;
   int Task;
   int Channel;
   int MaskAddr;
@@ -1805,13 +1820,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
   #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.21 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.21 $) for ARM\n",VERSION);
   #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.21 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.21 $) for i386\n",VERSION);
   #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1907,17 +1922,29 @@ int main(int argc, char *argv[])
     #endif
 
     gettimeofday(&StartAction, NULL);
-	  
+    
     //	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
     if (ret ==-1 ) { // select error
-	    
+      
       if (errno==EINTR) {  // got interrupted by timer
-		
+	
 	if ((StatusFlag % 100)==0) 
 	  printf("get Status %6d..\r",StatusFlag);		
 	write(2,"get Status.....\r",16);
-		
+	
 	if (ElekStatus.InstrumentFlags.StatusQuery) {
+
+	  // ask all slave units to gather their data
+	  SlaveNum=0;
+	  while (SlaveList[SlaveNum].SlaveName) {
+	    Message.MsgType=MSG_TYPE_FETCH_DATA;
+	    Message.MsgID=-1;
+	    SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
+			    SlaveList[SlaveNum].SlaveIP,
+			    sizeof(struct ElekMessageType), &Message);  
+	  } /* endwhile SlaveList */
+	    
+	  
 	  GetElekStatus(&ElekStatus);
 	  SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
 	  
@@ -1973,28 +2000,30 @@ int main(int argc, char *argv[])
 	 
 	  case MSG_TYPE_FETCH_DATA:
 	    printf("ElekIOServ: FETCH_DATA received, TSC was: %08x", Message.MsgTime);
-		 
-		 ElekStatus.TimeStampCommand.TSCReceived = Message.MsgTime;
-		 GetElekStatus(&ElekStatus);
-		 
+	    
+	    ElekStatus.TimeStampCommand.TSCReceived = Message.MsgTime;
+	    GetElekStatus(&ElekStatus);
+	    
 	    Message.MsgType=MSG_TYPE_ACK;
 	    
 	    if (MessagePort!=ELEK_ETALON_IN) 
-		 {
-	      sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)",
-		      MessageInPortList[MessagePort].PortNumber,
-		      Message.Addr,Message.Value,Message.Value);
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			      
-	      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
-	    } /* if MessagePort */
-		 
+	      {
+		sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)",
+			MessageInPortList[MessagePort].PortNumber,
+			Message.Addr,Message.Value,Message.Value);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		
+		sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
+	      } /* if MessagePort */
+	    
 	    SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 			sizeof(struct ElekMessageType), &Message); // send acknowledge
-       SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus); // send data packet		
+	    
+	    SendUDPData(&MessageOutPortList[ELEK_ELEKIO_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus); // send data packet
+	    
 	    break;
-	  
+	    
 	  case MSG_TYPE_READ_DATA:
 	    printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
 	    Message.Value=elkReadData(Message.Addr);
