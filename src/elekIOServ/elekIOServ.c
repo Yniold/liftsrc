@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-05-23 15:05:48 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-08 17:29:49 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.19  2005-05-23 15:05:48  rudolf
+* Revision 1.20  2005-06-08 17:29:49  rudolf
+* work in progress Markus before leaving to Hohn
+*
+* Revision 1.19  2005/05/23 15:05:48  rudolf
 * changed initialisation of cards to distinguish between Master and Slave mode
 *
 * Revision 1.18  2005/05/22 19:09:22  rudolf
@@ -309,41 +312,24 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	// Counter Card
 	
 	// init Mask for now all 1
-	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) 
+	{
 		// setup Channel Masks
-		for (i=0;i<COUNTER_MASK_WIDTH; i++) {
+		for (i=0;i<COUNTER_MASK_WIDTH; i++) 
+		{
 			ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]=0x0ffff;   
 		} // for i
 		// we do not want to count the first data word in the sumcounts which are the number of lasershots
 		ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[0]=0x0fffe;
+		for (i=0;i<COUNTER_MASK_WIDTH;i++) 
+		{
+			sprintf(buf,"ElekIOServ(M) : Mask #%d %x",i,ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		} /* for i */	
 	} // for Channel
-	
-	
-	// we don't set the mask more specfic in elekIOServ. This should be done by setup applications
-	
-	// as long as Masking in Counter Card doesn't work we have to do the job.
-	// setup Mask for PMT
-	// Channel=0;
-	//for (i=0; i<33; i++)     
-	//  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-	//for (i=42; i<59; i++)     
-	//  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-	//for (i=108; i<128; i++)     
-	//  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-	
-	// as long as Masking in Counter Card doesn't work we have to do the job.
-	//setup initial first guess Mask for PMT
-	//Channel=2;
-	//for (i=0; i<58; i++)     
-	//  SetChannelMask(ptrElekStatus->CounterCard.Channel[Channel].Mask, i, 0);
-	
-	
+		
 	ptrElekStatus->CounterCardMaster.MasterDelay=0x50;                                                   // master delay
 		
-	for (i=0;i<COUNTER_MASK_WIDTH;i++) {
-		sprintf(buf,"Mask #%d %x",i,ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-	} /* for i */
 		// set CounterCard ShiftDelays for now 1
 	//  for(i=0; i<MAX_COUNTER_CHANNEL;i++) ptrElekStatus->CounterCard.Channel[i].ShiftDelay=1;     // channel delay
 	
@@ -458,22 +444,26 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 // Counter Card
 	
 	// init Mask for now all 1
-	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) 
+	{
 		// setup Channel Masks
-		for (i=0;i<COUNTER_MASK_WIDTH; i++) {
+		for (i=0;i<COUNTER_MASK_WIDTH; i++) 
+		{
 			ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]=0x0ffff;   
 		} // for i
 		// we do not want to count the first data word in the sumcounts which are the number of lasershots
+		
 		ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[0]=0x0fffe;
+		for (i=0;i<COUNTER_MASK_WIDTH;i++) 
+		{
+			sprintf(buf,"ElekIOServ(S) : Mask #%d %x",i,ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		} /* for i */
 	} // for Channel
 	
 	
 	ptrElekStatus->CounterCardSlave.MasterDelay=0x50;                                                   // master delay
 		
-	for (i=0;i<COUNTER_MASK_WIDTH;i++) {
-		sprintf(buf,"Mask #%d %x",i,ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-	} /* for i */
 		// set CounterCard ShiftDelays for now 1
 	//  for(i=0; i<MAX_COUNTER_CHANNEL;i++) ptrElekStatus->CounterCard.Channel[i].ShiftDelay=1;     // channel delay
 	
@@ -515,13 +505,14 @@ void SetCounterCardMask(struct elekStatusType *ptrElekStatus, int IsMaster)
   
   if(IsMaster)
   {
-	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
-		
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) 
+	{
 		CounterStatus=(Channel <<4);
 		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
 		
 		// setup Channel Masks, but only ten words because of depth of shift register
-		for (i=0;i<10; i++) {
+		for (i=0;i<10; i++) 
+		{
 			elkWriteData(ELK_COUNTER_MASK,ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
 		} // for i
 	} // for Channel
@@ -530,7 +521,8 @@ void SetCounterCardMask(struct elekStatusType *ptrElekStatus, int IsMaster)
   // SLAVE
   else
   {
-	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) 
+	{
 		
 		CounterStatus=(Channel <<4);
 		elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
@@ -983,14 +975,14 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	
 		if(fdGPS == 1)
 		{
-			sprintf(debugbuf,"ElekIOServ(M): Error opening %s !\n\r", port);
+			sprintf(debugbuf,"ElekIOServ(M) : Error opening %s !\n\r", port);
 			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 	
 			return (INIT_MODULE_FAILED);
 		};
 	
 		// success
-		sprintf(debugbuf,"ElekIOServ(M): Opened %s with %d BAUD!\n\r", port, baud);
+		sprintf(debugbuf,"ElekIOServ(M) : Opened %s with %d BAUD!\n\r", port, baud);
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 	
 		// set data to initial values
@@ -1025,14 +1017,14 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	
 		if(fdGPS == 1)
 		{
-			sprintf(debugbuf,"ElekIOServ(S): Error opening %s !\n\r", port);
+			sprintf(debugbuf,"ElekIOServ(S) : Error opening %s !\n\r", port);
 			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 	
 			return (INIT_MODULE_FAILED);
 		};
 	
 		// success
-		sprintf(debugbuf,"ElekIOServ(S): Opened %s with %d BAUD!\n\r", port, baud);
+		sprintf(debugbuf,"ElekIOServ(S) : Opened %s with %d BAUD!\n\r", port, baud);
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 	
 		// set data to initial values
@@ -1813,13 +1805,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
   #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for ARM\n",VERSION);
   #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.19 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.20 $) for i386\n",VERSION);
   #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1978,6 +1970,31 @@ int main(int argc, char *argv[])
 	  }
 		    
 	  switch (Message.MsgType) {
+	 
+	  case MSG_TYPE_FETCH_DATA:
+	    printf("ElekIOServ: FETCH_DATA received, TSC was: %08x", Message.MsgTime);
+		 
+		 ElekStatus.TimeStampCommand.TSCReceived = Message.MsgTime;
+		 GetElekStatus(&ElekStatus);
+		 
+	    Message.MsgType=MSG_TYPE_ACK;
+	    
+	    if (MessagePort!=ELEK_ETALON_IN) 
+		 {
+	      sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)",
+		      MessageInPortList[MessagePort].PortNumber,
+		      Message.Addr,Message.Value,Message.Value);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			      
+	      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
+	    } /* if MessagePort */
+		 
+	    SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			sizeof(struct ElekMessageType), &Message); // send acknowledge
+       SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus); // send data packet		
+	    break;
+	  
 	  case MSG_TYPE_READ_DATA:
 	    printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
 	    Message.Value=elkReadData(Message.Addr);
