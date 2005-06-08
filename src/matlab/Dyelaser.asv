@@ -332,9 +332,9 @@ else
     Valveword=bitset(statusData(lastrow,col.Valve),10+1,0);
     set(hObject,'BackgroundColor','c','String','Valve Dyelaser OFF');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleVacuum.
@@ -357,9 +357,9 @@ else
     Valveword=bitset(statusData(lastrow,col.Valve),7+1,0);
     set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleN2.
@@ -382,9 +382,9 @@ else
     Valveword=bitset(statusData(lastrow,col.Valve),9+1,0);
     set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleAmbient.
@@ -407,9 +407,9 @@ else
     Valveword=bitset(statusData(lastrow,col.Valve),8+1,0);
     set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
 end
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in Exit.
@@ -508,11 +508,11 @@ scanstep=uint8(str2double(get(handles.scan_step,'String')));
 if (isnan(scanstartpos)| isnan(scanstoppos) | isnan(scanstep))
     error('invalid values');
 else
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd s etalonscanstart ',num2str(scanstartpos)])
-    system(['/lift/bin/eCmd s etalonscanstop ',num2str(scanstoppos)]);
-    system(['/lift/bin/eCmd s etalonscanstep ',num2str(scanstep)]);
-    system('/lift/bin/eCmd s etalonscan');
+    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
+    system(['/lift/bin/eCmd @LIFT s etalonscanstart ',num2str(scanstartpos)])
+    system(['/lift/bin/eCmd @LIFT s etalonscanstop ',num2str(scanstoppos)]);
+    system(['/lift/bin/eCmd @LIFT s etalonscanstep ',num2str(scanstep)]);
+    system('/lift/bin/eCmd @LIFT s etalonscan');
 end
 
 
@@ -528,15 +528,16 @@ curonlinepos=str2double(get(handles.txtonline,'String'));
 i=find(data.OnlinePos==onlinepos,1,'last');
 % find maximum reference Signal and corresponding data point 
 [calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
+% if the maximum reference signal is bigger than the last online reference signal
+% set new online and go there
 if calcOnlSign>statusdata(i,col.ccCounts0) 
-    % if the maximum reference signal is bigger than online reference signal set new online
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
+    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @LIFT s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
     set(handles.txtonline,'String',num2str(data.OnlinePos(icalcOnlSign)));
-else
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd w 0xa510 ',num2str(curonlinepos)]);
+else % go to old online position
+    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
+    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(curonlinepos)]);
 end
 
 
@@ -550,8 +551,8 @@ offlinepos=onlinepos+1000;
 if isnan(onlinepos)
     error('invalid values');
 else
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd w 0xa510 ',num2str(offlinepos)]);
+    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
+    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(offlinepos)]);
 end
 
 
@@ -561,17 +562,12 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=uint16(str2double(get(handles.txtonline,'String')));
-calconlinepos=max(
-if isnan(onlinepos)
-    error('invalid values');
-else
-    system(['/lift/bin/eCmd s etalonnop']);    
-    system(['/lift/bin/eCmd s etalononline ',num2str(onlinepos)]);
-    system(['/lift/bin/eCmd s etalonofflineleft 1000']);
-    system(['/lift/bin/eCmd s etalonofflineright 1000']);
-    system('/lift/bin/eCmd s etalondither 8');
-    system('/lift/bin/eCmd s etalontoggle');
-end
+system(['/lift/bin/eCmd s etalonnop']);    
+system(['/lift/bin/eCmd s etalononline ',num2str(onlinepos)]);
+system(['/lift/bin/eCmd s etalonofflineleft 1000']);
+system(['/lift/bin/eCmd s etalonofflineright 1000']);
+system('/lift/bin/eCmd s etalondither 8');
+system('/lift/bin/eCmd s etalontoggle');
 
 
 % --- Executes on button press in home_pushbutton.

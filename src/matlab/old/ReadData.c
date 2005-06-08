@@ -9,7 +9,7 @@
  *
  *=================================================================*/
 
- /* $Revision: 1.2 $ */
+ /* $Revision: 1.3 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -547,6 +547,20 @@ void mexFunction( int nlhs, mxArray *plhs[],
       *(z+count++)=elekStatus[i].InstrumentFlags.EtalonAction;       
     }
 
+#ifdef D_HEADER
+  mexPrintf("etaOnlinePosLow %d\n",1+count/nelements);      
+#endif
+/* 6*/
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].EtalonData.Online.PositionWord.Low;       
+    }
+#ifdef D_HEADER
+  mexPrintf("etaOnlinePosHigh %d\n",1+count/nelements);      
+#endif
+/* 7*/
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].EtalonData.Online.PositionWord.High;       
+    }
 
     return;
 }

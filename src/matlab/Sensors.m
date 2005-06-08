@@ -282,36 +282,6 @@ switch char(xpar)
         else
             x=double(statusData(:,col.MFCFlow)); eval(['xdata=',fcts2val.MFCFlow,';']);
         end
-    case 'TDet'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TDet);
-        else
-            x=double(statusData(:,col.TDet)); eval(['xdata=',fcts2val.TDet,';']);
-        end
-    case 'Temp0'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp0);
-        else
-            x=double(statusData(:,col.Temp0)); eval(['xdata=',fcts2val.Temp0,';']);
-        end
-    case 'TDetaxis'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TDetaxis);
-        else
-            x=double(statusData(:,col.TDetaxis)); eval(['xdata=',fcts2val.TDetaxis,';']);
-        end
-    case 'Temp2'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp2);
-        else
-            x=double(statusData(:,col.Temp2)); eval(['xdata=',fcts2val.Temp2,';']);
-        end
-    case 'Temp3'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp3);
-        else
-            x=double(statusData(:,col.Temp3)); eval(['xdata=',fcts2val.Temp3,';']);
-        end
     case 'GPSsecondsUTC'
         xdata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -336,6 +306,564 @@ switch char(xpar)
         xdata=double(statusData(:,col.GPSGroundSpeed))/100;
     case 'GPSHeading'
         xdata=double(statusData(:,col.GPSHeading))/10;
+    case 'TDet'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.TDet);
+        else
+            x=double(statusData(:,col.TDet)); eval(['xdata=',fcts2val.TDet,';']);
+        end
+    case 'Temp0L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp0L);
+        else
+            x=double(statusData(:,col.Temp0L)); eval(['xdata=',fcts2val.Temp0L,';']);
+        end
+    case 'Temp1L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp1L);
+        else
+            x=double(statusData(:,col.Temp1L)); eval(['xdata=',fcts2val.Temp1L,';']);
+        end
+    case 'Temp2L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp2L);
+        else
+            x=double(statusData(:,col.Temp2L)); eval(['xdata=',fcts2val.Temp2L,';']);
+        end
+    case 'Temp3L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp3L);
+        else
+            x=double(statusData(:,col.Temp3L)); eval(['xdata=',fcts2val.Temp3L,';']);
+        end
+    case 'Temp4L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp4L);
+        else
+            x=double(statusData(:,col.Temp4L)); eval(['xdata=',fcts2val.Temp4L,';']);
+        end
+    case 'Temp5L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp5L);
+        else
+            x=double(statusData(:,col.Temp5L)); eval(['xdata=',fcts2val.Temp5L,';']);
+        end
+    case 'Temp6L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp6L);
+        else
+            x=double(statusData(:,col.Temp6L)); eval(['xdata=',fcts2val.Temp6L,';']);
+        end
+    case 'Temp7L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp7L);
+        else
+            x=double(statusData(:,col.Temp7L)); eval(['xdata=',fcts2val.Temp7L,';']);
+        end
+    case 'Temp8L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp8L);
+        else
+            x=double(statusData(:,col.Temp8L)); eval(['xdata=',fcts2val.Temp8L,';']);
+        end
+    case 'Temp9L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp9L);
+        else
+            x=double(statusData(:,col.Temp9L)); eval(['xdata=',fcts2val.Temp9L,';']);
+        end
+    case 'Temp10L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp10L);
+        else
+            x=double(statusData(:,col.Temp10L)); eval(['xdata=',fcts2val.Temp10L,';']);
+        end
+    case 'Temp11L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp11L);
+        else
+            x=double(statusData(:,col.Temp11L)); eval(['xdata=',fcts2val.Temp11L,';']);
+        end
+    case 'Temp12L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp12L);
+        else
+            x=double(statusData(:,col.Temp12L)); eval(['xdata=',fcts2val.Temp12L,';']);
+        end
+    case 'Temp13L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp13L);
+        else
+            x=double(statusData(:,col.Temp13L)); eval(['xdata=',fcts2val.Temp13L,';']);
+        end
+    case 'Temp14L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp14L);
+        else
+            x=double(statusData(:,col.Temp14L)); eval(['xdata=',fcts2val.Temp14L,';']);
+        end
+    case 'Temp15L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp15L);
+        else
+            x=double(statusData(:,col.Temp15L)); eval(['xdata=',fcts2val.Temp15L,';']);
+        end
+    case 'Temp16L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp16L);
+        else
+            x=double(statusData(:,col.Temp16L)); eval(['xdata=',fcts2val.Temp16L,';']);
+        end
+    case 'Temp17L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp17L);
+        else
+            x=double(statusData(:,col.Temp17L)); eval(['xdata=',fcts2val.Temp17L,';']);
+        end
+    case 'Temp18L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp18L);
+        else
+            x=double(statusData(:,col.Temp18L)); eval(['xdata=',fcts2val.Temp18L,';']);
+        end
+    case 'Temp19L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp19L);
+        else
+            x=double(statusData(:,col.Temp19L)); eval(['xdata=',fcts2val.Temp19L,';']);
+        end
+    case 'Temp20L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp20L);
+        else
+            x=double(statusData(:,col.Temp20L)); eval(['xdata=',fcts2val.Temp20L,';']);
+        end
+    case 'Temp21L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp21L);
+        else
+            x=double(statusData(:,col.Temp21L)); eval(['xdata=',fcts2val.Temp21L,';']);
+        end
+    case 'Temp22L'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp22L);
+        else
+            x=double(statusData(:,col.Temp22L)); eval(['xdata=',fcts2val.Temp22L,';']);
+        end
+    case 'Temp0WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp0WP);
+        else
+            x=double(statusData(:,col.Temp0WP)); eval(['xdata=',fcts2val.Temp0WP,';']);
+        end
+    case 'Temp1WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp1WP);
+        else
+            x=double(statusData(:,col.Temp1WP)); eval(['xdata=',fcts2val.Temp1WP,';']);
+        end
+    case 'Temp2WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp2WP);
+        else
+            x=double(statusData(:,col.Temp2WP)); eval(['xdata=',fcts2val.Temp2WP,';']);
+        end
+    case 'Temp3WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp3WP);
+        else
+            x=double(statusData(:,col.Temp3WP)); eval(['xdata=',fcts2val.Temp3WP,';']);
+        end
+    case 'Temp4WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp4WP);
+        else
+            x=double(statusData(:,col.Temp4WP)); eval(['xdata=',fcts2val.Temp4WP,';']);
+        end
+    case 'Temp5WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp5WP);
+        else
+            x=double(statusData(:,col.Temp5WP)); eval(['xdata=',fcts2val.Temp5WP,';']);
+        end
+    case 'Temp6WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp6WP);
+        else
+            x=double(statusData(:,col.Temp6WP)); eval(['xdata=',fcts2val.Temp6WP,';']);
+        end
+    case 'Temp7WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp7WP);
+        else
+            x=double(statusData(:,col.Temp7WP)); eval(['xdata=',fcts2val.Temp7WP,';']);
+        end
+    case 'Temp8WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp8WP);
+        else
+            x=double(statusData(:,col.Temp8WP)); eval(['xdata=',fcts2val.Temp8WP,';']);
+        end
+    case 'Temp9WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp9WP);
+        else
+            x=double(statusData(:,col.Temp9WP)); eval(['xdata=',fcts2val.Temp9WP,';']);
+        end
+    case 'Temp10WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp10WP);
+        else
+            x=double(statusData(:,col.Temp10WP)); eval(['xdata=',fcts2val.Temp10WP,';']);
+        end
+    case 'Temp11WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp11WP);
+        else
+            x=double(statusData(:,col.Temp11WP)); eval(['xdata=',fcts2val.Temp11WP,';']);
+        end
+    case 'Temp12WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp12WP);
+        else
+            x=double(statusData(:,col.Temp12WP)); eval(['xdata=',fcts2val.Temp12WP,';']);
+        end
+    case 'Temp13WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp13WP);
+        else
+            x=double(statusData(:,col.Temp13WP)); eval(['xdata=',fcts2val.Temp13WP,';']);
+        end
+    case 'Temp14WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp14WP);
+        else
+            x=double(statusData(:,col.Temp14WP)); eval(['xdata=',fcts2val.Temp14WP,';']);
+        end
+    case 'Temp15WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp15WP);
+        else
+            x=double(statusData(:,col.Temp15WP)); eval(['xdata=',fcts2val.Temp15WP,';']);
+        end
+    case 'Temp16WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp16WP);
+        else
+            x=double(statusData(:,col.Temp16WP)); eval(['xdata=',fcts2val.Temp16WP,';']);
+        end
+    case 'Temp17WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp17WP);
+        else
+            x=double(statusData(:,col.Temp17WP)); eval(['xdata=',fcts2val.Temp17WP,';']);
+        end
+    case 'Temp18WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp18WP);
+        else
+            x=double(statusData(:,col.Temp18WP)); eval(['xdata=',fcts2val.Temp18WP,';']);
+        end
+    case 'Temp19WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp19WP);
+        else
+            x=double(statusData(:,col.Temp19WP)); eval(['xdata=',fcts2val.Temp19WP,';']);
+        end
+    case 'Temp20WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp20WP);
+        else
+            x=double(statusData(:,col.Temp20WP)); eval(['xdata=',fcts2val.Temp20WP,';']);
+        end
+    case 'Temp21WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp21WP);
+        else
+            x=double(statusData(:,col.Temp21WP)); eval(['xdata=',fcts2val.Temp21WP,';']);
+        end
+    case 'Temp22WP'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp22WP);
+        else
+            x=double(statusData(:,col.Temp22WP)); eval(['xdata=',fcts2val.Temp22WP,';']);
+        end
+    case 'Temp0Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp0Lid);
+        else
+            x=double(statusData(:,col.Temp0Lid)); eval(['xdata=',fcts2val.Temp0Lid,';']);
+        end
+    case 'Temp1Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp1Lid);
+        else
+            x=double(statusData(:,col.Temp1Lid)); eval(['xdata=',fcts2val.Temp1Lid,';']);
+        end
+    case 'Temp2Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp2Lid);
+        else
+            x=double(statusData(:,col.Temp2Lid)); eval(['xdata=',fcts2val.Temp2Lid,';']);
+        end
+    case 'Temp3Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp3Lid);
+        else
+            x=double(statusData(:,col.Temp3Lid)); eval(['xdata=',fcts2val.Temp3Lid,';']);
+        end
+    case 'Temp4Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp4Lid);
+        else
+            x=double(statusData(:,col.Temp4Lid)); eval(['xdata=',fcts2val.Temp4Lid,';']);
+        end
+    case 'Temp5Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp5Lid);
+        else
+            x=double(statusData(:,col.Temp5Lid)); eval(['xdata=',fcts2val.Temp5Lid,';']);
+        end
+    case 'Temp6Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp6Lid);
+        else
+            x=double(statusData(:,col.Temp6Lid)); eval(['xdata=',fcts2val.Temp6Lid,';']);
+        end
+    case 'Temp7Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp7Lid);
+        else
+            x=double(statusData(:,col.Temp7Lid)); eval(['xdata=',fcts2val.Temp7Lid,';']);
+        end
+    case 'Temp8Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp8Lid);
+        else
+            x=double(statusData(:,col.Temp8Lid)); eval(['xdata=',fcts2val.Temp8Lid,';']);
+        end
+    case 'Temp9Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp9Lid);
+        else
+            x=double(statusData(:,col.Temp9Lid)); eval(['xdata=',fcts2val.Temp9Lid,';']);
+        end
+    case 'Temp10Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp10Lid);
+        else
+            x=double(statusData(:,col.Temp10Lid)); eval(['xdata=',fcts2val.Temp10Lid,';']);
+        end
+    case 'Temp11Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp11Lid);
+        else
+            x=double(statusData(:,col.Temp11Lid)); eval(['xdata=',fcts2val.Temp11Lid,';']);
+        end
+    case 'Temp12Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp12Lid);
+        else
+            x=double(statusData(:,col.Temp12Lid)); eval(['xdata=',fcts2val.Temp12Lid,';']);
+        end
+    case 'Temp13Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp13Lid);
+        else
+            x=double(statusData(:,col.Temp13Lid)); eval(['xdata=',fcts2val.Temp13Lid,';']);
+        end
+    case 'Temp14Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp14Lid);
+        else
+            x=double(statusData(:,col.Temp14Lid)); eval(['xdata=',fcts2val.Temp14Lid,';']);
+        end
+    case 'Temp15Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp15Lid);
+        else
+            x=double(statusData(:,col.Temp15Lid)); eval(['xdata=',fcts2val.Temp15Lid,';']);
+        end
+    case 'Temp16Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp16Lid);
+        else
+            x=double(statusData(:,col.Temp16Lid)); eval(['xdata=',fcts2val.Temp16Lid,';']);
+        end
+    case 'Temp17Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp17Lid);
+        else
+            x=double(statusData(:,col.Temp17Lid)); eval(['xdata=',fcts2val.Temp17Lid,';']);
+        end
+    case 'Temp18Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp18Lid);
+        else
+            x=double(statusData(:,col.Temp18Lid)); eval(['xdata=',fcts2val.Temp18Lid,';']);
+        end
+    case 'Temp19Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp19Lid);
+        else
+            x=double(statusData(:,col.Temp19Lid)); eval(['xdata=',fcts2val.Temp19Lid,';']);
+        end
+    case 'Temp20Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp20Lid);
+        else
+            x=double(statusData(:,col.Temp20Lid)); eval(['xdata=',fcts2val.Temp20Lid,';']);
+        end
+    case 'Temp21Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp21Lid);
+        else
+            x=double(statusData(:,col.Temp21Lid)); eval(['xdata=',fcts2val.Temp21Lid,';']);
+        end
+    case 'Temp22Lid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp22Lid);
+        else
+            x=double(statusData(:,col.Temp22Lid)); eval(['xdata=',fcts2val.Temp22Lid,';']);
+        end
+    case 'Temp0WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp0WPid);
+        else
+            x=double(statusData(:,col.Temp0WPid)); eval(['xdata=',fcts2val.Temp0WPid,';']);
+        end
+    case 'Temp1WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp1WPid);
+        else
+            x=double(statusData(:,col.Temp1WPid)); eval(['xdata=',fcts2val.Temp1WPid,';']);
+        end
+    case 'Temp2WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp2WPid);
+        else
+            x=double(statusData(:,col.Temp2WPid)); eval(['xdata=',fcts2val.Temp2WPid,';']);
+        end
+    case 'Temp3WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp3WPid);
+        else
+            x=double(statusData(:,col.Temp3WPid)); eval(['xdata=',fcts2val.Temp3WPid,';']);
+        end
+    case 'Temp4WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp4WPid);
+        else
+            x=double(statusData(:,col.Temp4WPid)); eval(['xdata=',fcts2val.Temp4WPid,';']);
+        end
+    case 'Temp5WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp5WPid);
+        else
+            x=double(statusData(:,col.Temp5WPid)); eval(['xdata=',fcts2val.Temp5WPid,';']);
+        end
+    case 'Temp6WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp6WPid);
+        else
+            x=double(statusData(:,col.Temp6WPid)); eval(['xdata=',fcts2val.Temp6WPid,';']);
+        end
+    case 'Temp7WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp7WPid);
+        else
+            x=double(statusData(:,col.Temp7WPid)); eval(['xdata=',fcts2val.Temp7WPid,';']);
+        end
+    case 'Temp8WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp8WPid);
+        else
+            x=double(statusData(:,col.Temp8WPid)); eval(['xdata=',fcts2val.Temp8WPid,';']);
+        end
+    case 'Temp9WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp9WPid);
+        else
+            x=double(statusData(:,col.Temp9WPid)); eval(['xdata=',fcts2val.Temp9WPid,';']);
+        end
+    case 'Temp10WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp10WPid);
+        else
+            x=double(statusData(:,col.Temp10WPid)); eval(['xdata=',fcts2val.Temp10WPid,';']);
+        end
+    case 'Temp11WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp11WPid);
+        else
+            x=double(statusData(:,col.Temp11WPid)); eval(['xdata=',fcts2val.Temp11WPid,';']);
+        end
+    case 'Temp12WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp12WPid);
+        else
+            x=double(statusData(:,col.Temp12WPid)); eval(['xdata=',fcts2val.Temp12WPid,';']);
+        end
+    case 'Temp13WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp13WPid);
+        else
+            x=double(statusData(:,col.Temp13WPid)); eval(['xdata=',fcts2val.Temp13WPid,';']);
+        end
+    case 'Temp14WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp14WPid);
+        else
+            x=double(statusData(:,col.Temp14WPid)); eval(['xdata=',fcts2val.Temp14WPid,';']);
+        end
+    case 'Temp15WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp15WPid);
+        else
+            x=double(statusData(:,col.Temp15WPid)); eval(['xdata=',fcts2val.Temp15WPid,';']);
+        end
+    case 'Temp16WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp16WPid);
+        else
+            x=double(statusData(:,col.Temp16WPid)); eval(['xdata=',fcts2val.Temp16WPid,';']);
+        end
+    case 'Temp17WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp17WPid);
+        else
+            x=double(statusData(:,col.Temp17WPid)); eval(['xdata=',fcts2val.Temp17WPid,';']);
+        end
+    case 'Temp18WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp18WPid);
+        else
+            x=double(statusData(:,col.Temp18WPid)); eval(['xdata=',fcts2val.Temp18WPid,';']);
+        end
+    case 'Temp19WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp19WPid);
+        else
+            x=double(statusData(:,col.Temp19WPid)); eval(['xdata=',fcts2val.Temp19WPid,';']);
+        end
+    case 'Temp20WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp20WPid);
+        else
+            x=double(statusData(:,col.Temp20WPid)); eval(['xdata=',fcts2val.Temp20WPid,';']);
+        end
+    case 'Temp21WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp21WPid);
+        else
+            x=double(statusData(:,col.Temp21WPid)); eval(['xdata=',fcts2val.Temp21WPid,';']);
+        end
+    case 'Temp22WPid'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.Temp22WPid);
+        else
+            x=double(statusData(:,col.Temp22WPid)); eval(['xdata=',fcts2val.Temp22WPid,';']);
+        end
 end
         
 % assign data to y-axis
@@ -514,36 +1042,6 @@ switch char(ypar)
         else
             x=double(statusData(:,col.MFCFlow)); eval(['ydata=',fcts2val.MFCFlow,';']);
         end
-    case 'TDet'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TDet);
-        else
-            x=double(statusData(:,col.TDet)); eval(['ydata=',fcts2val.TDet,';']);
-        end
-    case 'Temp0'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp0);
-        else
-            x=double(statusData(:,col.Temp0)); eval(['ydata=',fcts2val.Temp0,';']);
-        end
-    case 'TDetaxis'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TDetaxis);
-        else
-            x=double(statusData(:,col.TDetaxis)); eval(['ydata=',fcts2val.TDetaxis,';']);
-        end
-    case 'Temp2'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp2);
-        else
-            x=double(statusData(:,col.Temp2)); eval(['ydata=',fcts2val.Temp2,';']);
-        end
-    case 'Temp3'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp3);
-        else
-            x=double(statusData(:,col.Temp3)); eval(['ydata=',fcts2val.Temp3,';']);
-        end
     case 'GPSsecondsUTC'
         ydata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -568,6 +1066,564 @@ switch char(ypar)
         ydata=double(statusData(:,col.GPSGroundSpeed))/100;
     case 'GPSHeading'
         ydata=double(statusData(:,col.GPSHeading))/10;
+    case 'TDet'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.TDet);
+        else
+            x=double(statusData(:,col.TDet)); eval(['ydata=',fcts2val.TDet,';']);
+        end
+    case 'Temp0L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp0L);
+        else
+            x=double(statusData(:,col.Temp0L)); eval(['ydata=',fcts2val.Temp0L,';']);
+        end
+    case 'Temp1L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp1L);
+        else
+            x=double(statusData(:,col.Temp1L)); eval(['ydata=',fcts2val.Temp1L,';']);
+        end
+    case 'Temp2L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp2L);
+        else
+            x=double(statusData(:,col.Temp2L)); eval(['ydata=',fcts2val.Temp2L,';']);
+        end
+    case 'Temp3L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp3L);
+        else
+            x=double(statusData(:,col.Temp3L)); eval(['ydata=',fcts2val.Temp3L,';']);
+        end
+    case 'Temp4L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp4L);
+        else
+            x=double(statusData(:,col.Temp4L)); eval(['ydata=',fcts2val.Temp4L,';']);
+        end
+    case 'Temp5L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp5L);
+        else
+            x=double(statusData(:,col.Temp5L)); eval(['ydata=',fcts2val.Temp5L,';']);
+        end
+    case 'Temp6L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp6L);
+        else
+            x=double(statusData(:,col.Temp6L)); eval(['ydata=',fcts2val.Temp6L,';']);
+        end
+    case 'Temp7L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp7L);
+        else
+            x=double(statusData(:,col.Temp7L)); eval(['ydata=',fcts2val.Temp7L,';']);
+        end
+    case 'Temp8L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp8L);
+        else
+            x=double(statusData(:,col.Temp8L)); eval(['ydata=',fcts2val.Temp8L,';']);
+        end
+    case 'Temp9L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp9L);
+        else
+            x=double(statusData(:,col.Temp9L)); eval(['ydata=',fcts2val.Temp9L,';']);
+        end
+    case 'Temp10L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp10L);
+        else
+            x=double(statusData(:,col.Temp10L)); eval(['ydata=',fcts2val.Temp10L,';']);
+        end
+    case 'Temp11L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp11L);
+        else
+            x=double(statusData(:,col.Temp11L)); eval(['ydata=',fcts2val.Temp11L,';']);
+        end
+    case 'Temp12L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp12L);
+        else
+            x=double(statusData(:,col.Temp12L)); eval(['ydata=',fcts2val.Temp12L,';']);
+        end
+    case 'Temp13L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp13L);
+        else
+            x=double(statusData(:,col.Temp13L)); eval(['ydata=',fcts2val.Temp13L,';']);
+        end
+    case 'Temp14L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp14L);
+        else
+            x=double(statusData(:,col.Temp14L)); eval(['ydata=',fcts2val.Temp14L,';']);
+        end
+    case 'Temp15L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp15L);
+        else
+            x=double(statusData(:,col.Temp15L)); eval(['ydata=',fcts2val.Temp15L,';']);
+        end
+    case 'Temp16L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp16L);
+        else
+            x=double(statusData(:,col.Temp16L)); eval(['ydata=',fcts2val.Temp16L,';']);
+        end
+    case 'Temp17L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp17L);
+        else
+            x=double(statusData(:,col.Temp17L)); eval(['ydata=',fcts2val.Temp17L,';']);
+        end
+    case 'Temp18L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp18L);
+        else
+            x=double(statusData(:,col.Temp18L)); eval(['ydata=',fcts2val.Temp18L,';']);
+        end
+    case 'Temp19L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp19L);
+        else
+            x=double(statusData(:,col.Temp19L)); eval(['ydata=',fcts2val.Temp19L,';']);
+        end
+    case 'Temp20L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp20L);
+        else
+            x=double(statusData(:,col.Temp20L)); eval(['ydata=',fcts2val.Temp20L,';']);
+        end
+    case 'Temp21L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp21L);
+        else
+            x=double(statusData(:,col.Temp21L)); eval(['ydata=',fcts2val.Temp21L,';']);
+        end
+    case 'Temp22L'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp22L);
+        else
+            x=double(statusData(:,col.Temp22L)); eval(['ydata=',fcts2val.Temp22L,';']);
+        end
+    case 'Temp0WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp0WP);
+        else
+            x=double(statusData(:,col.Temp0WP)); eval(['ydata=',fcts2val.Temp0WP,';']);
+        end
+    case 'Temp1WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp1WP);
+        else
+            x=double(statusData(:,col.Temp1WP)); eval(['ydata=',fcts2val.Temp1WP,';']);
+        end
+    case 'Temp2WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp2WP);
+        else
+            x=double(statusData(:,col.Temp2WP)); eval(['ydata=',fcts2val.Temp2WP,';']);
+        end
+    case 'Temp3WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp3WP);
+        else
+            x=double(statusData(:,col.Temp3WP)); eval(['ydata=',fcts2val.Temp3WP,';']);
+        end
+    case 'Temp4WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp4WP);
+        else
+            x=double(statusData(:,col.Temp4WP)); eval(['ydata=',fcts2val.Temp4WP,';']);
+        end
+    case 'Temp5WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp5WP);
+        else
+            x=double(statusData(:,col.Temp5WP)); eval(['ydata=',fcts2val.Temp5WP,';']);
+        end
+    case 'Temp6WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp6WP);
+        else
+            x=double(statusData(:,col.Temp6WP)); eval(['ydata=',fcts2val.Temp6WP,';']);
+        end
+    case 'Temp7WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp7WP);
+        else
+            x=double(statusData(:,col.Temp7WP)); eval(['ydata=',fcts2val.Temp7WP,';']);
+        end
+    case 'Temp8WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp8WP);
+        else
+            x=double(statusData(:,col.Temp8WP)); eval(['ydata=',fcts2val.Temp8WP,';']);
+        end
+    case 'Temp9WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp9WP);
+        else
+            x=double(statusData(:,col.Temp9WP)); eval(['ydata=',fcts2val.Temp9WP,';']);
+        end
+    case 'Temp10WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp10WP);
+        else
+            x=double(statusData(:,col.Temp10WP)); eval(['ydata=',fcts2val.Temp10WP,';']);
+        end
+    case 'Temp11WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp11WP);
+        else
+            x=double(statusData(:,col.Temp11WP)); eval(['ydata=',fcts2val.Temp11WP,';']);
+        end
+    case 'Temp12WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp12WP);
+        else
+            x=double(statusData(:,col.Temp12WP)); eval(['ydata=',fcts2val.Temp12WP,';']);
+        end
+    case 'Temp13WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp13WP);
+        else
+            x=double(statusData(:,col.Temp13WP)); eval(['ydata=',fcts2val.Temp13WP,';']);
+        end
+    case 'Temp14WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp14WP);
+        else
+            x=double(statusData(:,col.Temp14WP)); eval(['ydata=',fcts2val.Temp14WP,';']);
+        end
+    case 'Temp15WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp15WP);
+        else
+            x=double(statusData(:,col.Temp15WP)); eval(['ydata=',fcts2val.Temp15WP,';']);
+        end
+    case 'Temp16WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp16WP);
+        else
+            x=double(statusData(:,col.Temp16WP)); eval(['ydata=',fcts2val.Temp16WP,';']);
+        end
+    case 'Temp17WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp17WP);
+        else
+            x=double(statusData(:,col.Temp17WP)); eval(['ydata=',fcts2val.Temp17WP,';']);
+        end
+    case 'Temp18WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp18WP);
+        else
+            x=double(statusData(:,col.Temp18WP)); eval(['ydata=',fcts2val.Temp18WP,';']);
+        end
+    case 'Temp19WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp19WP);
+        else
+            x=double(statusData(:,col.Temp19WP)); eval(['ydata=',fcts2val.Temp19WP,';']);
+        end
+    case 'Temp20WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp20WP);
+        else
+            x=double(statusData(:,col.Temp20WP)); eval(['ydata=',fcts2val.Temp20WP,';']);
+        end
+    case 'Temp21WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp21WP);
+        else
+            x=double(statusData(:,col.Temp21WP)); eval(['ydata=',fcts2val.Temp21WP,';']);
+        end
+    case 'Temp22WP'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp22WP);
+        else
+            x=double(statusData(:,col.Temp22WP)); eval(['ydata=',fcts2val.Temp22WP,';']);
+        end
+    case 'Temp0Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp0Lid);
+        else
+            x=double(statusData(:,col.Temp0Lid)); eval(['ydata=',fcts2val.Temp0Lid,';']);
+        end
+    case 'Temp1Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp1Lid);
+        else
+            x=double(statusData(:,col.Temp1Lid)); eval(['ydata=',fcts2val.Temp1Lid,';']);
+        end
+    case 'Temp2Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp2Lid);
+        else
+            x=double(statusData(:,col.Temp2Lid)); eval(['ydata=',fcts2val.Temp2Lid,';']);
+        end
+    case 'Temp3Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp3Lid);
+        else
+            x=double(statusData(:,col.Temp3Lid)); eval(['ydata=',fcts2val.Temp3Lid,';']);
+        end
+    case 'Temp4Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp4Lid);
+        else
+            x=double(statusData(:,col.Temp4Lid)); eval(['ydata=',fcts2val.Temp4Lid,';']);
+        end
+    case 'Temp5Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp5Lid);
+        else
+            x=double(statusData(:,col.Temp5Lid)); eval(['ydata=',fcts2val.Temp5Lid,';']);
+        end
+    case 'Temp6Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp6Lid);
+        else
+            x=double(statusData(:,col.Temp6Lid)); eval(['ydata=',fcts2val.Temp6Lid,';']);
+        end
+    case 'Temp7Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp7Lid);
+        else
+            x=double(statusData(:,col.Temp7Lid)); eval(['ydata=',fcts2val.Temp7Lid,';']);
+        end
+    case 'Temp8Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp8Lid);
+        else
+            x=double(statusData(:,col.Temp8Lid)); eval(['ydata=',fcts2val.Temp8Lid,';']);
+        end
+    case 'Temp9Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp9Lid);
+        else
+            x=double(statusData(:,col.Temp9Lid)); eval(['ydata=',fcts2val.Temp9Lid,';']);
+        end
+    case 'Temp10Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp10Lid);
+        else
+            x=double(statusData(:,col.Temp10Lid)); eval(['ydata=',fcts2val.Temp10Lid,';']);
+        end
+    case 'Temp11Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp11Lid);
+        else
+            x=double(statusData(:,col.Temp11Lid)); eval(['ydata=',fcts2val.Temp11Lid,';']);
+        end
+    case 'Temp12Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp12Lid);
+        else
+            x=double(statusData(:,col.Temp12Lid)); eval(['ydata=',fcts2val.Temp12Lid,';']);
+        end
+    case 'Temp13Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp13Lid);
+        else
+            x=double(statusData(:,col.Temp13Lid)); eval(['ydata=',fcts2val.Temp13Lid,';']);
+        end
+    case 'Temp14Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp14Lid);
+        else
+            x=double(statusData(:,col.Temp14Lid)); eval(['ydata=',fcts2val.Temp14Lid,';']);
+        end
+    case 'Temp15Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp15Lid);
+        else
+            x=double(statusData(:,col.Temp15Lid)); eval(['ydata=',fcts2val.Temp15Lid,';']);
+        end
+    case 'Temp16Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp16Lid);
+        else
+            x=double(statusData(:,col.Temp16Lid)); eval(['ydata=',fcts2val.Temp16Lid,';']);
+        end
+    case 'Temp17Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp17Lid);
+        else
+            x=double(statusData(:,col.Temp17Lid)); eval(['ydata=',fcts2val.Temp17Lid,';']);
+        end
+    case 'Temp18Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp18Lid);
+        else
+            x=double(statusData(:,col.Temp18Lid)); eval(['ydata=',fcts2val.Temp18Lid,';']);
+        end
+    case 'Temp19Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp19Lid);
+        else
+            x=double(statusData(:,col.Temp19Lid)); eval(['ydata=',fcts2val.Temp19Lid,';']);
+        end
+    case 'Temp20Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp20Lid);
+        else
+            x=double(statusData(:,col.Temp20Lid)); eval(['ydata=',fcts2val.Temp20Lid,';']);
+        end
+    case 'Temp21Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp21Lid);
+        else
+            x=double(statusData(:,col.Temp21Lid)); eval(['ydata=',fcts2val.Temp21Lid,';']);
+        end
+    case 'Temp22Lid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp22Lid);
+        else
+            x=double(statusData(:,col.Temp22Lid)); eval(['ydata=',fcts2val.Temp22Lid,';']);
+        end
+    case 'Temp0WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp0WPid);
+        else
+            x=double(statusData(:,col.Temp0WPid)); eval(['ydata=',fcts2val.Temp0WPid,';']);
+        end
+    case 'Temp1WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp1WPid);
+        else
+            x=double(statusData(:,col.Temp1WPid)); eval(['ydata=',fcts2val.Temp1WPid,';']);
+        end
+    case 'Temp2WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp2WPid);
+        else
+            x=double(statusData(:,col.Temp2WPid)); eval(['ydata=',fcts2val.Temp2WPid,';']);
+        end
+    case 'Temp3WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp3WPid);
+        else
+            x=double(statusData(:,col.Temp3WPid)); eval(['ydata=',fcts2val.Temp3WPid,';']);
+        end
+    case 'Temp4WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp4WPid);
+        else
+            x=double(statusData(:,col.Temp4WPid)); eval(['ydata=',fcts2val.Temp4WPid,';']);
+        end
+    case 'Temp5WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp5WPid);
+        else
+            x=double(statusData(:,col.Temp5WPid)); eval(['ydata=',fcts2val.Temp5WPid,';']);
+        end
+    case 'Temp6WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp6WPid);
+        else
+            x=double(statusData(:,col.Temp6WPid)); eval(['ydata=',fcts2val.Temp6WPid,';']);
+        end
+    case 'Temp7WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp7WPid);
+        else
+            x=double(statusData(:,col.Temp7WPid)); eval(['ydata=',fcts2val.Temp7WPid,';']);
+        end
+    case 'Temp8WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp8WPid);
+        else
+            x=double(statusData(:,col.Temp8WPid)); eval(['ydata=',fcts2val.Temp8WPid,';']);
+        end
+    case 'Temp9WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp9WPid);
+        else
+            x=double(statusData(:,col.Temp9WPid)); eval(['ydata=',fcts2val.Temp9WPid,';']);
+        end
+    case 'Temp10WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp10WPid);
+        else
+            x=double(statusData(:,col.Temp10WPid)); eval(['ydata=',fcts2val.Temp10WPid,';']);
+        end
+    case 'Temp11WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp11WPid);
+        else
+            x=double(statusData(:,col.Temp11WPid)); eval(['ydata=',fcts2val.Temp11WPid,';']);
+        end
+    case 'Temp12WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp12WPid);
+        else
+            x=double(statusData(:,col.Temp12WPid)); eval(['ydata=',fcts2val.Temp12WPid,';']);
+        end
+    case 'Temp13WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp13WPid);
+        else
+            x=double(statusData(:,col.Temp13WPid)); eval(['ydata=',fcts2val.Temp13WPid,';']);
+        end
+    case 'Temp14WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp14WPid);
+        else
+            x=double(statusData(:,col.Temp14WPid)); eval(['ydata=',fcts2val.Temp14WPid,';']);
+        end
+    case 'Temp15WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp15WPid);
+        else
+            x=double(statusData(:,col.Temp15WPid)); eval(['ydata=',fcts2val.Temp15WPid,';']);
+        end
+    case 'Temp16WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp16WPid);
+        else
+            x=double(statusData(:,col.Temp16WPid)); eval(['ydata=',fcts2val.Temp16WPid,';']);
+        end
+    case 'Temp17WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp17WPid);
+        else
+            x=double(statusData(:,col.Temp17WPid)); eval(['ydata=',fcts2val.Temp17WPid,';']);
+        end
+    case 'Temp18WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp18WPid);
+        else
+            x=double(statusData(:,col.Temp18WPid)); eval(['ydata=',fcts2val.Temp18WPid,';']);
+        end
+    case 'Temp19WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp19WPid);
+        else
+            x=double(statusData(:,col.Temp19WPid)); eval(['ydata=',fcts2val.Temp19WPid,';']);
+        end
+    case 'Temp20WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp20WPid);
+        else
+            x=double(statusData(:,col.Temp20WPid)); eval(['ydata=',fcts2val.Temp20WPid,';']);
+        end
+    case 'Temp21WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp21WPid);
+        else
+            x=double(statusData(:,col.Temp21WPid)); eval(['ydata=',fcts2val.Temp21WPid,';']);
+        end
+    case 'Temp22WPid'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.Temp22WPid);
+        else
+            x=double(statusData(:,col.Temp22WPid)); eval(['ydata=',fcts2val.Temp22WPid,';']);
+        end
 end
 
 % display latest x and y values
@@ -618,9 +1674,21 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5V';'+28V';...
     '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';...
-    'ValveVolt';'MFCFlow';'TDet';'Temp0';'TDetaxis';'Temp2';'Temp3';...
+    'ValveVolt';'MFCFlow';...
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
-    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading'};
+    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
+    'Temp0L';'Temp1L';'Temp2L';'Temp3L';'Temp4L';'Temp5L';'Temp6L';'Temp7L';'Temp8L';...
+    'Temp9L';'Temp10L';'Temp11L';'Temp12L';'Temp13L';'Temp14L';'Temp15L';'Temp16L';...
+    'Temp17L';'Temp18L';'Temp19L';'Temp20L';'Temp21L';'Temp22L';...
+    'Temp0WP';'Temp1WP';'Temp2WP';'Temp3WP';'Temp4WP';'Temp5WP';'Temp6WP';'Temp7WP';'Temp8WP';...
+    'Temp9WP';'Temp10WP';'Temp11WP';'Temp12WP';'Temp13WP';'Temp14WP';'Temp15WP';'Temp16WP';...
+    'Temp17WP';'Temp18WP';'Temp19WP';'Temp20WP';'Temp21WP';'Temp22WP';...
+    'Temp0Lid';'Temp1Lid';'Temp2Lid';'Temp3Lid';'Temp4Lid';'Temp5Lid';'Temp6Lid';'Temp7Lid';'Temp8Lid';...
+    'Temp9Lid';'Temp10Lid';'Temp11Lid';'Temp12Lid';'Temp13Lid';'Temp14Lid';'Temp15Lid';'Temp16Lid';...
+    'Temp17Lid';'Temp18Lid';'Temp19Lid';'Temp20Lid';'Temp21Lid';'Temp22Lid';...
+    'Temp0WPid';'Temp1WPid';'Temp2WPid';'Temp3WPid';'Temp4WPid';'Temp5WPid';'Temp6WPid';'Temp7WPid';'Temp8WPid';...
+    'Temp9WPid';'Temp10WPid';'Temp11WPid';'Temp12WPid';'Temp13WPid';'Temp14WPid';'Temp15WPid';'Temp16WPid';...
+    'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
 set(hObject,'String',vars);
 
 
@@ -647,9 +1715,21 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZin';'DiodeWZout';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5V';'+28V';...
     '+3.3V';'+1.5V';'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';...
-    'ValveVolt';'MFCFlow';'TDet';'Temp0';'TDetaxis';'Temp2';'Temp3';...
+    'ValveVolt';'MFCFlow';...
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
-    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading'};
+    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
+    'Temp0L';'Temp1L';'Temp2L';'Temp3L';'Temp4L';'Temp5L';'Temp6L';'Temp7L';'Temp8L';...
+    'Temp9L';'Temp10L';'Temp11L';'Temp12L';'Temp13L';'Temp14L';'Temp15L';'Temp16L';...
+    'Temp17L';'Temp18L';'Temp19L';'Temp20L';'Temp21L';'Temp22L';...
+    'Temp0WP';'Temp1WP';'Temp2WP';'Temp3WP';'Temp4WP';'Temp5WP';'Temp6WP';'Temp7WP';'Temp8WP';...
+    'Temp9WP';'Temp10WP';'Temp11WP';'Temp12WP';'Temp13WP';'Temp14WP';'Temp15WP';'Temp16WP';...
+    'Temp17WP';'Temp18WP';'Temp19WP';'Temp20WP';'Temp21WP';'Temp22WP';...
+    'Temp0Lid';'Temp1Lid';'Temp2Lid';'Temp3Lid';'Temp4Lid';'Temp5Lid';'Temp6Lid';'Temp7Lid';'Temp8Lid';...
+    'Temp9Lid';'Temp10Lid';'Temp11Lid';'Temp12Lid';'Temp13Lid';'Temp14Lid';'Temp15Lid';'Temp16Lid';...
+    'Temp17Lid';'Temp18Lid';'Temp19Lid';'Temp20Lid';'Temp21Lid';'Temp22Lid';...
+    'Temp0WPid';'Temp1WPid';'Temp2WPid';'Temp3WPid';'Temp4WPid';'Temp5WPid';'Temp6WPid';'Temp7WPid';'Temp8WPid';...
+    'Temp9WPid';'Temp10WPid';'Temp11WPid';'Temp12WPid';'Temp13WPid';'Temp14WPid';'Temp15WPid';'Temp16WPid';...
+    'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
 set(hObject,'String',vars);
 
 

@@ -126,11 +126,19 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
+% switch on LED on ARM9
+if bitget(statusData(lastrow,col.ValveARM2),14)==0  % if LED is off
+    Valveword=bitset(statusData(lastrow,col.ValveARM2),14);
+    system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
+end
+
+
 % switch off filament if reference cell pressure is too high
 if bitget(statusData(lastrow,col.Valve),14)==1;
     if statusData(lastrow,col.PRef)>10500 % check if pressure in reference cell is too high
         Valveword=bitset(statusData(lastrow,col.Valve),14,0);
-        system(['/lift/bin/eCmd w 0xa408 ', num2str(Valveword)]);
+        system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
     end
 end
 
@@ -245,18 +253,22 @@ lastrow=data.lastrow;
 
 stop(handles.ActTimer);
 
-% shut Filament and Valves Off
-system('/lift/bin/eCmd w 0xa408 0x0000');
+% shut Filament and Laser Valves Off
+system('/lift/bin/eCmd @LIFT w 0xa408 0x0000');
+% shut Axis Valves Off
+system(['/lift/bin/eCmd @ARM9 w 0xa408 0x0000']);
 % shut HV Off
-system('/lift/bin/eCmd w 0xa460 0');
+Valveword=bitset(statusData(lastrow,col.ValveARM2),8,0);  % switch HV off
+system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
 % switch Gain off for MCP1
 word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
+system(['/lift/bin/eCmd @ARM9 w 0xa318 ',num2str(word)]);
 % switch Gain off for MCP2
 word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
-system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
+system(['/lift/bin/eCmd @ARM9 w 0xa31c ',num2str(word)]);
 % home Etalon 
-system('/lift/bin/eCmd w 0xa510 0');
+system('/lift/bin/eCmd @LIFT w 0xa510 0');
 
 % close child GUIs
 
