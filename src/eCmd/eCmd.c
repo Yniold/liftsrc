@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.19 $
-last change on $Date: 2005-06-08 17:33:44 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.20 $
+last change on $Date: 2005-06-08 23:29:40 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.19  2005-06-08 17:33:44  rudolf
+Revision 1.20  2005-06-08 23:29:40  rudolf
+fix: eCmd now really uses the address passed via commandline (HH)
+
+Revision 1.19  2005/06/08 17:33:44  rudolf
 prepared sockets for sending the data structure between master and slave
 
 Revision 1.17  2005/05/29 22:15:48  harder
@@ -286,6 +289,8 @@ int main(int argc, char *argv[])
 
 	ArgCount++; // next argument
     }
+
+    strncpy(MessageOutPortList[ELEK_ELEKIO_OUT].IPAddr,DestAddress,LEN_IP_ADDR);    
 
     switch(argv[ArgCount++][0]) {
 	case 'r':
