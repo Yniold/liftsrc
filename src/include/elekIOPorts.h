@@ -1,20 +1,25 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-05-23 17:05:02 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-08 17:38:27 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.3  2005-05-23 17:05:02  rudolf
+* Revision 1.4  2005-06-08 17:38:27  rudolf
+* update
+*
+* Revision 1.3  2005/05/23 17:05:02  rudolf
 * added new command for requesting data from slave elekIOServ
 *
 *
 *
 */
 
-#define IP_ELEK_SERVER              "127.0.0.1"
+#define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
+#define IP_ELEKIO_MASTER            "127.0.0.1"      // ELEKIO which is Master server
 #define IP_DEBUG_CLIENT             "127.0.0.1"
 #define IP_STATUS_CLIENT            "127.0.0.1"
 #define IP_ETALON_CLIENT            "127.0.0.1"
 #define IP_SCRIPT_CLIENT            "127.0.0.1"
 #define IP_LOCALHOST                "127.0.0.1"
+#define IP_WINGPOD                  "10.111.111.24" // wingpod IP 
 
 #define LEN_IP_ADDR                 16
 
@@ -31,6 +36,7 @@
 
 #define UDP_ELEK_STATUS_STATUS_OUTPORT 1200    // port for status (elekIO->Status)
 #define UDP_ELEK_ETALON_STATUS_OUTPORT 1210    // port for status (elekIO->etalon)
+#define UDP_ELEK_ELEKIO_STATUS_OUTPORT 1220    // port for status (elekIOSlave->elekIOMaster)
 #define UDP_ELEK_DEBUG_OUTPORT         1300    // port for debug messages
 
 
