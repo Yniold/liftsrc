@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-08 17:38:27 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-08 22:44:53 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.4  2005-06-08 17:38:27  rudolf
+* Revision 1.5  2005-06-08 22:44:53  rudolf
+* added preliminary master slave support, HH
+*
+* Revision 1.4  2005/06/08 17:38:27  rudolf
 * update
 *
 * Revision 1.3  2005/05/23 17:05:02  rudolf
@@ -13,13 +16,13 @@
 */
 
 #define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
-#define IP_ELEKIO_MASTER            "127.0.0.1"      // ELEKIO which is Master server
+#define IP_ELEKIO_MASTER            "10.111.111.196" // ELEKIO which is Master server
 #define IP_DEBUG_CLIENT             "127.0.0.1"
 #define IP_STATUS_CLIENT            "127.0.0.1"
 #define IP_ETALON_CLIENT            "127.0.0.1"
 #define IP_SCRIPT_CLIENT            "127.0.0.1"
 #define IP_LOCALHOST                "127.0.0.1"
-#define IP_WINGPOD                  "10.111.111.24" // wingpod IP 
+#define IP_ARMAXIS                  "10.111.111.10" // wingpod IP 
 
 #define LEN_IP_ADDR                 16
 
