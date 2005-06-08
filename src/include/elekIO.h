@@ -1,10 +1,10 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-07 18:49:44 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-08 17:45:55 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.7  2005-06-07 18:49:44  martinez
-* *** empty log message ***
+* Revision 1.8  2005-06-08 17:45:55  rudolf
+* merged file
 *
 * Revision 1.6  2005/05/23 15:06:33  rudolf
 * changed some #defines for ARM
@@ -239,7 +239,7 @@ struct ADCChannel24DWType {
 
 union ADCChannel24DataType {
     struct ADCChannel24DWType ADCChannelDataLowHigh;
-	int32_t ADCChannelData;
+	 int32_t ADCChannelData;
 }; /* ADCChannelType */
 
 struct ADCCardType {                                               
@@ -389,7 +389,31 @@ struct InstrumentFlagsType {                      /* set of flags for the instru
   /*  enum DebugType        Debug;                    /* indicates */ 
 }; /* ServerFlagsType */
 
+/* structure for TSC for time differenre measurements Master <-> Slave */
+
+struct TSCType 
+{
+    uint16_t  TSCWord0;
+    uint16_t  TSCWord1;
+    uint16_t  TSCWord2;
+    uint16_t  TSCWord3;
+}; /* TSCStruct */
+
+union TSCUn 
+{
+    struct TSCType TSCSplit;
+	 uint64_t TSCValue;
+};
+	 
+struct TSCDataType
+{
+	union TSCUn TSCReceived;
+	union TSCUn TSCProcessed;
+	};
+	
+
 /*************************************************************************************************************/
+
 struct GPSDataType {					/* data type for GPS data*/
 	unsigned char ucUTCHours;			/* binary, not BCD coded (!) 0 - 23 decimal*/
 	unsigned char ucUTCMins;			/* binary, 0-59 decimal */
@@ -441,6 +465,9 @@ struct elekStatusType {                                             /* combined 
   struct ValveCardType       ValveCardSlave[MAX_VALVE_CARD_WP];
   struct TempSensorCardType  TempSensCardSlave[MAX_TEMP_SENSOR_CARD_WP];
   struct GPSDataType         GPSDataSlave;
+  
+  /* needed for calculation of processing time */
+  struct TSCDataType         TimeStampCommand;
   
                                   
 										  /* GPS Data */
