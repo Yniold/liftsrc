@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.14  2005-06-17 15:54:44  rudolf
+ * Revision 1.15  2005-06-17 16:40:14  rudolf
+ * changed evaluated ROM ID position
+ *
+ * Revision 1.14  2005/06/17 15:54:44  rudolf
  * fix for using Borland C++ 5.5.1 with ReadDataAvg.c under Mathlab for Windows
  *
  *
@@ -18,7 +21,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.14 $ */
+ /* $Revision: 1.15 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -721,7 +724,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("Temp Master #%d ID %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordID[1];       
+	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordID[0];       
     }
   }
 
@@ -1282,7 +1285,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("Temp Slave #%d ID %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordID[1];       
+	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordID[0];       
     }
   }
 
