@@ -8,10 +8,17 @@
  *   [statusdata,Avgdata] = ReadData('filename',RunAverageLen,MinRefCellCounts)
  *   where RunAvglength is number of 1/5 s data -> average time period in s = RunAverageLen/5
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
+ * $ID:$
+ * $Log: ReadDataAvg.c,v $
+ * Revision 1.14  2005-06-17 15:54:44  rudolf
+ * fix for using Borland C++ 5.5.1 with ReadDataAvg.c under Mathlab for Windows
+ *
+ *
+ *
  *
  *=================================================================*/
-
- /* $Revision: 1.13 $ */
+ 
+ /* $Revision: 1.14 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -29,6 +36,9 @@
 typedef unsigned short uint16_t;
 typedef unsigned uint32_t;
 typedef int int32_t;
+
+typedef unsigned __int64 uint64_t;
+
 struct timeval {
   long    tv_sec; 
   long    tv_usec;
@@ -54,14 +64,14 @@ struct RunningAVGType {
   int *OnOffFlag;
 };
 
-int cmptimesort(struct elekStatusType *ptrElekStatus1,
-             struct elekStatusType *ptrElekStatus2) {
+int cmptimesort(const void *ptrElekStatus1,
+                const void *ptrElekStatus2) {
         
     int ret;
     
     ret=0;
-    if (ptrElekStatus1->TimeOfDayMaster.tv_sec>ptrElekStatus2->TimeOfDayMaster.tv_sec) ret=1;
-    if (ptrElekStatus2->TimeOfDayMaster.tv_sec>ptrElekStatus1->TimeOfDayMaster.tv_sec) ret=-1;
+    if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec) ret=1;
+    if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec) ret=-1;
     
     return (ret);
 } /* timesort */
@@ -106,6 +116,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
   uint16_t Sum1;
   uint16_t Sum2; */
  
+  #ifdef X_DEBUG  
+    mexPrintf("sizeof struct elekStatusType %d",sizeof(struct elekStatusType));
+  #endif
   
   /* Check for proper number of arguments */
   
