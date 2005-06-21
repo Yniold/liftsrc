@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-08 22:43:53 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-21 17:03:45 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.22  2005-06-08 22:43:53  rudolf
+* Revision 1.23  2005-06-21 17:03:45  rudolf
+* fixed transmitting UDP Debugmessages in an endless loop which led to a locale DOS attack (system was unusable)
+*
+* Revision 1.22  2005/06/08 22:43:53  rudolf
 * added preliminary master slave support, HH
 *
 * Revision 1.21  2005/06/08 17:31:51  rudolf
@@ -153,6 +156,7 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]={     // order defi
 static struct SlaveListType SlaveList[MAXSLAVES]={               // list of slave elekIO units like wingpod or cal box
   /* SlaveName  SlaveIP */
   {"ArmAxis",   IP_ARMAXIS},
+  {NULL,NULL},
   {NULL,NULL}
 };
 
@@ -1826,13 +1830,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.22 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.22 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.22 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.22 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1948,20 +1952,22 @@ int main(int argc, char *argv[])
 #endif
 	    
 	    // ask all slave units to gather their data
-	    SlaveNum=0;
-	    while (SlaveList[SlaveNum].SlaveName) {
-	      Message.MsgType=MSG_TYPE_FETCH_DATA;
-	      Message.MsgTime=TSC;                                       // send TSC to slave
-	      Message.MsgID=-1;
-	      SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
+	    for(SlaveNum=0;SlaveNum < MAXSLAVES;SlaveNum++)
+	    {
+			if(SlaveList[SlaveNum].SlaveName) 
+	      {
+				Message.MsgType=MSG_TYPE_FETCH_DATA;
+				Message.MsgTime=TSC;                                       // send TSC to slave
+				Message.MsgID=-1;
+				SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
 			      SlaveList[SlaveNum].SlaveIP,
 			      sizeof(struct ElekMessageType), &Message);  
 #ifdef DEBUG_SLAVECOM
-	      sprintf(buf,"Send reuest for data to %s @%08x",SlaveList[SlaveNum].SlaveName,Message.MsgTime);
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
-#endif
-	    } /* endwhile SlaveList */
-	    
+		      sprintf(buf,"Send request for data to %s @%08x",SlaveList[SlaveNum].SlaveName,Message.MsgTime);
+		      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
+#endif 
+			} /* end if(Slavelist) */
+		} // end for() 
 	  } // If IsMaster
 
 	  GetElekStatus(&ElekStatus);
