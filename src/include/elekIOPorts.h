@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-08 22:44:53 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-21 15:55:46 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.5  2005-06-08 22:44:53  rudolf
+* Revision 1.6  2005-06-21 15:55:46  rudolf
+* for yet unknow reason the whole system seems to freeze if we use the IP_ELEKIO_MASTER 10.111.111.196. Changed to Localhost 127.0.0.1 for further investigations :/
+*
+* Revision 1.5  2005/06/08 22:44:53  rudolf
 * added preliminary master slave support, HH
 *
 * Revision 1.4  2005/06/08 17:38:27  rudolf
@@ -16,7 +19,7 @@
 */
 
 #define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
-#define IP_ELEKIO_MASTER            "10.111.111.196" // ELEKIO which is Master server
+#define IP_ELEKIO_MASTER            "127.0.0.1"      // ELEKIO which is Master server
 #define IP_DEBUG_CLIENT             "127.0.0.1"
 #define IP_STATUS_CLIENT            "127.0.0.1"
 #define IP_ETALON_CLIENT            "127.0.0.1"
