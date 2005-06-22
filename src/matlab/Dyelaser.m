@@ -234,7 +234,7 @@ grid(handles.axes2);
 
 
 % check filament status (e.g. if it was swiched off by horus)
-if bitget(statusData(lastrow,col.Valve),14)==0;
+if bitget(statusData(lastrow,col.ValveLift),14)==0;
     set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
     set(handles.toggleFilament,'BackgroundColor','c');
 else 
@@ -243,7 +243,7 @@ else
 end
 
 % check shutter status
-if bitget(statusData(lastrow,col.Valve),13)==0;
+if bitget(statusData(lastrow,col.ValveLift),13)==0;
     set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
     set(handles.toggleShutter,'BackgroundColor','g');
 else 
@@ -326,15 +326,15 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),8);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),8);
     set(hObject,'BackgroundColor','g','String','Valve Dyelaser ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),8,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),8,0);
     set(hObject,'BackgroundColor','c','String','Valve Dyelaser OFF');
 end
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleVacuum.
@@ -351,15 +351,15 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),11);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11);
     set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),11,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
     set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
 end
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleN2.
@@ -376,15 +376,15 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),9);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9);
     set(hObject,'BackgroundColor','g','String','Valve N2 ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),9,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
     set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
 end
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleAmbient.
@@ -401,15 +401,15 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),10);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),10);
     set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),10,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
     set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
 end
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in Exit.
@@ -508,11 +508,11 @@ scanstep=uint8(str2double(get(handles.scan_step,'String')));
 if (isnan(scanstartpos)| isnan(scanstoppos) | isnan(scanstep))
     error('invalid values');
 else
-    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-    system(['/lift/bin/eCmd @LIFT s etalonscanstart ',num2str(scanstartpos)])
-    system(['/lift/bin/eCmd @LIFT s etalonscanstop ',num2str(scanstoppos)]);
-    system(['/lift/bin/eCmd @LIFT s etalonscanstep ',num2str(scanstep)]);
-    system('/lift/bin/eCmd @LIFT s etalonscan');
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift s etalonscanstart ',num2str(scanstartpos)])
+    system(['/lift/bin/eCmd @Lift s etalonscanstop ',num2str(scanstoppos)]);
+    system(['/lift/bin/eCmd @Lift s etalonscanstep ',num2str(scanstep)]);
+    system('/lift/bin/eCmd @Lift s etalonscan');
 end
 
 
@@ -531,13 +531,13 @@ i=find(data.OnlinePos==onlinepos,1,'last');
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
 if calcOnlSign>statusdata(i,col.ccCounts0) 
-    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @LIFT s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
     set(handles.txtonline,'String',num2str(data.OnlinePos(icalcOnlSign)));
 else % go to old online position
-    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(curonlinepos)]);
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
 end
 
 
@@ -551,8 +551,8 @@ offlinepos=onlinepos+1000;
 if isnan(onlinepos)
     error('invalid values');
 else
-    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(offlinepos)]);
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(offlinepos)]);
 end
 
 
@@ -562,12 +562,12 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=uint16(str2double(get(handles.txtonline,'String')));
-system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-system(['/lift/bin/eCmd @LIFT s etalononline ',num2str(onlinepos)]);
-system(['/lift/bin/eCmd @LIFT s etalonofflineleft 1000']);
-system(['/lift/bin/eCmd @LIFT s etalonofflineright 1000']);
-system('/lift/bin/eCmd @LIFT s etalondither 8');
-system('/lift/bin/eCmd @LIFT s etalontoggle');
+system(['/lift/bin/eCmd @Lift s etalonnop']);    
+system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
+system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
+system(['/lift/bin/eCmd @Lift s etalonofflineright 1000']);
+system('/lift/bin/eCmd @Lift s etalondither 8');
+system('/lift/bin/eCmd @Lift s etalontoggle');
 
 
 % --- Executes on button press in home_pushbutton.
@@ -575,8 +575,8 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to home_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-system('/lift/bin/eCmd @LIFT w 0xa510 0');
+system(['/lift/bin/eCmd @Lift s etalonnop']);    
+system('/lift/bin/eCmd @Lift w 0xa510 0');
 
 
 
@@ -595,19 +595,19 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     if statusData(lastrow,col.PRef)<=10500 % check if pressure in reference cell is low enough
-        Valveword=bitset(statusData(lastrow,col.Valve),14);
-        system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
-        system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+        Valveword=bitset(statusData(lastrow,col.ValveLift),14);
+        system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
+        system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
         system('sleep 1');
-        system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+        system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
         set(hObject,'String','Filament is ON');
         set(hObject,'BackgroundColor','g');
     else 
         set(hObject,'Value',0);
     end
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),14,0);
-    system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),14,0);
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Filament is OFF');
     set(hObject,'BackgroundColor','c');
 end
@@ -681,16 +681,16 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),13);
-    system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
-    system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),13);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is CLOSED');
     set(hObject,'BackgroundColor','c');
     system('sleep 1');
-    system(['/lift/bin/eCmd @LIFT w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 else    
-    Valveword=bitset(statusData(lastrow,col.Valve),13,0);
-    system(['/lift/bin/eCmd @LIFT w 0xa408 ', num2str(Valveword)]);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),13,0);
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
     set(hObject,'BackgroundColor','g');
 end
@@ -855,8 +855,8 @@ setpos=uint16(str2double(get(handles.set_pos,'String')));
 if isnan(setpos)
     error('invalid values');
 else
-    system(['/lift/bin/eCmd @LIFT s etalonnop']);    
-    system(['/lift/bin/eCmd @LIFT w 0xa510 ',num2str(setpos)]);
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setpos)]);
 end
 
 

@@ -10,7 +10,11 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.15  2005-06-17 16:40:14  rudolf
+ * Revision 1.16  2005-06-22 17:16:33  martinez
+ * included 2nd valve card on armAxis in ReadDataAvg.c
+ * updated col structure and eCmd hosts
+ *
+ * Revision 1.15  2005/06/17 16:40:14  rudolf
  * changed evaluated ROM ID position
  *
  * Revision 1.14  2005/06/17 15:54:44  rudolf
@@ -21,7 +25,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.15 $ */
+ /* $Revision: 1.16 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -1214,23 +1218,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     
 /******************* Valve Cards ***************************/     
-  /* for (k=0; k<MAX_VALVE_CARD_WP; k++) { */
-  /* we are only interested in Data of Card 0 */
-  Card=0;
+  for (k=0; k<MAX_VALVE_CARD_WP; k++) { 
   #ifdef D_HEADER
-	mexPrintf("ValveVolt Slave %d %d\n",count,1+count/nelements);      
+	mexPrintf("ValveVolt Slave %d %d\n",k,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ValveCardSlave[Card].ValveVolt;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("Valve Slave  %d %d\n",count,1+count/nelements);      
+    mexPrintf("Valve Slave  %d %d\n",k,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ValveCardSlave[Card].Valve;       
   } 
-  /* }*/
+  }
 
 /******************* TempSensor Card Slave ***************************/  
   /* there is only one Card */

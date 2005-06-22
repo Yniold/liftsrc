@@ -116,10 +116,10 @@ x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
 
 % display ADC counts
-set(handles.txtWZ1in,'String','NA');
+set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in);
 set(handles.txtWZ1out,'String',statusData(lastrow,col.DiodeWZ1out));
-set(handles.txtWZ2in,'String','NA');
-set(handles.txtWZ1out,'String','NA');
+set(handles.txtWZ2in,'String',statusData(lastrow,col.DiodeWZ2in);
+set(handles.txtWZ2out,'String',statusData(lastrow,col.DiodeWZ2out);
 set(handles.txtP1000,'String',statusData(lastrow,col.P1000));
 set(handles.txtP20,'String',statusData(lastrow,col.P20));
 set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
@@ -430,7 +430,7 @@ xlim(handles.axeCounts,[limTime1 limTime2]);
 grid(handles.axeCounts);
 
 % check HV
-if single(statusData(lastrow,col.HVSwitchV))==0
+if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
     set(handles.togHV,'Value',0)
     set(handles.togHV,'BackgroundColor','c','String','HV OFF');
 else
@@ -439,7 +439,7 @@ else
 end
 
 % check Blower
-if single(statusData(lastrow,col.BlowerSwitchV))==0
+if bitget(statusData(lastrow,col.Valve2armAxis),9)==0
     set(handles.togBlower,'Value',0)
     set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
 else
@@ -448,7 +448,7 @@ else
 end
 
 % check Butterfly
-if single(statusData(lastrow,col.ButterflySwitchV))==0
+if bitget(statusData(lastrow,col.Valve2armAxis),7)==0
     set(handles.togButterfly,'Value',1)
     set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
 else
@@ -457,37 +457,37 @@ else
 end
 
 % check solenoids
-if bitget(statusData(lastrow,col.Valve),1)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
     set(handles.toggleC3F6,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleC3F6,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),2)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),2)==0
     set(handles.toggleN2,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleN2,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),3)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),3)==0
     set(handles.toggleHO2Inj,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleHO2Inj,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),4)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),4)==0
     set(handles.toggleOHInj,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleOHInj,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),5)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
     set(handles.toggleNO1,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleNO1,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),6)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
     set(handles.toggleNO2,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleNO2,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve),7)==0;
+if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
     set(handles.toggleNOPurge,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleNOPurge,'Value',1,'BackgroundColor','g');
@@ -682,30 +682,30 @@ col=horusdata.col;
 
 if get(hObject,'Value')
     set(hObject,'BackgroundColor','r','String','switching Blower ON');
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),10);  % switch pump on
-    system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     wait(5);
     while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
         wait(1);
     end
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),10);  % make sure pump is not switched off
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
     Valveword=bitset(Valveword,1); % ramp blower up 
     Valveword=bitset(Valveword,9); % switch on blower
-    system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     set(hObject,'BackgroundColor','g','String','Blower ON');
 else
     set(hObject,'BackgroundColor','r','String','switching Blower OFF');
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),1,0); % ramp blower down
-    system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     pause(15);
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),1,0); % make sure ramp down switch is set
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
     Valveword=bitset(Valveword,9,0); % switch off blower
     Valveword=bitset(Valveword,10,0); % switch off pump
-    system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     set(hObject,'BackgroundColor','c','String','Blower OFF');
 end
 
@@ -728,23 +728,23 @@ col=horusdata.col;
 
 if get(hObject,'Value')
     set(hObject,'BackgroundColor','g','String','HV ON');
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),8);  % switch HV on
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
     % switch gain on for MCP1
     word1=bitset(statusData(lastrow,col.ccGateDelay1),16);
     % switch gain on for MCP2
     word2=bitset(statusData(lastrow,col.ccGateDelay2),16);
 else
     set(hObject,'BackgroundColor','c','String','HV OFF');
-    Valveword=bitset(statusData(lastrow,col.ValveARM2),8,0);  % switch HV off
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
     % switch gain off for MCP1
     word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
     % switch gain off for MCP2
     word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
-system(['/lift/bin/eCmd @ARM9 w 0xa40a ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa318 ',num2str(word1)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa31c ',num2str(word2)]);
+system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word1)]);
+system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word2)]);
 
 
 
@@ -757,10 +757,10 @@ function togButterfly_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of togglebutton5
 if get(hObject,'Value')
-%    system(['/lift/bin/eCmd @ARM9 w 0xa462 0']);
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 0']);
     set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
 else
-%    system('/lift/bin/eCmd @ARM9 w 0xa462 1800'); 
+%    system('/lift/bin/eCmd @armAxis w 0xa462 1800'); 
     set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
@@ -799,15 +799,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),4);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),4,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 
@@ -825,15 +825,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),3);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),3,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleN2.
@@ -850,15 +850,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),2);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),2,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleC3F6.
@@ -875,15 +875,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),1);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),1,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleNO1.
@@ -900,15 +900,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),5);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),5,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleNO2.
@@ -925,15 +925,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),6);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),6,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleNOPurge.
@@ -950,15 +950,15 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),7);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
     set(hObject,'BackgroundColor','g');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),7,0);
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
     set(hObject,'BackgroundColor','c');
 end
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @ARM9 w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @ARM9 w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 

@@ -132,7 +132,7 @@ else % if no device was chosen then show values for PMT
     set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
 end
 % check HV
-if single(statusData(lastrow,col.HVSwitchV))==0
+if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
     set(handles.toggleHV,'Value',0)
     set(handles.toggleHV,'BackgroundColor','c','String','HV OFF');
 else
@@ -419,13 +419,14 @@ function toggleHV_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleHV
 if get(hObject,'Value')
 %    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
-        system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
         set(hObject,'BackgroundColor','g','String','HV ON');
 %    end
 else
-    system('/lift/bin/eCmd w 0xa460 0');
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
     set(hObject,'BackgroundColor','c','String','HV OFF');
 end
-
+system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 
 

@@ -131,6 +131,15 @@ else % if no device was chosen then show values for PMT
     set(handles.txtGainWidth,'String','NA');
     set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
 end
+% check HV
+if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
+    set(handles.toggleHV,'Value',0)
+    set(handles.toggleHV,'BackgroundColor','c','String','HV OFF');
+else
+    set(handles.toggleHV,'Value',1)
+    set(handles.toggleHV,'BackgroundColor','g','String','HV ON');
+end
+
 
 data.lastrow=lastrow;
 setappdata(handles.output, 'Gatedata', data);
