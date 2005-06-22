@@ -1,8 +1,11 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2005-05-18 18:26:13 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2005-06-22 13:17:14 $ by $Author: rudolf $
 *
 * $Log: udptools.c,v $
-* Revision 1.4  2005-05-18 18:26:13  rudolf
+* Revision 1.5  2005-06-22 13:17:14  rudolf
+* Added PORTNAME in debug printfs -> makes life much easier
+*
+* Revision 1.4  2005/05/18 18:26:13  rudolf
 * small fixes
 *
 * Revision 1.3  2005/04/21 13:48:01  rudolf
@@ -29,7 +32,9 @@
 
 #include "../include/elekIOPorts.h"
 
-#define DEBUGLEVEL 0
+#define DEBUGLEVEL 1
+#define DEBUGDEBUGMESSAGES 1
+
 
 /*********************************************************************************************************/
 /*                                                                                                       */
@@ -110,7 +115,7 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
     }
 
 #if DEBUGLEVEL>0
-   printf("sent %d bytes to %s:%d\n", numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
+   printf("[%s] sent %d bytes to %s:%d\n", ptrMessagePort->PortName,numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
 } /* SendUDPData */
@@ -160,6 +165,9 @@ int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg) {
     their_addr.sin_addr.s_addr = inet_addr(ptrMessagePort->IPAddr);
     memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
     
+	 if (DEBUGDEBUGMESSAGES)
+	 	printf("%s\n\r", msg);
+		
     if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, strlen(msg), 0,
 		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
         perror("sendto");
@@ -185,12 +193,12 @@ int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void 
 
     if ((numbytes=recvfrom(ptrMessagePort->fdSocket, msg,nByte , MSG_WAITALL,
 			   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-	perror("recvfrom");
+	perror("ReceiveUDPData: ");
 	return(-1);
     }
     
 #if DEBUGLEVEL>0
-   printf("receive %d bytes from %s:%d\n", numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
+   printf("[%s] receive %d bytes from %s:%d\n", ptrMessagePort->PortName,numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
 } /* RecieveUDPData */
