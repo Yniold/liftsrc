@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-22 13:14:17 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-22 18:10:54 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.24  2005-06-22 13:14:17  rudolf
+* Revision 1.25  2005-06-22 18:10:54  rudolf
+* added seperate IN port for receiving the data from Slave when in Master Mode, destination IP printed when initialising th UDP Port
+*
+* Revision 1.24  2005/06/22 13:14:17  rudolf
 * added debug infos, switched off automagically sending of "data available" packets" to Etalon and Script if working in slave mode
 *
 * Revision 1.23  2005/06/21 17:03:45  rudolf
@@ -118,35 +121,37 @@ enum InPortListEnum {  // this list has to be coherent with MessageInPortList
     ELEK_STATUS_IN,       // port to receive status data from slaves
     MAX_MESSAGE_INPORTS }; 
 
-enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
-  ELEK_STATUS_OUT,         // port for outgoing messages to status
-  ELEK_ELEKIO_STATUS_OUT,  // port for outgoing status to elekIO
-  ELEK_ELEKIO_SLAVE_OUT,   // port for outgoing messages to slaves
-  ELEK_MANUAL_OUT,         // port for outgoing messages to eCmd
-  ELEK_ETALON_OUT,         // port for outgoing messages to etalon
-  ELEK_ETALON_STATUS_OUT,  // port for outgoing messages to etalon status, so etalon is directly informed of the status
-  ELEK_SCRIPT_OUT,         // port for outgoing messages to script 
-  ELEK_DEBUG_OUT,          // port for outgoing messages to debug
+enum OutPortListEnum {            // this list has to be coherent with MessageOutPortList
+  ELEK_STATUS_OUT,                // port for outgoing messages to status
+  ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
+  ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
+  ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
+  ELEK_ETALON_OUT,                // port for outgoing messages to etalon
+  ELEK_ETALON_STATUS_OUT,         // port for outgoing messages to etalon status, so etalon is directly informed of the status
+  ELEK_SCRIPT_OUT,                // port for outgoing messages to script 
+  ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
+  ELEK_ELEKIO_SLAVE_MASTER_OUT,   // port for outgoing data packets from slave to master
   MAX_MESSAGE_OUTPORTS }; 
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling 
-  /* Name, PortNo, ReversePort, IPAddr, fdSocket, MaxMessages, Direction */
-  {"Manual",   UDP_ELEK_MANUAL_INPORT,        ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
-  {"Etalon",   UDP_ELEK_ETALON_INPORT,        ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
-  {"Script",   UDP_ELEK_SCRIPT_INPORT,        ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT},
-  {"ElekIOIn", UDP_ELEK_ELEKIO_STATUS_OUTPORT,      -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
+  /* Name   , PortNo                    , ReversePort  , IPAddr, fdSocket, MaxMsg, Direction */
+  {"Manual"  , UDP_ELEK_MANUAL_INPORT        , ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
+  {"Etalon"  , UDP_ELEK_ETALON_INPORT        , ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
+  {"Script"  , UDP_ELEK_SCRIPT_INPORT        , ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT},
+  {"ElekIOIn", UDP_ELEK_SLAVE_DATA_INPORT    , -1             , IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
 };
 
 static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={    // order in list defines sequence of polling 
-  /* Name, PortNo, ReversePort, IPAddr, fdSocket, MaxMessages, Direction */
-  {"Status",         UDP_ELEK_STATUS_STATUS_OUTPORT,             -1, IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
-  {"ElekIOStatus",   UDP_ELEK_ELEKIO_STATUS_OUTPORT,             -1, IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
-  {"ElekIOServer",           UDP_ELEK_MANUAL_INPORT, ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER,   -1, 0,  UDP_OUT_PORT}, 
-  {"Manual",                UDP_ELEK_MANUAL_OUTPORT, ELEK_MANUAL_IN, IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT}, 
-  {"Etalon",                UDP_ELEK_ETALON_OUTPORT, ELEK_ETALON_IN, IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
-  {"EtalonStatus",   UDP_ELEK_ETALON_STATUS_OUTPORT,             -1, IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
-  {"Script",                UDP_ELEK_SCRIPT_OUTPORT, ELEK_SCRIPT_IN, IP_SCRIPT_CLIENT, -1, 0,  UDP_OUT_PORT},
-  {"DebugPort",              UDP_ELEK_DEBUG_OUTPORT,             -1, IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT}
+  /* Name      ,PortNo                     , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
+  {"Status"      ,UDP_ELEK_STATUS_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
+  {"ElekIOStatus",UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
+  {"ElekIOServer",UDP_ELEK_MANUAL_INPORT        , ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER  , -1, 0,  UDP_OUT_PORT}, 
+  {"Manual"      ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN        , IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT}, 
+  {"Etalon"      ,UDP_ELEK_ETALON_OUTPORT       , ELEK_ETALON_IN        , IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
+  {"EtalonStatus",UDP_ELEK_ETALON_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT}, 
+  {"Script"      ,UDP_ELEK_SCRIPT_OUTPORT       , ELEK_SCRIPT_IN        , IP_SCRIPT_CLIENT, -1, 0,  UDP_OUT_PORT},
+  {"DebugPort"   ,UDP_ELEK_DEBUG_OUTPORT        , -1                    , IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT},
+  {"ElekIOOut"   ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT}
 };
 
 static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]={     // order defines sequence of wake up after timer
@@ -1696,8 +1701,10 @@ int InitUDPPorts(fd_set *pFDsMaster, int *fdMax) {
 
     // init outports
   for (MessagePort=0; MessagePort<MAX_MESSAGE_OUTPORTS;MessagePort++) {
-    printf("opening OUT Port %s on Port %d\n",
-	   MessageOutPortList[MessagePort].PortName,MessageOutPortList[MessagePort].PortNumber);
+    printf("opening OUT Port %s on Port %d, Destination IP: %s\n",
+	   MessageOutPortList[MessagePort].PortName,
+	   MessageOutPortList[MessagePort].PortNumber,
+	   MessageOutPortList[MessagePort].IPAddr);
     MessageOutPortList[MessagePort].fdSocket=InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);
 	
   } /* for MessageOutPort */
@@ -1833,13 +1840,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2024,7 +2031,6 @@ int main(int argc, char *argv[])
 	    case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
 	    case ELEK_ETALON_IN:       // port for incoming commands from  etalon
 	    case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
-//       case ELEK_STATUS_IN:		// port for incoming data packets from elekIOSlave
 		 
 	      if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
 				     &Message,sizeof(struct ElekMessageType)  , 0,
@@ -2033,32 +2039,24 @@ int main(int argc, char *argv[])
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with recieve");
 	      }
 	      
-	      switch (Message.MsgType) {
+	   switch (Message.MsgType) {
 		
 	      case MSG_TYPE_FETCH_DATA:
 #ifdef DEBUG_SLAVECOM
 		printf("ElekIOServ: FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
 #endif
 		ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
+		printf("ElekIOServ: gathering Data...\n\r");
 		GetElekStatus(&ElekStatus);
+		 
+		// send this debugmessage message to debugmon   
+		sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
+				MessageInPortList[MessagePort].PortNumber,
+				Message.Addr,Message.Value,Message.Value);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		
-		Message.MsgType=MSG_TYPE_ACK;
-		
-		if (MessagePort!=ELEK_ETALON_IN) 
-		  {
-		    sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
-			    MessageInPortList[MessagePort].PortNumber,
-			    Message.Addr,Message.Value,Message.Value);
-		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		    
-		    sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
-		  } /* if MessagePort */
-		
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message); // send acknowledge
-		
-		SendUDPData(&MessageOutPortList[ELEK_ELEKIO_STATUS_OUT],
+		// send requested data, don't send any acknowledges
+		SendUDPData(&MessageOutPortList[ELEK_ELEKIO_SLAVE_MASTER_OUT],
 			    sizeof(struct elekStatusType), &ElekStatus); // send data packet
 		
 		break;
@@ -2215,27 +2213,49 @@ int main(int argc, char *argv[])
 	      } /* switch MsgType */
 
 	  // port to receive status data from slaves
+
 	  case ELEK_STATUS_IN:       
-	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-				   &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , MSG_WAITALL,
-				   (struct sockaddr *)&their_addr, &addr_len)) == -1) 
-	    // Something went wrong
-	    {
-	      perror("recvfrom ELEK_STATUS_IN");
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
-	    }
-		 else
-		 // we should have received some data at this point, so give a lifesign
+	    if(IsMaster)
 		 {
-		 	printf("ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
-			printf("Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
-			#ifdef RUNONPC
-			rdtscll(TSC);
-			printf("Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
-			#endif
-		 };
-	    
+			if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+						&ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , MSG_WAITALL,
+						(struct sockaddr *)&their_addr, &addr_len)) == -1) 
+			// Something went wrong
+			{
+				perror("elekIOServ(M): recvfrom ELEK_STATUS_IN:");
+				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
+			}
+			else
+			// we should have received some data at this point, so give a lifesign
+			{
+				printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
+				printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
+				#ifdef RUNONPC
+				rdtscll(TSC);
+				printf("elekIOServ(M): Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
+				#endif
+			};
+		}
+		else
+		// Slave Mode
+		{
+			if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+						&ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , 0,
+						(struct sockaddr *)&their_addr, &addr_len)) == -1) 
+			// Something went wrong
+			{
+				perror("elekIOServ(S): recvfrom ELEK_STATUS_IN");
+				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
+			}
+			else
+			// we should have received some data at this point, so give a lifesign
+			{
+				printf("elekIOServ(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
+			};
+		};
+				    
 	    break;
+		 
 	  default:
 	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Unknown Port Type");
 	    break;
