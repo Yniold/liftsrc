@@ -116,10 +116,10 @@ x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
 
 % display ADC counts
-set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in);
+set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in));
 set(handles.txtWZ1out,'String',statusData(lastrow,col.DiodeWZ1out));
-set(handles.txtWZ2in,'String',statusData(lastrow,col.DiodeWZ2in);
-set(handles.txtWZ2out,'String',statusData(lastrow,col.DiodeWZ2out);
+set(handles.txtWZ2in,'String',statusData(lastrow,col.DiodeWZ2in));
+set(handles.txtWZ2out,'String',statusData(lastrow,col.DiodeWZ2out));
 set(handles.txtP1000,'String',statusData(lastrow,col.P1000));
 set(handles.txtP20,'String',statusData(lastrow,col.P20));
 set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
