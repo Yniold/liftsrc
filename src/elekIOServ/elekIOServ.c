@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-21 17:03:45 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-22 13:14:17 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.23  2005-06-21 17:03:45  rudolf
+* Revision 1.24  2005-06-22 13:14:17  rudolf
+* added debug infos, switched off automagically sending of "data available" packets" to Etalon and Script if working in slave mode
+*
+* Revision 1.23  2005/06/21 17:03:45  rudolf
 * fixed transmitting UDP Debugmessages in an endless loop which led to a locale DOS attack (system was unusable)
 *
 * Revision 1.22  2005/06/08 22:43:53  rudolf
@@ -506,7 +509,7 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	// init InstrumentFlags
 	
 	ptrElekStatus->InstrumentFlags.StatusSave=1;                   // we do want to store data
-	ptrElekStatus->InstrumentFlags.StatusQuery=1;                  // we want to query the Status
+	ptrElekStatus->InstrumentFlags.StatusQuery=0;                  // we dont't want to query status in SM
 	ptrElekStatus->InstrumentFlags.EtalonAction=ETALON_ACTION_NOP; // do nothing with the etalon for now
 	
  };
@@ -1830,13 +1833,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.24 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1878,7 +1881,7 @@ int main(int argc, char *argv[])
 #ifdef RUNONARM
   /* Start timer: */
   StatusTimer.it_interval.tv_sec =   0; //StatusInterval / 1000;
-  StatusTimer.it_interval.tv_usec = 190000;
+  StatusTimer.it_interval.tv_usec = (STATUS_INTERVAL*1000);
   StatusTimer.it_value = StatusTimer.it_interval;
 #endif
   
@@ -1983,25 +1986,28 @@ int main(int argc, char *argv[])
 	  SetCounterCardMask(&ElekStatus, IsMaster);
 	} /* if Syncflag.MaskChange */
 	
+	if(IsMaster)
 	// let the other tasks know that we are done with retrieving the status
-	Task=0;
-	Message.MsgType=MSG_TYPE_SIGNAL;
-	Message.MsgID=-1;
-	while (TasktoWakeList[Task].TaskConn>-1) {
-	  
-	  //		  sprintf(buf,"ElekIOServ: send wake Signal to Task %s %d",
-	  //	  TasktoWakeList[Task].TaskName, TasktoWakeList[Task].TaskConn);
-	  // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-	  
-	  // first we send the status information to the task
-	  if (TasktoWakeList[Task].TaskWantStatusOnPort>-1) { // but only if he wants to
-	    SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],sizeof(struct elekStatusType), &ElekStatus);
-	  }
-	  SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],sizeof(struct ElekMessageType), &Message);  
-	  Task++;
-	} // while task
+	// not needed if we are running as slave, as there is no Etalon nor Script
+	{
+		Task=0;
+		Message.MsgType=MSG_TYPE_SIGNAL;
+		Message.MsgID=-1;
+		while (TasktoWakeList[Task].TaskConn>-1) 
+		{
+			if (TasktoWakeList[Task].TaskWantStatusOnPort>-1) 
+			{ // but only if he wants to
+				SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],sizeof(struct elekStatusType), &ElekStatus);
+			}
+			SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],sizeof(struct ElekMessageType), &Message);  
+			Task++;
+		} // while task
+	}
 	
-      } else {
+   } /* if(errno==EINTR) */
+		 
+	// so was not the Timer, it was a UDP Packet
+	else {
 	perror("select");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with select");
       } 
@@ -2017,8 +2023,9 @@ int main(int argc, char *argv[])
 	  switch (MessagePort) {
 	    case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
 	    case ELEK_ETALON_IN:       // port for incoming commands from  etalon
-	    case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
-
+	    case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
+//       case ELEK_STATUS_IN:		// port for incoming data packets from elekIOSlave
+		 
 	      if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
 				     &Message,sizeof(struct ElekMessageType)  , 0,
 				     (struct sockaddr *)&their_addr, &addr_len)) == -1) {
@@ -2030,7 +2037,7 @@ int main(int argc, char *argv[])
 		
 	      case MSG_TYPE_FETCH_DATA:
 #ifdef DEBUG_SLAVECOM
-		printf("ElekIOServ: FETCH_DATA received, TSC was: %08x", Message.MsgTime);
+		printf("ElekIOServ: FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
 #endif
 		ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
 		GetElekStatus(&ElekStatus);
@@ -2039,7 +2046,7 @@ int main(int argc, char *argv[])
 		
 		if (MessagePort!=ELEK_ETALON_IN) 
 		  {
-		    sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)",
+		    sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
 			    MessageInPortList[MessagePort].PortNumber,
 			    Message.Addr,Message.Value,Message.Value);
 		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -2206,13 +2213,27 @@ int main(int argc, char *argv[])
 		break;
 		
 	      } /* switch MsgType */
-	  case ELEK_STATUS_IN:       // port to receive status data from slaves
+
+	  // port to receive status data from slaves
+	  case ELEK_STATUS_IN:       
 	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-				   &ElekStatusFromSlave,sizeof(struct ElekMessageType) , MSG_WAITALL,
-				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-	      perror("recvfrom");
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : Problem with recieve from slave");
+				   &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , MSG_WAITALL,
+				   (struct sockaddr *)&their_addr, &addr_len)) == -1) 
+	    // Something went wrong
+	    {
+	      perror("recvfrom ELEK_STATUS_IN");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
 	    }
+		 else
+		 // we should have received some data at this point, so give a lifesign
+		 {
+		 	printf("ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
+			printf("Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
+			#ifdef RUNONPC
+			rdtscll(TSC);
+			printf("Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
+			#endif
+		 };
 	    
 	    break;
 	  default:
@@ -2245,7 +2266,7 @@ int main(int argc, char *argv[])
     
 #ifdef RUNONPC
     if (timer_getoverrun(StatusTimer_id)>0) {
-      printf("OVERRUN");
+      printf("OVERRUN\n\r");
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Overrun");
     } /* if overrun */
 #endif
