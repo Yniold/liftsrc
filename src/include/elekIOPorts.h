@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-22 13:15:25 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-22 18:09:43 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.7  2005-06-22 13:15:25  rudolf
+* Revision 1.8  2005-06-22 18:09:43  rudolf
+* added seperate IN port for receiving the data from Slave when in Master Mode
+*
+* Revision 1.7  2005/06/22 13:15:25  rudolf
 * changed IP to my VMware for further investigations...
 *
 * Revision 1.6  2005/06/21 15:55:46  rudolf
@@ -37,6 +40,7 @@
 #define UDP_ELEK_MANUAL_INPORT         1120    // port for incoming manual commands to ElekServer 
 #define UDP_ELEK_ETALON_INPORT         1130    // port for Etalon Task
 #define UDP_ELEK_SCRIPT_INPORT         1140    // port for Script Task
+#define UDP_ELEK_SLAVE_DATA_INPORT     1150    // port for reception of slave data in MasterMode
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
