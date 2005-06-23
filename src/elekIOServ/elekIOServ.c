@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-22 18:10:54 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 14:02:09 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.25  2005-06-22 18:10:54  rudolf
+* Revision 1.26  2005-06-23 14:02:09  rudolf
+* changed priority to some more moderate value
+*
+* Revision 1.25  2005/06/22 18:10:54  rudolf
 * added seperate IN port for receiving the data from Slave when in Master Mode, destination IP printed when initialising th UDP Port
 *
 * Revision 1.24  2005/06/22 13:14:17  rudolf
@@ -1737,7 +1740,7 @@ int ChangePriority() {
 
   max=sched_get_priority_max(SCHED_RR);
   min=sched_get_priority_max(SCHED_RR);
-  param.sched_priority=max; // (int)((max-min)/2);
+  param.sched_priority= (int)((max-min)/2);
   if (-1==(ret=sched_setscheduler(0,SCHED_RR, &param))) {
     perror("kann scheduler nicht wechseln");
   }
@@ -1840,13 +1843,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.25 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1980,7 +1983,7 @@ int main(int argc, char *argv[])
 		} // end for() 
 	  } // If IsMaster
 
-	  GetElekStatus(&ElekStatus);
+	  // GetElekStatus(&ElekStatus);
 	  SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
 	  
 	  //		sprintf(buf,"ElekIOServ: send Status of Numbytes : %d\n",sizeof(struct elekStatusType));
