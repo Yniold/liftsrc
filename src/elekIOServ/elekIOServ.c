@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 14:02:09 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 17:14:01 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.26  2005-06-23 14:02:09  rudolf
+* Revision 1.27  2005-06-23 17:14:01  rudolf
+* fixed "interrupted system call" bug (HH)
+*
+* Revision 1.26  2005/06/23 14:02:09  rudolf
 * changed priority to some more moderate value
 *
 * Revision 1.25  2005/06/22 18:10:54  rudolf
@@ -1691,7 +1694,7 @@ int InitUDPPorts(fd_set *pFDsMaster, int *fdMax) {
   // init inports
   for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) {
 	
-    printf("opening IN Port %s on Port %d\n",
+    printf("opening IN Port %s on Port %d Socket:",
 	   MessageInPortList[MessagePort].PortName,
 	   MessageInPortList[MessagePort].PortNumber);
 	
@@ -1699,7 +1702,8 @@ int InitUDPPorts(fd_set *pFDsMaster, int *fdMax) {
     
 	
     FD_SET(MessageInPortList[MessagePort].fdSocket, pFDsMaster);     // add the manual port to the master set
-    (*fdMax)=MessageInPortList[MessagePort].fdSocket;                   // the last one will give the max number
+    printf("%08x\n",MessageInPortList[MessagePort].fdSocket);
+	 (*fdMax)=MessageInPortList[MessagePort].fdSocket;                   // the last one will give the max number
   } /* for MessageInPort */
 
     // init outports
@@ -1843,13 +1847,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.26 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1958,7 +1962,7 @@ int main(int argc, char *argv[])
 	if (ElekStatus.InstrumentFlags.StatusQuery) {
 	  
 	  if (IsMaster) {
-
+	    
 	    // get TSC for timing
 #ifdef RUNONPC // but only if run on PC
 	    rdtscll(TSC);
@@ -1966,21 +1970,21 @@ int main(int argc, char *argv[])
 	    
 	    // ask all slave units to gather their data
 	    for(SlaveNum=0;SlaveNum < MAXSLAVES;SlaveNum++)
-	    {
-			if(SlaveList[SlaveNum].SlaveName) 
 	      {
-				Message.MsgType=MSG_TYPE_FETCH_DATA;
-				Message.MsgTime=TSC;                                       // send TSC to slave
-				Message.MsgID=-1;
-				SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
-			      SlaveList[SlaveNum].SlaveIP,
-			      sizeof(struct ElekMessageType), &Message);  
+		if(SlaveList[SlaveNum].SlaveName) 
+		  {
+		    Message.MsgType=MSG_TYPE_FETCH_DATA;
+		    Message.MsgTime=TSC;                                       // send TSC to slave
+		    Message.MsgID=-1;
+		    SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
+				    SlaveList[SlaveNum].SlaveIP,
+				    sizeof(struct ElekMessageType), &Message);  
 #ifdef DEBUG_SLAVECOM
-		      sprintf(buf,"Send request for data to %s @%08x",SlaveList[SlaveNum].SlaveName,Message.MsgTime);
-		      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
+		    sprintf(buf,"Send request for data to %s @%08x",SlaveList[SlaveNum].SlaveName,Message.MsgTime);
+		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
 #endif 
-			} /* end if(Slavelist) */
-		} // end for() 
+		  } /* end if(Slavelist) */
+	      } // end for() 
 	  } // If IsMaster
 
 	  // GetElekStatus(&ElekStatus);
@@ -1997,27 +2001,27 @@ int main(int argc, char *argv[])
 	} /* if Syncflag.MaskChange */
 	
 	if(IsMaster)
-	// let the other tasks know that we are done with retrieving the status
-	// not needed if we are running as slave, as there is no Etalon nor Script
-	{
-		Task=0;
-		Message.MsgType=MSG_TYPE_SIGNAL;
-		Message.MsgID=-1;
-		while (TasktoWakeList[Task].TaskConn>-1) 
-		{
-			if (TasktoWakeList[Task].TaskWantStatusOnPort>-1) 
-			{ // but only if he wants to
-				SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],sizeof(struct elekStatusType), &ElekStatus);
-			}
-			SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],sizeof(struct ElekMessageType), &Message);  
-			Task++;
-		} // while task
-	}
+	  // let the other tasks know that we are done with retrieving the status
+	  // not needed if we are running as slave, as there is no Etalon nor Script
+	  {
+	    Task=0;
+	    Message.MsgType=MSG_TYPE_SIGNAL;
+	    Message.MsgID=-1;
+	    while (TasktoWakeList[Task].TaskConn>-1) 
+	      {
+		if (TasktoWakeList[Task].TaskWantStatusOnPort>-1) 
+		  { // but only if he wants to
+		    SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],sizeof(struct elekStatusType), &ElekStatus);
+		  }
+		SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],sizeof(struct ElekMessageType), &Message);  
+		Task++;
+	      } // while task
+	  }
 	
-   } /* if(errno==EINTR) */
-		 
+      } /* if(errno==EINTR) */
+      
 	// so was not the Timer, it was a UDP Packet
-	else {
+      else {
 	perror("select");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with select");
       } 
@@ -2028,237 +2032,238 @@ int main(int argc, char *argv[])
       for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) { 
 	
 	if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect)) {   // new msg on fdNum. socket ... 
+	  printf("fdsSelect: %016lx\n\r",fdsSelect);
 	  //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
 	  //		    fdElekManual=MessagePortList[0].fdSocket;
 	  switch (MessagePort) {
-	    case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
-	    case ELEK_ETALON_IN:       // port for incoming commands from  etalon
-	    case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
-		 
-	      if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-				     &Message,sizeof(struct ElekMessageType)  , 0,
-				     (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-		perror("recvfrom");
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with recieve");
-	      }
+	  case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
+	  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
+	  case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
+	    
+	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				   &Message,sizeof(struct ElekMessageType)  , 0,
+				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+	      perror("recvfrom");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with recieve");
+	    }
+	    
+	    switch (Message.MsgType) {
 	      
-	   switch (Message.MsgType) {
-		
-	      case MSG_TYPE_FETCH_DATA:
+	    case MSG_TYPE_FETCH_DATA:
 #ifdef DEBUG_SLAVECOM
-		printf("ElekIOServ: FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
+	      printf("ElekIOServ: FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
 #endif
-		ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
-		printf("ElekIOServ: gathering Data...\n\r");
-		GetElekStatus(&ElekStatus);
-		 
-		// send this debugmessage message to debugmon   
-		sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
-				MessageInPortList[MessagePort].PortNumber,
-				Message.Addr,Message.Value,Message.Value);
+	      ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
+	      printf("ElekIOServ: gathering Data...\n\r");
+	      GetElekStatus(&ElekStatus);
+	      
+	      // send this debugmessage message to debugmon   
+	      sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
+		      MessageInPortList[MessagePort].PortNumber,
+		      Message.Addr,Message.Value,Message.Value);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      
+	      // send requested data, don't send any acknowledges
+	      SendUDPData(&MessageOutPortList[ELEK_ELEKIO_SLAVE_MASTER_OUT],
+			  sizeof(struct elekStatusType), &ElekStatus); // send data packet
+		
+		break;
+		
+	    case MSG_TYPE_READ_DATA:
+	      printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
+	      Message.Value=elkReadData(Message.Addr);
+	      Message.MsgType=MSG_TYPE_ACK;
+	      
+	      if (MessagePort!=ELEK_ETALON_IN) {
+		sprintf(buf,"ElekIOServ: ReadCmd from %4d Port %04x Value %d (%04x)",
+			MessageInPortList[MessagePort].PortNumber,
+			Message.Addr,Message.Value,Message.Value);
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		
-		// send requested data, don't send any acknowledges
-		SendUDPData(&MessageOutPortList[ELEK_ELEKIO_SLAVE_MASTER_OUT],
-			    sizeof(struct elekStatusType), &ElekStatus); // send data packet
-		
-		break;
-		
-	      case MSG_TYPE_READ_DATA:
-		printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
-		Message.Value=elkReadData(Message.Addr);
-		Message.MsgType=MSG_TYPE_ACK;
-		
-		if (MessagePort!=ELEK_ETALON_IN) {
-		  sprintf(buf,"ElekIOServ: ReadCmd from %4d Port %04x Value %d (%04x)",
-			  MessageInPortList[MessagePort].PortNumber,
-			  Message.Addr,Message.Value,Message.Value);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		  
-		  sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
-		} /* if MessagePort */
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		break;
-	      case MSG_TYPE_WRITE_DATA:
-		if (MessagePort!=ELEK_ETALON_IN) {
-		  sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %d (%04x)",
-			  MessageInPortList[MessagePort].PortNumber,
-			  Message.Addr,Message.Value,Message.Value);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		} /* if MessagePort */
-		
-		printf("elekIOServ: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
-		
-		Message.Status=elkWriteData(Message.Addr,Message.Value);
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		break;
-		
-	      case MSG_TYPE_CHANGE_FLAG_STATUS_QUERY:
-		
-		if (Message.Value) ElekStatus.InstrumentFlags.StatusQuery=1;
-		else ElekStatus.InstrumentFlags.StatusQuery=0;
-		sprintf(buf,"elekIOServ: Set StatusQuery to %d %d",Message.Value,ElekStatus.InstrumentFlags.StatusQuery);
+		sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);			       
+	      } /* if MessagePort */
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      break;
+	    case MSG_TYPE_WRITE_DATA:
+	      if (MessagePort!=ELEK_ETALON_IN) {
+		sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %d (%04x)",
+			MessageInPortList[MessagePort].PortNumber,
+			Message.Addr,Message.Value,Message.Value);
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
-		break;
-		
-	      case MSG_TYPE_CHANGE_FLAG_STATUS_SAVE:
-		if (Message.Value) ElekStatus.InstrumentFlags.StatusSave=1;
-		else ElekStatus.InstrumentFlags.StatusSave=0;
-		sprintf(buf,"elekIOServ: Set StatusSave to %d",ElekStatus.InstrumentFlags.StatusSave);
+	      } /* if MessagePort */
+	      
+	      printf("elekIOServ: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
+	      
+	      Message.Status=elkWriteData(Message.Addr,Message.Value);
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_FLAG_STATUS_QUERY:
+	      
+	      if (Message.Value) ElekStatus.InstrumentFlags.StatusQuery=1;
+	      else ElekStatus.InstrumentFlags.StatusQuery=0;
+	      sprintf(buf,"elekIOServ: Set StatusQuery to %d %d",Message.Value,ElekStatus.InstrumentFlags.StatusQuery);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_FLAG_STATUS_SAVE:
+	      if (Message.Value) ElekStatus.InstrumentFlags.StatusSave=1;
+	      else ElekStatus.InstrumentFlags.StatusSave=0;
+	      sprintf(buf,"elekIOServ: Set StatusSave to %d",ElekStatus.InstrumentFlags.StatusSave);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION:
+	      ElekStatus.InstrumentFlags.InstrumentAction=Message.Value;
+	      sprintf(buf,"elekIOServ: Set InstrumentAction to %d",ElekStatus.InstrumentFlags.InstrumentAction);
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_FLAG_ETALON_ACTION:
+	      ElekStatus.InstrumentFlags.EtalonAction=Message.Value;
+	      if (MessagePort!=ELEK_ETALON_IN) {
+		sprintf(buf,"elekIOServ: Set EtalonAction to %d",ElekStatus.InstrumentFlags.EtalonAction);
 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
+	      } /* if MessagePort */
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER:
+	      switch (Message.Addr) {
+	      case SYS_PARAMETER_ETALON_ONLINE:
+		ElekStatus.EtalonData.Online.Position=Message.Value;
 		break;
 		
-	      case MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION:
-		ElekStatus.InstrumentFlags.InstrumentAction=Message.Value;
-		sprintf(buf,"elekIOServ: Set InstrumentAction to %d",ElekStatus.InstrumentFlags.InstrumentAction);
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
+	      case SYS_PARAMETER_ETALON_OFFLINE_LEFT:
+		ElekStatus.EtalonData.OfflineStepLeft=Message.Value;
 		break;
 		
-	      case MSG_TYPE_CHANGE_FLAG_ETALON_ACTION:
-		ElekStatus.InstrumentFlags.EtalonAction=Message.Value;
-		if (MessagePort!=ELEK_ETALON_IN) {
-		  sprintf(buf,"elekIOServ: Set EtalonAction to %d",ElekStatus.InstrumentFlags.EtalonAction);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		} /* if MessagePort */
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
+	      case SYS_PARAMETER_ETALON_OFFLINE_RIGHT:
+		ElekStatus.EtalonData.OfflineStepRight=Message.Value;
 		break;
 		
-	      case MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER:
-		switch (Message.Addr) {
-		case SYS_PARAMETER_ETALON_ONLINE:
-		  ElekStatus.EtalonData.Online.Position=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_OFFLINE_LEFT:
-		  ElekStatus.EtalonData.OfflineStepLeft=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_OFFLINE_RIGHT:
-		  ElekStatus.EtalonData.OfflineStepRight=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_DITHER:
-		  ElekStatus.EtalonData.DitherStepWidth=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_SCAN_START:
-		  ElekStatus.EtalonData.ScanStart.Position=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_SCAN_STOP:
-		  ElekStatus.EtalonData.ScanStop.Position=Message.Value;
-		  break;
-		  
-		case SYS_PARAMETER_ETALON_SCAN_STEP:
-		  ElekStatus.EtalonData.ScanStepWidth=Message.Value;
-		  break;
-		  
-		default:
-		  sprintf(buf,"elekIOServ: Unkown SysParameter %d",Message.Addr);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		  break;
-		} /* switch Message.Addr Sysparameter */
-		
-		if (MessagePort!=ELEK_ETALON_IN) {
-		  sprintf(buf,"elekIOServ: Change %s to %d",strSysParameterDescription[Message.Addr],Message.Value);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		} /* if MessagePort */
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
+	      case SYS_PARAMETER_ETALON_DITHER:
+		ElekStatus.EtalonData.DitherStepWidth=Message.Value;
 		break;
 		
-	      case MSG_TYPE_CHANGE_MASK:
-		if ((Message.Addr<MAX_COUNTER_CHANNEL*10)){
-		  Channel=(int)(Message.Addr/10);
-		  MaskAddr=Message.Addr%10;
-		  ElekStatus.CounterCardMaster.Channel[Channel].Mask[MaskAddr]=Message.Value;
-		  sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		} else { // we found that Message.Addr is larger than MAX_COUNTER_CHANNEL*10
-		  sprintf(buf,"elekIOServ: Set Mask : Addr %d is larger than %d", Message.Addr, MAX_COUNTER_CHANNEL*10);
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		} /* if Message.Addr >=0 ... */
-		
-		Message.MsgType=MSG_TYPE_ACK;			    
-		SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-			    sizeof(struct ElekMessageType), &Message);
-		
-		SyncFlag.MaskChange=TRUE;
-		
+	      case SYS_PARAMETER_ETALON_SCAN_START:
+		ElekStatus.EtalonData.ScanStart.Position=Message.Value;
 		break;
 		
+	      case SYS_PARAMETER_ETALON_SCAN_STOP:
+		ElekStatus.EtalonData.ScanStop.Position=Message.Value;
+		break;
+		
+	      case SYS_PARAMETER_ETALON_SCAN_STEP:
+		ElekStatus.EtalonData.ScanStepWidth=Message.Value;
+		break;
 		
 	      default:
-		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Unknown Message Type");
+		sprintf(buf,"elekIOServ: Unkown SysParameter %d",Message.Addr);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		break;
-		
-	      } /* switch MsgType */
-
-	  // port to receive status data from slaves
-
+	      } /* switch Message.Addr Sysparameter */
+	      
+	      if (MessagePort!=ELEK_ETALON_IN) {
+		sprintf(buf,"elekIOServ: Change %s to %d",strSysParameterDescription[Message.Addr],Message.Value);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      } /* if MessagePort */
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      break;
+	      
+	    case MSG_TYPE_CHANGE_MASK:
+	      if ((Message.Addr<MAX_COUNTER_CHANNEL*10)){
+		Channel=(int)(Message.Addr/10);
+		MaskAddr=Message.Addr%10;
+		ElekStatus.CounterCardMaster.Channel[Channel].Mask[MaskAddr]=Message.Value;
+		sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      } else { // we found that Message.Addr is larger than MAX_COUNTER_CHANNEL*10
+		sprintf(buf,"elekIOServ: Set Mask : Addr %d is larger than %d", Message.Addr, MAX_COUNTER_CHANNEL*10);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	      } /* if Message.Addr >=0 ... */
+	      
+	      Message.MsgType=MSG_TYPE_ACK;			    
+	      SendUDPData(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+			  sizeof(struct ElekMessageType), &Message);
+	      
+	      SyncFlag.MaskChange=TRUE;
+	      
+	      break;
+	      
+	      
+	    default:
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Unknown Message Type");
+	      break;
+	      
+	    } /* switch MsgType */
+	    break;
+	    // port to receive status data from slaves
+	    
 	  case ELEK_STATUS_IN:       
 	    if(IsMaster)
-		 {
-			if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-						&ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , MSG_WAITALL,
-						(struct sockaddr *)&their_addr, &addr_len)) == -1) 
-			// Something went wrong
-			{
-				perror("elekIOServ(M): recvfrom ELEK_STATUS_IN:");
-				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
-			}
-			else
-			// we should have received some data at this point, so give a lifesign
-			{
-				printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
-				printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
-				#ifdef RUNONPC
-				rdtscll(TSC);
-				printf("elekIOServ(M): Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
-				#endif
-			};
-		}
+	      {
+		if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				       &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , MSG_WAITALL,
+				       (struct sockaddr *)&their_addr, &addr_len)) == -1) 
+		  // Something went wrong
+		  {
+		    perror("elekIOServ(M): recvfrom ELEK_STATUS_IN:");
+		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
+		  }
 		else
-		// Slave Mode
-		{
-			if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-						&ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , 0,
-						(struct sockaddr *)&their_addr, &addr_len)) == -1) 
-			// Something went wrong
-			{
-				perror("elekIOServ(S): recvfrom ELEK_STATUS_IN");
-				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
-			}
-			else
-			// we should have received some data at this point, so give a lifesign
-			{
-				printf("elekIOServ(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
-			};
-		};
-				    
+		  // we should have received some data at this point, so give a lifesign
+		  {
+		    printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
+		    printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
+#ifdef RUNONPC
+		    rdtscll(TSC);
+		    printf("elekIOServ(M): Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
+#endif
+		  };
+	      }
+	    else
+	      // Slave Mode
+	      {
+		if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				       &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , 0,
+				       (struct sockaddr *)&their_addr, &addr_len)) == -1) 
+		  // Something went wrong
+		  {
+		    perror("elekIOServ(S): recvfrom ELEK_STATUS_IN");
+		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");
+		  }
+		else
+		  // we should have received some data at this point, so give a lifesign
+		  {
+		    printf("elekIOServ(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
+		  };
+	      };
+	    
 	    break;
-		 
+	    
 	  default:
 	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Unknown Port Type");
 	    break;
