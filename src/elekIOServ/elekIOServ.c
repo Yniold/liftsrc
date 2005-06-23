@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 17:14:01 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 18:51:38 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.27  2005-06-23 17:14:01  rudolf
+* Revision 1.28  2005-06-23 18:51:38  rudolf
+* added correct filling of structure in slave mode, implemented copy slave-> master struct (untested)
+*
+* Revision 1.27  2005/06/23 17:14:01  rudolf
 * fixed "interrupted system call" bug (HH)
 *
 * Revision 1.26  2005/06/23 14:02:09  rudolf
@@ -1292,25 +1295,50 @@ void GetEtalonCardData ( struct elekStatusType *ptrElekStatus ) {
 /**********************************************************************************************************/
 
 /* function to retrieve Statusinformation */
-void GetADCCardData ( struct elekStatusType *ptrElekStatus ) {
+void GetADCCardData ( struct elekStatusType *ptrElekStatus, int IsMaster ) {
 
   int Card;
   int Channel;
   uint16_t  ADCData;
   unsigned  ADC_Address;
 
-
-  // normal ADC Card
-  for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) {
-    ADC_Address=ELK_ADC_BASE+Card*ELK_ADC_NUM_ADR;
-    for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {	    
-      ADCData=elkReadData(ADC_Address+2*Channel);
-      ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].ADCData=ADCData;
-      ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].SumDat+=ADCData;
-      ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].SumSqr+=ADCData*ADCData;	    
-    } /* for Channel */
-  } /* for Card */    
-
+	if(IsMaster)
+	{
+		// **********************
+		// MASTER 16bit ADC Cards
+		// **********************
+		
+		for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) 
+		{
+			ADC_Address=ELK_ADC_BASE+Card*ELK_ADC_NUM_ADR;
+			for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+			{	    
+				ADCData=elkReadData(ADC_Address+2*Channel);
+				ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].ADCData=ADCData;
+				ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].SumDat+=ADCData;
+				ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].SumSqr+=ADCData*ADCData;	    
+			} /* for Channel */
+		} /* for Card */    
+	}
+	else
+	{
+		// **********************
+		// SLAVE 16bit ADC Cards
+		// **********************
+		
+		for (Card=0; Card<MAX_ADC_CARD_WP; Card ++) 
+		{
+			ADC_Address=ELK_ADC_BASE+Card*ELK_ADC_NUM_ADR;
+			for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+			{	    
+				ADCData=elkReadData(ADC_Address+2*Channel);
+				ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].ADCData=ADCData;
+				ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].SumDat+=ADCData;
+				ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].SumSqr+=ADCData*ADCData;	    
+			} /* for Channel */
+		} /* for Card */    
+	};
+	
 } /* GetADCCardData */
 
 /**********************************************************************************************************/
@@ -1318,7 +1346,7 @@ void GetADCCardData ( struct elekStatusType *ptrElekStatus ) {
 /**********************************************************************************************************/
 
 /* function to retrieve Statusinformation */
-void GetMFCCardData ( struct elekStatusType *ptrElekStatus ) {
+void GetMFCCardData ( struct elekStatusType *ptrElekStatus, int IsMaster ) {
 
   int Card;
   int Channel;
@@ -1326,24 +1354,57 @@ void GetMFCCardData ( struct elekStatusType *ptrElekStatus ) {
   unsigned  MFC_Address;
   unsigned  DAC_Address;
 
-
-  // normal MFC Card
-  for (Card=0; Card<MAX_MFC_CARD_LIFT; Card ++) {
-    MFC_Address=ELK_MFC_BASE+Card*ELK_MFC_NUM_ADR;
-    DAC_Address=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
-    ptrElekStatus->MFCCardMaster[Card].NumSamples++;
-    for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {	    
-      MFCFlow=elkReadData(MFC_Address+2*Channel);
-      
-      ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].Flow    = MFCFlow;	    
-      ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SumDat += MFCFlow;	    
-      ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SumSqr += MFCFlow*MFCFlow;
-      
-      ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SetFlow =elkReadData(DAC_Address+2*Channel) ;	    
-
-    } /* for Channel */
-  } /* for Card */    
-
+	if(IsMaster)
+	{
+		// *********************
+		// MASTER MFC Card
+		// *********************
+		
+		for (Card=0; Card<MAX_MFC_CARD_LIFT; Card ++)
+		{
+			MFC_Address=ELK_MFC_BASE+Card*ELK_MFC_NUM_ADR;
+			DAC_Address=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+			ptrElekStatus->MFCCardMaster[Card].NumSamples++;
+			
+			for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++)
+			{	    
+				MFCFlow=elkReadData(MFC_Address+2*Channel);
+				
+				ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].Flow    = MFCFlow;	    
+				ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SumDat += MFCFlow;	    
+				ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SumSqr += MFCFlow*MFCFlow;
+				
+				ptrElekStatus->MFCCardMaster[Card].MFCChannelData[Channel].SetFlow =elkReadData(DAC_Address+2*Channel) ;	    
+		
+			} /* for Channel */
+		} /* for Card */    
+	}
+	else
+	{
+		// *********************
+		// SLAVE MFC Card
+		// *********************
+		
+		for (Card=0; Card<MAX_MFC_CARD_WP; Card ++)
+		{
+			MFC_Address=ELK_MFC_BASE+Card*ELK_MFC_NUM_ADR;
+			DAC_Address=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+			ptrElekStatus->MFCCardSlave[Card].NumSamples++;
+			
+			for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++)
+			{	    
+				MFCFlow=elkReadData(MFC_Address+2*Channel);
+				
+				ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].Flow    = MFCFlow;	    
+				ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SumDat += MFCFlow;	    
+				ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SumSqr += MFCFlow*MFCFlow;
+				
+				ptrElekStatus->MFCCardSlave[Card].MFCChannelData[Channel].SetFlow =elkReadData(DAC_Address+2*Channel) ;	    
+		
+			} /* for Channel */
+		} /* for Card */    
+	}
+	
 } /* GetMFCCardData */
 
 
@@ -1371,15 +1432,31 @@ int GetDCDC4CardData (struct elekStatusType *ptrElekStatus) {
 /* Get ValveCard                                                                                        */
 /**********************************************************************************************************/
 
-int GetValveCardData (struct elekStatusType *ptrElekStatus) {
+int GetValveCardData (struct elekStatusType *ptrElekStatus, int IsMaster)
+{
  
-  int Card;
-  int ret;
-
-  for (Card=0; Card<MAX_VALVE_CARD_LIFT; Card ++) {
-    ptrElekStatus->ValveCardMaster[Card].Valve=elkReadData(ELK_VALVE_BASE+Card*2);
-    ptrElekStatus->ValveCardMaster[Card].ValveVolt=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
-  } /* for Card */
+	int Card;
+	int ret;
+	
+	// MASTER
+	if(IsMaster)
+	{
+		for (Card=0; Card<MAX_VALVE_CARD_LIFT; Card ++) 
+		{
+			ptrElekStatus->ValveCardMaster[Card].Valve=elkReadData(ELK_VALVE_BASE+Card*2);
+			ptrElekStatus->ValveCardMaster[Card].ValveVolt=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
+		} /* for Card */
+	}
+	
+	// SLAVE
+	else
+	{
+		for (Card=0; Card<MAX_VALVE_CARD_WP; Card ++) 
+		{
+			ptrElekStatus->ValveCardSlave[Card].Valve=elkReadData(ELK_VALVE_BASE+Card*2);
+			ptrElekStatus->ValveCardSlave[Card].ValveVolt=elkReadData(ELK_PWM_VALVE_BASE+Card*2);
+		} /* for Card */
+	};
 } /* GetValveCardData */
 
 
@@ -1387,7 +1464,7 @@ int GetValveCardData (struct elekStatusType *ptrElekStatus) {
 /* GetCounterCardData                                                                                          */
 /**********************************************************************************************************/
 
-void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
+void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
   
   extern struct MessagePortType MessageInPortList[];
   extern struct MessagePortType MessageOutPortList[];
@@ -1404,13 +1481,14 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   int       ret;
   char buf[GENERIC_BUF_LEN];
   
-  
+  if(IsMaster)
+  {
   // Counter Card ADC Channel
   for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
       ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
       // mask channel in upper 4 bits
       if ((ADCData>>12)!=i) {
-	  sprintf(buf,"elekIOServ: ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
+	  sprintf(buf,"elekIOServ(M): ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
 	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	  ADCData=0xffff;
       }      
@@ -1439,7 +1517,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
   } while ( (TimeOut<0x050) && (CounterStatus & ELK_COUNTER_STATUS_BUSY));
   
   if (TimeOut>30) { // had to wait too long....	
-    sprintf(buf,"CCStat: %4x %ld BUSY...WE HAVE A PROBLEM",CounterStatus, TimeOut );
+    sprintf(buf,"CCStat(M): %4x %ld BUSY...WE HAVE A PROBLEM",CounterStatus, TimeOut );
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   }
   
@@ -1478,83 +1556,248 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus ) {
     //SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
     //} /* if Channel */
   }/*Channel*/
+ }
+ 
+ // *******************
+ // * Slave CounterCard
+ // *******************
+ 
+ else
+ {
+  // Counter Card ADC Channel
+  for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
+      ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
+      // mask channel in upper 4 bits
+      if ((ADCData>>12)!=i) {
+	  sprintf(buf,"elekIOServ(S): ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	  ADCData=0xffff;
+      }      
+      ptrElekStatus->CounterCardSlave.ADCData[i]=ADCData;   
+  } /* for i */
+  
+  // CounterCard ShiftDelays
+  for(i=0; i<MAX_COUNTER_CHANNEL;i++)
+      ptrElekStatus->CounterCardSlave.Channel[i].ShiftDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+2*i);
+  
+  //Master Delay
+  ptrElekStatus->CounterCardSlave.MasterDelay=elkReadData(ELK_COUNTER_DELAY_SHIFT+6);
+  
+  // CounterCard GateDelays
+  for(i=1; i<MAX_COUNTER_CHANNEL;i++) {// skip channel 0 which is the PMT and has no gate register 
+    ptrElekStatus->CounterCardSlave.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1));
+    ptrElekStatus->CounterCardSlave.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1)+2);	
+  }
+  
+  TimeOut=0;
+  do {
+    CounterStatus=elkReadData(ELK_COUNTER_STATUS); // lets see if swap was successfull
+    TimeOut++;
+    //    sprintf(buf,"CCStat: %4x",CounterStatus);
+    //    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+  } while ( (TimeOut<0x050) && (CounterStatus & ELK_COUNTER_STATUS_BUSY));
+  
+  if (TimeOut>30) { // had to wait too long....	
+    sprintf(buf,"CCStat(S): %4x %ld BUSY...WE HAVE A PROBLEM",CounterStatus, TimeOut );
+    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+  }
+  
+  for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
+    TimeSlot=0;
+    SumCounts=0;
+    for (Page=0; Page<MAX_COUNTER_PAGE; Page++) {	
+      // set page and Channel in status register
+      CounterStatus=(Channel <<4) | Page;
+      elkWriteData(ELK_COUNTER_STATUS, CounterStatus);
+      // get masked sumcounts 
+      
+      for(TimeSlotinPage=0; TimeSlotinPage<MAX_COUNTER_SLOTS_PER_PAGE; TimeSlotinPage++, TimeSlot++) {
+	ptrElekStatus->CounterCardSlave.Channel[Channel].Data[TimeSlot]
+	  =elkReadData(ELK_COUNTER_COUNTS+TimeSlotinPage*2);
+	// clear buffer
+	ret=elkWriteData(ELK_COUNTER_COUNTS+TimeSlotinPage*2,0);
+	
+	// sum counts on our own until it works correctly
+	if (TestChannelMask(ptrElekStatus->CounterCardSlave.Channel[Channel].Mask,TimeSlot)) {
+	  SumCounts=SumCounts+ptrElekStatus->CounterCardSlave.Channel[Channel].Data[TimeSlot];
+	  //if (Channel==0) {
+	  //  sprintf(buf,"Add #%d : %d %d",TimeSlot,SumCounts,ptrElekStatus->CounterCard.Channel[Channel].Data[TimeSlot]);
+	  //  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	  //} /* if Channel */
+	} /* if testChannelMask */
+      }/* for TimeSlotinPage*/
+    } /*Page*/
+    // get sumcounts for the selected channel
+    
+    //	ptrElekStatus->CounterCard.Channel[Channel].Counts=elkReadData(ELK_COUNTER_SUMCOUNTS);
+    ptrElekStatus->CounterCardSlave.Channel[Channel].Counts=SumCounts;
+    ptrElekStatus->CounterCardSlave.Channel[Channel].Pulses=ptrElekStatus->CounterCardSlave.Channel[Channel].Data[0];
+    //    if (Channel==0) {
+    //sprintf(buf,"SumCounts #%d : %d",Channel,ptrElekStatus->CounterCard.Channel[Channel].Counts);
+    //SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+    //} /* if Channel */
+  }/*Channel*/
+ }
+ 
 } /* GetCounterCardData */
 
 /**********************************************************************************************************/
 /* GetTemperatureCardData                                                                                     */
 /**********************************************************************************************************/
 
-void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus ) {
-
-  extern struct MessagePortType MessageInPortList[];
-  extern struct MessagePortType MessageOutPortList[];
-
-  int            Card;
-  int            Sensor;
-  long           TimeOut=0;
-  uint16_t       ret;
-  uint16_t       Control;
-  char           buf[GENERIC_BUF_LEN];
-
-  for (Card=0; Card<MAX_TEMP_SENSOR_CARD_LIFT; Card++) {
-
-    // check if AVR busy
-    do {
-      ptrElekStatus->TempSensCardMaster[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
-    } while ( (TimeOut++<MAX_TEMP_TIMEOUT) && (ptrElekStatus->TempSensCardMaster[Card].Control.Field.Update));
-
-    //    sprintf(buf,"GetTemp: Control : %x",ptrElekStatus->TempSensCard[Card].Control.Word);
-    //    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-
-    if (TimeOut>MAX_TEMP_TIMEOUT) {
-      if ( ((ptrElekStatus->TempSensCardMaster[Card].NumMissed)++)>MAX_TEMP_MISSED_READING) {
-	// mark Sensor Data as not valid and mark temperature as invalid
-	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) {
-	  ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.TempFrac=0x0;
-	  ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.TempMain=0x80;
-	} /* for Sensor */
-	sprintf(buf,"GetTemp: Problem with Card : %d Missed Reading %d",Card, ptrElekStatus->TempSensCardMaster[Card].NumMissed);
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-      } else {
-	// mark Sensor Data as not valid
-	for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++)
-	  ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.bValid=0;
-      }
-    } else {
-      // we set the busy flag to get exclusive access
-      //    ptrElekStatus->TempSensCard[Card].Control.Field.Busy=1;
-      // ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
-
-      ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
-
-      // first we read the number of Sensor we have
-      ptrElekStatus->TempSensCardMaster[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
-      ptrElekStatus->TempSensCardMaster[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
-      ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
-
-      // now check each sensor
-      for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) {
-	ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
-	//	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
-	//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
-	//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
-	ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
-	ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
-	ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
-	ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
-      } /* for Sensor */
-
-
-      //      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
-      // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-
-      // we release the busy flag
-      ptrElekStatus->TempSensCardMaster[Card].Control.Field.Busy=0;
-      ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardMaster[Card].Control.Word );
-
-    } /* if TimeOut */
-  } /* for Card */
-
+void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) 
+{
+	
+	extern struct MessagePortType MessageInPortList[];
+	extern struct MessagePortType MessageOutPortList[];
+	
+	int            Card;
+	int            Sensor;
+	long           TimeOut=0;
+	uint16_t       ret;
+	uint16_t       Control;
+	char           buf[GENERIC_BUF_LEN];
+	
+	if(IsMaster)
+	{
+		for (Card=0; Card<MAX_TEMP_SENSOR_CARD_LIFT; Card++) 
+		{
+		
+			// check if AVR busy
+			do 
+			{
+				ptrElekStatus->TempSensCardMaster[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
+			} 
+			while ((TimeOut++<MAX_TEMP_TIMEOUT)&&(ptrElekStatus->TempSensCardMaster[Card].Control.Field.Update));
+			
+			if (TimeOut>MAX_TEMP_TIMEOUT) 
+			{
+				if ( ((ptrElekStatus->TempSensCardMaster[Card].NumMissed)++)>MAX_TEMP_MISSED_READING) 
+				{
+					// mark Sensor Data as not valid and mark temperature as invalid
+					for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+					{
+						ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.TempFrac=0x0;
+						ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.TempMain=0x80;
+					} /* for Sensor */
+					sprintf(buf,"GetTemp(M): Problem with Card : %d Missed Reading %d",Card, ptrElekStatus->TempSensCardMaster[Card].NumMissed);
+					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				} 
+				else 
+				{
+					// mark Sensor Data as not valid
+					for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++)
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Field.bValid=0;
+				}
+			} 
+			else 
+			{
+				// we set the busy flag to get exclusive access
+				//    ptrElekStatus->TempSensCard[Card].Control.Field.Busy=1;
+				// ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
+		
+				ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
+		
+				// first we read the number of Sensor we have
+				ptrElekStatus->TempSensCardMaster[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
+				ptrElekStatus->TempSensCardMaster[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
+				ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
+		
+				// now check each sensor
+				for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+				{
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
+					//	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
+					//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
+					//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
+				} /* for Sensor */
+		
+		
+				//      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
+				// SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		
+				// we release the busy flag
+				ptrElekStatus->TempSensCardMaster[Card].Control.Field.Busy=0;
+				ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardMaster[Card].Control.Word );
+		
+			} /* if TimeOut */
+		} /* for Card */
+	}
+	//**************************
+	// SLAVE Temperature Card
+	//**************************
+	else
+  	{
+		for (Card=0; Card<MAX_TEMP_SENSOR_CARD_WP; Card++) {
+		
+			// check if AVR busy
+			do 
+			{
+				ptrElekStatus->TempSensCardSlave[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
+			} 
+			while ((TimeOut++<MAX_TEMP_TIMEOUT)&&(ptrElekStatus->TempSensCardSlave[Card].Control.Field.Update));
+			
+			if (TimeOut>MAX_TEMP_TIMEOUT) 
+			{
+				if ( ((ptrElekStatus->TempSensCardSlave[Card].NumMissed)++)>MAX_TEMP_MISSED_READING) 
+				{
+					// mark Sensor Data as not valid and mark temperature as invalid
+					for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+					{
+						ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Field.TempFrac=0x0;
+						ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Field.TempMain=0x80;
+					} /* for Sensor */
+					sprintf(buf,"GetTemp(S): Problem with Card : %d Missed Reading %d",Card, ptrElekStatus->TempSensCardMaster[Card].NumMissed);
+					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				} 
+				else 
+				{
+					// mark Sensor Data as not valid
+					for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++)
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Field.bValid=0;
+				}
+			} 
+			else 
+			{
+				// we set the busy flag to get exclusive access
+				//    ptrElekStatus->TempSensCard[Card].Control.Field.Busy=1;
+				// ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
+		
+				ptrElekStatus->TempSensCardSlave[Card].NumMissed=0;              // reset Missed Reading Counter
+		
+				// first we read the number of Sensor we have
+				ptrElekStatus->TempSensCardSlave[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
+				ptrElekStatus->TempSensCardSlave[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
+				ptrElekStatus->TempSensCardSlave[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
+		
+				// now check each sensor
+				for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+				{
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
+					//	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
+					//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
+					//  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
+					ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
+				} /* for Sensor */
+		
+		
+				//      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
+				// SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		
+				// we release the busy flag
+				ptrElekStatus->TempSensCardSlave[Card].Control.Field.Busy=0;
+				ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardSlave[Card].Control.Word );
+		
+			} /* if TimeOut */
+		} /* for Card */
+	} /* else if(IsMaster)*/
 
 } /* GetTemperatureCardData */
 
@@ -1562,83 +1805,162 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus ) {
 /* GetGPSData                                                                                     */
 /**********************************************************************************************************/
 
-void GetGPSData ( struct elekStatusType *ptrElekStatus ) {
+void GetGPSData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
 
-  extern struct MessagePortType MessageInPortList[];
-  extern struct MessagePortType MessageOutPortList[];
-
-  uint16_t       ret;
-  uint16_t       Control;
-  char           buf[GENERIC_BUF_LEN];
-
-  if(1 == ucDataReadyFlag)
-  {
-      if(ucGGAGPSQuality > 0) // check if data valid
-      {
-         // copy values into structure
-
-         ptrElekStatus->GPSDataMaster.ucUTCHours   = ucGGAHour;      // Time UTC
-         ptrElekStatus->GPSDataMaster.ucUTCMins    = ucGGAMinute;
-         ptrElekStatus->GPSDataMaster.ucUTCSeconds = ucGGASecond;
-
-         ptrElekStatus->GPSDataMaster.dLongitude   = dGGALongitude;  // Longitude (Laengengrad)
-         ptrElekStatus->GPSDataMaster.dLatitude    = dGGALatitude;   // Latitude (Breitengrad)
-
-         ptrElekStatus->GPSDataMaster.fAltitude    = dGGAAltitude;   // normal range 0 to 18000 m
-         ptrElekStatus->GPSDataMaster.fHDOP        = dGGAHDOP;       // normal range 0 to 100 ?
-
-         ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // normal range 1-12
-         ptrElekStatus->GPSDataMaster.ucLastValidData = 0;           // normal range 0 to 6
-
-         // speed
-
-         if(dVTGSpeedInKmh > 0)                                // check for positive speed
-         {
-            dVTGSpeedInKmh = dVTGSpeedInKmh / 3.6;             // will give metres per second
-            dVTGSpeedInKmh = dVTGSpeedInKmh * 100;             // will give cetimetres per second
-
-            ptrElekStatus->GPSDataMaster.uiGroundSpeed   = (uint16_t)dVTGSpeedInKmh;
-         }
-         else
-         {
-            ptrElekStatus->GPSDataMaster.uiGroundSpeed   = 0;        // no speed, sets to 0
-         };
-
-         // heading
-         // multiply heading by 10, will result in an int from 0 to 3599
-         dVTGTrueHeading = dVTGTrueHeading * 10;
-         ptrElekStatus->GPSDataMaster.uiHeading       = (uint16_t)dVTGTrueHeading;
-
-         ucDataReadyFlag = FALSE;
-      }
-      else
-      {
-         // set data to initial values, which normaly cannot exist
-/*
-         ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
-         ptrElekStatus->GPSData.ucUTCMins    = 0;
-         ptrElekStatus->GPSData.ucUTCSeconds = 0;
-
-         ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
-         ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
-
-         ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
-         ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
-
-         ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
-
-         ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
-         ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
-*/
-         // no valid data, so increment counter up to 255
-
-         if(ptrElekStatus->GPSDataMaster.ucLastValidData < 255)
-         {
-            ptrElekStatus->GPSDataMaster.ucLastValidData++;
-            ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // copy number of sats to see where problem is
-         }
-      };
-   };
+	extern struct MessagePortType MessageInPortList[];
+	extern struct MessagePortType MessageOutPortList[];
+	
+	uint16_t       ret;
+	uint16_t       Control;
+	char           buf[GENERIC_BUF_LEN];
+	
+	if(IsMaster)
+	{
+		if(1 == ucDataReadyFlag)
+		{
+			if(ucGGAGPSQuality > 0) // check if data valid
+			{
+				// copy values into structure
+	
+				ptrElekStatus->GPSDataMaster.ucUTCHours   = ucGGAHour;      // Time UTC
+				ptrElekStatus->GPSDataMaster.ucUTCMins    = ucGGAMinute;
+				ptrElekStatus->GPSDataMaster.ucUTCSeconds = ucGGASecond;
+	
+				ptrElekStatus->GPSDataMaster.dLongitude   = dGGALongitude;  // Longitude (Laengengrad)
+				ptrElekStatus->GPSDataMaster.dLatitude    = dGGALatitude;   // Latitude (Breitengrad)
+	
+				ptrElekStatus->GPSDataMaster.fAltitude    = dGGAAltitude;   // normal range 0 to 18000 m
+				ptrElekStatus->GPSDataMaster.fHDOP        = dGGAHDOP;       // normal range 0 to 100 ?
+	
+				ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // normal range 1-12
+				ptrElekStatus->GPSDataMaster.ucLastValidData = 0;           // normal range 0 to 6
+	
+				// speed
+	
+				if(dVTGSpeedInKmh > 0)                                // check for positive speed
+				{
+					dVTGSpeedInKmh = dVTGSpeedInKmh / 3.6;             // will give metres per second
+					dVTGSpeedInKmh = dVTGSpeedInKmh * 100;             // will give cetimetres per second
+	
+					ptrElekStatus->GPSDataMaster.uiGroundSpeed   = (uint16_t)dVTGSpeedInKmh;
+				}
+				else
+				{
+					ptrElekStatus->GPSDataMaster.uiGroundSpeed   = 0;        // no speed, sets to 0
+				};
+	
+				// heading
+				// multiply heading by 10, will result in an int from 0 to 3599
+				dVTGTrueHeading = dVTGTrueHeading * 10;
+				ptrElekStatus->GPSDataMaster.uiHeading       = (uint16_t)dVTGTrueHeading;
+	
+				ucDataReadyFlag = FALSE;
+			}
+			else
+			{
+				// set data to initial values, which normaly cannot exist
+	/*
+				ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
+				ptrElekStatus->GPSData.ucUTCMins    = 0;
+				ptrElekStatus->GPSData.ucUTCSeconds = 0;
+	
+				ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
+				ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
+	
+				ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
+				ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+	
+				ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+	
+				ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+				ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+	*/
+				// no valid data, so increment counter up to 255
+	
+				if(ptrElekStatus->GPSDataMaster.ucLastValidData < 255)
+				{
+					ptrElekStatus->GPSDataMaster.ucLastValidData++;
+					ptrElekStatus->GPSDataMaster.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // copy number of sats to see where problem is
+				}
+			}; /* if quality */
+		} /* if ucDataFlag */
+	} /* if IsMaster */
+	
+	else
+	
+	// *****************
+	// * SLAVE GPS
+	// *****************
+	{
+		if(1 == ucDataReadyFlag)
+		{
+			if(ucGGAGPSQuality > 0) // check if data valid
+			{
+				// copy values into structure
+	
+				ptrElekStatus->GPSDataSlave.ucUTCHours   = ucGGAHour;      // Time UTC
+				ptrElekStatus->GPSDataSlave.ucUTCMins    = ucGGAMinute;
+				ptrElekStatus->GPSDataSlave.ucUTCSeconds = ucGGASecond;
+	
+				ptrElekStatus->GPSDataSlave.dLongitude   = dGGALongitude;  // Longitude (Laengengrad)
+				ptrElekStatus->GPSDataSlave.dLatitude    = dGGALatitude;   // Latitude (Breitengrad)
+	
+				ptrElekStatus->GPSDataSlave.fAltitude    = dGGAAltitude;   // normal range 0 to 18000 m
+				ptrElekStatus->GPSDataSlave.fHDOP        = dGGAHDOP;       // normal range 0 to 100 ?
+	
+				ptrElekStatus->GPSDataSlave.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // normal range 1-12
+				ptrElekStatus->GPSDataSlave.ucLastValidData = 0;           // normal range 0 to 6
+	
+				// speed
+	
+				if(dVTGSpeedInKmh > 0)                                // check for positive speed
+				{
+					dVTGSpeedInKmh = dVTGSpeedInKmh / 3.6;             // will give metres per second
+					dVTGSpeedInKmh = dVTGSpeedInKmh * 100;             // will give cetimetres per second
+	
+					ptrElekStatus->GPSDataSlave.uiGroundSpeed   = (uint16_t)dVTGSpeedInKmh;
+				}
+				else
+				{
+					ptrElekStatus->GPSDataSlave.uiGroundSpeed   = 0;        // no speed, sets to 0
+				};
+	
+				// heading
+				// multiply heading by 10, will result in an int from 0 to 3599
+				dVTGTrueHeading = dVTGTrueHeading * 10;
+				ptrElekStatus->GPSDataSlave.uiHeading       = (uint16_t)dVTGTrueHeading;
+	
+				ucDataReadyFlag = FALSE;
+			}
+			else
+			{
+				// set data to initial values, which normaly cannot exist
+	/*
+				ptrElekStatus->GPSData.ucUTCHours   = 0;           // Time -> 00:00:00
+				ptrElekStatus->GPSData.ucUTCMins    = 0;
+				ptrElekStatus->GPSData.ucUTCSeconds = 0;
+	
+				ptrElekStatus->GPSData.dLongitude   = 999.99;      // normal range -180 to +180
+				ptrElekStatus->GPSData.dLatitude    = 99.99;       // normal range -90 to +90
+	
+				ptrElekStatus->GPSData.fAltitude    = -99999;      // normal range 0 to 18000 m
+				ptrElekStatus->GPSData.fHDOP        = 999;         // normal range 0 to 100 ?
+	
+				ptrElekStatus->GPSData.ucLastValidData = 255;      // normal range 0 to 6
+	
+				ptrElekStatus->GPSData.uiGroundSpeed   = 65000;    // normal range 0 to 30000 cm/s
+				ptrElekStatus->GPSData.uiHeading       = 9999;     // normal range 0 to 3599 (tenth degrees)
+	*/
+				// no valid data, so increment counter up to 255
+	
+				if(ptrElekStatus->GPSDataSlave.ucLastValidData < 255)
+				{
+					ptrElekStatus->GPSDataSlave.ucLastValidData++;
+					ptrElekStatus->GPSDataSlave.ucNumberOfSatellites = ucGGANumOfSatsInUse;   // copy number of sats to see where problem is
+				}
+			}; /* if quality */
+		} /* if ucDataFlag */
+	} /* if IsSlave */	
 } /* GetGPSData */
 
 /**********************************************************************************************************/
@@ -1646,38 +1968,43 @@ void GetGPSData ( struct elekStatusType *ptrElekStatus ) {
 /**********************************************************************************************************/
 
 /* function to retrieve Statusinformation */
-void GetElekStatus ( struct elekStatusType *ptrElekStatus ) {
+void GetElekStatus ( struct elekStatusType *ptrElekStatus, int IsMaster) {
 
   // get time
   gettimeofday(&(ptrElekStatus->TimeOfDayMaster), NULL);
 
-  GetEtalonCardData(ptrElekStatus);
+  // we only have a etalon card in the master
+  if(IsMaster)
+  	GetEtalonCardData(ptrElekStatus);
 
   // Counter Card
     
   elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );                  // ask for flip Buffer
-  elkWriteData(ELK_COUNTER_STATUS, 0);                                         // and reset flip flop
+  elkWriteData(ELK_COUNTER_STATUS, 0);
+                                           // and reset flip flop
   // ..will take some time, so we have time for something different....
   // now lets see what the counter card has...
-  GetCounterCardData(ptrElekStatus);
+  GetCounterCardData(ptrElekStatus, IsMaster);
     
   // ADC Card
-  GetADCCardData(ptrElekStatus);
+  GetADCCardData(ptrElekStatus,IsMaster);
     
   // MFC Card
-  GetMFCCardData(ptrElekStatus);
+  GetMFCCardData(ptrElekStatus,IsMaster);
 
-  // DCDC4 Card
-  GetDCDC4CardData(ptrElekStatus);
+  // DCDC4 Card only on Master
+  
+  if(IsMaster)
+  	GetDCDC4CardData(ptrElekStatus);
 
   // Valve Card
-  GetValveCardData(ptrElekStatus);
+  GetValveCardData(ptrElekStatus,IsMaster);
     
   // now get the temperature data
-  GetTemperatureCardData(ptrElekStatus);
+  GetTemperatureCardData(ptrElekStatus,IsMaster);
 
   // now get the GPS date
-  GetGPSData(ptrElekStatus);
+  GetGPSData(ptrElekStatus,IsMaster);
 
 } /* GetElekStatus */
 
@@ -1847,13 +2174,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.27 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -1985,10 +2312,11 @@ int main(int argc, char *argv[])
 #endif 
 		  } /* end if(Slavelist) */
 	      } // end for() 
-	  } // If IsMaster
+			GetElekStatus(&ElekStatus, IsMaster);
+		} // If IsMaster
 
-	  // GetElekStatus(&ElekStatus);
-	  SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
+//   commented out, send later when message is assembled from master+slave		
+//	  SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
 	  
 	  //		sprintf(buf,"ElekIOServ: send Status of Numbytes : %d\n",sizeof(struct elekStatusType));
 	  //		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -2055,7 +2383,7 @@ int main(int argc, char *argv[])
 #endif
 	      ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
 	      printf("ElekIOServ: gathering Data...\n\r");
-	      GetElekStatus(&ElekStatus);
+	      GetElekStatus(&ElekStatus,IsMaster);
 	      
 	      // send this debugmessage message to debugmon   
 	      sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
@@ -2240,8 +2568,17 @@ int main(int argc, char *argv[])
 		    printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
 #ifdef RUNONPC
 		    rdtscll(TSC);
+#endif			 
 		    printf("elekIOServ(M): Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
-#endif
+			 
+			 void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M)
+			 void* pSource = (void*)&(ElekStatusFromSlave.TimeOfDaySlave); 	// copy from first slave element(S) 
+			 size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
+			 
+			 printf("copying %d bytes from SlaveStruct to MasterStruct\n",numBytes);
+			 memcpy(pDest,pSource,numBytes);
+			 SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
+
 		  };
 	      }
 	    else
