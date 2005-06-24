@@ -1025,35 +1025,3 @@ function editC_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editC as text
 %        str2double(get(hObject,'String')) returns contents of editC as a double
 
-
-
-
-function editylim1_Callback(hObject, eventdata, handles)
-% hObject    handle to editylim1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editylim1 as text
-%        str2double(get(hObject,'String')) returns contents of editylim1 as a double
-ylim1=uint8(str2double(get(hObject,'String')));
-if ylim1>100 set(hObject,'String','100');
-else set(hObject,'String',num2str(ylim1));
-end
-
-
-
-
-
-function editylim2_Callback(hObject, eventdata, handles)
-% hObject    handle to editylim2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editylim2 as text
-%        str2double(get(hObject,'String')) returns contents of editylim2 as a double
-ylim2=uint8(str2double(get(hObject,'String')));
-if ylim2>100 set(hObject,'String','100');
-else set(hObject,'String',num2str(ylim2));
-end
-
-
