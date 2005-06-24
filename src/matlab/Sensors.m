@@ -1732,10 +1732,10 @@ end
 set(handles.txtxvalue,'String',num2str(xdata(lastrow)));
 set(handles.txtyvalue,'String',num2str(ydata(lastrow)));
 
-xlim1=uint8(str2double(get(handles.editxlim1,'String')));
-xlim2=uint8(str2double(get(handles.editxlim2,'String')));
-ylim1=uint8(str2double(get(handles.editylim1,'String')));
-ylim2=uint8(str2double(get(handles.editylim2,'String')));
+xlim1=double(str2double(get(handles.editxlim1,'String')));
+xlim2=double(str2double(get(handles.editxlim2,'String')));
+ylim1=double(str2double(get(handles.editylim1,'String')));
+ylim2=double(str2double(get(handles.editylim2,'String')));
 plot(handles.axes1,xdata,ydata,'.');
 xlim([xlim1*(max(xdata)-min(xdata))+min(xdata), xlim2*(max(xdata)-min(xdata))+min(xdata)]);
 ylim([ylim1*(max(ydata)-min(ydata))+min(ydata), ylim2*(max(ydata)-min(ydata))+min(ydata)]);
