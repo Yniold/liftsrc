@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-23 18:51:38 $ by $Author: rudolf $
+* $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-24 12:03:31 $ by $Author: rudolf $
 *
 * $Log: elekIOServ.c,v $
-* Revision 1.28  2005-06-23 18:51:38  rudolf
+* Revision 1.29  2005-06-24 12:03:31  rudolf
+* added time measurements, started with error handling for lost packets etc.
+*
+* Revision 1.28  2005/06/23 18:51:38  rudolf
 * added correct filling of structure in slave mode, implemented copy slave-> master struct (untested)
 *
 * Revision 1.27  2005/06/23 17:14:01  rudolf
@@ -121,7 +124,8 @@
 
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
 
-#define DEBUG_SLAVECOM                              // debug communication between master and slave
+#define DEBUG_SLAVECOM        	// debug communication between master and slave
+#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
     ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
@@ -1969,43 +1973,51 @@ void GetGPSData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
 
 /* function to retrieve Statusinformation */
 void GetElekStatus ( struct elekStatusType *ptrElekStatus, int IsMaster) {
-
-  // get time
-  gettimeofday(&(ptrElekStatus->TimeOfDayMaster), NULL);
-
-  // we only have a etalon card in the master
-  if(IsMaster)
-  	GetEtalonCardData(ptrElekStatus);
-
-  // Counter Card
-    
-  elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );                  // ask for flip Buffer
-  elkWriteData(ELK_COUNTER_STATUS, 0);
-                                           // and reset flip flop
-  // ..will take some time, so we have time for something different....
-  // now lets see what the counter card has...
-  GetCounterCardData(ptrElekStatus, IsMaster);
-    
-  // ADC Card
-  GetADCCardData(ptrElekStatus,IsMaster);
-    
-  // MFC Card
-  GetMFCCardData(ptrElekStatus,IsMaster);
-
-  // DCDC4 Card only on Master
-  
-  if(IsMaster)
-  	GetDCDC4CardData(ptrElekStatus);
-
-  // Valve Card
-  GetValveCardData(ptrElekStatus,IsMaster);
-    
-  // now get the temperature data
-  GetTemperatureCardData(ptrElekStatus,IsMaster);
-
-  // now get the GPS date
-  GetGPSData(ptrElekStatus,IsMaster);
-
+	
+	// we only have a etalon card in the master
+	if(IsMaster)
+	{
+		// get time
+		gettimeofday(&(ptrElekStatus->TimeOfDayMaster), NULL);
+	}
+	else
+	{
+		gettimeofday(&(ptrElekStatus->TimeOfDaySlave), NULL);
+	};	
+	
+	// EthalonCard is only in Master
+	if(IsMaster)
+		GetEtalonCardData(ptrElekStatus);
+	
+	// Counter Card
+		
+	elkWriteData(ELK_COUNTER_STATUS, ELK_COUNTER_STATUS_FLIP );                  // ask for flip Buffer
+	elkWriteData(ELK_COUNTER_STATUS, 0);
+															// and reset flip flop
+	// ..will take some time, so we have time for something different....
+	// now lets see what the counter card has...
+	GetCounterCardData(ptrElekStatus, IsMaster);
+		
+	// ADC Card
+	GetADCCardData(ptrElekStatus,IsMaster);
+		
+	// MFC Card
+	GetMFCCardData(ptrElekStatus,IsMaster);
+	
+	// DCDC4 Card only on Master
+	
+	if(IsMaster)
+	GetDCDC4CardData(ptrElekStatus);
+	
+	// Valve Card
+	GetValveCardData(ptrElekStatus,IsMaster);
+		
+	// now get the temperature data
+	GetTemperatureCardData(ptrElekStatus,IsMaster);
+	
+	// now get the GPS date
+	GetGPSData(ptrElekStatus,IsMaster);
+	
 } /* GetElekStatus */
 
 /**********************************************************************************************************/
@@ -2097,7 +2109,10 @@ int main(int argc, char *argv[])
     
   struct elekStatusType ElekStatus;
   struct elekStatusType ElekStatusFromSlave;
-
+  
+  uint64_t ulCpuClock = CPUCLOCK;
+  int nLostPackets = 0;				// counter for lost packets from slave
+  
   int fdMax;                      // max fd for select
   int i;                          // loop counter
   int fdNum;                      // fd number in loop
@@ -2105,11 +2120,14 @@ int main(int argc, char *argv[])
   fd_set fdsSelect;               // temp file descriptor list for select()
   int ret;
   uint64_t TSC,TSCin;
+  uint64_t TSCsentPacket;
   uint64_t MinTimeDiff=1e6;
   uint64_t MaxTimeDiff=0;
   struct timeval StartAction;
   struct timeval StopAction;
   struct timeval LastAction;
+  struct timeval GetStatusStartTime;
+  struct timeval GetStatusStopTime;
     
   struct sigaction  SignalAction;
   struct sigevent   SignalEvent;
@@ -2174,13 +2192,13 @@ int main(int argc, char *argv[])
   // output version info on debugMon and Console
   
 #ifdef RUNONARM
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for ARM\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.29 $) for ARM\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for ARM\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.29 $) for ARM\n",VERSION);
 #else
-  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for i386\n",VERSION);
+  printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.29 $) for i386\n",VERSION);
   
-  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.28 $) for i386\n",VERSION);
+  sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.29 $) for i386\n",VERSION);
 #endif
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2312,7 +2330,14 @@ int main(int argc, char *argv[])
 #endif 
 		  } /* end if(Slavelist) */
 	      } // end for() 
-			GetElekStatus(&ElekStatus, IsMaster);
+			TSCsentPacket =TSC;
+			
+			gettimeofday(&GetStatusStartTime, NULL);
+	      GetElekStatus(&ElekStatus,IsMaster);
+			gettimeofday(&GetStatusStopTime, NULL);
+			printf("elekIOServ(m): Data aquisition took: %02d.%03ds\n\r",
+			GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
+			(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
 		} // If IsMaster
 
 //   commented out, send later when message is assembled from master+slave		
@@ -2379,14 +2404,22 @@ int main(int argc, char *argv[])
 	      
 	    case MSG_TYPE_FETCH_DATA:
 #ifdef DEBUG_SLAVECOM
-	      printf("ElekIOServ: FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
+	      printf("ElekIOServ(s): FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
 #endif
 	      ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
-	      printf("ElekIOServ: gathering Data...\n\r");
+#ifdef DEBUG_SLAVECOM
+	      printf("ElekIOServ(s): gathering Data...\n\r");
+#endif
+			gettimeofday(&GetStatusStartTime, NULL);
 	      GetElekStatus(&ElekStatus,IsMaster);
-	      
+			gettimeofday(&GetStatusStopTime, NULL);
+
+			printf("ElekIOServ(s): Data aquisition took: %02d.%03ds\n\r",
+			GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
+			(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
+      
 	      // send this debugmessage message to debugmon   
-	      sprintf(buf,"ElekIOServ: FETCH_DATA from %4d Port %04x Value %d (%04x)\n\r",
+	      sprintf(buf,"ElekIOServ(s): FETCH_DATA from Port: %05d\n\r",
 		      MessageInPortList[MessagePort].PortNumber,
 		      Message.Addr,Message.Value,Message.Value);
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -2567,15 +2600,23 @@ int main(int argc, char *argv[])
 		    printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
 		    printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
 #ifdef RUNONPC
+		    if(TSCsentPacket != ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue)
+			 {
+			 	printf("elekIOServ(M): Timestamps from sent packet and received packet don't match!\n\r");
+				nLostPackets++;
+				printf("elekIOServ(M): Number of lost packets: %05d\n\r");
+			 }
 		    rdtscll(TSC);
 #endif			 
-		    printf("elekIOServ(M): Packet took %ld CPU clock cycles to process.\n\r", (TSC-ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
+		    printf("elekIOServ(M): Packet took %lld CPU clock cycles to process.\n\r", (TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
+			 printf("elekIOServ(M): That's %f s\n\r", ((double)((TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue)))/((double)(ulCpuClock)));
+			 
 			 
 			 void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M)
 			 void* pSource = (void*)&(ElekStatusFromSlave.TimeOfDaySlave); 	// copy from first slave element(S) 
 			 size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
 			 
-			 printf("copying %d bytes from SlaveStruct to MasterStruct\n",numBytes);
+			 printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
 			 memcpy(pDest,pSource,numBytes);
 			 SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
 
