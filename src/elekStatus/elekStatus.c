@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-05-22 19:09:45 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-24 17:17:04 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.9  2005-05-22 19:09:45  rudolf
+* Revision 1.10  2005-06-24 17:17:04  rudolf
+* more work on user-selectable groups of data
+*
+* Revision 1.9  2005/05/22 19:09:45  rudolf
 * fixes for new elekStatus structure
 *
 * Revision 1.8  2005/04/22 12:38:48  rudolf
@@ -51,7 +54,7 @@
 #include <signal.h>
 #include <errno.h>
 
-
+#include "elekStatus.h"
 #include "../include/elekGeneral.h"
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
@@ -88,103 +91,263 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={        
 static long LastStatusNumber;
 
 
-void PrintElekStatus(struct elekStatusType *ptrElekStatus) {
+void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize) 
+{
 
-    int i;
-    struct tm tmZeit;
-    time_t    Seconds;
-    int Channel;
-    int Card;
+	int i;
+	struct tm tmZeit;
+	time_t    Seconds;
+	int Channel;
+	int Card;
+	
+	// ***************** DATASET DATA (number of dataset etc. **************
+	if(uiGroupFlags & GROUP_DATASETDATA)
+		printf("StatusCount %ld nByte %d ", StatusCount,PacketSize); 
+	
+	// ***************** TIME DATA **************		
+	if(uiGroupFlags & GROUP_TIMEDATA)
+	{
+		printf("Time(M):");
+		Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
+		localtime_r(&Seconds,&tmZeit);
+		
+		printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
+		tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDayMaster.tv_usec/1000);
+		
+		printf("Time(S):");
+		Seconds=ptrElekStatus->TimeOfDaySlave.tv_sec;
+		localtime_r(&Seconds,&tmZeit);
+		
+		printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
+		tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDaySlave.tv_usec/1000);
+	};
+	
+	// ***************** ETALON DATA **************	
+	
+	if(uiGroupFlags & GROUP_ETALON)
+	{
+		printf("Etalon:%ld(%d %d)/%ld %ld %d %4x",ptrElekStatus->EtalonData.Current.Position,
+		ptrElekStatus->EtalonData.Current.PositionWord.High,
+		ptrElekStatus->EtalonData.Current.PositionWord.Low,
+		ptrElekStatus->EtalonData.Encoder.Position,
+		ptrElekStatus->EtalonData.Index.Position,
+		ptrElekStatus->EtalonData.CurSpeed,
+		ptrElekStatus->EtalonData.Status);
+	};
 
-    Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
-    localtime_r(&Seconds,&tmZeit);
+	// ***************** COUNTER CARDS DATA **************	
 
-    
-    printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
-	   tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDayMaster.tv_usec/1000);
-    printf("E%ld(%d %d)/%ld %ld %d %4x",ptrElekStatus->EtalonData.Current.Position,
-	   ptrElekStatus->EtalonData.Current.PositionWord.High,
-	   ptrElekStatus->EtalonData.Current.PositionWord.Low,
-	   ptrElekStatus->EtalonData.Encoder.Position,
-	   ptrElekStatus->EtalonData.Index.Position,
-	   ptrElekStatus->EtalonData.CurSpeed,
-	   ptrElekStatus->EtalonData.Status);
+	if(uiGroupFlags & GROUP_CCDATA)
+	{
+		// *****************
+		// MASTER CounterCard
+		// *****************
+		printf("CC(M) ADC:");
+		// Counter Card ADC Channel
+		for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) 
+		{
+			printf("%4x ",ptrElekStatus->CounterCardMaster.ADCData[i]);   
+		}
+	
+		printf("MasDel:%4x ",ptrElekStatus->CounterCardMaster.MasterDelay);
+		printf("ShDel:");
+		
+		for(i=0; i<MAX_COUNTER_CHANNEL;i++)
+			printf("%4x ",ptrElekStatus->CounterCardMaster.Channel[i].ShiftDelay);
+	
+		printf("GD/GW");
+		
+		for(i=0; i<MAX_COUNTER_GATE;i++) 
+		{
+			printf("%4x/%4x ",ptrElekStatus->CounterCardMaster.Channel[i].GateDelay,
+					ptrElekStatus->CounterCardMaster.Channel[i].GateWidth);
+		}
+	
+		printf("Cnts:");
+		
+		for(i=0; i<MAX_COUNTER_CHANNEL;i++) 
+		{
+			printf("%d ",ptrElekStatus->CounterCardMaster.Channel[i].Counts);
+		}
+		// *****************
+		// SLAVE CounterCard
+		// *****************
+		
+		printf("CC(S) ADC:");
+		// Counter Card ADC Channel
+		for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) 
+		{
+			printf("%4x ",ptrElekStatus->CounterCardSlave.ADCData[i]);   
+		}
+	
+		printf("MasDel:%4x ",ptrElekStatus->CounterCardSlave.MasterDelay);
+		printf("ShDel:");
+		
+		for(i=0; i<MAX_COUNTER_CHANNEL;i++)
+			printf("%4x ",ptrElekStatus->CounterCardSlave.Channel[i].ShiftDelay);
+	
+		printf("GD/GW");
+		
+		for(i=0; i<MAX_COUNTER_GATE;i++) 
+		{
+			printf("%4x/%4x ",ptrElekStatus->CounterCardSlave.Channel[i].GateDelay,
+					ptrElekStatus->CounterCardSlave.Channel[i].GateWidth);
+		}
+	
+		printf("Cnts:");
+		
+		for(i=0; i<MAX_COUNTER_CHANNEL;i++) 
+		{
+			printf("%d ",ptrElekStatus->CounterCardSlave.Channel[i].Counts);
+		}
+	}
+	
+	// ***************** ADC CARDS DATA **************	
+		
+	if(uiGroupFlags & GROUP_ADCDATA)
+	{
+		// MASTER
+		// normal 16bit ADC Card
 
-    printf("cA");
-    // Counter Card ADC Channel
-    for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
-	printf("%4x ",ptrElekStatus->CounterCardMaster.ADCData[i]);   
-    }
+		printf("Ana(M):");
+		for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) 
+		{
+			printf("Card#%d:",Card);
+			for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+			{	    
+				printf("%05d ",ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].ADCData);
+			} /* for Channel */
+		} /* for Card */ 
+		
+		// SLAVE
+		// normal 16bit ADC Card
+		printf("Ana(S):");
+		for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) 
+		{
+			printf("Card#%d:",Card);
+			for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
+			{	    
+				printf("%05d ",ptrElekStatus->ADCCardSlave[Card].ADCChannelData[Channel].ADCData);
+			} /* for Channel */
+		} /* for Card */    
+		   
+	};  
 
-    printf("cD%4x ",ptrElekStatus->CounterCardMaster.MasterDelay);
+	// ***************** TEMPERATURE DATA **************	
 
-    for(i=0; i<MAX_COUNTER_CHANNEL;i++)
-        printf("%4x ",ptrElekStatus->CounterCardMaster.Channel[i].ShiftDelay);
+	if(uiGroupFlags & GROUP_TEMPDATA)
+	{
+		// MASTER
+		// temperature Sensors
+		printf("TS(M):");
+		printf("SRS:%d ",ptrElekStatus->TempSensCardMaster[0].NumSensor);
+		printf("CRC:%d ",ptrElekStatus->TempSensCardMaster[0].NumErrCRC);
+		printf("NR:%d ",ptrElekStatus->TempSensCardMaster[0].NumErrNoResponse);
+		printf("MIS:%d ",ptrElekStatus->TempSensCardMaster[0].NumMissed);
+		//    printf("%x;",ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp);
 
-    for(i=0; i<MAX_COUNTER_GATE;i++) {
-	printf("%4x/%4x ",ptrElekStatus->CounterCardMaster.Channel[i].GateDelay,
-	       ptrElekStatus->CounterCardMaster.Channel[i].GateWidth);
-    }
+		// it only makes sense to display the sensors actually detected by the hardware
+		if(ptrElekStatus->TempSensCardMaster[0].NumSensor < MAX_TEMP_SENSOR) // sanity check
+		{
+			for (i=0;i<ptrElekStatus->TempSensCardMaster[0].NumSensor;i++) 
+			{
+				printf("[%02x:02x:02x] %03.02f,",
+				ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.aROMCode[0],
+				ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.aROMCode[1],
+				ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.aROMCode[2],
+				(float)(ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempMain)+
+				(float)(ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempFrac)/16
+				);
+				//	     ptrElekStatus->TempSensCard[0].TempSensor[i].Word.WordTemp);
+			}
+		}
+		// SLAVE
+		// temperature Sensors
+		printf("TS(S):");
+		printf("SRS:%d ",ptrElekStatus->TempSensCardSlave[0].NumSensor);
+		printf("CRC:%d ",ptrElekStatus->TempSensCardSlave[0].NumErrCRC);
+		printf("NR:%d ",ptrElekStatus->TempSensCardSlave[0].NumErrNoResponse);
+		printf("MIS:%d ",ptrElekStatus->TempSensCardSlave[0].NumMissed);
+		//    printf("%x;",ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp);
+		
+		// it only makes sense to display the sensors actually detected by the hardware
+		if(ptrElekStatus->TempSensCardSlave[0].NumSensor < MAX_TEMP_SENSOR) // sanity check
+		{
+			for (i=0;i<ptrElekStatus->TempSensCardSlave[0].NumSensor;i++) 
+			{
+				printf("[%02x:02x:02x] %03.02f,",
+				ptrElekStatus->TempSensCardSlave[0].TempSensor[i].Field.aROMCode[0],
+				ptrElekStatus->TempSensCardSlave[0].TempSensor[i].Field.aROMCode[1],
+				ptrElekStatus->TempSensCardSlave[0].TempSensor[i].Field.aROMCode[2],
+				(float)(ptrElekStatus->TempSensCardSlave[0].TempSensor[i].Field.TempMain)+
+				(float)(ptrElekStatus->TempSensCardSlave[0].TempSensor[i].Field.TempFrac)/16
+				);
+				//	     ptrElekStatus->TempSensCard[0].TempSensor[i].Word.WordTemp);
+			}
+		}
+	 }
 
-    for(i=0; i<MAX_COUNTER_CHANNEL;i++) {
-	printf("%d ",ptrElekStatus->CounterCardMaster.Channel[i].Counts);
-    }
+	// ***************** GPS DATA **************		 
+	
+	 if(uiGroupFlags & GROUP_GPSDATA)
+	 {
+		// MASTER
+		// GPS Data
+	
+		printf("GPS(M) T:");
+		printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
+		printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCMins);    /* binary, 0-59 decimal */
+		printf("%02d ",ptrElekStatus->GPSDataMaster.ucUTCSeconds); /* binary 0-59 decimal */
+	
+		printf("LON:%f ",ptrElekStatus->GPSDataMaster.dLongitude);     /* "Laengengrad" I always mix it up..
+																					signed notation,
+																					negative values mean "W - west of Greenwich"
+																					positive values mean "E - east of Greenwich" */
+	
+		printf("LAT:%f ",ptrElekStatus->GPSDataMaster.dLatitude);      /* "Breitengrad" I always mix it up...
+																					signed notation,
+																					negative values mean "S - south of the equator
+																					positive values mean "N - north of the equator */
+	
+		printf("DOP:%f ",ptrElekStatus->GPSDataMaster.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
+	
+		printf("Sat:%d ",ptrElekStatus->GPSDataMaster.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
+		printf("Val:%d ",ptrElekStatus->GPSDataMaster.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
+																						will stick at 255 if no data received for a long period */
+	
+		printf("SPD:%d ",ptrElekStatus->GPSDataMaster.uiGroundSpeed);  /* speed in cm/s above ground */
+		printf("HDG:%d ",ptrElekStatus->GPSDataMaster.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+		
+		// SLAVE
+		// GPS Data
+	
+		printf("GPS(M) T:");
+		printf("%02d:",ptrElekStatus->GPSDataSlave.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
+		printf("%02d:",ptrElekStatus->GPSDataSlave.ucUTCMins);    /* binary, 0-59 decimal */
+		printf("%02d ",ptrElekStatus->GPSDataSlave.ucUTCSeconds); /* binary 0-59 decimal */
+	
+		printf("LON:%f ",ptrElekStatus->GPSDataSlave.dLongitude);     /* "Laengengrad" I always mix it up..
+																					signed notation,
+																					negative values mean "W - west of Greenwich"
+																					positive values mean "E - east of Greenwich" */
+	
+		printf("LAT:%f ",ptrElekStatus->GPSDataSlave.dLatitude);      /* "Breitengrad" I always mix it up...
+																					signed notation,
+																					negative values mean "S - south of the equator
+																					positive values mean "N - north of the equator */
+	
+		printf("DOP:%f ",ptrElekStatus->GPSDataSlave.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
+	
+		printf("Sat:%d ",ptrElekStatus->GPSDataSlave.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
+		printf("Val:%d ",ptrElekStatus->GPSDataSlave.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
+																						will stick at 255 if no data received for a long period */
+	
+		printf("SPD:%d ",ptrElekStatus->GPSDataSlave.uiGroundSpeed);  /* speed in cm/s above ground */
+		printf("HDG:%d ",ptrElekStatus->GPSDataSlave.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
+			
 
-    // normal ADC Card
-    printf("eA");
-    for (Card=0; Card<MAX_ADC_CARD_LIFT; Card ++) {
-	for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) {	    
-	    printf("%4x ",ptrElekStatus->ADCCardMaster[Card].ADCChannelData[Channel].ADCData);
-	} /* for Channel */
-    } /* for Card */    
-  
-
-    // temperature Sensor
-
-    printf("T");
-    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumSensor);
-    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumErrCRC);
-    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumErrNoResponse);
-    printf("%d ",ptrElekStatus->TempSensCardMaster[0].NumMissed);
-    //    printf("%x;",ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp);
-
-    for (i=0;i<MAX_TEMP_SENSOR;i++) {
-      printf("%x %3.2f,",
-	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.aROMCode[0],
-	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempMain+
-	     ptrElekStatus->TempSensCardMaster[0].TempSensor[i].Field.TempFrac/16.0
-	     );
-      //	     ptrElekStatus->TempSensCard[0].TempSensor[i].Word.WordTemp);
-    }
-
-    // GPS Data
-
-    printf("GPS");
-    printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
-    printf("%02d:",ptrElekStatus->GPSDataMaster.ucUTCMins);    /* binary, 0-59 decimal */
-    printf("%02d ",ptrElekStatus->GPSDataMaster.ucUTCSeconds); /* binary 0-59 decimal */
-
-    printf("%f ",ptrElekStatus->GPSDataMaster.dLongitude);     /* "Laengengrad" I always mix it up..
-                                                            signed notation,
-                                                            negative values mean "W - west of Greenwich"
-                                                            positive values mean "E - east of Greenwich" */
-
-    printf("%f ",ptrElekStatus->GPSDataMaster.dLatitude);      /* "Breitengrad" I always mix it up...
-                                                             signed notation,
-                                                             negative values mean "S - south of the equator
-                                                             positive values mean "N - north of the equator */
-
-    printf("%f ",ptrElekStatus->GPSDataMaster.fHDOP);          /* Horizontal Dillution Of Precision, whatever it means....*/
-
-    printf("%d ",ptrElekStatus->GPSDataMaster.ucNumberOfSatellites); /* number of satellites seen by the GPS receiver */
-    printf("%d ",ptrElekStatus->GPSDataMaster.ucLastValidData);      /* number of data aquisitions (5Hz) with no valid GPS data
-                                                               will stick at 255 if no data received for a long period */
-
-    printf("%d ",ptrElekStatus->GPSDataMaster.uiGroundSpeed);  /* speed in cm/s above ground */
-    printf("%d ",ptrElekStatus->GPSDataMaster.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
-
-
-    printf("\n");
+    	printf("\n");
+	};
 
     
     // CounterCard ShiftDelays
@@ -386,8 +549,7 @@ int main()
     extern int errno;
     extern struct MessagePortType MessageOutPortList[];
     extern struct MessagePortType MessageInPortList[];
-    
-    long StatusCount=0;               
+              
     struct elekStatusType ElekStatus;
     int MessagePort;
     int fdMax;                      // max fd for select
@@ -437,9 +599,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.9 2005-05-22 19:09:45 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.10 2005-06-24 17:17:04 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.9 2005-05-22 19:09:45 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.10 2005-06-24 17:17:04 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -480,8 +642,7 @@ int main()
 			    }
 			    StatusCount++;
 			    if ((StatusCount % 5)==0) { 
-				printf("StatusCount %ld nByte %d ", StatusCount,numbytes); 
-				PrintElekStatus(&ElekStatus); 
+				PrintElekStatus(&ElekStatus, numbytes); 
 			    }
 
 			    GenerateFileName(DATAPATH,StatusFileName,NULL);
