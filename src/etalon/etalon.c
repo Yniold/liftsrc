@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-05-22 19:11:37 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-06-24 18:48:27 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.3  2005-05-22 19:11:37  rudolf
+* Revision 1.4  2005-06-24 18:48:27  martinez
+* casted double on Numdat when calculating Avg in AddCounts
+*
+* Revision 1.3  2005/05/22 19:11:37  rudolf
 * fixes for new elekStatus structure
 *
 * Revision 1.2  2005/04/21 13:58:42  rudolf
@@ -227,9 +230,9 @@ void AddCounts(struct AverageDataType *ptrData, uint16_t Counts) {
   (ptrData->SumData)=(ptrData->SumData)+Counts;
   (ptrData->SumSqr)=(ptrData->SumSqr)+Counts*Counts;
   if ((ptrData->NumDat)>0) {
-    ptrData->Avg=(ptrData->SumData)/(ptrData->NumDat);
+    ptrData->Avg=(ptrData->SumData)/(double)(ptrData->NumDat);
   } else
-    ptrData->Avg=0;
+    ptrData->Avg=0.0;
 
 } /* AddCounts */
 
