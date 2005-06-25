@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 08-Feb-2005 16:26:15
+% Last Modified by GUIDE v2.5 25-Jun-2005 17:05:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -127,12 +127,13 @@ maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
 % switch on LED on armAxis
-if bitget(statusData(lastrow,col.Valve2armAxis),14)==0  % if LED is off
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14);
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+if data.armAxis % if armAxis is active
+    if bitget(statusData(lastrow,col.Valve2armAxis),14)==0  % if LED is off
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14);
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+    end
 end
-
 
 % switch off filament if reference cell pressure is too high
 if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
@@ -144,13 +145,6 @@ end
 
 
 % check which child GUIs are active and color push buttons accordingly
-if isfield(data,'hADC')
-    if ishandle(str2double(data.hADC)) 
-        set(handles.ADC,'BackgroundColor','g');
-    else
-        set(handles.ADC,'BackgroundColor','c');
-    end
-end
 if isfield(data,'hCounterCards')
     if ishandle(str2double(data.hCounterCards)) 
         set(handles.CounterCards,'BackgroundColor','g');
@@ -191,23 +185,6 @@ data.lastrow=lastrow;
 setappdata(handles.output, 'horusdata', data);
 
 
-
-
-% --- Executes on button press in ADC.
-function ADC_Callback(hObject, eventdata, handles)
-% hObject    handle to ADC (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-data = getappdata(gcbf, 'horusdata');
-% open ADC only if it is not already open
-if ~isfield(data,'hADC')
-    handleADC=ADC('handle',num2str(gcbf,16));
-    data.hADC=num2str(handleADC,16);
-elseif ~ishandle(str2double(data.hADC)) 
-    handleADC=ADC('handle',num2str(gcbf,16));
-    data.hADC=num2str(handleADC,16);
-end
-setappdata(gcbf, 'horusdata', data); 
 
 
 
@@ -255,34 +232,25 @@ stop(handles.ActTimer);
 
 % shut Filament and Laser Valves Off
 system('/lift/bin/eCmd @Lift w 0xa408 0x0000');
-% shut Axis Valves Off
-system(['/lift/bin/eCmd @armAxis w 0xa408 0x0000']);
-% shut HV Off
-Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
-system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
-system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-% switch Gain off for MCP1
-word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
-% switch Gain off for MCP2
-word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
-system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+
+if data.armAxis
+    % shut Axis Valves Off
+    system(['/lift/bin/eCmd @armAxis w 0xa408 0x0000']);
+    % shut HV Off
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+    % switch Gain off for MCP1
+    word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+    system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
+    % switch Gain off for MCP2
+    word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+    system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+end
 % home Etalon 
 system('/lift/bin/eCmd @Lift w 0xa510 0');
 
 % close child GUIs
-
-if isfield(data,'hADC')
-    hADC=str2double(data.hADC);
-    if ishandle(hADC), 
-        ADCdata = getappdata(hADC, 'ADCdata');
-        if isfield(ADCdata,'ActTimer')
-            stop(ADCdata.ActTimer);
-            delete(ADCdata.ActTimer);
-        end
-        close(hADC); 
-    end
-end
 
 if isfield(data,'hDyelaser')
     hDyelaser=str2double(data.hDyelaser);
@@ -437,6 +405,16 @@ setappdata(gcbf, 'horusdata', data);
 
 
 
+
+
+% --- Executes on button press in tglarmAxis.
+function tglarmAxis_Callback(hObject, eventdata, handles)
+% hObject    handle to tglarmAxis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+data.armAxis=get(hObject,'Value');
+setappdata(gcbf, 'horusdata', data); 
 
 
 

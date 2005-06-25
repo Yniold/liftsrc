@@ -98,15 +98,16 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelay)));
 if isfield(handles,'device')
     switch get(handles.device,'Value')
         case 1
+            set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelayLift)));
             set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
             set(handles.txtGain,'String','NA');
             set(handles.txtGainWidth,'String','NA');
             set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay0)));
         case 2
+            set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelayarmAxis)));
             if bitget(statusData(lastrow,col.ccGateDelay1),16)
                 set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
             else
@@ -116,6 +117,7 @@ if isfield(handles,'device')
             set(handles.txtGainWidth,'String',num2str(statusData(lastrow,col.ccGateWidth1)));
             set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay1)));
         case 3
+            set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelayarmAxis)));
             if bitget(statusData(lastrow,col.ccGateDelay2),16);
                 set(handles.toggleGain,'Value',1,'String','Gain is ON','BackgroundColor','g');
             else
@@ -126,6 +128,7 @@ if isfield(handles,'device')
             set(handles.txtCounter,'String',num2str(statusData(lastrow,col.ccShiftDelay2)));
     end
 else % if no device was chosen then show values for PMT
+    set(handles.txtMaster,'String',num2str(statusData(lastrow,col.ccMasterDelayLift)));
     set(handles.toggleGain,'Value',0,'String','Gain is OFF','BackgroundColor','c');
     set(handles.txtGain,'String','NA');
     set(handles.txtGainWidth,'String','NA');
@@ -247,7 +250,13 @@ else
     for i=StartAddr:StopAddr
         wordvalue=bin2dec(num2str(flipdim(Mask(((i-1)*16+1):(i*16)),2)));
         word=[' 0x0',dec2hex(wordvalue)];
-        system(['/lift/bin/eCmd s setmask ',num2str(i-1+device*10),word]);
+        if device==0
+            system(['/lift/bin/eCmd @Lift s setmask ',num2str(i-1+device*10),word]);
+        else
+            if horusdata.armAxis
+                system(['/lift/bin/eCmd @armAxis s setmask ',num2str(i-1+device*10),word]);
+            end
+        end
     end
 end
 
@@ -283,31 +292,32 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
 
-if get(hObject,'Value')
-    set(hObject,'String','Gain is ON','BackgroundColor','g');
-    switch get(handles.device,'Value')
-        case 1
-            set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
-        case 2
-            word=bitset(statusData(lastrow,col.ccGateDelay1),16);
-            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 3
-            word=bitset(statusData(lastrow,col.ccGateDelay2),16);
-            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
-    end
-else
-    set(hObject,'String','Gain is OFF','BackgroundColor','c');
-    switch get(handles.device,'Value')
-        case 1
-        case 2
-            word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);
-        case 3
-            word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
-            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);
-    end
-end    
-    
+if horusdata.armAxis
+    if get(hObject,'Value')
+        set(hObject,'String','Gain is ON','BackgroundColor','g');
+        switch get(handles.device,'Value')
+            case 1
+                set(hObject,'Value',0,'String','Gain is OFF','BackgroundColor','c');
+            case 2
+                word=bitset(statusData(lastrow,col.ccGateDelay1),16);
+                system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
+            case 3
+                word=bitset(statusData(lastrow,col.ccGateDelay2),16);
+                system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+        end
+    else
+        set(hObject,'String','Gain is OFF','BackgroundColor','c');
+        switch get(handles.device,'Value')
+            case 1
+            case 2
+                word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+                system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
+            case 3
+                word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+                system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+        end
+    end    
+end
     
 
 function edGain_Callback(hObject, eventdata, handles)
@@ -328,18 +338,20 @@ gaindelay=uint16(str2double(get(hObject,'String')));
 if gaindelay<1 
     disp('value must be >0')
     set(hObject,'BackgroundColor','red');
-else 
+else
     set(hObject,'BackgroundColor','w');
-    switch get(handles.device,'Value')
-        case 1
-        case 2
-            gainstatus=bitget(statusData(lastrow,col.ccGateDelay1),16);
-            word=bitset(gaindelay,16,gainstatus);
-            system(['/lift/bin/eCmd w 0xa318 ',num2str(word)]);            
-        case 3
-            gainstatus=bitget(statusData(lastrow,col.ccGateDelay2),16);
-            word=bitset(gaindelay,16,gainstatus);
-            system(['/lift/bin/eCmd w 0xa31c ',num2str(word)]);            
+    if horusdata.armAxis
+        switch get(handles.device,'Value')
+            case 1
+            case 2
+                gainstatus=bitget(statusData(lastrow,col.ccGateDelay1),16);
+                word=bitset(gaindelay,16,gainstatus);
+                system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);            
+            case 3
+                gainstatus=bitget(statusData(lastrow,col.ccGateDelay2),16);
+                word=bitset(gaindelay,16,gainstatus);
+                system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);            
+        end
     end
 end
 
@@ -351,15 +363,19 @@ function edMaster_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edMaster as text
 %        str2double(get(hObject,'String')) returns contents of edMaster as a double
+horusdata = getappdata(handles.parenthandle, 'horusdata');
 masterdelay=uint16(str2double(get(hObject,'String')));
 if masterdelay<1 
     disp('value must be >0')
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','w');
-    system(['/lift/bin/eCmd w 0xa316 ',num2str(masterdelay)]);            
+    if get(handles.device,'Value')==1
+        system(['/lift/bin/eCmd @Lift w 0xa316 ',num2str(masterdelay)]);            
+    elseif horusdata.armAxis
+        system(['/lift/bin/eCmd @armAxis w 0xa316 ',num2str(masterdelay)]);            
+    end
 end
-
 
 
 function edCounter_Callback(hObject, eventdata, handles)
@@ -377,11 +393,12 @@ else
     set(hObject,'BackgroundColor','w');
     switch get(handles.device,'Value')
         case 1
-            system(['/lift/bin/eCmd w 0xa310 ',num2str(counterdelay)]);            
+            system(['/lift/bin/eCmd @Lift w 0xa310 ',num2str(counterdelay)]);            
         case 2
-            system(['/lift/bin/eCmd w 0xa312 ',num2str(counterdelay)]);            
+
+            system(['/lift/bin/eCmd @armAxis w 0xa312 ',num2str(counterdelay)]);            
         case 3
-            system(['/lift/bin/eCmd w 0xa314 ',num2str(counterdelay)]);            
+            system(['/lift/bin/eCmd @armAxis w 0xa314 ',num2str(counterdelay)]);            
     end
 end
 
@@ -403,9 +420,9 @@ else
     switch get(handles.device,'Value')
         case 1
         case 2
-            system(['/lift/bin/eCmd w 0xa31a ',num2str(gainwidth)]);            
+            system(['/lift/bin/eCmd @armAxis w 0xa31a ',num2str(gainwidth)]);            
         case 3
-            system(['/lift/bin/eCmd w 0xa31e ',num2str(gainwidth)]);            
+            system(['/lift/bin/eCmd @armAxis w 0xa31e ',num2str(gainwidth)]);            
     end
 end
 
@@ -419,13 +436,14 @@ function toggleHV_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of toggleHV
 if get(hObject,'Value')
 %    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
-        system(['/lift/bin/eCmd w 0xa460 ', num2str(uint16(13*140))]); % 13V needed for HV
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
         set(hObject,'BackgroundColor','g','String','HV ON');
 %    end
 else
-    system('/lift/bin/eCmd w 0xa460 0');
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
     set(hObject,'BackgroundColor','c','String','HV OFF');
 end
-
+system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 
 

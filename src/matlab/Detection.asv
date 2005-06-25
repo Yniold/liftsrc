@@ -680,35 +680,36 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
 
-if get(hObject,'Value')
-    set(hObject,'BackgroundColor','r','String','switching Blower ON');
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    wait(5);
-    while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
-        wait(1);
+if horusdata.armAxis
+    if get(hObject,'Value')
+        set(hObject,'BackgroundColor','r','String','switching Blower ON');
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        wait(5);
+        while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
+            wait(1);
+        end
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
+        Valveword=bitset(Valveword,1); % ramp blower up 
+        Valveword=bitset(Valveword,9); % switch on blower
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        set(hObject,'BackgroundColor','g','String','Blower ON');
+    else
+        set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        pause(15);
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+        Valveword=bitset(Valveword,9,0); % switch off blower
+        Valveword=bitset(Valveword,10,0); % switch off pump
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        set(hObject,'BackgroundColor','c','String','Blower OFF');
     end
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
-    Valveword=bitset(Valveword,1); % ramp blower up 
-    Valveword=bitset(Valveword,9); % switch on blower
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    set(hObject,'BackgroundColor','g','String','Blower ON');
-else
-    set(hObject,'BackgroundColor','r','String','switching Blower OFF');
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    pause(15);
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-    Valveword=bitset(Valveword,9,0); % switch off blower
-    Valveword=bitset(Valveword,10,0); % switch off pump
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    set(hObject,'BackgroundColor','c','String','Blower OFF');
 end
-
 
 
 % --- Executes on button press in togHV.
@@ -1024,36 +1025,4 @@ function editC_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editC as text
 %        str2double(get(hObject,'String')) returns contents of editC as a double
-
-
-
-
-function editylim1_Callback(hObject, eventdata, handles)
-% hObject    handle to editylim1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editylim1 as text
-%        str2double(get(hObject,'String')) returns contents of editylim1 as a double
-ylim1=uint8(str2double(get(hObject,'String')));
-if ylim1>100 set(hObject,'String','100');
-else set(hObject,'String',num2str(ylim1));
-end
-
-
-
-
-
-function editylim2_Callback(hObject, eventdata, handles)
-% hObject    handle to editylim2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editylim2 as text
-%        str2double(get(hObject,'String')) returns contents of editylim2 as a double
-ylim2=uint8(str2double(get(hObject,'String')));
-if ylim2>100 set(hObject,'String','100');
-else set(hObject,'String',num2str(ylim2));
-end
-
 
