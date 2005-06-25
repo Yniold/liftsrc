@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.20 $
-last change on $Date: 2005-06-08 23:29:40 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.21 $
+last change on $Date: 2005-06-25 19:00:42 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
-Revision 1.20  2005-06-08 23:29:40  rudolf
+Revision 1.21  2005-06-25 19:00:42  martinez
+"included all possible parameters in error message"
+
+Revision 1.20  2005/06/08 23:29:40  rudolf
 fix: eCmd now really uses the address passed via commandline (HH)
 
 Revision 1.19  2005/06/08 17:33:44  rudolf
@@ -223,6 +226,26 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 	printf("Usage :\t%s  addr\n", argv[0]);
+	printf("eCmd @host r addr\n");
+	printf("eCmd @host w addr data\n");
+	printf("eCmd @host s stopquery\n");
+	printf("eCmd @host s startquery\n");
+	printf("eCmd @host s instrumentaction data\n");
+	printf("eCmd @host s etalonnop\n");
+	printf("eCmd @host s etalontoggle\n");	
+	printf("eCmd @host s stopquery\n");	
+	printf("eCmd @host s etalonscan\n");
+	printf("eCmd @host s etalonhome\n");	
+	printf("eCmd @host s etalonrecal\n");	
+	printf("eCmd @host s etalonscanstart data\n");
+	printf("eCmd @host s etalonscanstop data\n");
+	printf("eCmd @host s etalonscanstep data\n");
+	printf("eCmd @host s etalononline data\n");		
+	printf("eCmd @host s etalondither data\n");		
+	printf("eCmd @host s etalonofflineleft data\n");
+	printf("eCmd @host s etalonofflineright data\n");
+	printf("eCmd @host s setmask addr data\n");
+		
 	exit(EXIT_FAILURE);
     }
     
