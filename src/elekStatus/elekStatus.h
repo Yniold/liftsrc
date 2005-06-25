@@ -1,5 +1,5 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-24 17:17:16 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 14:49:46 $ by $Author: rudolf $
 *
 *
 */
@@ -13,7 +13,7 @@
 #define GROUP_CCDATA 		(1<< 3)
 #define GROUP_TEMPDATA		(1<< 4)
 #define GROUP_GPSDATA		(1<< 5)
-#define GROUP_ETALON			(1<< 6)
+#define GROUP_ETALONDATA	(1<< 6)
 
 // GLOBALS
 
@@ -22,4 +22,8 @@ unsigned int uiGroupFlags = GROUP_DATASETDATA | GROUP_ADCDATA | GROUP_TIMEDATA;
 
 // number of status counts total
 long StatusCount=0;     
+
+// our keyboard scan routine
+void EvaluateKeyboard(void);
+
 #endif

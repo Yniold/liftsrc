@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-24 17:17:04 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 14:49:46 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.10  2005-06-24 17:17:04  rudolf
+* Revision 1.11  2005-06-25 14:49:46  rudolf
+* added keyboard scan in source
+*
+* Revision 1.10  2005/06/24 17:17:04  rudolf
 * more work on user-selectable groups of data
 *
 * Revision 1.9  2005/05/22 19:09:45  rudolf
@@ -124,7 +127,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	
 	// ***************** ETALON DATA **************	
 	
-	if(uiGroupFlags & GROUP_ETALON)
+	if(uiGroupFlags & GROUP_ETALONDATA)
 	{
 		printf("Etalon:%ld(%d %d)/%ld %ld %d %4x",ptrElekStatus->EtalonData.Current.Position,
 		ptrElekStatus->EtalonData.Current.PositionWord.High,
@@ -365,99 +368,107 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 } /*PrintElekStatus*/
 
 
-int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *ptrElekStatus) {
-
-    extern struct MessagePortType MessageOutPortList[];
-    extern struct MessagePortType MessageInPortList[];
-
-    extern long LastStatusNumber;
-
-    FILE *fp;
-    int i;
-    int Channel;
-    int Card;
-    int ret;
-    long len;
-    int nelements;
-    struct tm tmZeit;
-    time_t    Seconds;
-    char buf[GENERIC_BUF_LEN];
-
-    Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
-    localtime_r(&Seconds,&tmZeit);
-
-    strncpy(buf,FileName,GENERIC_BUF_LEN);
-    strcat(buf,".bin");
-
-    if ((fp=fopen(FileName,"a"))==NULL)
-    {
-	   sprintf(buf,"ElekStatus: can't open %s",FileName);
-	   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-    }
-    else
-    {
-      // write data. may return with 1 even if disk is full.
-	   ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
-      if (ret!=1)
-      {
-         char* pErrorMessage = strerror(errno);
-         sprintf(buf,"ElekStatus: DATA NOT WRITTEN, fwrite() returned with error %d: ",ret);
-         strcat(buf,pErrorMessage);
-         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-      };
-
-      // flush buffer to check if disk is full an to prevent data loss
-      ret=fflush(fp);
-      if (ret == EOF)
-      {
-         char* pErrorMessage = strerror(errno);
-         sprintf(buf,"ElekStatus: DATA NOT WRITTEN, fflush() returned with error %d: ",ret);
-         strcat(buf,pErrorMessage);
-         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-      };
-	   fclose(fp);
-    } // if fopen
-
-    //    strncpy(buf,Path,GENERIC_BUF_LEN);
-    strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
-    strcat(buf,"/status.bin");
-    if ((fp=fopen(buf,"r+"))==NULL) {
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.bin does not exist");
-	if ((fp=fopen(buf,"w+"))==NULL) {
-	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't create status.bin");
-	  return (-1);
+int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *ptrElekStatus) 
+{
+	
+	extern struct MessagePortType MessageOutPortList[];
+	extern struct MessagePortType MessageInPortList[];
+	
+	extern long LastStatusNumber;
+	
+	FILE *fp;
+	int i;
+	int Channel;
+	int Card;
+	int ret;
+	long len;
+	int nelements;
+	struct tm tmZeit;
+	time_t    Seconds;
+	char buf[GENERIC_BUF_LEN];
+	
+	Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
+	localtime_r(&Seconds,&tmZeit);
+	
+	strncpy(buf,FileName,GENERIC_BUF_LEN);
+	strcat(buf,".bin");
+	
+	if ((fp=fopen(FileName,"a"))==NULL)
+	{
+		sprintf(buf,"ElekStatus: can't open %s",FileName);
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	}
-    } /* if open */
-    //go to the next entry position
-    ret=fseek(fp,LastStatusNumber*sizeof (struct elekStatusType),SEEK_SET);
-    //    sprintf(buf,"ElekStatus: write Status to %d,%d %d %ld",LastStatusNumber,
-    //	    LastStatusNumber*sizeof (struct elekStatusType),ret,ftell(fp) );
-    // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);      
-    ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
-    if (ret!=1) {
-      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.bin");
-    }
-    LastStatusNumber=(LastStatusNumber+1) % STATUSFILE_RING_LEN;	    
-    fclose(fp);
-    
-
-
-    strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
-    strcat(buf,"/chPMT.txt");
-    if ((fp=fopen(buf,"w"))==NULL) {
-      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't open chPMT.txt");
-      return (-1);
-    } else {
-      for(i=0; i<MAX_COUNTER_TIMESLOT;i++) {
-	fprintf(fp,"%3d ",i);
-	for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
-	  fprintf(fp,"%4d ",ptrElekStatus->CounterCardMaster.Channel[Channel].Data[i]);
-	} // for channel
-	fprintf(fp,"\n");
-      } // for i
-      fclose(fp);
-    } // if fopen
-    
+	else
+	{
+		// write data. may return with 1 even if disk is full.
+		ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
+		if (ret!=1)
+		{
+			char* pErrorMessage = strerror(errno);
+			sprintf(buf,"ElekStatus: DATA NOT WRITTEN, fwrite() returned with error %d: ",ret);
+			strcat(buf,pErrorMessage);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		};
+		
+		// flush buffer to check if disk is full an to prevent data loss
+		ret=fflush(fp);
+		if (ret == EOF)
+		{
+			char* pErrorMessage = strerror(errno);
+			sprintf(buf,"ElekStatus: DATA NOT WRITTEN, fflush() returned with error %d: ",ret);
+			strcat(buf,pErrorMessage);
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		};
+		fclose(fp);
+	} // if fopen
+	
+	//    strncpy(buf,Path,GENERIC_BUF_LEN);
+	strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
+	strcat(buf,"/status.bin");
+	
+	if ((fp=fopen(buf,"r+"))==NULL) 
+	{
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.bin does not exist");
+		if ((fp=fopen(buf,"w+"))==NULL) 
+		{
+			SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't create status.bin");
+			return (-1);
+		}
+	} /* if open */
+	//go to the next entry position
+	ret=fseek(fp,LastStatusNumber*sizeof (struct elekStatusType),SEEK_SET);
+	//    sprintf(buf,"ElekStatus: write Status to %d,%d %d %ld",LastStatusNumber,
+	//	    LastStatusNumber*sizeof (struct elekStatusType),ret,ftell(fp) );
+	// SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);      
+	ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
+	
+	if (ret!=1) 
+	{
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.bin");
+	}
+	LastStatusNumber=(LastStatusNumber+1) % STATUSFILE_RING_LEN;	    
+	fclose(fp);
+	
+	strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
+	strcat(buf,"/chPMT.txt");
+	if ((fp=fopen(buf,"w"))==NULL) 
+	{
+		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't open chPMT.txt");
+		return (-1);
+	} 
+	else 
+	{
+		for(i=0; i<MAX_COUNTER_TIMESLOT;i++) 
+		{
+			fprintf(fp,"%3d ",i);
+			for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) 
+			{
+				fprintf(fp,"%4d ",ptrElekStatus->CounterCardMaster.Channel[Channel].Data[i]);
+			} // for channel
+			fprintf(fp,"\n");
+		} // for i
+		fclose(fp);
+	} // if fopen
 } /*WriteElekStatus*/
 
 
@@ -589,8 +600,11 @@ int main()
 
     // init outports
     for (MessagePort=0; MessagePort<MAX_MESSAGE_OUTPORTS;MessagePort++) {
-	printf("opening OUT Port %s on Port %d\n",
-	       MessageOutPortList[MessagePort].PortName,MessageOutPortList[MessagePort].PortNumber);
+	printf("opening OUT Port %s on Port %d, Destination IP: %s\n",
+	       MessageOutPortList[MessagePort].PortName,
+			 MessageOutPortList[MessagePort].PortNumber,
+			 MessageOutPortList[MessagePort].IPAddr);
+			 
 	MessageOutPortList[MessagePort].fdSocket=InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);
 	
     } /* for MessageOutPort */
@@ -599,9 +613,9 @@ int main()
     ElekStatus_len=sizeof(struct elekStatusType);
 
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.10 2005-06-24 17:17:04 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.11 2005-06-25 14:49:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.10 2005-06-24 17:17:04 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.11 2005-06-25 14:49:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -641,6 +655,7 @@ int main()
 				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
 			    }
 			    StatusCount++;
+				 EvaluateKeyboard();
 			    if ((StatusCount % 5)==0) { 
 				PrintElekStatus(&ElekStatus, numbytes); 
 			    }
@@ -689,3 +704,46 @@ int main()
     exit(EXIT_SUCCESS);
 }
 
+void EvaluateKeyboard(void)
+{
+	unsigned char ucChar = 0;	
+	int iCharacter = getchar();	// getchar uses INT datatype
+	
+	if(iCharacter != EOF)			// check for error or no key pressed
+	{
+		ucChar = toupper((unsigned char)iCharacter);
+		switch(ucChar)
+		{
+			case 'D':					// Dataset Data (record number, structure size)
+				uiGroupFlags ^= GROUP_DATASETDATA;
+				break;
+				
+			case 'T':					// Time Data
+				uiGroupFlags ^= GROUP_TIMEDATA;
+				break;
+				
+			case 'G':					// GPS Data
+				uiGroupFlags ^= GROUP_GPSDATA;
+				break;
+				
+			case 'C':					// Countercard Data	
+				uiGroupFlags ^= GROUP_CCDATA;
+				break;
+				
+			case 'E':					// Etalon Data
+				uiGroupFlags ^= GROUP_ETALONDATA;
+				break;
+				
+			case 'A':					// ADC Data
+				uiGroupFlags ^= GROUP_ADCDATA;
+				break;
+			
+			case 'P':					// Temperature Probes
+				uiGroupFlags ^= GROUP_TEMPDATA;
+				break;
+				
+			default:
+				break;
+		};
+	};
+};
