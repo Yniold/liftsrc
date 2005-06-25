@@ -29,3 +29,7 @@ all:
 #bitop:	bitop.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c bitop.c $(LDFLAGS)
 	cp bitop.o ../lib
+
+#getch:	getch.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c getch.c $(LDFLAGS)
+	cp getch.o ../lib
