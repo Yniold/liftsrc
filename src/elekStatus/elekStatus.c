@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 19:42:40 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 19:46:17 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.14  2005-06-25 19:42:40  rudolf
+* Revision 1.15  2005-06-25 19:46:17  rudolf
+* fixed typo
+*
+* Revision 1.14  2005/06/25 19:42:40  rudolf
 * added keys for [S]how all and [R] show none, fixed typo in Temp output
 *
 * Revision 1.13  2005/06/25 19:20:18  rudolf
@@ -629,9 +632,9 @@ int main()
     
 //    refresh();
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.14 2005-06-25 19:42:40 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.15 2005-06-25 19:46:17 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.14 2005-06-25 19:42:40 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.15 2005-06-25 19:46:17 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -810,6 +813,6 @@ void ShowHelp(void)
 {
 	printf("\n\rPress to toggle displaying of:\n\r\n\r[A] ADC DATA\t[E] ETALON DATA\t\t[G] GPS DATA\n\r");
 	printf("[C] CC DATA\t[P] TEMPERATURE DATA\t[D] DATASET DATA\n\r");
-	printf("[T] TIME DATA\t[S] SHOW ALL\t[R] RESET ALL\n\r");
+	printf("[T] TIME DATA\t[S] SHOW ALL\t\t[R] RESET ALL\n\r");
 	printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
