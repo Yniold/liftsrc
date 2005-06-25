@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 14:49:46 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 18:18:46 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.11  2005-06-25 14:49:46  rudolf
+* Revision 1.12  2005-06-25 18:18:46  rudolf
+* fixed keyboard handling
+*
+* Revision 1.11  2005/06/25 14:49:46  rudolf
 * added keyboard scan in source
 *
 * Revision 1.10  2005/06/24 17:17:04  rudolf
@@ -56,6 +59,7 @@
 
 #include <signal.h>
 #include <errno.h>
+#include <termios.h>
 
 #include "elekStatus.h"
 #include "../include/elekGeneral.h"
@@ -349,7 +353,6 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 		printf("HDG:%d ",ptrElekStatus->GPSDataSlave.uiHeading);      /* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
 			
 
-    	printf("\n");
 	};
 
     
@@ -363,8 +366,8 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 //	ptrElekStatus->CounterCard.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*i);
 //	ptrElekStatus->CounterCard.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*i+2);	
 //    }
-
-    
+    	printf("\n\r");
+//	refresh();    
 } /*PrintElekStatus*/
 
 
@@ -580,6 +583,12 @@ int main()
     char buf[GENERIC_BUF_LEN];
 
     char StatusFileName[MAX_FILENAME_LEN]; 
+    
+    if(cbreak(STDIN_FILENO) == -1) 
+    {
+      printf("Fehler bei der Funktion cbreak ... \n");
+      exit(EXIT_FAILURE);
+    }
 
     // setup master fd
     FD_ZERO(&fdsMaster);              // clear the master and temp sets
@@ -611,11 +620,12 @@ int main()
 
     addr_len = sizeof(struct sockaddr);
     ElekStatus_len=sizeof(struct elekStatusType);
-
+    
+//    refresh();
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.11 2005-06-25 14:49:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.12 2005-06-25 18:18:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.11 2005-06-25 14:49:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.12 2005-06-25 18:18:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -655,7 +665,7 @@ int main()
 				SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
 			    }
 			    StatusCount++;
-				 EvaluateKeyboard();
+			EvaluateKeyboard();
 			    if ((StatusCount % 5)==0) { 
 				PrintElekStatus(&ElekStatus, numbytes); 
 			    }
@@ -700,15 +710,17 @@ int main()
     for (MessagePort=0; MessagePort<MAX_MESSAGE_OUTPORTS;MessagePort++) {	
 	close(MessageOutPortList[MessagePort].fdSocket);
     } /*for MessagePort */
-
+   /*Alten Terminal-Modus wiederherstellen*/
+	restoreinput();
     exit(EXIT_SUCCESS);
 }
 
 void EvaluateKeyboard(void)
 {
-	unsigned char ucChar = 0;	
-	int iCharacter = getchar();	// getchar uses INT datatype
+	unsigned char ucChar = 0;
+	int iCharacter = getch();	// getchar uses INT datatype
 	
+	printf("Char pressed: %08x\n\r",iCharacter);
 	if(iCharacter != EOF)			// check for error or no key pressed
 	{
 		ucChar = toupper((unsigned char)iCharacter);

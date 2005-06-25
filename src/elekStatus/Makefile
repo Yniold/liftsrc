@@ -14,6 +14,7 @@ else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC
 LDFLAGS :=-lrt
+LDFLAGS +=-lcurses
 endif
 
 CC := $(CROSS_COMPILE)gcc
@@ -22,6 +23,7 @@ export CC
 LDFLAGS+=-ggdb
 
 modules=../lib/udptools.o
+modules+=../lib/getch.o
 
 headers=../include/elekIO.h ../include/elekIOPorts.h
 
