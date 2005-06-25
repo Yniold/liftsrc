@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 14:54:49 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 19:20:18 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
-* Revision 1.4  2005-06-25 14:54:49  rudolf
+* Revision 1.5  2005-06-25 19:20:18  rudolf
+* removed debug output, added small helpscreen invokeable by pressing [H]
+*
+* Revision 1.4  2005/06/25 14:54:49  rudolf
 * added missing RCS keyword in header
 *
 *
@@ -28,5 +31,6 @@ long StatusCount=0;
 
 // our keyboard scan routine
 void EvaluateKeyboard(void);
+void ShowHelp(void);
 
 #endif

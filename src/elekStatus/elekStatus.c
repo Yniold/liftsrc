@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 18:18:46 $ by $Author: rudolf $
+* $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-25 19:20:18 $ by $Author: rudolf $
 *
 * $Log: elekStatus.c,v $
-* Revision 1.12  2005-06-25 18:18:46  rudolf
+* Revision 1.13  2005-06-25 19:20:18  rudolf
+* removed debug output, added small helpscreen invokeable by pressing [H]
+*
+* Revision 1.12  2005/06/25 18:18:46  rudolf
 * fixed keyboard handling
 *
 * Revision 1.11  2005/06/25 14:49:46  rudolf
@@ -623,13 +626,14 @@ int main()
     
 //    refresh();
     #ifdef RUNONARM
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.12 2005-06-25 18:18:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.13 2005-06-25 19:20:18 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #else
-    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.12 2005-06-25 18:18:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+    sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.13 2005-06-25 19:20:18 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
     #endif
 
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-
+	
+	 ShowHelp();
 //    GenerateFileName(DATAPATH,StatusFileName,NULL);
 
     // Check Status ringfile buffer and initialize the pointer to the appropriate position
@@ -719,8 +723,6 @@ void EvaluateKeyboard(void)
 {
 	unsigned char ucChar = 0;
 	int iCharacter = getch();	// getchar uses INT datatype
-	
-	printf("Char pressed: %08x\n\r",iCharacter);
 	if(iCharacter != EOF)			// check for error or no key pressed
 	{
 		ucChar = toupper((unsigned char)iCharacter);
@@ -728,34 +730,73 @@ void EvaluateKeyboard(void)
 		{
 			case 'D':					// Dataset Data (record number, structure size)
 				uiGroupFlags ^= GROUP_DATASETDATA;
+				if(uiGroupFlags & GROUP_DATASETDATA)
+					printf("\n\rDisplay of DATASET DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of DATASET DATA is now off.\n\r");
 				break;
 				
 			case 'T':					// Time Data
 				uiGroupFlags ^= GROUP_TIMEDATA;
+				if(uiGroupFlags & GROUP_TIMEDATA)
+					printf("\n\rDisplay of TIME DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of TIME DATA is now off.\n\r");
 				break;
 				
 			case 'G':					// GPS Data
 				uiGroupFlags ^= GROUP_GPSDATA;
+				if(uiGroupFlags & GROUP_GPSDATA)
+					printf("\n\rDisplay of GPS DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of GPS DATA is now off.\n\r");
 				break;
 				
 			case 'C':					// Countercard Data	
 				uiGroupFlags ^= GROUP_CCDATA;
+				if(uiGroupFlags & GROUP_CCDATA)
+					printf("\n\rDisplay of COUNTERCARD DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of COUNTERCARD DATA is now off.\n\r");
 				break;
 				
 			case 'E':					// Etalon Data
 				uiGroupFlags ^= GROUP_ETALONDATA;
+				if(uiGroupFlags & GROUP_ETALONDATA)
+					printf("\n\rDisplay of ETALON DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of ETALON DATA is now off.\n\r");
 				break;
 				
 			case 'A':					// ADC Data
 				uiGroupFlags ^= GROUP_ADCDATA;
+				if(uiGroupFlags & GROUP_ADCDATA)
+					printf("\n\rDisplay of ADC DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of ADC DATA is now off.\n\r");
 				break;
 			
 			case 'P':					// Temperature Probes
 				uiGroupFlags ^= GROUP_TEMPDATA;
+				if(uiGroupFlags & GROUP_TEMPDATA)
+					printf("\n\rDisplay of TEMP DATA is now on.\n\r");
+				else
+					printf("\n\rDisplay of TEMP DATA is now off.\n\r");
 				break;
-				
+			
+			case 'H':
+				ShowHelp();
+				break;
+					
 			default:
 				break;
 		};
 	};
+};
+void ShowHelp(void)
+{
+	printf("\n\rPress to toggle displaying of:\n\r\n\r[A] ADC DATA\t[E] ETALON DATA\t\t[G] GPS DATA\n\r");
+	printf("[C] CC DATA\t[P] TEMPERATURE DATA\t[D] DATASET DATA\n\r");
+	printf("[T] TIME DATA\n\r");
+	printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
