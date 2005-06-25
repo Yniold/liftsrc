@@ -1,5 +1,8 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 14:49:46 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 14:54:49 $ by $Author: rudolf $
+* $Log: elekStatus.h,v $
+* Revision 1.4  2005-06-25 14:54:49  rudolf
+* added missing RCS keyword in header
 *
 *
 */
