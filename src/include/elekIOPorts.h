@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-22 18:09:43 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-25 18:32:58 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.8  2005-06-22 18:09:43  rudolf
+* Revision 1.9  2005-06-25 18:32:58  rudolf
+* changed IP to lift
+*
+* Revision 1.8  2005/06/22 18:09:43  rudolf
 * added seperate IN port for receiving the data from Slave when in Master Mode
 *
 * Revision 1.7  2005/06/22 13:15:25  rudolf
@@ -25,7 +28,7 @@
 */
 
 #define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
-#define IP_ELEKIO_MASTER            "10.111.111.200" // ELEKIO which is Master server (VMware Markus)
+#define IP_ELEKIO_MASTER            "10.111.111.196" // ELEKIO which is Master server (LIFT)
 #define IP_DEBUG_CLIENT             "127.0.0.1"
 #define IP_STATUS_CLIENT            "127.0.0.1"
 #define IP_ETALON_CLIENT            "127.0.0.1"
