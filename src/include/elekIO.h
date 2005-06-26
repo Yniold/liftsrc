@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-08 17:45:55 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-26 19:41:51 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.8  2005-06-08 17:45:55  rudolf
+* Revision 1.9  2005-06-26 19:41:51  harder
+* added different Valve PWM address for Slave
+*
+* Revision 1.8  2005/06/08 17:45:55  rudolf
 * merged file
 *
 * Revision 1.6  2005/05/23 15:06:33  rudolf
@@ -76,6 +79,10 @@
 #define ELK_PWM_BASE         (ELK_BACKPLANE_BASE+0x60)
 #define ELK_PWM_DCDC4_BASE   (ELK_PWM_BASE)
 #define ELK_PWM_VALVE_BASE   (ELK_PWM_BASE+0x08)
+
+// SLAVE
+
+#define ELK_PWM_VALVE_BASE_SLAVE (0xa460)
 
 #define ELK_ADC_BASE         (ELK_BACKPLANE_BASE+0x80)
 #define ELK_ADC_BASE_WP      (ELK_BACKPLANE_BASE+0x80)
