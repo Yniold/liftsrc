@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 13:02:17 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 13:07:33 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.31  2005-06-26 13:02:17  rudolf
+ * Revision 1.32  2005-06-26 13:07:33  rudolf
+ * removed bridge mode from ADC Card#1 Channels 6 and 7 on slave as it's not needed there
+ *
+ * Revision 1.31  2005/06/26 13:02:17  rudolf
  * added time limit for answer from slave
  *
  * Revision 1.30  2005/06/25 16:41:43  harder
@@ -440,22 +443,7 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
 	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
 	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-	
-	Card=0; Channel=6;  
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-	
-	Card=0; Channel=7; 
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;	    
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-	
-	
+		
 	// ADC 24 bit
 	for (Card=0; Card<MAX_24BIT_ADC_CARDS_WP; Card ++) 
 	{
@@ -2201,13 +2189,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.32 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.32 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.32 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.32 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
