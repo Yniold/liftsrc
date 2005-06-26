@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-25 19:20:18 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-26 16:50:17 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
-* Revision 1.5  2005-06-25 19:20:18  rudolf
+* Revision 1.6  2005-06-26 16:50:17  rudolf
+* added Valve display (HH)
+*
+* Revision 1.5  2005/06/25 19:20:18  rudolf
 * removed debug output, added small helpscreen invokeable by pressing [H]
 *
 * Revision 1.4  2005/06/25 14:54:49  rudolf
@@ -20,6 +23,7 @@
 #define GROUP_TEMPDATA		(1<< 4)
 #define GROUP_GPSDATA		(1<< 5)
 #define GROUP_ETALONDATA	(1<< 6)
+#define GROUP_VALVEDATA	        (1<< 7)
 
 // GLOBALS
 
