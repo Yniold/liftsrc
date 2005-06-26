@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.16  2005-06-22 17:16:33  martinez
+ * Revision 1.17  2005-06-26 18:07:28  rudolf
+ * corrected for parameter in ReadDataAvg for armAxis Valve Cards
+ *
+ * Revision 1.16  2005/06/22 17:16:33  martinez
  * included 2nd valve card on armAxis in ReadDataAvg.c
  * updated col structure and eCmd hosts
  *
@@ -25,7 +28,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.16 $ */
+ /* $Revision: 1.17 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -192,7 +195,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   
   dims[0]= nelements;
 
-  dims[1]= 6 * 2;              /* Jahr JulTag Stunde Minute Sekunde Mikrosek für Master und Slave*/
+  dims[1]= 6 * 2;              /* Jahr JulTag Stunde Minute Sekunde Mikrosek f?r Master und Slave*/
   dims[1]= dims[1] + (ADC_CHANNEL_COUNTER_CARD+1)*2 + 
     MAX_COUNTER_CHANNEL*(5+MAX_COUNTER_TIMESLOT+COUNTER_MASK_WIDTH);
   dims[1]= dims[1] + 12;   /* etalon data type */
@@ -1005,7 +1008,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   /* we represent the longitude 2 words */
   /* the first word contains degrees and mins */
-  /* 0 means 180,0°W, 15*60+30 means 74°30'W */
+  /* 0 means 180,0?W, 15*60+30 means 74?30'W */
   for (i=0; i<nelements;i++) {
     *(z+count++)=((int)(elekStatus[i].GPSDataMaster.dLongitude/100)+180)*60+
 	  (int)(elekStatus[i].GPSDataMaster.dLongitude-((int)(elekStatus[i].GPSDataMaster.dLongitude/100))*100);       
@@ -1020,7 +1023,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   /* we represent the latitude 2 words */
   /* the first word contains degrees and mins */
-  /* 0 means 90,0°S, 15*60+30 means 74°30'S */
+  /* 0 means 90,0?S, 15*60+30 means 74?30'S */
   for (i=0; i<nelements;i++) {
     *(z+count++)=((int)(elekStatus[i].GPSDataMaster.dLatitude/100)+90)*60+
 	  (int)(elekStatus[i].GPSDataMaster.dLatitude-((int)(elekStatus[i].GPSDataMaster.dLatitude/100))*100);       
@@ -1223,14 +1226,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	mexPrintf("ValveVolt Slave %d %d\n",k,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCardSlave[Card].ValveVolt;       
+    *(z+count++)=elekStatus[i].ValveCardSlave[k].ValveVolt;       
   }
 
   #ifdef D_HEADER
     mexPrintf("Valve Slave  %d %d\n",k,1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCardSlave[Card].Valve;       
+    *(z+count++)=elekStatus[i].ValveCardSlave[k].Valve;   
   } 
   }
 
@@ -1307,7 +1310,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   /* we represent the longitude 2 words */
   /* the first word contains degrees and mins */
-  /* 0 means 180,0°W, 15*60+30 means 74°30'W */
+  /* 0 means 180,0?W, 15*60+30 means 74?30'W */
   for (i=0; i<nelements;i++) {
     *(z+count++)=((int)(elekStatus[i].GPSDataSlave.dLongitude/100)+180)*60+
 	  (int)(elekStatus[i].GPSDataSlave.dLongitude-((int)(elekStatus[i].GPSDataSlave.dLongitude/100))*100);       
@@ -1322,7 +1325,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   /* we represent the latitude 2 words */
   /* the first word contains degrees and mins */
-  /* 0 means 90,0°S, 15*60+30 means 74°30'S */
+  /* 0 means 90,0?S, 15*60+30 means 74?30'S */
   for (i=0; i<nelements;i++) {
     *(z+count++)=((int)(elekStatus[i].GPSDataSlave.dLatitude/100)+90)*60+
 	  (int)(elekStatus[i].GPSDataSlave.dLatitude-((int)(elekStatus[i].GPSDataSlave.dLatitude/100))*100);       
