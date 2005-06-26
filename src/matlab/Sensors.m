@@ -1737,8 +1737,14 @@ xlim2=double(str2double(get(handles.editxlim2,'String')));
 ylim1=double(str2double(get(handles.editylim1,'String')));
 ylim2=double(str2double(get(handles.editylim2,'String')));
 plot(handles.axes1,xdata,ydata,'.');
-xlim([xlim1*(max(xdata)-min(xdata))+min(xdata), xlim2*(max(xdata)-min(xdata))+min(xdata)]);
-ylim([ylim1*(max(ydata)-min(ydata))+min(ydata), ylim2*(max(ydata)-min(ydata))+min(ydata)]);
+xlimits=[xlim1/100*(max(xdata)-min(xdata))+min(xdata), xlim2/100*(max(xdata)-min(xdata))+min(xdata)];
+ylimits=[ylim1/100*(max(ydata)-min(ydata))+min(ydata), ylim2/100*(max(ydata)-min(ydata))+min(ydata)];
+if isnan(xlimits) xlimits=[0,1]; end
+if xlimits(1)==xlimits(2) xlimits(2)=xlimits(1)+1; end
+if isnan(ylimits) ylimits=[0,1]; end
+if ylimits(1)==ylimits(2) ylimits(2)=ylimits(1)+1; end
+set(handles.axes1,'xlim',xlimits);
+set(handles.axes1,'ylim',ylimits);
 grid(handles.axes1);
 
 

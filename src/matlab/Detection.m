@@ -110,10 +110,11 @@ limTime2=maxTime-xlim2./86400.0;
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
-%x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
+x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
+x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
 
 % display ADC counts
 set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in));
@@ -301,9 +302,11 @@ GAMMAcal= k_qcal*Pcal + radlife;
 densCal=(6.022E+23/22400)*273/Tcal*4.9/1013;
 
 bc=boltzcorr(Tcal,TDet(lastrow)+273);
-k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String'))*0.01);
+k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String')));
 GAMMA = k_q*P20(lastrow) + radlife;
+
 quen = (1/GAMMA).*((exp(-gate1*GAMMA)-exp(-gate2*GAMMA)));
+quencal = (1/GAMMAcal).*((exp(-gate1*GAMMAcal)-exp(-gate2*GAMMAcal)));
 
 Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
 
@@ -313,8 +316,8 @@ COH=COH.*DiodeWZ1out(lastrow).*[1-PowDep*DiodeWZ1out(lastrow)]/[1-PowDep*PowCal]
 CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
 CHO2b=CHO2b.*DiodeWZ2out(lastrow).*[1-PowDep*DiodeWZ2out(lastrow)]/[1-PowDep*PowCal];
 
-XOH = MCP1OnlineAvg./COH;
-XHOx = MCP2OnlineAvg/CHO2b;
+XOH = MCP1OnlineAvg./COH';
+XHOx = MCP2OnlineAvg/CHO2b';
 
 % make plots 
 hold(handles.axeRay,'off');
@@ -759,6 +762,7 @@ function togButterfly_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of togglebutton5
+horusdata = getappdata(handles.parenthandle, 'horusdata');
 if horusdata.armAxis
     if get(hObject,'Value')
     %    system(['/lift/bin/eCmd @armAxis w 0xa462 0']);

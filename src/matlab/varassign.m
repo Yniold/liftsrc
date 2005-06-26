@@ -103,7 +103,7 @@ statusDataCols=...
 'VHV',876,'x*NaN','V';
 'VHVSumDat',877,'x*NaN','V';
 'VHVSumSqr',878,'x*NaN','V';
-'TDet',879,'x*NaN','C';
+'TDet',879,'x','C';
 'TDetSumDat',880,'x*NaN','C';
 'TDetSumSqr',881,'x*NaN','C';
 'DiodeWZ1out',882,'(x-9790.0)/193.2836','W';
