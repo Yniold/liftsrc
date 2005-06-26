@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 19:38:20 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 19:44:04 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.33  2005-06-26 19:38:20  harder
+ * Revision 1.34  2005-06-26 19:44:04  harder
+ * set interval of timerintr to 100ms
+ *
+ * Revision 1.33  2005/06/26 19:38:20  harder
  * included counter for requested data and TimerState to have more than one TimerTick intr.
  *
  * Revision 1.32  2005/06/26 13:07:33  rudolf
@@ -128,7 +131,7 @@
 #include "NMEAParser.h"
 #include "serial.h"
 
-#define STATUS_INTERVAL  200
+#define STATUS_INTERVAL  100
 
 #define DEBUGLEVEL 0
 
@@ -2189,13 +2192,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.33 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.33 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.33 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.33 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
