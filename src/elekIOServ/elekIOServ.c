@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-25 16:41:43 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 13:02:17 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.30  2005-06-25 16:41:43  harder
+ * Revision 1.31  2005-06-26 13:02:17  rudolf
+ * added time limit for answer from slave
+ *
+ * Revision 1.30  2005/06/25 16:41:43  harder
  * MSG_ACK is sent back to IP from which the req. originates
  *
  * Revision 1.29  2005/06/24 12:03:31  rudolf
@@ -127,8 +130,9 @@
 
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
 
-#define DEBUG_SLAVECOM        	// debug communication between master and slave
-#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
+//#define DEBUG_SLAVECOM        	// debug communication between master and slave
+//#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
+#define CPUCLOCK 500000000UL 	// CPU clock of Markus' Athlon XP
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
     ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
@@ -2122,6 +2126,7 @@ int main(int argc, char *argv[])
     fd_set fdsMaster;               // master file descriptor list
     fd_set fdsSelect;               // temp file descriptor list for select()
     int ret;
+    uint64_t ProcessTick;
     uint64_t TSC,TSCin;
     uint64_t TSCsentPacket;
     uint64_t MinTimeDiff=1e6;
@@ -2131,6 +2136,7 @@ int main(int argc, char *argv[])
     struct timeval LastAction;
     struct timeval GetStatusStartTime;
     struct timeval GetStatusStopTime;
+    float ProcessTime;
     
     struct sigaction  SignalAction;
     struct sigevent   SignalEvent;
@@ -2195,13 +2201,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.30 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.30 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.30 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.30 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.31 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2624,27 +2630,35 @@ int main(int argc, char *argv[])
                                     }
                                     rdtscll(TSC);
 #endif			 
-                                    printf("elekIOServ(M): Packet took %lld CPU clock cycles to process.\n\r", (TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue));
-                                    printf("elekIOServ(M): That's %f s\n\r", ((double)((TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue)))/((double)(ulCpuClock)));
-			 
-			 
-                                    void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M)
-                                    void* pSource = (void*)&(ElekStatusFromSlave.TimeOfDaySlave); 	// copy from first slave element(S) 
-                                    size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
-			 
-                                    printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
-                                    memcpy(pDest,pSource,numBytes);
-                                    SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
-
-                                };
-                            }
-                            else
-                                // Slave Mode
-                            {
-                                if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-                                                       &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , 0,
-                                                       (struct sockaddr *)&their_addr, &addr_len)) == -1) 
-                                    // Something went wrong
+				    ProcessTick=(TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
+				    ProcessTime=ProcessTick/((double)(ulCpuClock));
+                                    printf("elekIOServ(M): Packet took %lld CPU clock cycles to process.\n\r", ProcessTick);
+                                    printf("elekIOServ(M): That's %f s\n\r", ProcessTime);
+				      
+				      void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M)
+				      void* pSource = (void*)&(ElekStatusFromSlave.TimeOfDaySlave); 	// copy from first slave element(S) 
+				      size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
+				      
+#ifdef DEBUG_SLAVECOM
+				      printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
+#endif
+				      memcpy(pDest,pSource,numBytes);
+				      // Send Status to Status process
+				      SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],sizeof(struct elekStatusType), &ElekStatus);
+				      
+				      if (ProcessTime>MAX_AGE_SLAVE_STATUS) {
+					
+					sprintf(buf,"elekIOServ: Slave took to long for status %f",ProcessTime);
+					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+					
+				      } // if processTime
+				};
+                            } else {  // Slave Mode
+			      
+			      if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+						     &ElekStatusFromSlave,sizeof(ElekStatusFromSlave) , 0,
+						     (struct sockaddr *)&their_addr, &addr_len)) == -1) 
+				// Something went wrong
                                 {
                                     perror("elekIOServ(S): recvfrom ELEK_STATUS_IN");
                                     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOServ : ELEK_STATUS_IN: problem with receive");

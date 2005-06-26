@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-08 17:31:51 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-26 13:02:17 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.9  2005-06-08 17:31:51  rudolf
+// Revision 1.10  2005-06-26 13:02:17  rudolf
+// added time limit for answer from slave
+//
+// Revision 1.9  2005/06/08 17:31:51  rudolf
 // prepared sockets for sending the data structure between master and slave
 //
 // Revision 1.8  2005/05/22 15:02:43  rudolf
@@ -31,6 +34,7 @@
 #endif
 
 
+#define MAX_AGE_SLAVE_STATUS 0.06  // time that a status package is valid after init req.
 #define MAX_TASKS_TO_WAKE 10
 
 enum TimerSignalStateEnum {   // states of signal timer
