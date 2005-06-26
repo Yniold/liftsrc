@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-26 16:50:16 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-26 17:10:15 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.16  2005-06-26 16:50:16  rudolf
+ * Revision 1.17  2005-06-26 17:10:15  rudolf
+ * reduced ring length to 500 (HH)
+ *
+ * Revision 1.16  2005/06/26 16:50:16  rudolf
  * added Valve display (HH)
  *
  * Revision 1.15  2005/06/25 19:46:17  rudolf
@@ -78,7 +81,7 @@
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
 
-#define STATUSFILE_RING_LEN 1000
+#define STATUSFILE_RING_LEN 500
 
 #define DEBUGLEVEL 1
 
@@ -763,9 +766,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.16 2005-06-26 16:50:16 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.17 2005-06-26 17:10:15 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.16 2005-06-26 16:50:16 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.17 2005-06-26 17:10:15 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
