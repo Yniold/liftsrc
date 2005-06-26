@@ -73,6 +73,8 @@ data.ActTimer=handles.ActTimer;
 % and conversion functions for the parameters in the data files
 [data.col,data.fcts2val]=varassign;
 
+data.armAxis=0;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -414,6 +416,11 @@ function tglarmAxis_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(gcbf, 'horusdata');
 data.armAxis=get(hObject,'Value');
+if data.armAxis
+    set(hObject,'BackgroundColor','g','String','armAxis is ON');
+else
+    set(hObject,'BackgroundColor','c','String','armAxis is OFF');                
+end
 setappdata(gcbf, 'horusdata', data); 
 
 
