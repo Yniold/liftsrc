@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-27 09:43:56 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-27 10:55:08 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.10  2005-06-27 09:43:56  rudolf
+* Revision 1.11  2005-06-27 10:55:08  rudolf
+* fixed comment, has to be /**/ in elekIO for matlab (HH)
+*
+* Revision 1.10  2005/06/27 09:43:56  rudolf
 * added uiValidSlaveDataFlag
 *
 * Revision 1.9  2005/06/26 19:41:51  harder
@@ -83,7 +86,7 @@
 #define ELK_PWM_DCDC4_BASE   (ELK_PWM_BASE)
 #define ELK_PWM_VALVE_BASE   (ELK_PWM_BASE+0x08)
 
-// SLAVE
+/* SLAVE */
 
 #define ELK_PWM_VALVE_BASE_SLAVE (0xa460)
 
