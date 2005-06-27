@@ -115,6 +115,8 @@ x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
 x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
+x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
+x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 
 % display ADC counts
 set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in));
@@ -137,12 +139,20 @@ end
 
 % plot checked parameters vs. time
 hold(handles.axes1,'off'); 
-%if get(handles.chkWZ1in,'Value')
-%    plot(handles.axes1,statustime(iZeit),DiodeWZin(iZeit),'r');
-    %hold(handles.axes1,'on');
-%end 
+if get(handles.chkWZ1in,'Value')
+    plot(handles.axes1,statustime(iZeit),DiodeWZ1in(iZeit),'b');
+    hold(handles.axes1,'on');
+end 
 if get(handles.chkWZ1out,'Value')
     plot(handles.axes1,statustime(iZeit),DiodeWZ1out(iZeit),'b');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkWZ2in,'Value')
+    plot(handles.axes1,statustime(iZeit),DiodeWZ2in(iZeit),'g');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkWZ2out,'Value')
+    plot(handles.axes1,statustime(iZeit),DiodeWZ2out(iZeit),'g');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkP1000,'Value')
@@ -150,11 +160,11 @@ if get(handles.chkP1000,'Value')
     hold(handles.axes1,'on');
 end 
 if get(handles.chkP20,'Value')
-    plot(handles.axes1,statustime(iZeit),P20(iZeit),'b');
+    plot(handles.axes1,statustime(iZeit),P20(iZeit),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkPNO,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PNO),'r');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PNO),'g');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkVHV,'Value')
@@ -460,27 +470,27 @@ else
 end
 
 % check solenoids
-if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),4)==0
     set(handles.toggleC3F6,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleC3F6,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),2)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),3)==0
     set(handles.toggleN2,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleN2,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),3)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),2)==0
     set(handles.toggleHO2Inj,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleHO2Inj,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),4)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
     set(handles.toggleOHInj,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleOHInj,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
     set(handles.toggleNO1,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleNO1,'Value',1,'BackgroundColor','g');
@@ -490,7 +500,7 @@ if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
 else 
     set(handles.toggleNO2,'Value',1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
     set(handles.toggleNOPurge,'Value',0,'BackgroundColor','c');
 else 
     set(handles.toggleNOPurge,'Value',1,'BackgroundColor','g');
@@ -808,10 +818,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -835,10 +845,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -862,10 +872,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -889,10 +899,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -916,10 +926,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -969,10 +979,10 @@ lastrow=data.lastrow;
 
 if horusdata.armAxis
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on

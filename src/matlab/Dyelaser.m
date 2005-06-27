@@ -253,6 +253,7 @@ end
 
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
+data.CurPos=EtalonCurPos;
 setappdata(handles.output, 'Dyelaserdata', data);
 
 
@@ -521,20 +522,24 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
+
 % read in current online position from gui txt-field
 curonlinepos=str2double(get(handles.txtonline,'String'));
 % find last data point when etalon was in online position
-i=find(data.OnlinePos==onlinepos,1,'last');
+i=find(data.CurPos==curonlinepos,1,'last');
 % find maximum reference Signal and corresponding data point 
 [calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if calcOnlSign>statusdata(i,col.ccCounts0) 
+if calcOnlSign>statusData(i,col.ccCounts0) | isempty(i)
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.OnlinePos(icalcOnlSign)));
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
 else % go to old online position
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);

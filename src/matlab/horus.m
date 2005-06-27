@@ -73,7 +73,7 @@ data.ActTimer=handles.ActTimer;
 % and conversion functions for the parameters in the data files
 [data.col,data.fcts2val]=varassign;
 
-data.armAxis=0;
+data.armAxis=1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -248,6 +248,10 @@ if data.armAxis
     % switch Gain off for MCP2
     word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
     system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+    % switch LED off
+    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14,0);
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 end
 % home Etalon 
 system('/lift/bin/eCmd @Lift w 0xa510 0');
