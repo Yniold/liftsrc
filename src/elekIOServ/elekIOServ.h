@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-26 13:02:17 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-27 10:12:42 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.10  2005-06-26 13:02:17  rudolf
+// Revision 1.11  2005-06-27 10:12:42  rudolf
+// changed TimerStates numbering (HH), fixed bug
+//
+// Revision 1.10  2005/06/26 13:02:17  rudolf
 // added time limit for answer from slave
 //
 // Revision 1.9  2005/06/08 17:31:51  rudolf
@@ -39,7 +42,7 @@
 
 enum TimerSignalStateEnum {   // states of signal timer
   
-  TIMER_SIGNAL_STATE_INITIAL,    // wait for signal to occur
+  TIMER_SIGNAL_STATE_INITIAL=-1,    // wait for signal to occur
   TIMER_SIGNAL_STATE_GATHER,     // wake up and gather data
   TIMER_SIGNAL_STATE_REQ,        // request data from slave and instruments
 

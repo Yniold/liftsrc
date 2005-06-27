@@ -1,9 +1,9 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 09:43:46 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 10:12:42 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.36  2005-06-27 09:43:46  rudolf
- * added uiValidSlaveDataFlag
+ * Revision 1.37  2005-06-27 10:12:42  rudolf
+ * changed TimerStates numbering (HH), fixed bug
  *
  * Revision 1.35  2005/06/27 09:16:56  rudolf
  * fixed bug in RequestData
@@ -144,6 +144,7 @@
 //#undefine DEBUG_NOTIMER 0
 
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
+#define DEBUG_TIMER 1                  // Debug timers
 
 //#define DEBUG_SLAVECOM        	// debug communication between master and slave
 //#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
@@ -2133,6 +2134,7 @@ int main(int argc, char *argv[])
     struct timeval GetStatusStartTime;
     struct timeval GetStatusStopTime;
     float ProcessTime;
+    struct tm tmZeit;           
     
     struct sigaction  SignalAction;
     struct sigevent   SignalEvent;
@@ -2198,13 +2200,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2302,6 +2304,14 @@ int main(int argc, char *argv[])
 #endif
     
         gettimeofday(&StartAction, NULL);
+
+#ifdef DEBUG_TIMER
+	printf("Time:");
+	localtime_r(&StartAction.tv_sec,&tmZeit);
+	
+	printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min, 
+	       tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
+#endif
     
         //	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
         if (ret ==-1 ) { // select error
@@ -2530,7 +2540,7 @@ int main(int argc, char *argv[])
 	      
                                     break;
 	      
-                                case MSG_TYPE_CHANGE_FLAG_ETALON_ACTION:
+			    case MSG_TYPE_CHANGE_FLAG_ETALON_ACTION:
                                     ElekStatus.InstrumentFlags.EtalonAction=Message.Value;
                                     if (MessagePort!=ELEK_ETALON_IN) {
                                         sprintf(buf,"elekIOServ: Set EtalonAction to %d",ElekStatus.InstrumentFlags.EtalonAction);
@@ -2556,7 +2566,7 @@ int main(int argc, char *argv[])
                                         case SYS_PARAMETER_ETALON_OFFLINE_RIGHT:
                                             ElekStatus.EtalonData.OfflineStepRight=Message.Value;
                                             break;
-		
+					    
                                         case SYS_PARAMETER_ETALON_DITHER:
                                             ElekStatus.EtalonData.DitherStepWidth=Message.Value;
                                             break;
@@ -2670,7 +2680,7 @@ int main(int argc, char *argv[])
                                     } // if RequestDataFlag
                                     
                                     if (ProcessTime>MAX_AGE_SLAVE_STATUS) {
-					sprintf(buf,"elekIOServ: Slave took to long for status %f",ProcessTime);
+					sprintf(buf,"elekIOServ: Slave took too long for status %f",ProcessTime);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 					
                                     } // if processTime
