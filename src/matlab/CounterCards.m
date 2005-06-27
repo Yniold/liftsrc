@@ -442,6 +442,11 @@ function toggleHV_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of toggleHV
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 if horusdata.armAxis
     if get(hObject,'Value')
     %    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
