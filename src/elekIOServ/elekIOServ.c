@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 09:16:56 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 09:43:46 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.35  2005-06-27 09:16:56  rudolf
+ * Revision 1.36  2005-06-27 09:43:46  rudolf
+ * added uiValidSlaveDataFlag
+ *
+ * Revision 1.35  2005/06/27 09:16:56  rudolf
  * fixed bug in RequestData
  *
  * Revision 1.34  2005/06/26 19:44:04  harder
@@ -2195,13 +2198,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.36 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2318,12 +2321,12 @@ int main(int argc, char *argv[])
 #endif                            
                             // ask all slave units to gather their data
                             RequestDataFlag=0; // reset RequestDataFlag
-
+			    ElekStatus.uiValidSlaveDataFlag=FALSE;
                             for(SlaveNum=0;SlaveNum < MAXSLAVES;SlaveNum++)
-                            {
-                                if(SlaveList[SlaveNum].SlaveName) 
-                                {
-                                    Message.MsgType=MSG_TYPE_FETCH_DATA;
+			      {
+				if(SlaveList[SlaveNum].SlaveName) 
+				  {
+				    Message.MsgType=MSG_TYPE_FETCH_DATA;
                                     Message.MsgTime=TSC;                                       // send TSC to slave
                                     Message.MsgID=-1;
                                     SendUDPDataToIP(&MessageOutPortList[ELEK_ELEKIO_SLAVE_OUT],
@@ -2385,8 +2388,14 @@ int main(int argc, char *argv[])
                     } // if isMaster
                 } else { // lets see whether there is still an open data request                    
                     if (RequestDataFlag) {
-                        sprintf(buf,"[ElekIOServ] still missing %d data set",RequestDataFlag);
-                        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);                        
+		      sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
+			      RequestDataFlag);
+                        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			// Send Status to Status process
+			SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
+				    sizeof(struct elekStatusType), &ElekStatus);
+
+
                     } // RequestDataFlag
 
                 } // if TimerState
@@ -2649,7 +2658,7 @@ int main(int argc, char *argv[])
                                     printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
 #endif
                                     memcpy(pDest,pSource,numBytes);               
-                                    
+                                    ElekStatus.uiValidSlaveDataFlag=TRUE;
                                     RequestDataFlag--; // we got one more data set
 				    printf("elekIOServ(m): waiting for %d more data set\n",
 					   RequestDataFlag);

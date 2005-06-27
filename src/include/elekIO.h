@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-26 19:41:51 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-27 09:43:56 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.9  2005-06-26 19:41:51  harder
+* Revision 1.10  2005-06-27 09:43:56  rudolf
+* added uiValidSlaveDataFlag
+*
+* Revision 1.9  2005/06/26 19:41:51  harder
 * added different Valve PWM address for Slave
 *
 * Revision 1.8  2005/06/08 17:45:55  rudolf
@@ -463,7 +466,8 @@ struct elekStatusType {                                             /* combined 
   struct GPSDataType         GPSDataMaster; 
 
   /* data structures for the Slave Box (Wingpod / ARM9) */
-  
+ 
+  uint16_t                   uiValidSlaveDataFlag;                            /* indicates weather slave data is valid or not */
   struct timeval             TimeOfDaySlave;
   struct CounterCardType     CounterCardSlave;                            /* OH and HO2*/
   struct ADCCardType         ADCCardSlave[MAX_ADC_CARD_WP];
