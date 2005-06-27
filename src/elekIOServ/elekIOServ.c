@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-26 19:44:04 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 09:16:56 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.34  2005-06-26 19:44:04  harder
+ * Revision 1.35  2005-06-27 09:16:56  rudolf
+ * fixed bug in RequestData
+ *
+ * Revision 1.34  2005/06/26 19:44:04  harder
  * set interval of timerintr to 100ms
  *
  * Revision 1.33  2005/06/26 19:38:20  harder
@@ -2192,13 +2195,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.34 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.35 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2336,7 +2339,7 @@ int main(int argc, char *argv[])
                                 } /* end if(Slavelist) */
                             } // end for() 
 
-                            
+                            printf("elekIOServ(m): Request for %d data set\n",RequestDataFlag);
                             TSCsentPacket =TSC;
                             
                             gettimeofday(&GetStatusStartTime, NULL);
@@ -2648,7 +2651,10 @@ int main(int argc, char *argv[])
                                     memcpy(pDest,pSource,numBytes);               
                                     
                                     RequestDataFlag--; // we got one more data set
-                                    if (RequestDataFlag) {  // do we have all data yet ? 
+				    printf("elekIOServ(m): waiting for %d more data set\n",
+					   RequestDataFlag);
+			    
+                                    if (RequestDataFlag==0) {  // do we have all data yet ? 
                                         // Send Status to Status process
                                         SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
                                                     sizeof(struct elekStatusType), &ElekStatus);
