@@ -1,8 +1,11 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2005-06-22 13:17:14 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2005-06-27 19:39:11 $ by $Author: rudolf $
 *
 * $Log: udptools.c,v $
-* Revision 1.5  2005-06-22 13:17:14  rudolf
+* Revision 1.6  2005-06-27 19:39:11  rudolf
+* disabled in udp debuglevels
+*
+* Revision 1.5  2005/06/22 13:17:14  rudolf
 * Added PORTNAME in debug printfs -> makes life much easier
 *
 * Revision 1.4  2005/05/18 18:26:13  rudolf
@@ -32,8 +35,8 @@
 
 #include "../include/elekIOPorts.h"
 
-#define DEBUGLEVEL 1
-#define DEBUGDEBUGMESSAGES 1
+#define DEBUGLEVEL 0
+#define DEBUGDEBUGMESSAGES 0
 
 
 /*********************************************************************************************************/
