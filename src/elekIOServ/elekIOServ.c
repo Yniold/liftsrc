@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 10:12:42 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 19:39:39 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.37  2005-06-27 10:12:42  rudolf
+ * Revision 1.38  2005-06-27 19:39:39  rudolf
+ * commented out printf
+ *
+ * Revision 1.37  2005/06/27 10:12:42  rudolf
  * changed TimerStates numbering (HH), fixed bug
  *
  * Revision 1.35  2005/06/27 09:16:56  rudolf
@@ -144,7 +147,7 @@
 //#undefine DEBUG_NOTIMER 0
 
 //#define DEBUG_TIME_TASK 1                         // report time needed for processing tasks
-#define DEBUG_TIMER 1                  // Debug timers
+// #define DEBUG_TIMER 1                  // Debug timers
 
 //#define DEBUG_SLAVECOM        	// debug communication between master and slave
 //#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
@@ -2200,13 +2203,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.37 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2319,7 +2322,7 @@ int main(int argc, char *argv[])
             if (errno==EINTR) {  // got interrupted by timer
                 if (TimerState==TIMER_SIGNAL_STATE_GATHER) {  // shall we gather data ?
                     if ((StatusFlag % 100)==0) 
-                        printf("get Status %6d..\r",StatusFlag);		
+		      //                        printf("get Status %6d..\r",StatusFlag);		
                     write(2,"get Status.....\r",16);
                     
                     if (ElekStatus.InstrumentFlags.StatusQuery) {                    
@@ -2352,15 +2355,15 @@ int main(int argc, char *argv[])
                                 } /* end if(Slavelist) */
                             } // end for() 
 
-                            printf("elekIOServ(m): Request for %d data set\n",RequestDataFlag);
+                            // printf("elekIOServ(m): Request for %d data set\n",RequestDataFlag);
                             TSCsentPacket =TSC;
                             
                             gettimeofday(&GetStatusStartTime, NULL);
                             GetElekStatus(&ElekStatus,IsMaster);
                             gettimeofday(&GetStatusStopTime, NULL);
-                            printf("elekIOServ(m): Data aquisition took: %02d.%03ds\n\r",
-                                   GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
-                                   (GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
+                            // printf("elekIOServ(m): Data aquisition took: %02d.%03ds\n\r",
+			    //                                   GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
+                            //       (GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
                         } // If IsMaster
                         
 //   commented out, send later when message is assembled from master+slave		
@@ -2420,7 +2423,7 @@ int main(int argc, char *argv[])
             for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) { 
 	
                 if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect)) {   // new msg on fdNum. socket ... 
-                    printf("fdsSelect: %016lx\n\r",fdsSelect);
+		  // printf("fdsSelect: %016lx\n\r",fdsSelect);
                     //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
                     //		    fdElekManual=MessagePortList[0].fdSocket;
                     switch (MessagePort) {
@@ -2444,17 +2447,17 @@ int main(int argc, char *argv[])
 	      
                                 case MSG_TYPE_FETCH_DATA:  // Master want data
 #ifdef DEBUG_SLAVECOM
-                                    printf("ElekIOServ(s): FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
+				  // printf("ElekIOServ(s): FETCH_DATA received, TSC was: %016lx\n\r", Message.MsgTime);
 #endif
                                     ElekStatus.TimeStampCommand.TSCReceived.TSCValue = Message.MsgTime;
 #ifdef DEBUG_SLAVECOM
-                                    printf("ElekIOServ(s): gathering Data...\n\r");
+                                    // printf("ElekIOServ(s): gathering Data...\n\r");
 #endif
                                     gettimeofday(&GetStatusStartTime, NULL);
                                     GetElekStatus(&ElekStatus,IsMaster);
                                     gettimeofday(&GetStatusStopTime, NULL);
 #ifdef DEBUG_SLAVECOM
-                                    printf("ElekIOServ(s): Data aquisition took: %02d.%03ds\n\r",
+                                    // printf("ElekIOServ(s): Data aquisition took: %02d.%03ds\n\r",
                                            GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
                                            (GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
 #endif
@@ -2470,7 +2473,7 @@ int main(int argc, char *argv[])
                                     break;
                                     
                                 case MSG_TYPE_READ_DATA:
-                                    printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
+				  // printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
                                     Message.Value=elkReadData(Message.Addr);
                                     Message.MsgType=MSG_TYPE_ACK;
                                     
@@ -2495,7 +2498,7 @@ int main(int argc, char *argv[])
                                         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
                                     } /* if MessagePort */
 	      
-                                    printf("elekIOServ: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
+                                    // printf("elekIOServ: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
 	      
                                     Message.Status=elkWriteData(Message.Addr,Message.Value);
                                     Message.MsgType=MSG_TYPE_ACK;			    
@@ -2644,34 +2647,34 @@ int main(int argc, char *argv[])
                                 else
                                     // we should have received some data at this point, so give a lifesign
                                 {
-                                    printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
-                                    printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
+				  // printf("elekIOServ(M): ELEK_STATUS_IN: got %d bytes from Slave!\n\r",numbytes);
+				  // printf("elekIOServ(M): Timestamp: %016lx\n\r",ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
 #ifdef RUNONPC
                                     if(TSCsentPacket != ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue)
                                     {
-                                        printf("elekIOServ(M): Timestamps from sent packet and received packet don't match!\n\r");
+				      // printf("elekIOServ(M): Timestamps from sent packet and received packet don't match!\n\r");
                                         nLostPackets++;
-                                        printf("elekIOServ(M): Number of lost packets: %05d\n\r");
+                                        // printf("elekIOServ(M): Number of lost packets: %05d\n\r");
                                     }
                                     rdtscll(TSC);
 #endif			 
 				    ProcessTick=(TSC-(uint64_t)ElekStatusFromSlave.TimeStampCommand.TSCReceived.TSCValue);
 				    ProcessTime=ProcessTick/((double)(ulCpuClock));
-                                    printf("elekIOServ(M): Packet took %lld CPU clock cycles to process.\n\r", ProcessTick);
-                                    printf("elekIOServ(M): That's %f s\n\r", ProcessTime);
+                                    //printf("elekIOServ(M): Packet took %lld CPU clock cycles to process.\n\r", ProcessTick);
+                                    //printf("elekIOServ(M): That's %f s\n\r", ProcessTime);
 				      
                                     void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M)
                                     void* pSource = (void*)&(ElekStatusFromSlave.TimeOfDaySlave); 	// copy from first slave element(S) 
                                     size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
 				      
 #ifdef DEBUG_SLAVECOM
-                                    printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
+                                    // printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
 #endif
                                     memcpy(pDest,pSource,numBytes);               
                                     ElekStatus.uiValidSlaveDataFlag=TRUE;
                                     RequestDataFlag--; // we got one more data set
-				    printf("elekIOServ(m): waiting for %d more data set\n",
-					   RequestDataFlag);
+				    // printf("elekIOServ(m): waiting for %d more data set\n",
+				    //RequestDataFlag);
 			    
                                     if (RequestDataFlag==0) {  // do we have all data yet ? 
                                         // Send Status to Status process
@@ -2699,7 +2702,7 @@ int main(int argc, char *argv[])
                                 else
                                     // we should have received some data at this point, so give a lifesign
                                 {
-                                    printf("elekIOServ(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
+				  //printf("elekIOServ(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
                                 };
                             };
 	    
