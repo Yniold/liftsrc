@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-26 17:10:15 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-27 09:16:29 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.17  2005-06-26 17:10:15  rudolf
+ * Revision 1.18  2005-06-27 09:16:29  rudolf
+ * cosmetic in help (HH)
+ *
+ * Revision 1.17  2005/06/26 17:10:15  rudolf
  * reduced ring length to 500 (HH)
  *
  * Revision 1.16  2005/06/26 16:50:16  rudolf
@@ -691,9 +694,9 @@ void EvaluateKeyboard(void)
 void ShowHelp(void)
 {
   printf("\n\rPress to toggle displaying of:\n\r\n\r");
-  printf("[A] ADC DATA  \t[E] ETALON DATA   \t\t[G] GPS DATA\n\r");
+  printf("[A] ADC DATA  \t[E] ETALON DATA     \t[G] GPS DATA\n\r");
   printf("[C] CC DATA   \t[P] TEMPERATURE DATA\t[D] DATASET DATA\t[V] VALVE DATA\n\r");
-  printf("[T] TIME DATA \t[S] SHOW ALL      \t\t[R] RESET ALL\n\r");
+  printf("[T] TIME DATA \t[S] SHOW ALL        \t[R] RESET ALL\n\r");
   printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
 
@@ -766,9 +769,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.17 2005-06-26 17:10:15 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.18 2005-06-27 09:16:29 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.17 2005-06-26 17:10:15 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.18 2005-06-27 09:16:29 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
