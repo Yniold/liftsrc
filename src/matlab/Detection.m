@@ -128,6 +128,7 @@ set(handles.txtP20,'String',statusData(lastrow,col.P20));
 set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',statusData(lastrow,col.TDet));
+set(handles.txtMFC,'String',statusData(lastrow,col.MFCFlow));
 
 % warn for ADC signals out of allowed range for measurements
 if P20(lastrow)<3 | P20(lastrow)>6
@@ -173,6 +174,10 @@ if get(handles.chkVHV,'Value')
 end 
 if get(handles.chkTDet,'Value')
     plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TDet),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkMFC,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.MFCFlow),'r');
     hold(handles.axes1,'on');
 end 
 xlim(handles.axes1,[limTime1 limTime2]);
@@ -1055,3 +1060,32 @@ function editC_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editC as text
 %        str2double(get(hObject,'String')) returns contents of editC as a double
 
+
+
+
+function editMFC_Callback(hObject, eventdata, handles)
+% hObject    handle to editMFC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editMFC as text
+%        str2double(get(hObject,'String')) returns contents of editMFC as a double
+MaxFlow=20;
+setMFC=str2double(get(hObject,'String'));
+if setMFC<0 | isnan(setMFC) setMFC=0; end
+if setMFC>MaxFlow setMFC=MaxFlow; end
+set(hObject,'String',num2str(setMFC));
+
+Value=setMFC/MaxFlow*255;
+system(['/lift/bin/eCmd @armAxis w 0xa404 0xFF']); % initialise
+system(['/lift/bin/eCmd @armAxis w 0xa440 ', num2str(uint16(setMFC))]);
+
+
+
+% --- Executes on button press in chkMFC.
+function chkMFC_Callback(hObject, eventdata, handles)
+% hObject    handle to chkMFC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkMFC
