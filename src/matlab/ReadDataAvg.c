@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.17  2005-06-26 18:07:28  rudolf
+ * Revision 1.18  2005-06-28 16:25:15  martinez
+ * included ValidSlaveDataFlag, used it to check if armAxis is working
+ *
+ * Revision 1.17  2005/06/26 18:07:28  rudolf
  * corrected for parameter in ReadDataAvg for armAxis Valve Cards
  *
  * Revision 1.16  2005/06/22 17:16:33  martinez
@@ -28,7 +31,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.17 $ */
+ /* $Revision: 1.18 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -211,6 +214,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
   
   dims[1]= dims[1] + 1;  /* InstrumentAction */
   dims[1]= dims[1] + 2*11;  /* GPS Masterand Slave*/
+  dims[1]= dims[1] + 1;  /* ValidSlaveDataFlag */
+
 
   dims[1]= dims[1] + 3;  /* extra reserve */
 
@@ -1384,6 +1389,18 @@ void mexFunction( int nlhs, mxArray *plhs[],
     *(z+count++)=elekStatus[i].GPSDataSlave.uiHeading;
   }
 
+
+
+/******************* Valid Slave Data Flag ***************************/     
+
+
+
+  #ifdef D_HEADER
+    mexPrintf("ValidSlaveDataFlag  %d\n", 1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].uiValidSlaveDataFlag;
+  }
 
 
   

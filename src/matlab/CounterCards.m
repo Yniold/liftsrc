@@ -215,6 +215,11 @@ function MaskApply_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 Detdata = getappdata(str2double(horusdata.hDetection),'Detdata');
 device = get(handles.device,'Value')-1;
 
@@ -253,7 +258,7 @@ else
         if device==0
             system(['/lift/bin/eCmd @Lift s setmask ',num2str(i-1+device*10),word]);
         else
-            if horusdata.armAxis
+            if statusData(lastrow,col.ValidSlaveDataFlag)
                 system(['/lift/bin/eCmd @armAxis s setmask ',num2str(i-1+device*10),word]);
             end
         end
@@ -292,7 +297,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         set(hObject,'String','Gain is ON','BackgroundColor','g');
         switch get(handles.device,'Value')
@@ -340,7 +345,7 @@ if gaindelay<1
     set(hObject,'BackgroundColor','red');
 else
     set(hObject,'BackgroundColor','w');
-    if horusdata.armAxis
+    if statusData(lastrow,col.ValidSlaveDataFlag)
         switch get(handles.device,'Value')
             case 1
             case 2
@@ -364,6 +369,11 @@ function edMaster_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edMaster as text
 %        str2double(get(hObject,'String')) returns contents of edMaster as a double
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 masterdelay=uint16(str2double(get(hObject,'String')));
 if masterdelay<1 
     disp('value must be >0')
@@ -372,7 +382,7 @@ else
     set(hObject,'BackgroundColor','w');
     if get(handles.device,'Value')==1
         system(['/lift/bin/eCmd @Lift w 0xa316 ',num2str(masterdelay)]);            
-    elseif horusdata.armAxis
+    elseif statusData(lastrow,col.ValidSlaveDataFlag)
         system(['/lift/bin/eCmd @armAxis w 0xa316 ',num2str(masterdelay)]);            
     end
 end
@@ -386,6 +396,11 @@ function edCounter_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edCounter as text
 %        str2double(get(hObject,'String')) returns contents of edCounter as a double
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 counterdelay=uint16(str2double(get(hObject,'String')));
 if counterdelay<1 
     disp('value must be >0')
@@ -396,11 +411,11 @@ else
         case 1
             system(['/lift/bin/eCmd @Lift w 0xa310 ',num2str(counterdelay)]);            
         case 2
-            if horusdata.armAxis
+            if statusData(lastrow,col.ValidSlaveDataFlag)
                 system(['/lift/bin/eCmd @armAxis w 0xa312 ',num2str(counterdelay)]);            
             end
         case 3
-            if horusdata.armAxis
+            if statusData(lastrow,col.ValidSlaveDataFlag)
                 system(['/lift/bin/eCmd @armAxis w 0xa314 ',num2str(counterdelay)]);            
             end
     end
@@ -416,13 +431,18 @@ function edGainWidth_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edGainWidth as text
 %        str2double(get(hObject,'String')) returns contents of edGainWidth as a double
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+
+data = getappdata(handles.output, 'Gatedata');
+lastrow=data.lastrow;
 gainwidth=uint16(str2double(get(hObject,'String')));
 if gainwidth<1 
     disp('value must be >0')
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','w');
-    if horusdata.armAxis
+    if statusData(lastrow,col.ValidSlaveDataFlag)
         switch get(handles.device,'Value')
             case 1
             case 2
@@ -447,7 +467,7 @@ col=horusdata.col;
 
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
     %    if single(statusData(lastrow,col.P20))<? % switch on HV only if cell pressure P20 is low
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on

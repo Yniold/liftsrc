@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 25-Jun-2005 17:05:32
+% Last Modified by GUIDE v2.5 28-Jun-2005 18:12:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,8 +72,6 @@ data.ActTimer=handles.ActTimer;
 % call function varassign.m to create structures containing column numbers
 % and conversion functions for the parameters in the data files
 [data.col,data.fcts2val]=varassign;
-
-data.armAxis=1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -128,13 +126,16 @@ statustime=double(statusData(:,1))+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-% switch on LED on armAxis
-if data.armAxis % if armAxis is active
+% show if armAxis is working and switch on LED on armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag) % if armAxis is active
+    set(handles.txtarmAxis,'BackgroundColor','g','String','armAxis is ON');
     if bitget(statusData(lastrow,col.Valve2armAxis),14)==0  % if LED is off
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14);
         system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
         system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     end
+else
+    set(handles.txtarmAxis,'BackgroundColor','r','String','armAxis is OFF');                
 end
 
 % switch off filament if reference cell pressure is too high
@@ -235,8 +236,7 @@ stop(handles.ActTimer);
 % shut Filament and Laser Valves Off
 system('/lift/bin/eCmd @Lift w 0xa408 0x0000');
 
-if data.armAxis
-    % shut Axis Valves Off
+if statusData(lastrow,col.ValidSlaveDataFlag)    % shut Axis Valves Off
     system(['/lift/bin/eCmd @armAxis w 0xa408 0x0000']);
     % shut HV Off
     Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
@@ -413,19 +413,19 @@ setappdata(gcbf, 'horusdata', data);
 
 
 
-% --- Executes on button press in tglarmAxis.
-function tglarmAxis_Callback(hObject, eventdata, handles)
-% hObject    handle to tglarmAxis (see GCBO)
+% --- Executes on button press in txtarmAxis.
+%function txtarmAxis_Callback(hObject, eventdata, handles)
+% hObject    handle to txtarmAxis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-data = getappdata(gcbf, 'horusdata');
-data.armAxis=get(hObject,'Value');
-if data.armAxis
-    set(hObject,'BackgroundColor','g','String','armAxis is ON');
-else
-    set(hObject,'BackgroundColor','c','String','armAxis is OFF');                
-end
-setappdata(gcbf, 'horusdata', data); 
+%data = getappdata(gcbf, 'horusdata');
+%data.armAxis=get(hObject,'Value');
+%if data.armAxis
+%    set(hObject,'BackgroundColor','g','String','armAxis is ON');
+%else
+%    set(hObject,'BackgroundColor','c','String','armAxis is OFF');                
+%end
+%setappdata(gcbf, 'horusdata', data); 
 
 
 

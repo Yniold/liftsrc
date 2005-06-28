@@ -316,7 +316,8 @@ statusDataCols=...
 'GPSnumSat',823,'x','';
 'GPSLastValidData',824,'x*5','s';
 'GPSGroundSpeed',825,'x/100','m/s';
-'GPSHeading',826,'x/10','deg'};
+'GPSHeading',826,'x/10','deg'
+'ValidSlaveDataFlag',1004,'x',''};
 
 % create structure 'col' with field names taken from 1st column of
 % statusDataCols and values from 2nd column

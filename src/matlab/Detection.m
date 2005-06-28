@@ -699,7 +699,7 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         set(hObject,'BackgroundColor','r','String','switching Blower ON');
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
@@ -746,7 +746,7 @@ data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         set(hObject,'BackgroundColor','g','String','HV ON');
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
@@ -779,7 +779,7 @@ function togButterfly_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of togglebutton5
 horusdata = getappdata(handles.parenthandle, 'horusdata');
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
     %    system(['/lift/bin/eCmd @armAxis w 0xa462 0']);
         set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
@@ -822,7 +822,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1);
         set(hObject,'BackgroundColor','g');
@@ -849,7 +849,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2);
         set(hObject,'BackgroundColor','g');
@@ -876,7 +876,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3);
         set(hObject,'BackgroundColor','g');
@@ -903,7 +903,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4);
         set(hObject,'BackgroundColor','g');
@@ -930,7 +930,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
         set(hObject,'BackgroundColor','g');
@@ -956,7 +956,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6);
         set(hObject,'BackgroundColor','g');
@@ -983,7 +983,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
-if horusdata.armAxis
+if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5);
         set(hObject,'BackgroundColor','g');
