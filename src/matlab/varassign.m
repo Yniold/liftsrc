@@ -64,9 +64,9 @@ statusDataCols=...
 'PDyelaserSupplyV',668,'x*NaN','V';
 'PDyelaserSupplyVSumDat',669,'x*NaN','V';
 'PDyelaserSupplyVSumSqr',670,'x*NaN','V';
-'DiodeUV',671,'4.6863E-6*x.^2-8.5857E-2*x+390.41','W';
-'DiodeUVSumDat',672,'4.6863E-6*x^2-8.5857E-2*x+390.41','W';
-'DiodeUVSumSqr',673,'4.6863E-6*x^2-8.5857E-2*x+390.41','W';
+'DiodeUV',671,'(x-1000)/(11740-1000)*10.2','mW';
+'DiodeUVSumDat',672,'(x-1000)/(11740-1000)*10.2','mW';
+'DiodeUVSumSqr',673,'(x-1000)/(11740-1000)*10.2','mW';
 'PRef',674,'x*NaN','mbar';
 'PRefSumDat',675,'x*NaN','mbar';
 'PRefSumSqr',676,'x*NaN','mbar';
