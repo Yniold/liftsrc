@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-27 19:39:39 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-28 15:35:22 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.38  2005-06-27 19:39:39  rudolf
+ * Revision 1.39  2005-06-28 15:35:22  harder
+ * fixed MFC readout for slave and cleared slave struct b4 request
+ *
+ * Revision 1.38  2005/06/27 19:39:39  rudolf
  * commented out printf
  *
  * Revision 1.37  2005/06/27 10:12:42  rudolf
@@ -829,8 +832,8 @@ int InitMFCCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
 	// configure MFC Card Wingpod
 	
 	for (Card=0; Card<MAX_MFC_CARD_WP; Card ++) {
-            MFC_CfgAddress=ELK_MFC_BASE+ELK_MFC_CONFIG+Card*ELK_MFC_NUM_ADR;
-            DAC_CfgAddress=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+            MFC_CfgAddress=ELK_MFC_BASE_WP+ELK_MFC_CONFIG_WP+Card*ELK_MFC_NUM_ADR_WP;
+            DAC_CfgAddress=ELK_DAC_BASE_WP+Card*ELK_DAC_NUM_ADR_WP;
             for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++) {
                 // init ADC part of each channel
                 ret=elkWriteData(MFC_CfgAddress+2*Channel,
@@ -849,7 +852,7 @@ int InitMFCCard (struct elekStatusType *ptrElekStatus, int IsMaster) {
 	} /* for Card */
 	
 	// enable DACPWM
-	ret=elkWriteData(ELK_DACPWM_BASE,0xff);
+	ret=elkWriteData(ELK_DACPWM_BASE_WP,0xff);
 	
 	
 	return (INIT_MODULE_SUCCESS);
@@ -1404,8 +1407,8 @@ void GetMFCCardData ( struct elekStatusType *ptrElekStatus, int IsMaster ) {
 		
         for (Card=0; Card<MAX_MFC_CARD_WP; Card ++)
         {
-            MFC_Address=ELK_MFC_BASE+Card*ELK_MFC_NUM_ADR;
-            DAC_Address=ELK_DAC_BASE+Card*ELK_DAC_NUM_ADR;
+            MFC_Address=ELK_MFC_BASE_WP+Card*ELK_MFC_NUM_ADR_WP;
+            DAC_Address=ELK_DAC_BASE_WP+Card*ELK_DAC_NUM_ADR_WP;
             ptrElekStatus->MFCCardSlave[Card].NumSamples++;
 			
             for (Channel=0;Channel<MAX_MFC_CHANNEL_PER_CARD; Channel++)
@@ -1467,7 +1470,7 @@ int GetValveCardData (struct elekStatusType *ptrElekStatus, int IsMaster)
         for (Card=0; Card<MAX_VALVE_CARD_WP; Card ++) 
         {
             ptrElekStatus->ValveCardSlave[Card].Valve=elkReadData(ELK_VALVE_BASE+Card*2);
-            ptrElekStatus->ValveCardSlave[Card].ValveVolt=elkReadData(ELK_PWM_VALVE_BASE_SLAVE+Card*2);
+            ptrElekStatus->ValveCardSlave[Card].ValveVolt=elkReadData(ELK_PWM_VALVE_BASE_WP+Card*2);
         } /* for Card */
     };
 } /* GetValveCardData */
@@ -2203,13 +2206,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.38 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2357,7 +2360,12 @@ int main(int argc, char *argv[])
 
                             // printf("elekIOServ(m): Request for %d data set\n",RequestDataFlag);
                             TSCsentPacket =TSC;
-                            
+                            // we reset the elekIOStructure
+			    // until data not properly separated we do it only for slave
+			    void* pDest   = (void*)&(ElekStatus.TimeOfDaySlave); 		// copy to first slave element(M) 
+			    size_t numBytes = sizeof(ElekStatus)-(((void*)&ElekStatus.TimeOfDaySlave)-((void*)&ElekStatus));
+			    memset(pDest,0,numBytes);
+
                             gettimeofday(&GetStatusStartTime, NULL);
                             GetElekStatus(&ElekStatus,IsMaster);
                             gettimeofday(&GetStatusStopTime, NULL);
