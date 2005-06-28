@@ -829,9 +829,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),1,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -856,9 +856,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),2,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -883,9 +883,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),3,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -910,9 +910,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),4,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -937,9 +937,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 % --- Executes on button press in toggleNO2.
@@ -963,9 +963,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -990,9 +990,9 @@ if horusdata.armAxis
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),5,0);
         set(hObject,'BackgroundColor','c');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -1078,7 +1078,7 @@ set(hObject,'String',num2str(setMFC));
 
 Value=setMFC/MaxFlow*255;
 system(['/lift/bin/eCmd @armAxis w 0xa404 0xFF']); % initialise
-system(['/lift/bin/eCmd @armAxis w 0xa440 ', num2str(uint16(setMFC))]);
+system(['/lift/bin/eCmd @armAxis w 0xa440 ', num2str(uint16(Value))]);
 
 
 
