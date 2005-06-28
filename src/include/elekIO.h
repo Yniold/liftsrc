@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-28 13:55:31 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-28 15:34:12 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.12  2005-06-28 13:55:31  rudolf
+* Revision 1.13  2005-06-28 15:34:12  harder
+* added sep. adr. const. for MFC @ WP
+*
+* Revision 1.12  2005/06/28 13:55:31  rudolf
 * included MFCSetFlow
 *
 * Revision 1.11  2005/06/27 10:55:08  rudolf
@@ -83,26 +86,34 @@
 
 
 #define ELK_DACPWM_BASE      (ELK_BACKPLANE_BASE+0x04)
+#define ELK_DACPWM_BASE_WP   (ELK_BACKPLANE_BASE+0x04)
 #define ELK_VALVE_BASE       (ELK_BACKPLANE_BASE+0x08)
 #define ELK_DAC_BASE         (ELK_BACKPLANE_BASE+0x40)
+#define ELK_DAC_BASE_WP      (ELK_BACKPLANE_BASE+0x40)
 #define ELK_PWM_BASE         (ELK_BACKPLANE_BASE+0x60)
 #define ELK_PWM_DCDC4_BASE   (ELK_PWM_BASE)
 #define ELK_PWM_VALVE_BASE   (ELK_PWM_BASE+0x08)
 
-/* SLAVE */
 
-#define ELK_PWM_VALVE_BASE_SLAVE (0xa460)
+#define ELK_PWM_VALVE_BASE_WP (0xa460)
 
 #define ELK_ADC_BASE         (ELK_BACKPLANE_BASE+0x80)
 #define ELK_ADC_BASE_WP      (ELK_BACKPLANE_BASE+0x80)
 
-#define ELK_MFC_BASE         (ELK_BACKPLANE_BASE+0xa0)
+#define ELK_MFC_BASE         (ELK_BACKPLANE_BASE+0xa0)          /* Base adr. of MFC ADC channels */ 
+#define ELK_MFC_BASE_WP      (ELK_BACKPLANE_BASE+0xc0)
+
 
 #define ELK_ADC_CONFIG          (0x0010)                        /* add to base addr */
 #define ELK_ADC_NUM_ADR         (0x0020)                        /* number of addresses each ADC channel has */
-#define ELK_MFC_CONFIG          (ELK_ADC_CONFIG)                /* base addr for MFC Config*/
+
+#define ELK_MFC_CONFIG          (ELK_ADC_CONFIG)                /* offs. base addr for MFC Config*/
 #define ELK_MFC_NUM_ADR         (ELK_ADC_NUM_ADR)               /* number of addresses each MFC channel has */
 #define ELK_DAC_NUM_ADR         (MAX_DCDC4_CHANNEL_PER_CARD<<1) /* number of addresses each MFC channel has */
+
+#define ELK_MFC_CONFIG_WP       (ELK_ADC_CONFIG)                /* offs. base addr for MFC Config*/
+#define ELK_MFC_NUM_ADR_WP      (ELK_ADC_NUM_ADR)               /* number of addresses each MFC channel has */
+#define ELK_DAC_NUM_ADR_WP      (MAX_DCDC4_CHANNEL_PER_CARD<<1) /* number of addresses each MFC channel has */
 
 /* defines for the 24bit ADC */
 
