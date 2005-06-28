@@ -1,10 +1,13 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-27 10:55:08 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-28 13:55:31 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.11  2005-06-27 10:55:08  rudolf
-* fixed comment, has to be /**/ in elekIO for matlab (HH)
+* Revision 1.12  2005-06-28 13:55:31  rudolf
+* included MFCSetFlow
+*
+* Revision 1.11  2005/06/27 10:55:08  rudolf
+* fixed comment, has to be in elekIO for matlab (HH)
 *
 * Revision 1.10  2005/06/27 09:43:56  rudolf
 * added uiValidSlaveDataFlag
