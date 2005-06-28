@@ -299,41 +299,46 @@ set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
 set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
 
 %calculate OH and HO2 mixing ratios
-radlife=1.45e6;			% Radiative lifetime (Hz) from D. Heard data
-% THESE PARAMETERS NEED TO BE CONSIDERED WHEN RUNNING THE INSTRUMENT IN A
-% DIFFERENT SETUP
-gate1=200e-9;			   % Approximate gate setting for rising edge (sec)
-gate2=620e-9;		   	% ...for falling edge (sec)
-Tcal=293;			      % Cell Temperature during lab calibration (K)
-Pcal=4.0;
-PowCal=4.0;		%OHUVPower during lab calibration (mW)
-PowCalb=4.0;		%HO2UVPower during lab calibration (mW)
-PowDep=0.0;		%sensitivity decrease per mW as a fraction from value at 0 mW
-wmrcal=8E-3;	         % Calibration reference water concentration
-cOH=12.5;    %The following parameters are sensitivity
-cHO2b=12.5;		%HO2 axis
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    radlife=1.45e6;			% Radiative lifetime (Hz) from D. Heard data
+    % THESE PARAMETERS NEED TO BE CONSIDERED WHEN RUNNING THE INSTRUMENT IN A
+    % DIFFERENT SETUP
+    gate1=200e-9;			   % Approximate gate setting for rising edge (sec)
+    gate2=620e-9;		   	% ...for falling edge (sec)
+    Tcal=293;			      % Cell Temperature during lab calibration (K)
+    Pcal=4.0;
+    PowCal=4.0;		%OHUVPower during lab calibration (mW)
+    PowCalb=4.0;		%HO2UVPower during lab calibration (mW)
+    PowDep=0.0;		%sensitivity decrease per mW as a fraction from value at 0 mW
+    wmrcal=8E-3;	         % Calibration reference water concentration
+    cOH=12.5;    %The following parameters are sensitivity
+    cHO2b=12.5;		%HO2 axis
 
-k_qcal=getq(Tcal,wmrcal);
-GAMMAcal= k_qcal*Pcal + radlife;  
-densCal=(6.022E+23/22400)*273/Tcal*4.9/1013;
+    k_qcal=getq(Tcal,wmrcal);
+    GAMMAcal= k_qcal*Pcal + radlife;  
+    densCal=(6.022E+23/22400)*273/Tcal*4.9/1013;
 
-bc=boltzcorr(Tcal,TDet(lastrow)+273);
-k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String')));
-GAMMA = k_q*P20(lastrow) + radlife;
+    bc=boltzcorr(Tcal,TDet(lastrow)+273);
+    k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String')));
+    GAMMA = k_q*P20(lastrow) + radlife;
 
-quen = (1/GAMMA).*((exp(-gate1*GAMMA)-exp(-gate2*GAMMA)));
-quencal = (1/GAMMAcal).*((exp(-gate1*GAMMAcal)-exp(-gate2*GAMMAcal)));
+    quen = (1/GAMMA).*((exp(-gate1*GAMMA)-exp(-gate2*GAMMA)));
+    quencal = (1/GAMMAcal).*((exp(-gate1*GAMMAcal)-exp(-gate2*GAMMAcal)));
 
-Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
+    Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
 
-COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-COH=COH.*DiodeWZ1out(lastrow).*[1-PowDep*DiodeWZ1out(lastrow)]/[1-PowDep*PowCal];
+    COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
+    COH=COH.*DiodeWZ1out(lastrow).*[1-PowDep*DiodeWZ1out(lastrow)]/[1-PowDep*PowCal];
 
-CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-CHO2b=CHO2b.*DiodeWZ2out(lastrow).*[1-PowDep*DiodeWZ2out(lastrow)]/[1-PowDep*PowCal];
+    CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
+    CHO2b=CHO2b.*DiodeWZ2out(lastrow).*[1-PowDep*DiodeWZ2out(lastrow)]/[1-PowDep*PowCal];
 
-XOH = MCP1OnlineAvg./COH';
-XHOx = MCP2OnlineAvg/CHO2b';
+    XOH = MCP1OnlineAvg./COH';
+    XHOx = MCP2OnlineAvg/CHO2b';
+else
+    XOH = MCP1OnlineAvg; XOH(:)=NaN;
+    XHOx = MCP1OnlineAvg; XHOx(:)=NaN;
+end    
 
 % make plots 
 hold(handles.axeRay,'off');
