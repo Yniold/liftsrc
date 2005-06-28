@@ -144,7 +144,7 @@ statusDataCols=...
 'IFilamentConfig',728,'x*NaN','';
 'OphirConfig',729,'x*NaN','';
 'MFCSetFlow',730,'20*x/255','sccm';
-'MFCFlow',731,'20*x/255','sccm';
+'MFCFlow',731,'20*(x-9996)/(11447-9996)','sccm';
 'ValveVoltLift',732,'x/140','V';
 'ValveLift',733,'x*NaN','';
 'Valve1VoltarmAxis',916,'x/140','V';
