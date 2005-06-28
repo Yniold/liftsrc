@@ -710,9 +710,9 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
         system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
         system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-        wait(5);
+        pause(5);
         while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
-            wait(1);
+            pause(1);
         end
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
         Valveword=bitset(Valveword,1); % ramp blower up 
