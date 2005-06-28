@@ -1798,7 +1798,7 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'Temp0WPid';'Temp1WPid';'Temp2WPid';'Temp3WPid';'Temp4WPid';'Temp5WPid';'Temp6WPid';'Temp7WPid';'Temp8WPid';...
     'Temp9WPid';'Temp10WPid';'Temp11WPid';'Temp12WPid';'Temp13WPid';'Temp14WPid';'Temp15WPid';'Temp16WPid';...
     'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
-fset(hObject,'String',vars);
+set(hObject,'String',vars);
 
 
 % --- Executes on selection change in listboxY.
