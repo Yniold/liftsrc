@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-26 16:50:17 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-29 12:46:18 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
-* Revision 1.6  2005-06-26 16:50:17  rudolf
+* Revision 1.7  2005-06-29 12:46:18  rudolf
+* preparation to display mask in status
+*
+* Revision 1.6  2005/06/26 16:50:17  rudolf
 * added Valve display (HH)
 *
 * Revision 1.5  2005/06/25 19:20:18  rudolf
@@ -20,10 +23,11 @@
 #define GROUP_ADCDATA		(1<< 1)
 #define GROUP_TIMEDATA		(1<< 2)
 #define GROUP_CCDATA 		(1<< 3)
-#define GROUP_TEMPDATA		(1<< 4)
-#define GROUP_GPSDATA		(1<< 5)
-#define GROUP_ETALONDATA	(1<< 6)
-#define GROUP_VALVEDATA	        (1<< 7)
+#define GROUP_CCMASK 		(1<< 4)
+#define GROUP_TEMPDATA		(1<< 5)
+#define GROUP_GPSDATA		(1<< 6)
+#define GROUP_ETALONDATA	(1<< 7)
+#define GROUP_VALVEDATA	        (1<< 8)
 
 // GLOBALS
 

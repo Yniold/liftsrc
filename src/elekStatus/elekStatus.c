@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-27 09:16:29 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-29 12:46:18 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.18  2005-06-27 09:16:29  rudolf
+ * Revision 1.19  2005-06-29 12:46:18  rudolf
+ * preparation to display mask in status
+ *
+ * Revision 1.18  2005/06/27 09:16:29  rudolf
  * cosmetic in help (HH)
  *
  * Revision 1.17  2005/06/26 17:10:15  rudolf
@@ -226,6 +229,26 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	  printf("%d ",ptrElekStatus->CounterCardSlave.Channel[i].Counts);
 	}
     }
+
+  // ***************** COUNTER CARDS MASK **************	
+
+  if(uiGroupFlags & GROUP_CCMASK) {
+    // *****************
+    // MASTER CounterCard
+    // *****************
+      
+    printf("Mask");
+    printf("(M):");
+    for(i=0; i<MAX_COUNTER_CHANNEL;i++) {
+      printf("%d ",ptrElekStatus->CounterCardSlave.Channel[i].Counts);
+    } // for i
+     
+    
+
+  } // uiGroupFlags & GROUP_CCMASK
+  
+
+
 	
   // ***************** ADC CARDS DATA **************	
 		
@@ -630,12 +653,20 @@ void EvaluateKeyboard(void)
 	    printf("\n\rDisplay of GPS DATA is now off.\n\r");
 	  break;
 				
-	case 'C':					// Countercard Data	
+	case 'C':					// Countercard Data
 	  uiGroupFlags ^= GROUP_CCDATA;
 	  if(uiGroupFlags & GROUP_CCDATA)
 	    printf("\n\rDisplay of COUNTERCARD DATA is now on.\n\r");
 	  else
 	    printf("\n\rDisplay of COUNTERCARD DATA is now off.\n\r");
+	  break;
+
+	case 'M':					// Countercard Mask
+	  uiGroupFlags ^= GROUP_CCMASK;
+	  if(uiGroupFlags & GROUP_CCMASK)
+	    printf("\n\rDisplay of COUNTERCARD MASK is now on.\n\r");
+	  else
+	    printf("\n\rDisplay of COUNTERCARD MASK is now off.\n\r");
 	  break;
 				
 	case 'E':					// Etalon Data
@@ -694,9 +725,10 @@ void EvaluateKeyboard(void)
 void ShowHelp(void)
 {
   printf("\n\rPress to toggle displaying of:\n\r\n\r");
-  printf("[A] ADC DATA  \t[E] ETALON DATA     \t[G] GPS DATA\n\r");
-  printf("[C] CC DATA   \t[P] TEMPERATURE DATA\t[D] DATASET DATA\t[V] VALVE DATA\n\r");
-  printf("[T] TIME DATA \t[S] SHOW ALL        \t[R] RESET ALL\n\r");
+  printf("[A] ADC DATA    \t[E] ETALON DATA     \t[G] GPS DATA\n\r");
+  printf("[C] CC DATA     \t[M] CC Mask info    \t[P] TEMPERATURE DATA\n\r");
+  printf("[D] DATASET DATA\t[V] VALVE DATA\n\r");
+  printf("[T] TIME DATA   \t[S] SHOW ALL        \t[R] RESET ALL\n\r");
   printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
 
@@ -769,9 +801,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.18 2005-06-27 09:16:29 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.19 2005-06-29 12:46:18 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.18 2005-06-27 09:16:29 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.19 2005-06-29 12:46:18 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
