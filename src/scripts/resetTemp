@@ -1,0 +1,10 @@
+
+echo reset Temperature Cards for Master & Slave
+eCmd w 0xb0f8 0x8000
+eCmd @ArmAxis w 0xb0f8 0x8000
+sleep 2
+eCmd w 0xb0f8 0x8000
+eCmd @ArmAxis w 0xb0f8 0x8000
+
+echo done
+
