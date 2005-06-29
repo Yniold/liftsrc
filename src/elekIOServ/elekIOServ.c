@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-28 15:35:22 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-29 15:11:05 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.39  2005-06-28 15:35:22  harder
+ * Revision 1.40  2005-06-29 15:11:05  harder
+ * added set mask support for slave
+ *
+ * Revision 1.39  2005/06/28 15:35:22  harder
  * fixed MFC readout for slave and cleared slave struct b4 request
  *
  * Revision 1.38  2005/06/27 19:39:39  rudolf
@@ -2206,13 +2209,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.39 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2615,7 +2618,11 @@ int main(int argc, char *argv[])
                                     if ((Message.Addr<MAX_COUNTER_CHANNEL*10)){
                                         Channel=(int)(Message.Addr/10);
                                         MaskAddr=Message.Addr%10;
-                                        ElekStatus.CounterCardMaster.Channel[Channel].Mask[MaskAddr]=Message.Value;
+					if (IsMaster)
+					  ElekStatus.CounterCardMaster.Channel[Channel].Mask[MaskAddr]=Message.Value;
+					else
+					  ElekStatus.CounterCardSlave.Channel[Channel].Mask[MaskAddr]=Message.Value;
+
                                         sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
                                         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
                                     } else { // we found that Message.Addr is larger than MAX_COUNTER_CHANNEL*10
