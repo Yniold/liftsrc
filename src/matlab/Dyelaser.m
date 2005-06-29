@@ -118,14 +118,18 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 % display ADC values
 
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
+x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
+x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
+x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
+x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
 
-set(handles.txtDiodeGr,'String',statusData(lastrow,col.DiodeGr));
-set(handles.txtDiodeUV,'String',statusData(lastrow,col.DiodeUV));
+set(handles.txtDiodeGr,'String',DiodeGr);
+set(handles.txtDiodeUV,'String',DiodeUV);
 set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
-set(handles.txtPDyelaser,'String',statusData(lastrow,col.PDyelaser));
-set(handles.txtPVent,'String',statusData(lastrow,col.PVent));
+set(handles.txtPDyelaser,'String',PDyelaser);
+set(handles.txtPVent,'String',PVent);
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
-set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
+set(handles.txtPRef,'String',PRef);
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
@@ -169,7 +173,7 @@ end
 hold(handles.axes1,'off'); 
 
 if get(handles.checkDiodeGr,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.DiodeGr),'r');
+    plot(handles.axes1,statustime(iZeit),DiodeGr,'r');
     hold(handles.axes1,'on');
 end 
 
@@ -184,12 +188,12 @@ if get(handles.checkDiodeEt,'Value')
 end 
 
 if get(handles.checkPDyelaser,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PDyelaser),'r');
+    plot(handles.axes1,statustime(iZeit),PDyelaser,'r');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PVent),'r');
+    plot(handles.axes1,statustime(iZeit),PVent,'r');
     hold(handles.axes1,'on');
 end 
 

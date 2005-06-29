@@ -118,9 +118,12 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 % display ADC values
 
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
+x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
+x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
+x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.DiodeUV,';']);
 
-set(handles.txtDiodeGr,'String',statusData(lastrow,col.DiodeGr));
-set(handles.txtDiodeUV,'String',statusData(lastrow,col.DiodeUV));
+set(handles.txtDiodeGr,'String',DiodeGr);
+set(handles.txtDiodeUV,'String',DiodeUV);
 set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
 set(handles.txtPDyelaser,'String',statusData(lastrow,col.PDyelaser));
 set(handles.txtPVent,'String',statusData(lastrow,col.PVent));
@@ -243,7 +246,7 @@ else
 end
 
 % check shutter status
-if bitget(statusData(lastrow,col.Valve),13)==0;
+if bitget(statusData(lastrow,col.ValveLift),13)==0;
     set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
     set(handles.toggleShutter,'BackgroundColor','g');
 else 
@@ -253,6 +256,7 @@ end
 
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
+data.CurPos=EtalonCurPos;
 setappdata(handles.output, 'Dyelaserdata', data);
 
 
@@ -326,10 +330,10 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),8);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),8);
     set(hObject,'BackgroundColor','g','String','Valve Dyelaser ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),8,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),8,0);
     set(hObject,'BackgroundColor','c','String','Valve Dyelaser OFF');
 end
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -351,10 +355,10 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),11);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11);
     set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),11,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
     set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
 end
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -376,10 +380,10 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),9);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9);
     set(hObject,'BackgroundColor','g','String','Valve N2 ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),9,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
     set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
 end
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -401,10 +405,10 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),10);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),10);
     set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),10,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
     set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
 end
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -521,20 +525,24 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
+
 % read in current online position from gui txt-field
 curonlinepos=str2double(get(handles.txtonline,'String'));
 % find last data point when etalon was in online position
-i=find(data.OnlinePos==onlinepos,1,'last');
+i=find(data.CurPos==curonlinepos,1,'last');
 % find maximum reference Signal and corresponding data point 
 [calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if calcOnlSign>statusdata(i,col.ccCounts0) 
+if calcOnlSign>statusData(i,col.ccCounts0) | isempty(i)
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.OnlinePos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.OnlinePos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.OnlinePos(icalcOnlSign)));
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
 else % go to old online position
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
@@ -595,7 +603,7 @@ lastrow=data.lastrow;
 
 if get(hObject,'Value')
     if statusData(lastrow,col.PRef)<=10500 % check if pressure in reference cell is low enough
-        Valveword=bitset(statusData(lastrow,col.Valve),14);
+        Valveword=bitset(statusData(lastrow,col.ValveLift),14);
         system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
         system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
         system('sleep 1');
@@ -606,7 +614,7 @@ if get(hObject,'Value')
         set(hObject,'Value',0);
     end
 else
-    Valveword=bitset(statusData(lastrow,col.Valve),14,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),14,0);
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Filament is OFF');
     set(hObject,'BackgroundColor','c');
@@ -681,7 +689,7 @@ col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.Valve),13);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),13);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is CLOSED');
@@ -689,7 +697,7 @@ if get(hObject,'Value')
     system('sleep 1');
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 else    
-    Valveword=bitset(statusData(lastrow,col.Valve),13,0);
+    Valveword=bitset(statusData(lastrow,col.ValveLift),13,0);
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is OPEN');
     set(hObject,'BackgroundColor','g');
