@@ -455,28 +455,35 @@ grid(handles.axeCounts);
 
 % check HV
 if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
-    set(handles.togHV,'Value',0)
+%    set(handles.togHV,'Value',0)
     set(handles.togHV,'BackgroundColor','c','String','HV OFF');
 else
-    set(handles.togHV,'Value',1)
+%    set(handles.togHV,'Value',1)
     set(handles.togHV,'BackgroundColor','g','String','HV ON');
 end
 
 % check Blower
-if bitget(statusData(lastrow,col.Valve2armAxis),9)==0
-    set(handles.togBlower,'Value',0)
-    set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+if bitget(statusData(lastrow,col.Valve2armAxis),9)==0 | ...
+        bitget(statusData(lastrow,col.Valve2armAxis),1)==0
+    if bitget(statusData(lastrow,col.Valve2armAxis),10)
+        set(handles.togBlower,'BackgroundColor','r','String','Pump ON');
+    else
+    %    set(handles.togBlower,'Value',0)
+        set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+    end
 else
-    set(handles.togBlower,'Value',1)
+%    set(handles.togBlower,'Value',1)
     set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
 end
 
+
+
 % check Butterfly
 if bitget(statusData(lastrow,col.Valve2armAxis),7)==0
-    set(handles.togButterfly,'Value',1)
+%    set(handles.togButterfly,'Value',1)
     set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
 else
-    set(handles.togButterfly,'Value',0)
+%    set(handles.togButterfly,'Value',0)
     set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
@@ -710,13 +717,14 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
         system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
         system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        set(hObject,'BackgroundColor','r','String','Pump ON');
         pause(5);
-        while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
-            pause(1);
-        end
+%        while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
+%            pause(1);
+%        end
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
-        Valveword=bitset(Valveword,1); % ramp blower up 
         Valveword=bitset(Valveword,9); % switch on blower
+        Valveword=bitset(Valveword,1); % ramp blower up 
         system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
         system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
         set(hObject,'BackgroundColor','g','String','Blower ON');
@@ -725,6 +733,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
         system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
         system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        set(hObject,'BackgroundColor','r','String','Pump ON');
         pause(15);
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
         Valveword=bitset(Valveword,9,0); % switch off blower
@@ -784,6 +793,10 @@ function togButterfly_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of togglebutton5
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
     %    system(['/lift/bin/eCmd @armAxis w 0xa462 0']);

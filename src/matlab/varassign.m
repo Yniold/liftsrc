@@ -58,15 +58,15 @@ statusDataCols=...
 'etaCurSpd',662,'x','';
 'etaStatus',663,'x*NaN','';
 'NumSamplesLiftADC1',664,'x*5','s';
-'PDyelaser',665,'x*NaN','mbar';
-'PDyelaserSumDat',666,'x*NaN','mbar';
-'PDyelaserSumSqr',667,'x*NaN','mbar';
+'PDyelaser',665,'(x-9070)/(11463-9070)*991.3','mbar';
+'PDyelaserSumDat',666,'(x-9070)/(11463-9070)*991.3','mbar';
+'PDyelaserSumSqr',667,'(x-9070)/(11463-9070)*991.3','mbar';
 'PDyelaserSupplyV',668,'x*NaN','V';
 'PDyelaserSupplyVSumDat',669,'x*NaN','V';
 'PDyelaserSupplyVSumSqr',670,'x*NaN','V';
-'DiodeUV','1,0184E-06*(x-10000)^2 + 4,0284E-03*(x-10000) - 6,5349E-02','mW';
-'DiodeUVSumDat',672,'1,0184E-06*(x-10000)^2 + 4,0284E-03*(x-10000) - 6,5349E-02','mW';
-'DiodeUVSumSqr',673,'1,0184E-06*(x-10000)^2 + 4,0284E-03*(x-10000) - 6,5349E-02','mW';
+'DiodeUV',671,'1.0184E-06.*(x-10000).*(x-10000) + 4.0284E-03.*(x-10000) ','mW';
+'DiodeUVSumDat',672,'1.0184E-06*(x-10000).*(x-10000) + 4.0284E-03*(x-10000) ','mW';
+'DiodeUVSumSqr',673,'1.0184E-06*(x-10000).*(x-10000) + 4.0284E-03*(x-10000) ','mW';
 'PRef',674,'(x-10306)/(12720-10306)*998.7','mbar';
 'PRefSumDat',675,'x*NaN','mbar';
 'PRefSumSqr',676,'x*NaN','mbar';
@@ -98,7 +98,7 @@ statusDataCols=...
 'P20SumDat',871,'x*0.00891-89.55','mbar';
 'P20SumSqr',872,'x*0.00891-89.55','mbar';
 'PNO',873,'(x-10130)/(10600-10130)*998.7','mbar';
-'PNOSumDat',874,'(x-10130)/(10600-10130)*998.7';
+'PNOSumDat',874,'(x-10130)/(10600-10130)*998.7','mbar';
 'PNOSumSqr',875,'(x-10130)/(10600-10130)*998.7','mbar';
 'VHV',876,'x*NaN','V';
 'VHVSumDat',877,'x*NaN','V';
@@ -316,7 +316,7 @@ statusDataCols=...
 'GPSnumSat',823,'x','';
 'GPSLastValidData',824,'x*5','s';
 'GPSGroundSpeed',825,'x/100','m/s';
-'GPSHeading',826,'x/10','deg'
+'GPSHeading',826,'x/10','deg';
 'ValidSlaveDataFlag',1004,'x',''};
 
 % create structure 'col' with field names taken from 1st column of
