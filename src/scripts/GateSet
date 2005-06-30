@@ -1,31 +1,33 @@
 #!/bin/sh
 echo set gate timings and delays
 
-Master=133
+MasterLift=133
+MasterarmAxis=160
 
 PMTCounts=100
-MCP1Counts=80
-MCP2Counts=106
+MCP1Counts=50
+MCP2Counts=50
 
 # add 0x8000 to MCP?Gain to activate gain switching
-MCP1Gain=0x0010
+MCP1Gain=70
 MCP1GainWidth=500
 
-MCP2Gain=0x8060
+MCP2Gain=70
 MCP2GainWidth=1000
 
 
-eCmd w 0xa310 $PMTCounts
-eCmd w 0xa312 $MCP1Counts
-eCmd w 0xa314 $MCP2Counts
-eCmd w 0xa316 $Master
+eCmd @lift w 0xa310 $PMTCounts
+eCmd @armAxis w 0xa312 $MCP1Counts
+eCmd @armAxis w 0xa314 $MCP2Counts
+eCmd @lift w 0xa316 $MasterLift
+eCmd @armAxis w 0xa316 $MasterarmAxis
 
-eCmd w 0xa318 $MCP1Gain
-eCmd w 0xa31a $MCP1GainWidth
-eCmd w 0xa31c $MCP2Gain
-eCmd w 0xa31e $MCP2GainWidth
+eCmd @armAxis w 0xa318 $MCP1Gain
+eCmd @armAxis w 0xa31a $MCP1GainWidth
+eCmd @armAxis w 0xa31c $MCP2Gain
+eCmd @armAxis w 0xa31e $MCP2GainWidth
 
-echo Master $Master 
+echo MasterLift $MasterLift 
 echo Shift counter delays PMT $PMTCounts MCP1 $MCP1Counts MCP2 $MCP2Counts
 echo Gain delay MCP1 $MCP1Gain MCP2 $MCP2Gain
 echo Gain width MCP1 $MCP1GainWidth MCP2 $MCP2GainWidth
