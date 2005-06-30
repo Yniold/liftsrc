@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-29 15:11:38 $ by $Author: harder $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-30 21:52:09 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.20  2005-06-29 15:11:38  harder
+ * Revision 1.21  2005-06-30 21:52:09  rudolf
+ * added separator in mask display
+ *
+ * Revision 1.20  2005/06/29 15:11:38  harder
  * added mask disp
  *
  * Revision 1.19  2005/06/29 12:46:18  rudolf
@@ -247,7 +250,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 
       printf("c%d:", Channel);
       for (i=0;i<10; i++) {
-	printf("%04x",ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
+	printf("%04x.",ptrElekStatus->CounterCardMaster.Channel[Channel].Mask[i]);
       } // for i
     } // for Channel
 
@@ -260,7 +263,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 
       printf("c%d:", Channel);
       for (i=0;i<10; i++) {
-	printf("%04x",ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
+	printf("%04x.",ptrElekStatus->CounterCardSlave.Channel[Channel].Mask[i]);
       } // for i
     } // for Channel
 
@@ -823,9 +826,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.20 2005-06-29 15:11:38 harder Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.21 2005-06-30 21:52:09 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.20 2005-06-29 15:11:38 harder Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.21 2005-06-30 21:52:09 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
