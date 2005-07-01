@@ -123,13 +123,14 @@ x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
 x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
 
-set(handles.txtDiodeGr,'String',DiodeGr);
-set(handles.txtDiodeUV,'String',DiodeUV);
+
+set(handles.txtDiodeGr,'String',num2str(DiodeGr(lastrow),2));
+set(handles.txtDiodeUV,'String',num2str(DiodeUV(lastrow),2));
 set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
-set(handles.txtPDyelaser,'String',PDyelaser);
-set(handles.txtPVent,'String',PVent);
+set(handles.txtPDyelaser,'String',num2str(PDyelaser(lastrow),3));
+set(handles.txtPVent,'String',num2str(PVent(lastrow),3));
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
-set(handles.txtPRef,'String',PRef);
+set(handles.txtPRef,'String',num2str(PRef(lastrow),3));
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
@@ -539,7 +540,12 @@ i=find(data.CurPos==curonlinepos,1,'last');
 [calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if calcOnlSign>statusData(i,col.ccCounts0) | isempty(i)
+if isempty(i)
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
+elseif calcOnlSign>statusData(i,col.ccCounts0)
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
     system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);

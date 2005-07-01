@@ -772,9 +772,9 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         set(hObject,'BackgroundColor','c','String','HV OFF');
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
         % switch gain off for MCP1
-        word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+        word1=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
         % switch gain off for MCP2
-        word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+        word2=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
     end 
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
