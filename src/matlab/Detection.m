@@ -117,7 +117,7 @@ x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1o
 x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
 x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
-x=double(statusData(:,col.DiodeWZ2in)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
+x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
 % display ADC counts
 set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in));
