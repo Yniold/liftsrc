@@ -2,18 +2,18 @@
 echo set gate timings and delays
 
 MasterLift=133
-MasterarmAxis=160
+MasterarmAxis=150
 
 PMTCounts=100
 MCP1Counts=50
 MCP2Counts=50
 
 # add 0x8000 to MCP?Gain to activate gain switching
-MCP1Gain=70
+MCP1Gain=60
 MCP1GainWidth=500
 
-MCP2Gain=70
-MCP2GainWidth=1000
+MCP2Gain=60
+MCP2GainWidth=500
 
 
 eCmd @lift w 0xa310 $PMTCounts
@@ -40,8 +40,8 @@ echo MCP2: channel 1-20
 
 #PMT
 /lift/bin/eCmd @lift s setmask 0 0x0000
-/lift/bin/eCmd @lift s setmask 1 0xFFF0
-/lift/bin/eCmd @lift s setmask 2 0xFFFF
+/lift/bin/eCmd @lift s setmask 1 0x1FF0
+/lift/bin/eCmd @lift s setmask 2 0xFFF8
 /lift/bin/eCmd @lift s setmask 3 0x003F
 /lift/bin/eCmd @lift s setmask 4 0xFFC0
 /lift/bin/eCmd @lift s setmask 5 0xFFFF
@@ -51,10 +51,10 @@ echo MCP2: channel 1-20
 /lift/bin/eCmd @lift s setmask 9 0xFFFF
 
 #MCP1
-/lift/bin/eCmd @armAxis s setmask 10 0xFFFE
-/lift/bin/eCmd @armAxis s setmask 11 0xFFFF
-/lift/bin/eCmd @armAxis s setmask 12 0xFFFF
-/lift/bin/eCmd @armAxis s setmask 13 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 10 0x0000
+/lift/bin/eCmd @armAxis s setmask 11 0x0000
+/lift/bin/eCmd @armAxis s setmask 12 0x0000
+/lift/bin/eCmd @armAxis s setmask 13 0xFFFC
 /lift/bin/eCmd @armAxis s setmask 14 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 15 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 16 0xFFFF
@@ -64,8 +64,8 @@ echo MCP2: channel 1-20
 
 #MCP2
 /lift/bin/eCmd @armAxis s setmask 20 0x0000
-/lift/bin/eCmd @armAxis s setmask 21 0xFFF0
-/lift/bin/eCmd @armAxis s setmask 22 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 21 0x0000
+/lift/bin/eCmd @armAxis s setmask 22 0xFFFC
 /lift/bin/eCmd @armAxis s setmask 23 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 24 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 25 0xFFFF

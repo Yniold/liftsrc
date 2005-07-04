@@ -53,8 +53,8 @@ echo MCP2: channel 1-20
 #MCP1
 /lift/bin/eCmd @armAxis s setmask 10 0x0000
 /lift/bin/eCmd @armAxis s setmask 11 0x0000
-/lift/bin/eCmd @armAxis s setmask 12 0x0000
-/lift/bin/eCmd @armAxis s setmask 13 0xFFFC
+/lift/bin/eCmd @armAxis s setmask 12 0xE000
+/lift/bin/eCmd @armAxis s setmask 13 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 14 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 15 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 16 0xFFFF
@@ -65,7 +65,7 @@ echo MCP2: channel 1-20
 #MCP2
 /lift/bin/eCmd @armAxis s setmask 20 0x0000
 /lift/bin/eCmd @armAxis s setmask 21 0x0000
-/lift/bin/eCmd @armAxis s setmask 22 0xFFFC
+/lift/bin/eCmd @armAxis s setmask 22 0xE000
 /lift/bin/eCmd @armAxis s setmask 23 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 24 0xFFFF
 /lift/bin/eCmd @armAxis s setmask 25 0xFFFF
