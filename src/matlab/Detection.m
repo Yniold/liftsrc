@@ -171,6 +171,12 @@ if MFCFlow(lastrow)<6 | MFCFlow>10
 else 
     set(handles.txtMFC,'BackgroundColor',[0.7 0.7 0.7]);
 end
+if statusData(lastrow,col.VHV)<12630
+    set(handles.txtVHV,'BackgroundColor','r');
+else 
+    set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
+end
+
 
 
 
