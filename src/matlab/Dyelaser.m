@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 06-Jun-2005 12:01:19
+% Last Modified by GUIDE v2.5 04-Jul-2005 12:23:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -122,6 +122,7 @@ x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
 x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
 x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
+x=double(statusData(:,col.Temp1L)); eval(['TDyelaser=',fcts2val.Temp1L,';']);
 
 
 set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
@@ -131,10 +132,19 @@ set(handles.txtPDyelaser,'String',[num2str(PDyelaser(lastrow),4),' mbar']);
 set(handles.txtPVent,'String',[num2str(PVent(lastrow),4),' mbar']);
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
 set(handles.txtPRef,'String',[num2str(PRef(lastrow),4),' mbar']);
+set(handles.txtTDyelaser,'String',[num2str(TDyelaser(lastrow),3),' C']);
+
+
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
+end
+
+if TDyelaser(lastrow)>35.1
+    set(handles.txtTDyelaser,'BackgroundColor','r');
+else
+    set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
@@ -145,9 +155,9 @@ Etalonhelp=int32(statusData(:,col.etaCurPosLow));
 EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
 EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
 
-Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+%Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+%EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
+%EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
 Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
 OnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
@@ -158,7 +168,6 @@ EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
-set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
@@ -208,8 +217,8 @@ if get(handles.chkEtSetPos,'Value')
     hold(handles.axes1,'on');
 end 
 
-if get(handles.chkEtEncPos,'Value')
-    plot(handles.axes1,statustime(iZeit),EtalonEncPos(iZeit));
+if get(handles.chkTDyelaser,'Value')
+    plot(handles.axes1,statustime(iZeit),TDyelaser(iZeit));
     hold(handles.axes1,'on');
 end 
 
@@ -662,13 +671,13 @@ function chkEtCurPos_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkEtCurPos
 
 
-% --- Executes on button press in chkEtEncPos.
-function chkEtEncPos_Callback(hObject, eventdata, handles)
-% hObject    handle to chkEtEncPos (see GCBO)
+% --- Executes on button press in chkTDyelaser.
+function chkTDyelaser_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTDyelaser (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
+% Hint: get(hObject,'Value') returns toggle state of chkTDyelaser
 
 
 % --- Executes on button press in chkEtSetPos.
