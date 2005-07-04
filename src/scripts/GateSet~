@@ -39,37 +39,37 @@ echo MCP1: channel 1
 echo MCP2: channel 1-20
 
 #PMT
-/lift/bin/eCmd s setmask 0 0x0000
-/lift/bin/eCmd s setmask 1 0xFFF0
-/lift/bin/eCmd s setmask 2 0xFFFF
-/lift/bin/eCmd s setmask 3 0x003F
-/lift/bin/eCmd s setmask 4 0xFFC0
-/lift/bin/eCmd s setmask 5 0xFFFF
-/lift/bin/eCmd s setmask 6 0xFFFF
-/lift/bin/eCmd s setmask 7 0xFFFF
-/lift/bin/eCmd s setmask 8 0xFFFF
-/lift/bin/eCmd s setmask 9 0xFFFF
+/lift/bin/eCmd @lift s setmask 0 0x0000
+/lift/bin/eCmd @lift s setmask 1 0xFFF0
+/lift/bin/eCmd @lift s setmask 2 0xFFFF
+/lift/bin/eCmd @lift s setmask 3 0x003F
+/lift/bin/eCmd @lift s setmask 4 0xFFC0
+/lift/bin/eCmd @lift s setmask 5 0xFFFF
+/lift/bin/eCmd @lift s setmask 6 0xFFFF
+/lift/bin/eCmd @lift s setmask 7 0xFFFF
+/lift/bin/eCmd @lift s setmask 8 0xFFFF
+/lift/bin/eCmd @lift s setmask 9 0xFFFF
 
 #MCP1
-/lift/bin/eCmd s setmask 10 0xFFFE
-/lift/bin/eCmd s setmask 11 0xFFFF
-/lift/bin/eCmd s setmask 12 0xFFFF
-/lift/bin/eCmd s setmask 13 0xFFFF
-/lift/bin/eCmd s setmask 14 0xFFFF
-/lift/bin/eCmd s setmask 15 0xFFFF
-/lift/bin/eCmd s setmask 16 0xFFFF
-/lift/bin/eCmd s setmask 17 0xFFFF
-/lift/bin/eCmd s setmask 18 0xFFFF
-/lift/bin/eCmd s setmask 19 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 10 0xFFFE
+/lift/bin/eCmd @armAxis s setmask 11 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 12 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 13 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 14 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 15 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 16 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 17 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 18 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 19 0xFFFF
 
 #MCP2
-/lift/bin/eCmd s setmask 20 0x0000
-/lift/bin/eCmd s setmask 21 0xFFF0
-/lift/bin/eCmd s setmask 22 0xFFFF
-/lift/bin/eCmd s setmask 23 0xFFFF
-/lift/bin/eCmd s setmask 24 0xFFFF
-/lift/bin/eCmd s setmask 25 0xFFFF
-/lift/bin/eCmd s setmask 26 0xFFFF
-/lift/bin/eCmd s setmask 27 0xFFFF
-/lift/bin/eCmd s setmask 28 0xFFFF
-/lift/bin/eCmd s setmask 29 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 20 0x0000
+/lift/bin/eCmd @armAxis s setmask 21 0xFFF0
+/lift/bin/eCmd @armAxis s setmask 22 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 23 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 24 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 25 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 26 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 27 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 28 0xFFFF
+/lift/bin/eCmd @armAxis s setmask 29 0xFFFF
