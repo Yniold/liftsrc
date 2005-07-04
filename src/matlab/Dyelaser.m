@@ -134,14 +134,14 @@ set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
 set(handles.txtPRef,'String',[num2str(PRef(lastrow),4),' mbar']);
 set(handles.txtTDyelaser,'String',[num2str(TDyelaser(lastrow),3),' C']);
 
-
+% warn with red background if values are off limits
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>35.1
+if TDyelaser(lastrow)>40.1 | TDyelaser(lastrow)<39.9
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);

@@ -161,12 +161,7 @@ if DiodeWZ2out(lastrow)<0.6*DiodeWZ2in
 else 
     set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if PNO(lastrow)<2000
-    set(handles.txtPNO,'BackgroundColor','r');
-else 
-    set(handles.txtPNO,'BackgroundColor',[0.7 0.7 0.7]);
-end
-if MFCFlow(lastrow)<6 | MFCFlow>10
+if MFCFlow(lastrow)<5.5 | MFCFlow>6
     set(handles.txtMFC,'BackgroundColor','r');
 else 
     set(handles.txtMFC,'BackgroundColor',[0.7 0.7 0.7]);
@@ -369,10 +364,10 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
 
     COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-    COH=COH.*DiodeWZ1out(lastrow).*[1-PowDep*DiodeWZ1out(lastrow)]/[1-PowDep*PowCal];
+    COH=COH.*DiodeWZ1in(lastrow).*[1-PowDep*DiodeWZ1in(lastrow)]/[1-PowDep*PowCal];
 
     CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-    CHO2b=CHO2b.*DiodeWZ2out(lastrow).*[1-PowDep*DiodeWZ2out(lastrow)]/[1-PowDep*PowCal];
+    CHO2b=CHO2b.*DiodeWZ2in(lastrow).*[1-PowDep*DiodeWZ2in(lastrow)]/[1-PowDep*PowCal];
     if rank(COH)~=0
         XOH = MCP1OnlineAvg.*5./COH';
     else
@@ -503,11 +498,16 @@ grid(handles.axeCounts);
 
 % check HV
 if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
-%    set(handles.togHV,'Value',0)
+    %    set(handles.togHV,'Value',0)
     set(handles.togHV,'BackgroundColor','c','String','HV OFF');
 else
-%    set(handles.togHV,'Value',1)
-    set(handles.togHV,'BackgroundColor','g','String','HV ON');
+    if bitget(statusData(lastrow,col.ccGateDelay1),16)==0 ...
+            | bitget(statusData(lastrow,col.ccGateDelay2),16)==0
+        set(handles.togHV,'BackgroundColor','y','String','HV ON');
+    else
+    %    set(handles.togHV,'Value',1)
+        set(handles.togHV,'BackgroundColor','g','String','HV ON');
+    end
 end
 
 % check Blower
