@@ -141,7 +141,7 @@ else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>40.1 | TDyelaser(lastrow)<39.9
+if TDyelaser(lastrow)>40.5 | TDyelaser(lastrow)<39.5
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
