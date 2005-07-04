@@ -105,39 +105,74 @@ xlim1=str2double(get(handles.editxlim1,'String'));
 xlim2=str2double(get(handles.editxlim2,'String'));
 limTime1=maxTime-xlim1./86400.0;
 limTime2=maxTime-xlim2./86400.0;
+if limTime2==limTime1
+    limTime2=limTime1+1/86400.0;
+end
 
 % display system time
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
-x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
+x=double(statusData(:,col.Temp3WP)); eval(['TDet=',fcts2val.Temp3WP,';']);
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
 x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
 x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
+x=double(statusData(:,col.PNO)); eval(['PNO=',fcts2val.PNO,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
-% display ADC counts
-set(handles.txtWZ1in,'String',statusData(lastrow,col.DiodeWZ1in));
-set(handles.txtWZ1out,'String',statusData(lastrow,col.DiodeWZ1out));
-set(handles.txtWZ2in,'String',statusData(lastrow,col.DiodeWZ2in));
-set(handles.txtWZ2out,'String',statusData(lastrow,col.DiodeWZ2out));
+
+set(handles.txtWZ1in,'String',[num2str(DiodeWZ1in(lastrow),3),' mW']);
+set(handles.txtWZ1out,'String',[num2str(DiodeWZ1out(lastrow),3),' mW']);
+set(handles.txtWZ2in,'String',[num2str(DiodeWZ2in(lastrow),3),' mW']);
+set(handles.txtWZ2out,'String',[num2str(DiodeWZ2out(lastrow),3),' mW']);
 set(handles.txtP1000,'String',statusData(lastrow,col.P1000));
-set(handles.txtP20,'String',statusData(lastrow,col.P20));
-set(handles.txtPNO,'String',statusData(lastrow,col.PNO));
+set(handles.txtP20,'String',[num2str(P20(lastrow),3),' mbar']);
+set(handles.txtPNO,'String',[num2str(PNO(lastrow),4),' mbar']);
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
-set(handles.txtTDet,'String',statusData(lastrow,col.TDet));
-set(handles.txtMFC,'String',statusData(lastrow,col.MFCFlow));
+set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
+set(handles.txtMFC,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
 
 % warn for ADC signals out of allowed range for measurements
-if P20(lastrow)<3 | P20(lastrow)>6
+if P20(lastrow)<3 | P20(lastrow)>4
     set(handles.txtP20,'BackgroundColor','r');
+else 
+    set(handles.txtP20,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if DiodeWZ1out(lastrow)<2
+if DiodeWZ1in(lastrow)<3
+    set(handles.txtWZ1in,'BackgroundColor','r');
+else 
+    set(handles.txtWZ1in,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if DiodeWZ1out(lastrow)<0.75*DiodeWZ1in
     set(handles.txtWZ1out,'BackgroundColor','r');
+else 
+    set(handles.txtWZ1out,'BackgroundColor',[0.7 0.7 0.7]);
 end
+if DiodeWZ2in(lastrow)<0.4
+    set(handles.txtWZ2in,'BackgroundColor','r');
+else 
+    set(handles.txtWZ2in,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if DiodeWZ2out(lastrow)<0.6*DiodeWZ2in
+    set(handles.txtWZ2out,'BackgroundColor','r');
+else 
+    set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if PNO(lastrow)<2000
+    set(handles.txtPNO,'BackgroundColor','r');
+else 
+    set(handles.txtPNO,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if MFCFlow(lastrow)<6 | MFCFlow>10
+    set(handles.txtMFC,'BackgroundColor','r');
+else 
+    set(handles.txtMFC,'BackgroundColor',[0.7 0.7 0.7]);
+end
+
+
 
 % plot checked parameters vs. time
 hold(handles.axes1,'off'); 
@@ -332,9 +367,16 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 
     CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
     CHO2b=CHO2b.*DiodeWZ2out(lastrow).*[1-PowDep*DiodeWZ2out(lastrow)]/[1-PowDep*PowCal];
-
-    XOH = MCP1OnlineAvg./COH';
-    XHOx = MCP2OnlineAvg/CHO2b';
+    if rank(COH)~=0
+        XOH = MCP1OnlineAvg.*5./COH';
+    else
+        XOH = MCP1OnlineAvg; XOH(:)=NaN;
+    end
+    if rank(CHO2b)~=0
+        XHOx = MCP2OnlineAvg.*5./CHO2b';
+    else
+        XHOx = MCP1OnlineAvg; XHOx(:)=NaN;
+    end
 else
     XOH = MCP1OnlineAvg; XOH(:)=NaN;
     XHOx = MCP1OnlineAvg; XHOx(:)=NaN;
@@ -489,39 +531,39 @@ end
 
 % check solenoids
 if bitget(statusData(lastrow,col.Valve1armAxis),4)==0
-    set(handles.toggleC3F6,'Value',0,'BackgroundColor','c');
+    set(handles.toggleC3F6,'BackgroundColor','c');
 else 
-    set(handles.toggleC3F6,'Value',1,'BackgroundColor','g');
+    set(handles.toggleC3F6,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),3)==0
-    set(handles.toggleN2,'Value',0,'BackgroundColor','c');
+    set(handles.toggleN2,'BackgroundColor','c');
 else 
-    set(handles.toggleN2,'Value',1,'BackgroundColor','g');
+    set(handles.toggleN2,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),2)==0
-    set(handles.toggleHO2Inj,'Value',0,'BackgroundColor','c');
+    set(handles.toggleHO2Inj,'BackgroundColor','c');
 else 
-    set(handles.toggleHO2Inj,'Value',1,'BackgroundColor','g');
+    set(handles.toggleHO2Inj,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
-    set(handles.toggleOHInj,'Value',0,'BackgroundColor','c');
+    set(handles.toggleOHInj,'BackgroundColor','c');
 else 
-    set(handles.toggleOHInj,'Value',1,'BackgroundColor','g');
+    set(handles.toggleOHInj,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
-    set(handles.toggleNO1,'Value',0,'BackgroundColor','c');
+    set(handles.toggleNO1,'BackgroundColor','c');
 else 
-    set(handles.toggleNO1,'Value',1,'BackgroundColor','g');
+    set(handles.toggleNO1,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
-    set(handles.toggleNO2,'Value',0,'BackgroundColor','c');
+    set(handles.toggleNO2,'BackgroundColor','c');
 else 
-    set(handles.toggleNO2,'Value',1,'BackgroundColor','g');
+    set(handles.toggleNO2,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
-    set(handles.toggleNOPurge,'Value',0,'BackgroundColor','c');
+    set(handles.toggleNOPurge,'BackgroundColor','c');
 else 
-    set(handles.toggleNOPurge,'Value',1,'BackgroundColor','g');
+    set(handles.toggleNOPurge,'BackgroundColor','g');
 end
 
 
@@ -713,34 +755,39 @@ col=horusdata.col;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        set(hObject,'BackgroundColor','r','String','switching Blower ON');
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
-        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-        set(hObject,'BackgroundColor','r','String','Pump ON');
-        pause(5);
-%        while single(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
-%            pause(1);
-%        end
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
-        Valveword=bitset(Valveword,9); % switch on blower
-        Valveword=bitset(Valveword,1); % ramp blower up 
-        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-        set(hObject,'BackgroundColor','g','String','Blower ON');
+        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+            set(hObject,'BackgroundColor','r','String','switching Blower ON');
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            set(hObject,'BackgroundColor','r','String','Pump ON');
+            pause(5);
+            while str2double(statusData(lastrow,col.P1000))>11000 % switch on Blower only when cell pressure P1000 is low enough
+                pause(1);
+            end
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
+            Valveword=bitset(Valveword,9); % switch on blower
+            Valveword=bitset(Valveword,1); % ramp blower up 
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            set(hObject,'BackgroundColor','g','String','Blower ON');
+        end
     else
-        set(hObject,'BackgroundColor','r','String','switching Blower OFF');
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-        set(hObject,'BackgroundColor','r','String','Pump ON');
-        pause(15);
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-        Valveword=bitset(Valveword,9,0); % switch off blower
-        Valveword=bitset(Valveword,10,0); % switch off pump
-        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-        set(hObject,'BackgroundColor','c','String','Blower OFF');
+        if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+            set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            set(hObject,'BackgroundColor','r','String','Pump ON');
+            pause(5);
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+            Valveword=bitset(Valveword,9,0); % switch off blower
+            Valveword=bitset(Valveword,10,0); % switch off pump
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            set(hObject,'BackgroundColor','c','String','Blower OFF');
+
+        end
     end
 end
 
@@ -762,24 +809,32 @@ col=horusdata.col;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        set(hObject,'BackgroundColor','g','String','HV ON');
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
-        % switch gain on for MCP1
-        word1=bitset(statusData(lastrow,col.ccGateDelay1),16);
-        % switch gain on for MCP2
-        word2=bitset(statusData(lastrow,col.ccGateDelay2),16);
+        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+            set(hObject,'BackgroundColor','g','String','HV ON');
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
+            % switch gain on for MCP1
+            word1=bitset(statusData(lastrow,col.ccGateDelay1),16);
+            % switch gain on for MCP2
+            word2=bitset(statusData(lastrow,col.ccGateDelay2),16);
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word1)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word2)]);
+        end
     else
-        set(hObject,'BackgroundColor','c','String','HV OFF');
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
-        % switch gain off for MCP1
-        word1=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-        % switch gain off for MCP2
-        word2=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+        if isequal(get(hObject,'BackgroundColor'),[0 1 0])
+            set(hObject,'BackgroundColor','c','String','HV OFF');
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
+            % switch gain off for MCP1
+            word1=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+            % switch gain off for MCP2
+            word2=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word1)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word2)]);
+        end
     end 
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word1)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word2)]);
 end
 
 

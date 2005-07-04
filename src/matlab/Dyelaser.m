@@ -124,13 +124,13 @@ x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
 
 
-set(handles.txtDiodeGr,'String',num2str(DiodeGr(lastrow),2));
-set(handles.txtDiodeUV,'String',num2str(DiodeUV(lastrow),2));
+set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
+set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
-set(handles.txtPDyelaser,'String',num2str(PDyelaser(lastrow),3));
-set(handles.txtPVent,'String',num2str(PVent(lastrow),3));
+set(handles.txtPDyelaser,'String',[num2str(PDyelaser(lastrow),4),' mbar']);
+set(handles.txtPVent,'String',[num2str(PVent(lastrow),4),' mbar']);
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
-set(handles.txtPRef,'String',num2str(PRef(lastrow),3));
+set(handles.txtPRef,'String',[num2str(PRef(lastrow),4),' mbar']);
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else

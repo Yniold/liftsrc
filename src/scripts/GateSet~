@@ -22,12 +22,12 @@ eCmd @armAxis w 0xa314 $MCP2Counts
 eCmd @lift w 0xa316 $MasterLift
 eCmd @armAxis w 0xa316 $MasterarmAxis
 
-eCmd @armw 0xa318 $MCP1Gain
-eCmd w 0xa31a $MCP1GainWidth
-eCmd w 0xa31c $MCP2Gain
-eCmd w 0xa31e $MCP2GainWidth
+eCmd @armAxis w 0xa318 $MCP1Gain
+eCmd @armAxis w 0xa31a $MCP1GainWidth
+eCmd @armAxis w 0xa31c $MCP2Gain
+eCmd @armAxis w 0xa31e $MCP2GainWidth
 
-echo Master $Master 
+echo MasterLift $MasterLift 
 echo Shift counter delays PMT $PMTCounts MCP1 $MCP1Counts MCP2 $MCP2Counts
 echo Gain delay MCP1 $MCP1Gain MCP2 $MCP2Gain
 echo Gain width MCP1 $MCP1GainWidth MCP2 $MCP2GainWidth

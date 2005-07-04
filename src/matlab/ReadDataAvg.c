@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.18  2005-06-28 16:25:15  martinez
+ * Revision 1.19  2005-07-04 10:04:11  rudolf
+ * corrected error in mixrat calculation, inserted additional calibration functions, corrected minor errors
+ *
+ * Revision 1.18  2005/06/28 16:25:15  martinez
  * included ValidSlaveDataFlag, used it to check if armAxis is working
  *
  * Revision 1.17  2005/06/26 18:07:28  rudolf
@@ -31,7 +34,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.18 $ */
+ /* $Revision: 1.19 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -867,7 +870,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
 	  /* first decide if we are on or offline */
-	  if ( (elekStatus[i].CounterCardSlave.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
+	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
 		   (abs(elekStatus[i].EtalonData.Current.Position-                  /* not further than Dithersteps of OnlienPos */
 	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
 		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
