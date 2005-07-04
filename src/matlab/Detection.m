@@ -527,11 +527,9 @@ end
 
 
 % check Butterfly
-if bitget(statusData(lastrow,col.Valve2armAxis),7)==0
-%    set(handles.togButterfly,'Value',1)
+if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
     set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
 else
-%    set(handles.togButterfly,'Value',0)
     set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
 end
 
@@ -860,12 +858,14 @@ lastrow=data.lastrow;
 col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-    %    system(['/lift/bin/eCmd @armAxis w 0xa462 0']);
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,0);  % Butterfly is normally open 
         set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
     else
-    %    system('/lift/bin/eCmd @armAxis w 0xa462 1800'); 
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2);
         set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
     end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 end
 
 
