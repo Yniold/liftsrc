@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-06-24 18:48:27 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-07-05 08:26:02 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.4  2005-06-24 18:48:27  martinez
+* Revision 1.5  2005-07-05 08:26:02  rudolf
+* change online pos only by half of the dither step size
+*
+* Revision 1.4  2005/06/24 18:48:27  martinez
 * casted double on Numdat when calculating Avg in AddCounts
 *
 * Revision 1.3  2005/05/22 19:11:37  rudolf
@@ -278,13 +281,13 @@ int AdjustOnline(struct AverageDataType *ptrOnlineLeftCounts,
       printf("Left %f Right %f Balance %f",ptrOnlineLeftCounts->Avg,ptrOnlineRightCounts->Avg,LeftRightBalance);
       if ( LeftRightBalance>MAX_AVG_DIFF ) { // if we get a higher left Count
 	// step to the left
-	StepPosOnline=ptrElekStatus->EtalonData.Online.Position-ptrElekStatus->EtalonData.DitherStepWidth;
+	StepPosOnline=ptrElekStatus->EtalonData.Online.Position-(ptrElekStatus->EtalonData.DitherStepWidth/2);
 	SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
 	printf("go left %d->%d\n", ptrElekStatus->EtalonData.Online.Position, StepPosOnline);
       } else if ( -LeftRightBalance>MAX_AVG_DIFF ) { // if we get a higher right Count
-	StepPosOnline=ptrElekStatus->EtalonData.Online.Position+ptrElekStatus->EtalonData.DitherStepWidth;
+	StepPosOnline=ptrElekStatus->EtalonData.Online.Position+(ptrElekStatus->EtalonData.DitherStepWidth/2);
 	SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
