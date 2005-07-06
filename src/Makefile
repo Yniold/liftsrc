@@ -54,6 +54,7 @@ all : $(modules) $(headers)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C instServer
 
 	chmod +x $(INSTDIR)* 
@@ -93,7 +94,9 @@ clean:
 	rm -f ../bin/elekStatus
 	rm -f ../bin/statView
 	rm -f ../bin/etalon
-
+	rm -f ./spectrumAnalyzer/spectrumAnalyzer
+	rm -f ./spectrumAnalyzer/*.o
+	
 #	$(MAKE) INSTDIR=$(INSTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o
 #       rm ./instServer/instServer
