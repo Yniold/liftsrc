@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 28-Jun-2005 18:12:53
+% Last Modified by GUIDE v2.5 07-Jul-2005 17:41:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -114,7 +114,7 @@ end
 statusData=data.statusData;
 
 col=data.col;
-%fcts2val=data.fcts2val;
+fcts2val=data.fcts2val;
 
 statustime=double(statusData(:,1))+ ...
            double(statusData(:,2))./1.0+ ...
@@ -138,12 +138,48 @@ else
     set(handles.txtarmAxis,'BackgroundColor','r','String','armAxis is OFF');                
 end
 
+
 % switch off filament if reference cell pressure is too high
 if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
     if statusData(lastrow,col.PRef)>10500 % check if pressure in reference cell is too high
         Valveword=bitset(statusData(lastrow,col.ValveLift),14,0);
         system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     end
+end
+
+
+% check dyelaser pressure and keep it constant on set value
+x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
+Pset=uint16(str2double(get(handles.edPset,'String')));
+if Pset==0
+   Pset=PDyelaser(lastrow);
+end
+set(handles.txtPset,'String',num2str(Pset));
+
+if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11); % switch vacuum on
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(1);
+    Valveword=bitset(Valveword,8); % switch Dyelaser valve on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(1);
+    Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
+    Valveword=bitset(Valveword,11,0); % switch vaccuum off 
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
+    Valveword=bitset(statusData(lastrow,col.ValveLift),10); % switch air on
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(1);
+    Valveword=bitset(Valveword,8); % switch Dyelaser valve on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(1);
+    Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
+    Valveword=bitset(Valveword,10,0); % switch vaccuum off 
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
 
@@ -412,20 +448,34 @@ setappdata(gcbf, 'horusdata', data);
 
 
 
-
-% --- Executes on button press in txtarmAxis.
-%function txtarmAxis_Callback(hObject, eventdata, handles)
-% hObject    handle to txtarmAxis (see GCBO)
+function edPset_Callback(hObject, eventdata, handles)
+% hObject    handle to edPset (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-%data = getappdata(gcbf, 'horusdata');
-%data.armAxis=get(hObject,'Value');
-%if data.armAxis
-%    set(hObject,'BackgroundColor','g','String','armAxis is ON');
-%else
-%    set(hObject,'BackgroundColor','c','String','armAxis is OFF');                
-%end
-%setappdata(gcbf, 'horusdata', data); 
 
+% Hints: get(hObject,'String') returns contents of edPset as text
+%        str2double(get(hObject,'String')) returns contents of edPset as a double
+Pset=uint16(str2double(get(hObject,'String')));
+if isnan(Pset) 
+    set(hObject,'BackgroundColor','red');
+else 
+    set(hObject,'BackgroundColor','white');
+    set(hObject,'string',num2str(Pset));
+end
+
+
+% --- Executes during object creation, after setting all properties.
+%function edPset_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to d2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+%data = getappdata(gcbf, 'horusdata');
+%statusData=data.statusData;
+%col=data.col;
+%lastrow=data.lastrow;
+%set(hObject,'String',statusdata(lastrow,col.PDyelaser));
 
 
