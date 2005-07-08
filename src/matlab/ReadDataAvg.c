@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.19  2005-07-04 10:04:11  rudolf
+ * Revision 1.20  2005-07-08 10:13:23  rudolf
+ * replaced localtime by gmtime
+ *
+ * Revision 1.19  2005/07/04 10:04:11  rudolf
  * corrected error in mixrat calculation, inserted additional calibration functions, corrected minor errors
  *
  * Revision 1.18  2005/06/28 16:25:15  martinez
@@ -34,7 +37,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.19 $ */
+ /* $Revision: 1.20 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -296,7 +299,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     #ifdef X_DEBUG  
       mexPrintf("%lu ",Seconds);
     #endif
-    ptrTmZeit=(struct tm *)localtime(&Seconds); 
+    ptrTmZeit=(struct tm *)gmtime(&Seconds); 
     #ifdef X_DEBUG  
       mexPrintf("%d ",ptrTmZeit->tm_year);
     #endif
@@ -311,22 +314,22 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_yday;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_hour;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_min;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDayMaster.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_sec;
   }
   for (i=0; i<nelements;i++) {
@@ -1105,7 +1108,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     #ifdef X_DEBUG  
       mexPrintf("%lu ",Seconds);
     #endif
-    ptrTmZeit=(struct tm *)localtime(&Seconds); 
+    ptrTmZeit=(struct tm *)gmtime(&Seconds); 
     #ifdef X_DEBUG  
       mexPrintf("%d ",ptrTmZeit->tm_year);
     #endif
@@ -1120,22 +1123,22 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_yday;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_hour;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_min;
   }
   for (i=0; i<nelements;i++) {
     Seconds=elekStatus[i].TimeOfDaySlave.tv_sec;
-    ptrTmZeit=localtime(&Seconds);
+    ptrTmZeit=gmtime(&Seconds);
     *(z+count++)=ptrTmZeit->tm_sec;
   }
   for (i=0; i<nelements;i++) {
