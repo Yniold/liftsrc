@@ -141,7 +141,7 @@ else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>40.5 | TDyelaser(lastrow)<39.5
+if TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
@@ -587,10 +587,10 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=uint16(str2double(get(handles.txtonline,'String')));
 system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
-system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
-system(['/lift/bin/eCmd @Lift s etalonofflineright 1000']);
-system('/lift/bin/eCmd @Lift s etalondither 8');
+%system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
+%system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
+%system(['/lift/bin/eCmd @Lift s etalonofflineright 1000']);
+%system('/lift/bin/eCmd @Lift s etalondither 8');
 system('/lift/bin/eCmd @Lift s etalontoggle');
 
 
