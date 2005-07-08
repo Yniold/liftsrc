@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-06-30 21:52:09 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-07-08 06:14:43 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.21  2005-06-30 21:52:09  rudolf
+ * Revision 1.22  2005-07-08 06:14:43  rudolf
+ * replaced localtime by gmtime, added 1 to yday in filename generation, display ditherstepwidth in etalonstatus
+ *
+ * Revision 1.21  2005/06/30 21:52:09  rudolf
  * added separator in mask display
  *
  * Revision 1.20  2005/06/29 15:11:38  harder
@@ -143,14 +146,14 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
     {
       printf("Time(M):");
       Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
-      localtime_r(&Seconds,&tmZeit);
+      gmtime_r(&Seconds,&tmZeit);
 		
-      printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
+      printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
 	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDayMaster.tv_usec/1000);
 		
       printf("Time(S):");
       Seconds=ptrElekStatus->TimeOfDaySlave.tv_sec;
-      localtime_r(&Seconds,&tmZeit);
+      gmtime_r(&Seconds,&tmZeit);
 		
       printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday, 
 	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDaySlave.tv_usec/1000);
@@ -160,12 +163,14 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	
   if(uiGroupFlags & GROUP_ETALONDATA)
     {
-      printf("Etalon:%ld(%d %d)/%ld %ld %d %4x",ptrElekStatus->EtalonData.Current.Position,
+      printf("Etalon:%ld(%d %d)/%ld %ld %d %d %4x",ptrElekStatus->EtalonData.Current.Position,
 	     ptrElekStatus->EtalonData.Current.PositionWord.High,
 	     ptrElekStatus->EtalonData.Current.PositionWord.Low,
 	     ptrElekStatus->EtalonData.Encoder.Position,
 	     ptrElekStatus->EtalonData.Index.Position,
 	     ptrElekStatus->EtalonData.CurSpeed,
+	     ptrElekStatus->EtalonData.DitherStepWidth,
+
 	     ptrElekStatus->EtalonData.Status);
     };
 
@@ -479,7 +484,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
   char buf[GENERIC_BUF_LEN];
 	
   Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
-  localtime_r(&Seconds,&tmZeit);
+  gmtime_r(&Seconds,&tmZeit);
 	
   strncpy(buf,FileName,GENERIC_BUF_LEN);
   strcat(buf,".bin");
@@ -570,14 +575,14 @@ void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime) {
   if (ReqTime==NULL) {
 
     time(&SecondsNow);
-    localtime_r(&SecondsNow,&DateNow);
+    gmtime_r(&SecondsNow,&DateNow);
     ReqTime=&DateNow;
   }
     
   sprintf(FileName,"%s/%1d%03d%02d%02d.bin",
 	  Path,
 	  ReqTime->tm_year-100,
-	  ReqTime->tm_yday,
+	  ReqTime->tm_yday+1,
 	  ReqTime->tm_hour,
 	  10*(int)(ReqTime->tm_min/10));
 
@@ -826,9 +831,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.21 2005-06-30 21:52:09 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.22 2005-07-08 06:14:43 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.21 2005-06-30 21:52:09 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.22 2005-07-08 06:14:43 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
