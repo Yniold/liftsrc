@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrumAnalyzer.h,v $ last changed on $Date: 2005-07-06 21:08:47 $ by $Author: rudolf $
+* $RCSfile: spectrumAnalyzer.h,v $ last changed on $Date: 2005-07-09 19:29:22 $ by $Author: rudolf $
 *
 * $Log: spectrumAnalyzer.h,v $
-* Revision 1.2  2005-07-06 21:08:47  rudolf
+* Revision 1.3  2005-07-09 19:29:22  rudolf
+* fixed 480mbit mode, added basic evaluation of wavelength and counts
+*
+* Revision 1.2  2005/07/06 21:08:47  rudolf
 * more work on spectrometer, HR4000 decides between HIGH and FULLSPEED mode, implemented correct handling for both modes
 *
 * Revision 1.1  2005/07/06 16:38:42  rudolf
@@ -26,6 +29,7 @@
 #define EP2_IN_ADDR				(0x82)
 #define EP6_IN_ADDR				(0x86)
 #define EP1_IN_ADDR				(0x81)
+#define USB_TIMEOUT 				(50)
 
 // CMDs from datasheet HR2000
 
@@ -58,5 +62,12 @@ void print_interface(struct usb_interface *interface);
 void print_configuration(struct usb_config_descriptor *config);
 int print_device(struct usb_device *dev, int level);
 
+void HR4000_Init(void);
 void HR4000_Query_Status(void);
+void HR4000_SetIntegrationTime(unsigned int uiMicroSeconds);
+void HR4000_SetTriggerMode(unsigned char ucMode);
+void HR4000_ReadPCBTemp(void);
+void HR4000_ReadCalibrationData(void);
+void HR4000_SetPowerdownMode(void);
+void HR4000_AquireSpectrum(void);
 #endif

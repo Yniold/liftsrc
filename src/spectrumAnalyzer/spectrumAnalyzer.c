@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-06 21:08:47 $ by $Author: rudolf $
+* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-09 19:29:22 $ by $Author: rudolf $
 *
 * $Log: spectrumAnalyzer.c,v $
-* Revision 1.2  2005-07-06 21:08:47  rudolf
+* Revision 1.3  2005-07-09 19:29:22  rudolf
+* fixed 480mbit mode, added basic evaluation of wavelength and counts
+*
+* Revision 1.2  2005/07/06 21:08:47  rudolf
 * more work on spectrometer, HR4000 decides between HIGH and FULLSPEED mode, implemented correct handling for both modes
 *
 * Revision 1.1  2005/07/06 16:38:42  rudolf
@@ -12,19 +15,30 @@
 *
 *
 */
-
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <string.h>
 #include <usb.h>
 #include "spectrumAnalyzer.h"
 
 // globals
 int verbose = 0;
-int uiUSBSpeed = SPEED_FULL;
+int uiUSBSpeed = SPEED_HIGH; //SPEED_FULL;
 
 unsigned char ucBuffer[8192];		// datasets are 7616 bytes max.
 unsigned char ucCalibrationData[18][17];
-unsigned int uiSpectralData[3840];
+uint16_t uiSpectralData[3840];
+double dCoeffs[4];
+
 unsigned char *pSpectralBuffer = NULL;
 int iByteCount = 0;
 int iNumberOfPackets = 0;
@@ -123,7 +137,6 @@ int main(int argc, char *argv[])
 			};
 		};
 	};
-	
 	// check if the structures are valid
 	// then try to open the devic	
 	if(specDevice)
@@ -152,7 +165,8 @@ int main(int argc, char *argv[])
 		{
 			printf("Claimed interface #0 from driver\n\r");	
 		}
-
+		
+		
 		iRet = usb_set_configuration(specHandle,1); // set config 1 active (we only have 1 config);
 		
 		if(iRet < 0)
@@ -165,357 +179,24 @@ int main(int argc, char *argv[])
 		{
 			printf("Set configuration\n\r");	
 		}
-		
+		//******************************************************************************
 		// from here on we can talk to the spectrograph via usb in/out bulk transfers
-		
-		// *************
-		// * init CMD
-		// *************
-		
-		ucBuffer[0] = CMD_INIT;
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, 1000);
-		if(iRet < 0)
-		{
-			printf("Initializing Spectrograph failed!\n\r");
-			// cleanup
-			usb_release_interface(specHandle,0);
-			usb_close(specHandle);
-			exit(-1);
-		}
-		else
-		{
-			printf("Init Command sent!\n\r");
-		};
+		//******************************************************************************
+		usb_clear_halt(specHandle, EP1_OUT_ADDR);
+		usb_clear_halt(specHandle, EP2_IN_ADDR);
+		usb_clear_halt(specHandle, EP6_IN_ADDR);
+		usb_clear_halt(specHandle, EP1_IN_ADDR);
 
-		HR4000_Query_Status();
-		
-		/*		
-		// ******************************************************
-		// * read spectral data
-		// * according to the HR2000 we should read the 
-		// * data endpoints after INIT command 
-		// * to archieve reliable communications
-		// * the HR4000 manual doesn't say a word about this...
-		// ******************************************************
-		
-		int iNumberOfPackets = 0;
-		
-		while(1)
-		{
-			iRet = usb_bulk_read(specHandle,EP2_IN_ADDR, (char *)ucBuffer, 64, 100);
-			if(iRet>0)
-			{
-				printf("Got %d bytes from HR4000.\n\r",iRet);
-				int iLoop = 0;
-				for(iLoop = 0; iLoop < iRet; iLoop++)
-					printf("%02x ",ucBuffer[iLoop]);
-				printf("\n\r");
-			}
-			if(iRet=64)
-				iNumberOfPackets++;
+		HR4000_Init();
+		HR4000_SetTriggerMode(0);
+		HR4000_ReadPCBTemp();
+		HR4000_ReadCalibrationData();
+//		HR4000_SetPowerdownMode();
+//		HR4000_Query_Status();
+//		HR4000_SetIntegrationTime(100000);
+//		HR4000_Query_Status();
+		HR4000_AquireSpectrum();
 				
-			if(iRet=1 && ucBuffer[0] == 0x69)
-			{
-				printf("Got Sync after %03d packets\n\r", iNumberOfPackets);
-				break;
-			};
-		
-		};
-		
-		*/
-		// *********************
-		// * set powerdown mode
-		// *********************
-		
-		ucBuffer[0] = CMD_SET_SHUTDOWN;
-		ucBuffer[1] = 0x00;	// power up electronics (manual page 12)
-		ucBuffer[2] = 0x00;
-		
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 3, 1000);
-		if(iRet < 0)
-		{
-			printf("Set Powerdown Mode failed!\n\r");
-			// cleanup
-			usb_release_interface(specHandle,0);
-			usb_close(specHandle);
-			exit(-1);
-		}
-		else
-		{
-			printf("Set Powerdown Mode sent!\n\r");
-		};
-
-		// ***********************
-		// * set integration time
-		// ***********************
-		
-		unsigned int uiIntegrationTime = (100 * 1000);
-		
-		ucBuffer[0] = CMD_SET_INT_TIME;
-		ucBuffer[1] = (unsigned char)(uiIntegrationTime & 0xFF);
-		ucBuffer[2] = (unsigned char)((uiIntegrationTime>>8) & 0xFF);
-		ucBuffer[3] = (unsigned char)((uiIntegrationTime>>16) & 0xFF);
-		ucBuffer[4] = (unsigned char)((uiIntegrationTime>>24) & 0xFF);
-		
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 5, 1000);
-		if(iRet < 0)
-		{
-			printf("Set integration time failed!\n\r");
-			// cleanup
-			usb_release_interface(specHandle,0);
-			usb_close(specHandle);
-			exit(-1);
-		}
-		else
-		{
-			printf("Set Integration Time CMD sent!\n\r");
-		};
-
-		// ***********************
-		// * set trigger mode
-		// ***********************
-		
-		ucBuffer[0] = CMD_SET_TRIGGER;
-		ucBuffer[1] = 0x00;
-		ucBuffer[2] = 0x00;
-		
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 3, 1000);
-		if(iRet < 0)
-		{
-			printf("Set trigger mode failed!\n\r");
-			// cleanup
-			usb_release_interface(specHandle,0);
-			usb_close(specHandle);
-			exit(-1);
-		}
-		else
-		{
-			printf("Set Trigger Mode CMD sent!\n\r");
-		};
-
-		
-		
-		// *********************
-		// * read PCB temp
-		// *********************
-		
-		ucBuffer[0] = CMD_READ_PCB_TEMP;
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, 1000);
-		if(iRet < 0)
-		{
-			printf("READ TEMP failed!\n\r");
-			// cleanup
-			usb_release_interface(specHandle,0);
-			usb_close(specHandle);
-			exit(-1);
-		}
-		else
-		{
-			printf("READ TEMP Command sent!\n\r");
-		};
-		
-		iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)ucBuffer, sizeof(ucBuffer), 1000);
-		if(iRet>0 && (ucBuffer[0] == 0x08))
-		{
-			printf("Got %d bytes from HR4000\n\r",iRet);
-			int iLoop = 0;
-			for(iLoop = 0; iLoop < iRet; iLoop++)
-				printf("%02x",ucBuffer[iLoop]);
-			printf("\n\r");
-			
-			unsigned int iTemp = (unsigned int)(ucBuffer[2]<<8)+
-										(unsigned int)(ucBuffer[1]);
-			
-			printf("Board Temperature is: %f\n\r",0.003906*(double)(iTemp));
-		}
-		
-		// ************************************************************************
-		// * read calibration data, serial number etc and store in external file
-		// ************************************************************************
-		int iDataByte = 0;
-		
-		printf("Dump of calibration data:\n\r");
-		printf("=========================\n\r");
-		
-		for(iDataByte=0;iDataByte < 17;iDataByte++)
-		{	
-			ucBuffer[0] = CMD_QUERY_INFO;
-			ucBuffer[1] = iDataByte; // "Data Byte" documentation page 13
-			
-			iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 2, 1000);
-			if(iRet < 0)
-			{
-				printf("CMD_QUERY_INFO failed!\n\r");
-				// cleanup
-				usb_release_interface(specHandle,0);
-				usb_close(specHandle);
-				exit(-1);
-			};
-						
-			iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)&ucCalibrationData[iDataByte][0], 19, 5000);
-			if(iRet>0)
-			{
-				int iLoop = 0;
-				for(iLoop = 0; iLoop < iRet; iLoop++)
-					printf("%02x ",ucCalibrationData[iDataByte][iLoop]);
-				printf("\n\r");
-				
-				for(iLoop = 2; iLoop < iRet; iLoop++)
-					printf("%c",ucCalibrationData[iDataByte][iLoop]);
-				printf("\n\r");
-			}
-		}
-		
-		// write cal data to file
-		
-		FILE *fdFile;
-		if ((fdFile=fopen("./calib_data.bin","w"))==NULL)
-		{
-			printf("Can't open file for writing!\n\r");
-		}
-		else
-		{
-			iRet = fwrite(ucCalibrationData,1,sizeof(ucCalibrationData),fdFile);
-			if(iRet != sizeof(ucCalibrationData))
-			{
-				printf("Write cal data failed!\n\r");
-				fclose(fdFile);
-			}
-			else
-			{
-				printf("Write cal data succeeded!\n\r");
-				fclose(fdFile);
-			}
-									
-		}		
-		
-		// **************************************************************
-		// * read spectral data
-		// **************************************************************
-		// * in full speed mode the data are sent via EP2_IN
-		// * 120 packets of 64 bytes each plus a sync packet of 1 byte 
-		// **************************************************************
-
-		if(uiUSBSpeed == SPEED_FULL)
-		{
-			printf("Aquiring spectral data in FULL SPEED mode (12mbit)\n\r");			
-			ucBuffer[0] = CMD_REQUEST_SPECTRA;
-			iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, 1000);
-			if(iRet < 0)
-			{
-				printf("CMD_REQUEST_SPECTRA failed!\n\r");
-				// cleanup
-				usb_release_interface(specHandle,0);
-				usb_close(specHandle);
-				exit(-1);
-			}
-			else
-			{
-				printf("CMD_REQUEST_SPECTRA Command sent!\n\r");
-			};
-			
-			iNumberOfPackets = 0;
-			pSpectralBuffer = (unsigned char*)(&uiSpectralData);
-			iByteCount = 0;
-			
-			while(1)
-			{
-				iRet = usb_bulk_read(specHandle,EP2_IN_ADDR, (char *)ucBuffer, 64, 100);
-				
-				if(iRet>0 && (ucBuffer[0] != 0x69))
-				{
-					printf("Got %d bytes from HR4000.\n\r",iRet);
-					int iLoop = 0;
-					for(iLoop = 0; iLoop < iRet; iLoop++)
-					{
-						*pSpectralBuffer = ucBuffer[iLoop];
-						pSpectralBuffer++;
-						iByteCount++;
-						printf("%02x ",ucBuffer[iLoop]);
-					}; 
-					printf("\n\r");
-				};
-					
-				if(iRet=64)
-					iNumberOfPackets++;
-					
-				if(iRet=1 && ucBuffer[0] == 0x69)
-				{
-					printf("Got Sync after %03d packets, read %04d bytes total.\n\r", 
-						iNumberOfPackets,
-						iByteCount);
-					break;
-				};
-			
-			};
-		}
-		else
-		// **************************************************************
-		// * in high speed mode the first 2K of data are sent via EP6_IN
-		// * e.g. packets #00-#03 and then switched to EP2_IN where
-		// * packets#04-#14 are sent. 
-		// * packet #15 is a sync packet
-		// **************************************************************
-		{
-			printf("Aquiring spectral data in HIGH SPEED mode (480mbit)\n\r");
-			ucBuffer[0] = CMD_REQUEST_SPECTRA;
-			iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, 1000);
-			if(iRet < 0)
-			{
-				printf("CMD_REQUEST_SPECTRA failed!\n\r");
-				// cleanup
-				usb_release_interface(specHandle,0);
-				usb_close(specHandle);
-				exit(-1);
-			}
-			else
-			{
-				printf("CMD_REQUEST_SPECTRA Command sent!\n\r");
-			};
-			
-			iByteCount = 0;
-			iNumberOfPackets = 0;
-			pSpectralBuffer = (unsigned char*)(&uiSpectralData);
-			
-			while(1)
-			{
-				// check which endpoint to use
-				if(iNumberOfPackets < 4)
-					iRet = usb_bulk_read(specHandle,EP2_IN_ADDR, (char *)ucBuffer, 512, 100);
-				else
-					iRet = usb_bulk_read(specHandle,EP6_IN_ADDR, (char *)ucBuffer, 512, 100);
-
-				// check if we got data, and it's not a sync packet
-				if(iRet>0 && (ucBuffer[0] != 0x69))
-				{
-					printf("Got %d bytes from HR4000.\n\r",iRet);
-					int iLoop = 0;
-					for(iLoop = 0; iLoop < iRet; iLoop++)
-					{
-						*pSpectralBuffer = ucBuffer[iLoop];
-						pSpectralBuffer++;
-						iByteCount++;
-						printf("%02x ",ucBuffer[iLoop]);
-					}; 
-					printf("\n\r");
-				};
-				
-				// it was a data packet, so increment packet count
-				if(iRet=512)
-					iNumberOfPackets++;
-				
-				// if packetsize is 1 and the byte is 0x69, it's a sync packet	
-				if(iRet=1 && ucBuffer[0] == 0x69)
-				{
-					printf("Got Sync after %03d packets, read %04d bytes total.\n\r", 
-						iNumberOfPackets,
-						iByteCount);
-					break;
-				};
-			
-			};
-		}
-		
 		// cleanup
 		usb_release_interface(specHandle,0);
 		usb_close(specHandle);
@@ -646,7 +327,15 @@ int print_device(struct usb_device *dev, int level)
   return 0;
   
 }
-		
+
+// ***************************************************************************
+// * HR 4000 functions below
+// ***************************************************************************
+
+//***********************************
+//* query and dump the current status
+//***********************************
+
 void HR4000_Query_Status()
 {	
 		// *******************
@@ -654,7 +343,7 @@ void HR4000_Query_Status()
 		// *******************
 		
 		ucBuffer[0] = CMD_QUERY_STATUS;
-		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, 1000);
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, USB_TIMEOUT);
 		if(iRet < 0)
 		{
 			printf("CMD_QUERY_STATUS failed!\n\r");
@@ -664,33 +353,391 @@ void HR4000_Query_Status()
 			exit(-1);
 		};
 		
-		iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)ucBuffer, sizeof(ucBuffer), 1000);
+		iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)ucBuffer, sizeof(ucBuffer), USB_TIMEOUT);
 		if(iRet>0)
 		{
-			int iLoop = 0;
-			for(iLoop = 0; iLoop < iRet; iLoop++)
-				printf("%02x ",ucBuffer[iLoop]);
 			printf("\n\r");
+			printf("Number of Pixels: %04d\n\r",(int)ucBuffer[0]+(int)(ucBuffer[1]<<8));
+			printf("Integration Time: %08d\n\r",
+					(int)(ucBuffer[2])+
+					(int)(ucBuffer[3]<<8)+
+					(int)(ucBuffer[4]<<16)+
+					(int)(ucBuffer[5]<<24));
+					
+			printf("Lamp enabled: %s\n\r",ucBuffer[6]==0?"off":"on");
+			printf("Trigger mode: %08d\n\r",ucBuffer[7]);
+			printf("Aquisition status: %08d\n\r",ucBuffer[8]);
+			printf("Packets in spectra: %04d\n\r",ucBuffer[9]);
+			printf("Power state: %s\n\r",ucBuffer[10]==0?"powered down":"active");
+			printf("Packets loaded to Endpoint: %04d\n\r",ucBuffer[11]);
+			printf("USB Speed: %s\n\r",ucBuffer[14]==0?"full speed (12Mbit)":"high speed (480MBit)");
 			
+			if(ucBuffer[14] == 0)
+				uiUSBSpeed = SPEED_FULL;
+			else
+				uiUSBSpeed = SPEED_HIGH;
 		};
-		printf("Number of Pixels: %04d\n\r",(int)ucBuffer[0]+(int)(ucBuffer[1]<<8));
-		printf("Integration Time: %08d\n\r",
-				(int)(ucBuffer[2])+
-				(int)(ucBuffer[3]<<8)+
-				(int)(ucBuffer[4]<<16)+
-				(int)(ucBuffer[5]<<24));
-				
-		printf("Lamp enabled: %s",ucBuffer[6]==0?"off":"on");
-		printf("Trigger mode: %08d\n\r",ucBuffer[7]);
-		printf("Aquisition status: %08d\n\r",ucBuffer[8]);
-		printf("Packets in spectra: %04d\n\r",ucBuffer[9]);
-		printf("Power state: %04d\n\r",ucBuffer[10]==0?"powered down":"active");
-		printf("Packets loaded to Endpoint: %04d\n\r",ucBuffer[11]);
-		printf("USB Speed: %s\n\r",ucBuffer[14]==0?"full speed (12Mbit)":"high speed (480MBit)");
-		
-		if(ucBuffer[14] == 0)
-			uiUSBSpeed = SPEED_FULL;
-		else
-			uiUSBSpeed = SPEED_HIGH;
 }
 
+// *************
+// * init CMD
+// *************
+void HR4000_Init()
+{		
+		ucBuffer[0] = CMD_INIT;
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("Initializing Spectrograph failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("Init Command sent!\n\r");
+		};
+};
+
+// ***********************
+// * set integration time
+// ***********************
+
+void HR4000_SetIntegrationTime(unsigned int uiMicroSeconds)
+{
+		ucBuffer[0] = CMD_SET_INT_TIME;
+		ucBuffer[1] = (unsigned char)(uiMicroSeconds & 0xFF);
+		ucBuffer[2] = (unsigned char)((uiMicroSeconds>>8) & 0xFF);
+		ucBuffer[3] = (unsigned char)((uiMicroSeconds>>16) & 0xFF);
+		ucBuffer[4] = (unsigned char)((uiMicroSeconds>>24) & 0xFF);
+		
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 5, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("Set integration time failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("Set integration time to %04.3f ms!\n\r",(float)(uiMicroSeconds/1000));
+		};
+};
+
+// ***********************
+// * set trigger mode
+// ***********************
+
+void HR4000_SetTriggerMode(unsigned char ucMode)
+{
+		
+		ucBuffer[0] = CMD_SET_TRIGGER;
+		ucBuffer[1] = ucMode & 0x03;
+		ucBuffer[2] = 0x00;
+		
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 3, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("Set trigger mode failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("Set trigger mode!\n\r");
+		};
+};	
+
+// *********************
+// * read PCB temp
+// *********************
+
+void HR4000_ReadPCBTemp()
+{	
+		ucBuffer[0] = CMD_READ_PCB_TEMP;
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("READ TEMP failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("Reading board temperature!\n\r");
+		};
+		
+		iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)ucBuffer, sizeof(ucBuffer), USB_TIMEOUT);
+		if(iRet>0 && (ucBuffer[0] == 0x08))
+		{			
+			unsigned int iTemp = (unsigned int)(ucBuffer[2]<<8)+
+										(unsigned int)(ucBuffer[1]);
+			
+			printf("Board Temperature is: %f\n\r",0.003906*(double)(iTemp));
+		}
+;}
+
+// ************************************************************************
+// * read calibration data, serial number etc and store in external file
+// ************************************************************************
+
+void HR4000_ReadCalibrationData(void)
+{		
+		int iDataByte = 0;
+		
+		printf("Dump of calibration data:\n\r");
+		printf("=========================\n\r");
+		
+		for(iDataByte=0;iDataByte < 17;iDataByte++)
+		{	
+			ucBuffer[0] = CMD_QUERY_INFO;
+			ucBuffer[1] = iDataByte; // "Data Byte" documentation page 13
+			
+			iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 2, USB_TIMEOUT);
+			if(iRet < 0)
+			{
+				printf("CMD_QUERY_INFO failed!\n\r");
+				// cleanup
+				usb_release_interface(specHandle,0);
+				usb_close(specHandle);
+				exit(-1);
+			};
+						
+			iRet = usb_bulk_read(specHandle,EP1_IN_ADDR, (char *)&ucCalibrationData[iDataByte][0], 19, USB_TIMEOUT);
+			if(iRet>0)
+			{
+				int iLoop = 0;
+				for(iLoop = 0; iLoop < iRet; iLoop++)
+					printf("%02x ",ucCalibrationData[iDataByte][iLoop]);
+				printf("\n\r");
+				
+				for(iLoop = 2; iLoop < iRet; iLoop++)
+					printf("%c",ucCalibrationData[iDataByte][iLoop]);
+				printf("\n\r");
+			}
+		}
+		
+		// write cal data to file
+		
+		FILE *fdFile;
+		if ((fdFile=fopen("./calib_data.bin","w"))==NULL)
+		{
+			printf("Can't open file for writing!\n\r");
+		}
+		else
+		{
+			iRet = fwrite(ucCalibrationData,1,sizeof(ucCalibrationData),fdFile);
+			if(iRet != sizeof(ucCalibrationData))
+			{
+				printf("Write cal data failed!\n\r");
+				fclose(fdFile);
+			}
+			else
+			{
+				printf("Write cal data succeeded!\n\r");
+				fclose(fdFile);
+			}
+									
+		}	
+		int iLoop = 0;
+		for(iLoop = 1; iLoop < 5; iLoop++)
+		{	
+			float fValue = 0;
+			unsigned char* pBuffer = &ucCalibrationData[iLoop][2];
+			int iRet = sscanf(pBuffer, "%f", &fValue);
+			
+			if(iRet >0)
+				dCoeffs[iLoop-1] = (double) fValue;
+			else
+				dCoeffs[iLoop-1] = 0;
+		} 
+		for(iLoop = 0; iLoop < 4; iLoop++)
+		{
+			printf("Calibration Coefficient #%02d is %f\n\r", iLoop, dCoeffs[iLoop]);
+		};
+			
+};
+
+// *********************
+// * set powerdown mode
+// *********************
+
+void HR4000_SetPowerdownMode()
+{				
+	ucBuffer[0] = CMD_SET_SHUTDOWN;
+	ucBuffer[1] = 0x01;	// power up electronics (manual page 12)
+	ucBuffer[2] = 0x00;
+	
+	iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 3, USB_TIMEOUT);
+	if(iRet < 0)
+	{
+		printf("Set Powerdown Mode failed!\n\r");
+		// cleanup
+		usb_release_interface(specHandle,0);
+		usb_close(specHandle);
+		exit(-1);
+	}
+	else
+	{
+		printf("Set Powerdown Mode sent!\n\r");
+	};
+}		
+
+		// **************************************************************
+		// * read spectral data
+		// **************************************************************
+		// * in full speed mode the data are sent via EP2_IN
+		// * 120 packets of 64 bytes each plus a sync packet of 1 byte 
+		// **************************************************************
+
+void HR4000_AquireSpectrum()
+{
+	if(uiUSBSpeed == SPEED_FULL)
+	{
+		printf("Aquiring spectral data in FULL SPEED mode (12mbit)\n\r");			
+		ucBuffer[0] = CMD_REQUEST_SPECTRA;
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("CMD_REQUEST_SPECTRA failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("CMD_REQUEST_SPECTRA Command sent!\n\r");
+		};
+		
+		iNumberOfPackets = 0;
+		pSpectralBuffer = (unsigned char*)(&uiSpectralData);
+		iByteCount = 0;
+		
+		while(1)
+		{
+			iRet = usb_bulk_read(specHandle,EP2_IN_ADDR, (char *)ucBuffer, 64, USB_TIMEOUT);
+			
+			if(iRet>1)
+			{
+				printf("Got %d bytes from HR4000.\n\r",iRet);
+				int iLoop = 0;
+				for(iLoop = 0; iLoop < iRet; iLoop++)
+				{
+					*pSpectralBuffer = ucBuffer[iLoop];
+					pSpectralBuffer++;
+					iByteCount++;
+					printf("%02x ",ucBuffer[iLoop]);
+				}; 
+				printf("\n\r");
+			};
+				
+			if(iRet==64)
+				iNumberOfPackets++;
+				
+			if(iRet==1 && ucBuffer[0] == 0x69)
+			{
+				printf("Got Sync after %03d packets, read %04d bytes total.\n\r", 
+					iNumberOfPackets,
+					iByteCount);
+				break;
+			};
+		};
+	}
+	else
+	// **************************************************************
+	// * in high speed mode the first 2K of data are sent via EP6_IN
+	// * e.g. packets #00-#03 and then switched to EP2_IN where
+	// * packets#04-#14 are sent. 
+	// * packet #15 is a sync packet
+	// **************************************************************
+	{
+		printf("Aquiring spectral data in HIGH SPEED mode (480mbit)\n\r");
+		ucBuffer[0] = CMD_REQUEST_SPECTRA;
+		iRet = usb_bulk_write(specHandle, EP1_OUT_ADDR, (char*)ucBuffer, 1, USB_TIMEOUT);
+		if(iRet < 0)
+		{
+			printf("CMD_REQUEST_SPECTRA failed!\n\r");
+			// cleanup
+			usb_release_interface(specHandle,0);
+			usb_close(specHandle);
+			exit(-1);
+		}
+		else
+		{
+			printf("CMD_REQUEST_SPECTRA Command sent!\n\r");
+		};
+		
+		iByteCount = 0;
+		iNumberOfPackets = 0;
+		pSpectralBuffer = (unsigned char*)(&uiSpectralData);
+		
+		
+		while(1)
+		{
+			// check which endpoint to use
+			if(iNumberOfPackets < 4)
+				iRet = usb_bulk_read(specHandle,EP6_IN_ADDR, (char *)ucBuffer, 512, USB_TIMEOUT);
+			else
+				iRet = usb_bulk_read(specHandle,EP2_IN_ADDR, (char *)ucBuffer, 512, USB_TIMEOUT);
+
+			// check if we got data, and it's not a sync packet
+			if(iRet>1)
+			{
+				if(iNumberOfPackets < 4)
+					printf("Got %d bytes from HR4000 on EP6_IN, packet #%04d\n\r",iRet,iNumberOfPackets);
+				else
+					printf("Got %d bytes from HR4000 on EP2_IN, packet #%04d\n\r",iRet,iNumberOfPackets);
+					
+				int iLoop = 0;
+				for(iLoop = 0; iLoop < iRet; iLoop++)
+				{
+					*pSpectralBuffer = ucBuffer[iLoop];
+					pSpectralBuffer++;
+					iByteCount++;
+					printf("%02x ",ucBuffer[iLoop]);
+				}; 
+				printf("\n\r");
+			};
+			
+			// it was a data packet, so increment packet count
+			if(iRet==512)
+				iNumberOfPackets++;
+			
+			// if packetsize is 1 and the byte is 0x69, it's a sync packet	
+			if(iRet==1 && ucBuffer[0] == 0x69)
+			{
+				printf("Got Sync after %03d packets, read %04d bytes total.\n\r", 
+					iNumberOfPackets,
+					iByteCount);
+				break;
+			};
+		
+		};
+	}
+	if(iByteCount==sizeof(uiSpectralData))
+	{
+		printf("Spectral size matches !\n\r");
+		int iLoop = 0;
+		for(iLoop=0; iLoop < (sizeof(uiSpectralData)>>1);iLoop++)
+		{
+			printf("Wavelength for dataset point #%04d is %3.9f nm , readout is %05d\n\r", iLoop, 
+			(dCoeffs[0])+
+			((double)iLoop * dCoeffs[1]) +
+			((double)iLoop * (double)iLoop * dCoeffs[2])+
+			((double)iLoop * (double)iLoop * (double)iLoop * dCoeffs[3]),
+			uiSpectralData[iLoop]); 
+		};
+	}
+	else
+	{
+		printf("Spectral size is wrong!\n\r");
+	};
+};		
