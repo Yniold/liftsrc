@@ -86,8 +86,7 @@ col=horusdata.col;
 fcts2val=horusdata.fcts2val;
 
 % Calculate time as sum of day, hour, min, etc.
-statustime=double(statusData(:,1))+ ...
-           double(statusData(:,2))./1.0+ ...
+statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
            double(statusData(:,5))./86400.0;
@@ -366,12 +365,12 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
     CHO2b=CHO2b.*(DiodeWZ2in(lastrow)+DiodeWZ2out(lastrow))/2;
     if rank(COH)~=0
-        XOH = MCP1OnlineAvg.*5./COH';
+        XOH = (MCP1OnlineAvg-MCP1OfflineAvg).*5./COH';
     else
         XOH = MCP1OnlineAvg; XOH(:)=NaN;
     end
     if rank(CHO2b)~=0
-        XHOx = MCP2OnlineAvg.*5./CHO2b';
+        XHOx = (MCP2OnlineAvg-MCP2OfflineAvg).*5./CHO2b';
     else
         XHOx = MCP1OnlineAvg; XHOx(:)=NaN;
     end
