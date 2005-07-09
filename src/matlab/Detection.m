@@ -166,7 +166,7 @@ if MFCFlow(lastrow)<5.5 | MFCFlow>6
 else 
     set(handles.txtMFC,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if statusData(lastrow,col.VHV)<12450
+if statusData(lastrow,col.VHV)<12400
     set(handles.txtVHV,'BackgroundColor','r');
 else 
     set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
@@ -339,20 +339,17 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     radlife=1.45e6;			% Radiative lifetime (Hz) from D. Heard data
     % THESE PARAMETERS NEED TO BE CONSIDERED WHEN RUNNING THE INSTRUMENT IN A
     % DIFFERENT SETUP
-    gate1=200e-9;			   % Approximate gate setting for rising edge (sec)
-    gate2=620e-9;		   	% ...for falling edge (sec)
-    Tcal=293;			      % Cell Temperature during lab calibration (K)
-    Pcal=4.0;
-    PowCal=4.0;		%OHUVPower during lab calibration (mW)
-    PowCalb=4.0;		%HO2UVPower during lab calibration (mW)
-    PowDep=0.0;		%sensitivity decrease per mW as a fraction from value at 0 mW
+    gate1=136e-9;			   % Approximate gate setting for rising edge (sec)
+    gate2=596e-9;		   	% ...for falling edge (sec)
+    Tcal=299;			      % Cell Temperature during lab calibration (K)
+    Pcal=3.7;
+    PowCal=10;		%OHUVPower during lab calibration (mW)
+    PowCalb=1.75;		%HO2UVPower during lab calibration (mW)
     wmrcal=8E-3;	         % Calibration reference water concentration
-    cOH=12.5;    %The following parameters are sensitivity
-    cHO2b=12.5;		%HO2 axis
 
     k_qcal=getq(Tcal,wmrcal);
     GAMMAcal= k_qcal*Pcal + radlife;  
-    densCal=(6.022E+23/22400)*273/Tcal*4.9/1013;
+    densCal=(6.022E+23/22400)*273/Tcal*Pcal/1013;
 
     bc=boltzcorr(Tcal,TDet(lastrow)+273);
     k_q=getq(TDet(lastrow)+273,str2double(get(handles.editH2O,'String')));
@@ -364,10 +361,10 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
 
     COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-    COH=COH.*DiodeWZ1in(lastrow).*[1-PowDep*DiodeWZ1in(lastrow)]/[1-PowDep*PowCal];
+    COH=COH.*(DiodeWZ1in(lastrow)+DiodeWZ1out(lastrow))/2;
 
     CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
-    CHO2b=CHO2b.*DiodeWZ2in(lastrow).*[1-PowDep*DiodeWZ2in(lastrow)]/[1-PowDep*PowCal];
+    CHO2b=CHO2b.*(DiodeWZ2in(lastrow)+DiodeWZ2out(lastrow))/2;
     if rank(COH)~=0
         XOH = MCP1OnlineAvg.*5./COH';
     else
