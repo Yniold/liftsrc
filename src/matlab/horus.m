@@ -168,15 +168,16 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
-    Valveword=bitset(statusData(lastrow,col.ValveLift),10); % switch air on
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9); % switch air on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     pause(1);
+    Valveword=bitset(Valveword,9,0); % switch air off 
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     pause(1);
     Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
-    Valveword=bitset(Valveword,10,0); % switch vaccuum off 
+    Valveword=bitset(Valveword,9,0); % switch air off 
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
