@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 10-Jul-2005 18:21:22
+% Last Modified by GUIDE v2.5 10-Jul-2005 20:09:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -115,10 +115,10 @@ data.Counter=data.Counter+1;
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
 
 % calculate parameters from ADC counts
-x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
-x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
-x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
-x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
+x=double(statusData(lastrow,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
+x=double(statusData(lastrow,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
+x=double(statusData(lastrow,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
+x=double(statusData(lastrow,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 
 ctsMCP1=statusData(lastrow,col.ccCounts1);
 ctsMCP2=statusData(lastrow,col.ccCounts2);
@@ -132,21 +132,32 @@ data.sumDiodeWZ2out=data.sumDiodeWZ2out+DiodeWZ2out;
 if OnOffFlag==3
     data.sumctsMCP1onl=data.sumctsMCP1onl+ctsMCP1;
     data.sumctsMCP2onl=data.sumctsMCP2onl+ctsMCP2;
-    data.CounterOffl=data.CounterOffl+1;
+    data.CounterOnl=data.CounterOnl+1;
 elseif OnOffFlag==1 | OnOffFlag==2
     data.sumctsMCP1offl=data.sumctsMCP1offl+ctsMCP1;
     data.sumctsMCP2offl=data.sumctsMCP2offl+ctsMCP2;
-    data.CounterOnl=data.CounterOnl+1;
+    data.CounterOffl=data.CounterOffl+1;
 end
 avgDiodeWZ1in=data.sumDiodeWZ1in/data.Counter;
 avgDiodeWZ1out=data.sumDiodeWZ1out/data.Counter;
 avgDiodeWZ2in=data.sumDiodeWZ2in/data.Counter;
 avgDiodeWZ2out=data.sumDiodeWZ2out/data.Counter;
-avgMCP1onl=data.sumctsMCP1onl/data.CounterOnl;
-avgMCP1offl=data.sumctsMCP1offl/data.CounterOffl;
-avgMCP2onl=data.sumctsMCP2onl/data.CounterOnl;
-avgMCP2offl=data.sumctsMCP2offl/data.CounterOffl;
+if data.CounterOnl>0
+    avgMCP1onl=data.sumctsMCP1onl/data.CounterOnl;
+    avgMCP2onl=data.sumctsMCP2onl/data.CounterOnl;
+else
+    avgMCP1onl=NaN;
+    avgMCP2onl=NaN;
+end
+if data.CounterOffl>0
+    avgMCP1offl=data.sumctsMCP1offl/data.CounterOffl;
+    avgMCP2offl=data.sumctsMCP2offl/data.CounterOffl;
+else
+    avgMCP1offl=NaN;
+    avgMCP2offl=NaN;
+end
 
+    
 % display averages
 set(handles.txtWZ1in,'String',[num2str(avgDiodeWZ1in,3),' mW']);
 set(handles.txtWZ1out,'String',[num2str(avgDiodeWZ1out,3),' mW']);
