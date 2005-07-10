@@ -162,10 +162,10 @@ set(handles.txtWZ1in,'String',[num2str(avgDiodeWZ1in,3),' mW']);
 set(handles.txtWZ1out,'String',[num2str(avgDiodeWZ1out,3),' mW']);
 set(handles.txtWZ2in,'String',[num2str(avgDiodeWZ2in,3),' mW']);
 set(handles.txtWZ2out,'String',[num2str(avgDiodeWZ2out,3),' mW']);
-set(handles.txtMCP1onl,'String',[num2str(avgMCP1onl,4)]);
-set(handles.txtMCP1offl,'String',[num2str(avgMCP1offl,4)]);
-set(handles.txtMCP2onl,'String',[num2str(avgMCP2onl,4)]);
-set(handles.txtMCP2offl,'String',[num2str(avgMCP2offl,4)]);
+set(handles.txtMCP1onl,'String',[num2str(avgMCP1onl,3)]);
+set(handles.txtMCP1offl,'String',[num2str(avgMCP1offl,3)]);
+set(handles.txtMCP2onl,'String',[num2str(avgMCP2onl,3)]);
+set(handles.txtMCP2offl,'String',[num2str(avgMCP2offl,3)]);
 
 setappdata(handles.output, 'Caldata', data);
 
