@@ -71,14 +71,14 @@ data.Timer=handles.Timer;
 data.Counter=0;
 data.CounterOnl=0;
 data.CounterOffl=0;
-data.SumDiodeWZ1in=0;
-data.SumDiodeWZ1out=0;
-data.SumDiodeWZ2in=0;
-data.SumDiodeWZ2out=0;
-data.SumctsMCP1onl=0;
-data.SumctsMCP1offl=0;
-data.SumctsMCP2onl=0;
-data.SumctsMCP2offl=0;
+data.sumDiodeWZ1in=0;
+data.sumDiodeWZ1out=0;
+data.sumDiodeWZ2in=0;
+data.sumDiodeWZ2out=0;
+data.sumctsMCP1onl=0;
+data.sumctsMCP1offl=0;
+data.sumctsMCP2onl=0;
+data.sumctsMCP2offl=0;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -125,7 +125,7 @@ ctsMCP2=statusData(lastrow,col.ccCounts2);
 OnOffFlag=statusData(lastrow,col.RAvgOnOffFlag);
 
 % calculate running averages
-data.sumDiodeWZ1in=data.sumDiodeWZ1out+DiodeWZ1in;
+data.sumDiodeWZ1in=data.sumDiodeWZ1in+DiodeWZ1in;
 data.sumDiodeWZ1out=data.sumDiodeWZ1out+DiodeWZ1out;
 data.sumDiodeWZ2in=data.sumDiodeWZ2in+DiodeWZ2in;
 data.sumDiodeWZ2out=data.sumDiodeWZ2out+DiodeWZ2out;
@@ -192,14 +192,14 @@ data = getappdata(handles.output, 'Caldata');
 data.Counter=0;
 data.CounterOnl=0;
 data.CounterOffl=0;
-data.SumDiodeWZ1in=0;
-data.SumDiodeWZ1out=0;
-data.SumDiodeWZ2in=0;
-data.SumDiodeWZ2out=0;
-data.SumctsMCP1onl=0;
-data.SumctsMCP1offl=0;
-data.SumctsMCP2onl=0;
-data.SumctsMCP2offl=0;
+data.sumDiodeWZ1in=0;
+data.sumDiodeWZ1out=0;
+data.sumDiodeWZ2in=0;
+data.sumDiodeWZ2out=0;
+data.sumctsMCP1onl=0;
+data.sumctsMCP1offl=0;
+data.sumctsMCP2onl=0;
+data.sumctsMCP2offl=0;
 setappdata(handles.output, 'Caldata', data);
 
 start(handles.Timer);
