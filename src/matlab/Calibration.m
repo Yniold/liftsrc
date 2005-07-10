@@ -119,8 +119,8 @@ x=double(statusData(lastrow,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.Dio
 x=double(statusData(lastrow,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
 x=double(statusData(lastrow,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 
-ctsMCP1=statusData(lastrow,col.ccCounts1);
-ctsMCP2=statusData(lastrow,col.ccCounts2);
+ctsMCP1=double(statusData(lastrow,col.ccCounts1));
+ctsMCP2=double(statusData(lastrow,col.ccCounts2));
 OnOffFlag=statusData(lastrow,col.RAvgOnOffFlag);
 
 % calculate running averages
