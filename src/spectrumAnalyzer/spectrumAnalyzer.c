@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-10 15:18:58 $ by $Author: rudolf $
+* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-10 15:38:25 $ by $Author: rudolf $
 *
 * $Log: spectrumAnalyzer.c,v $
-* Revision 1.4  2005-07-10 15:18:58  rudolf
+* Revision 1.5  2005-07-10 15:38:25  rudolf
+* changes for min max scaling
+*
+* Revision 1.4  2005/07/10 15:18:58  rudolf
 * added basic support for plotting a spectrum via directFB
 *
 * Revision 1.3  2005/07/09 19:29:22  rudolf
@@ -762,7 +765,7 @@ void HR4000_AquireSpectrum()
 		};
 		printf("%04d Pixels are in the range from 610 to 620nm\n\r",iRelevantPixels);
 		printf("Start of Spectrum is at: %04d\n\r",iStartOfSpectrum);
-
+		
 		DFBSurfaceDescription dsc;
 		DFBCHECK (DirectFBCreate (&dfb));
 		DFBCHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
@@ -773,23 +776,46 @@ void HR4000_AquireSpectrum()
 		DFBCHECK (primary->FillRectangle (primary, 0, 0, screen_width, screen_height)); // en schworzen bildschirm
 		DFBCHECK (primary->SetColor (primary, 0x80, 0x80, 0xff, 0xff));
 		
-		double  dPixelPerCountY = screen_height / 65536;
-		double  dPixelPerDigitX = screen_width / iRelevantPixels;
 
 		int iStartOfLineX = 0;
 		int iStartOfLineY = 0;
 		int iEndOfLineX = 0;
 		int iEndOfLineY = 0;
+		int iMaxValue = 0;
+		int iMinValue = 65536;
+		int iDeltaY = 0;
+		// find minima and maxima
+		for(iLoop = 0; iLoop < (iRelevantPixels-1); iLoop++)
+		{
+		if(uiSpectralData[iLoop+iStartOfSpectrum] < iMinValue)
+			iMinValue = uiSpectralData[iLoop+iStartOfSpectrum];
+		if(uiSpectralData[iLoop+iStartOfSpectrum] > iMaxValue)
+			iMaxValue = uiSpectralData[iLoop+iStartOfSpectrum];
+		}
+
+		printf("Min: %05d\n\r", iMinValue);
+		printf("Max: %05d\n\r", iMaxValue);
+		
+		iDeltaY = iMaxValue - iMinValue;
+		printf("Delta is: %05d\n\r", iDeltaY);
+
+		int iPixelPerDigitX = screen_width / iRelevantPixels;
+		printf("%05d pixels per dataset for X axis\n\r", iPixelPerDigitX);
+				
+		int iPixelPerCountY = screen_height / iDeltaY;
+		printf("%05d pixels per count for Y axis\n\r", iPixelPerCountY);
+		
+		return;
 		
 		DFBCHECK (primary->DrawLine (primary, 0, screen_height-1, screen_width - 1, screen_height-1)); // plot X Axis
 		DFBCHECK (primary->DrawLine (primary, 0, 0 , 0 , screen_height-1)); // plot Y Axis
 
 		for(iLoop = 0; iLoop < (iRelevantPixels-1); iLoop++)
 		{
-			iStartOfLineX = iLoop * dPixelPerDigitX;
-			iStartOfLineY = (screen_height-1) - (uiSpectralData[iLoop+iStartOfSpectrum] / 64);
-			iEndOfLineX = (iLoop+1) * dPixelPerDigitX;
-			iEndOfLineY = (screen_height-1) - (uiSpectralData[iLoop+iStartOfSpectrum+1] / 64);
+			iStartOfLineX = iLoop * iPixelPerDigitX;
+			iStartOfLineY = (screen_height-1) - ((uiSpectralData[iLoop+iStartOfSpectrum]-iMinValue)*iPixelPerCountY);
+			iEndOfLineX = (iLoop+1) * iPixelPerDigitX;
+			iEndOfLineY = (screen_height-1) - ((uiSpectralData[iLoop+iStartOfSpectrum+1]-iMinValue)*iPixelPerCountY);
 			DFBCHECK (primary->DrawLine (primary, iStartOfLineX, iStartOfLineY , iEndOfLineX , iEndOfLineY)); //plot data
 		}
 		DFBCHECK (primary->Flip (primary, NULL, 0));
