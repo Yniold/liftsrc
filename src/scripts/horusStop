@@ -7,11 +7,14 @@ HVOff
 echo switch off Filament
 FilamentOff
 
-echo close Buterfly
+echo close Butterfly
 ButterFlyOff
 
 echo turn off Blower
 BlowerOff
+
+echo close all solenoids
+SolenoidsOff
 
 killall etalon     
 #cp /mnt/magera/etalon ./bin

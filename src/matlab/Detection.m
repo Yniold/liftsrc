@@ -809,7 +809,7 @@ col=horusdata.col;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+        if isequal(get(hObject,'BackgroundColor'),[0 1 1]) | isequal(get(hObject,'BackgroundColor'),[1 1 0])
             set(hObject,'BackgroundColor','g','String','HV ON');
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8);  % switch HV on
             % switch gain on for MCP1
@@ -822,7 +822,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word2)]);
         end
     else
-        if isequal(get(hObject,'BackgroundColor'),[0 1 0])
+        if isequal(get(hObject,'BackgroundColor'),[0 1 0])  | isequal(get(hObject,'BackgroundColor'),[1 1 0])
             set(hObject,'BackgroundColor','c','String','HV OFF');
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
             % switch gain off for MCP1

@@ -272,18 +272,19 @@ stop(handles.ActTimer);
 % shut Filament and Laser Valves Off
 system('/lift/bin/eCmd @Lift w 0xa408 0x0000');
 
-if statusData(lastrow,col.ValidSlaveDataFlag)    % shut Axis Valves Off
-    system(['/lift/bin/eCmd @armAxis w 0xa408 0x0000']);
+if statusData(lastrow,col.ValidSlaveDataFlag)    
+    % shut Axis Valves Off
+%    system(['/lift/bin/eCmd @armAxis w 0xa408 0x0000']);
     % shut HV Off
-    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+%    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),8,0);  % switch HV off
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch HV
+%    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     % switch Gain off for MCP1
-    word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
-    system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
+%    word=bitset(statusData(lastrow,col.ccGateDelay1),16,0);
+%    system(['/lift/bin/eCmd @armAxis w 0xa318 ',num2str(word)]);
     % switch Gain off for MCP2
-    word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
-    system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
+%    word=bitset(statusData(lastrow,col.ccGateDelay2),16,0);
+%    system(['/lift/bin/eCmd @armAxis w 0xa31c ',num2str(word)]);
     % switch LED off
     Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14,0);
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
