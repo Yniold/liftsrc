@@ -109,7 +109,7 @@ statustime=double(statusData(:,2))./1.0+ ...
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
-Counter=Counter+1;
+data.Counter=data.Counter+1;
 
 % display system time
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
