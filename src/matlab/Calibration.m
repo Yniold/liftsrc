@@ -134,8 +134,8 @@ for i=1:5
         data.sumctsMCP2onl=data.sumctsMCP2onl+ctsMCP2(i);
         data.CounterOnl=data.CounterOnl+1;
     elseif OnOffFlag(i)==1 | OnOffFlag(i)==2
-        data.sumctsMCP1offl=data.sumctsMCP1offl+ctsMCP1;
-        data.sumctsMCP2offl=data.sumctsMCP2offl+ctsMCP2;
+        data.sumctsMCP1offl=data.sumctsMCP1offl+ctsMCP1(i);
+        data.sumctsMCP2offl=data.sumctsMCP2offl+ctsMCP2(i);
         data.CounterOffl=data.CounterOffl+1;
     end
 end

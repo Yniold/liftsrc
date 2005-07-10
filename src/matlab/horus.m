@@ -154,6 +154,13 @@ if Pset==0
    Pset=PDyelaser(lastrow);
 end
 set(handles.txtPset,'String',num2str(Pset));
+% warning if PDyelaser differs too much from Pset
+if PDyelaser(lastrow)>=Pset+5 | PDyelaser(lastrow)<=Pset-5
+    set(handles.txtPset,'BackgroundColor','r')
+else
+    set(handles.txtPset,'BackgroundColor',[0.7 0.7 0.7])
+end
+
 
 if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     Valveword=bitset(statusData(lastrow,col.ValveLift),11); % switch vacuum on
