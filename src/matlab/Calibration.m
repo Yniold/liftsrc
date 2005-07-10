@@ -1,20 +1,20 @@
 
-function varargout = Detection(varargin)
-% DETECTION M-file for Detection.fig
-%      DETECTION, by itself, creates a new DETECTION or raises the existing
+function varargout = Calibration(varargin)
+% CALIBRATION M-file for Calibration.fig
+%      CALIBRATION, by itself, creates a new CALIBRATION or raises the existing
 %      singleton*.
 %
-%      H = DETECTION returns the handle to a new DETECTION or the handle to
+%      H = CALIBRATION returns the handle to a new CALIBRATION or the handle to
 %      the existing singleton*.
 %
-%      DETECTION('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in DETECTION.M with the given input arguments.
+%      CALIBRATION('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in CALIBRATION.M with the given input arguments.
 %
-%      DETECTION('Property','Value',...) creates a new DETECTION or raises the
+%      CALIBRATION('Property','Value',...) creates a new CALIBRATION or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before Detection_OpeningFunction gets called.  An
+%      applied to the GUI before Calibration_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to Detection_OpeningFcn via varargin.
+%      stop.  All inputs are passed to Calibration_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -23,14 +23,14 @@ function varargout = Detection(varargin)
 
 % Copyright 2002-2003 The MathWorks, Inc.
 
-% Edit the above text to modify the response to help Detection
+% Edit the above text to modify the response to help Calibration
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @Detection_OpeningFcn, ...
-                   'gui_OutputFcn',  @Detection_OutputFcn, ...
+                   'gui_OpeningFcn', @Calibration_OpeningFcn, ...
+                   'gui_OutputFcn',  @Calibration_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -45,15 +45,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before Detection is made visible.
-function Detection_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before Calibration is made visible.
+function Calibration_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to Detection (see VARARGIN)
+% varargin   command line arguments to Calibration (see VARARGIN)
 
-% Choose default command line output for Detection
+% Choose default command line output for Calibration
 handles.output = hObject;
 
 % get horus handle
@@ -577,7 +577,7 @@ data.lastrow=lastrow;
 setappdata(handles.output, 'Detdata', data);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = Detection_OutputFcn(hObject, eventdata, handles) 
+function varargout = Calibration_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
