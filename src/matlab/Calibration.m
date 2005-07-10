@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 10-Jul-2005 20:09:09
+% Last Modified by GUIDE v2.5 10-Jul-2005 20:32:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,7 +67,6 @@ handles.Timer = timer('ExecutionMode','fixedDelay',...
       'BusyMode','drop',...
       'TimerFcn', {@CalRefresh,handles});   
 
-data.Timer=handles.Timer;
 data.Counter=0;
 data.CounterOnl=0;
 data.CounterOffl=0;
@@ -179,7 +178,7 @@ function varargout = Calibration_OutputFcn(hObject, eventdata, handles)
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
@@ -189,38 +188,37 @@ function pshExit_Callback(hObject, eventdata, handles)
 % hObject    handle to pshExit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+data = getappdata(handles.output, 'Caldata');
+
 stop(handles.Timer);
 delete(handles.Timer);
 close(handles.figure1);
 
 
-% --- Executes on button press in pushStart.
-function pushStart_Callback(hObject, eventdata, handles)
-% hObject    handle to pushStart (see GCBO)
+% --- Executes on button press in tglStart.
+function tglStart_Callback(hObject, eventdata, handles)
+% hObject    handle to tglStart (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(handles.output, 'Caldata');
-data.Counter=0;
-data.CounterOnl=0;
-data.CounterOffl=0;
-data.sumDiodeWZ1in=0;
-data.sumDiodeWZ1out=0;
-data.sumDiodeWZ2in=0;
-data.sumDiodeWZ2out=0;
-data.sumctsMCP1onl=0;
-data.sumctsMCP1offl=0;
-data.sumctsMCP2onl=0;
-data.sumctsMCP2offl=0;
-setappdata(handles.output, 'Caldata', data);
+if get(hObject,'Value')
+    set(hObject,'String','Stop')
+    data.Counter=0;
+    data.CounterOnl=0;
+    data.CounterOffl=0;
+    data.sumDiodeWZ1in=0;
+    data.sumDiodeWZ1out=0;
+    data.sumDiodeWZ2in=0;
+    data.sumDiodeWZ2out=0;
+    data.sumctsMCP1onl=0;
+    data.sumctsMCP1offl=0;
+    data.sumctsMCP2onl=0;
+    data.sumctsMCP2offl=0;
+    setappdata(handles.output, 'Caldata', data);
 
-start(handles.Timer);
-
-
-
-% --- Executes on button press in pushStop.
-function pushStop_Callback(hObject, eventdata, handles)
-% hObject    handle to pushStop (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-stop(handles.timer);
+    start(handles.Timer);
+else
+    set(hObject,'String','Start')
+    stop(handles.Timer);
+end
 
