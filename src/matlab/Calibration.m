@@ -108,7 +108,6 @@ statustime=double(statusData(:,2))./1.0+ ...
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
-data.Counter=data.Counter+1;
 
 % display system time
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
@@ -129,6 +128,7 @@ for i=1:5
     data.sumDiodeWZ1out=data.sumDiodeWZ1out+DiodeWZ1out(i);
     data.sumDiodeWZ2in=data.sumDiodeWZ2in+DiodeWZ2in(i);
     data.sumDiodeWZ2out=data.sumDiodeWZ2out+DiodeWZ2out(i);
+    data.Counter=data.Counter+1;
     if OnOffFlag(i)==3
         data.sumctsMCP1onl=data.sumctsMCP1onl+ctsMCP1(i);
         data.sumctsMCP2onl=data.sumctsMCP2onl+ctsMCP2(i);
@@ -160,7 +160,7 @@ end
 
     
 % display averages
-set(handles.txtCounts,'String',[num2str(data.Counter)']);
+set(handles.txtCounts,'String',[num2str(data.Counter)]);
 set(handles.txtWZ1in,'String',[num2str(avgDiodeWZ1in,3),' mW']);
 set(handles.txtWZ1out,'String',[num2str(avgDiodeWZ1out,3),' mW']);
 set(handles.txtWZ2in,'String',[num2str(avgDiodeWZ2in,3),' mW']);
