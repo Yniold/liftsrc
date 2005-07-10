@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 07-Jul-2005 17:41:03
+% Last Modified by GUIDE v2.5 10-Jul-2005 19:24:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -354,6 +354,18 @@ if isfield(data,'hSensors')
     end
 end
 
+if isfield(data,'hCalibration')
+    hCalibration=str2double(data.hCalibration);
+    if ishandle(hCalibration), 
+        Sensdata = getappdata(hCalibration, 'Sensdata');
+        if isfield(Sensdata,'Timer')
+            stop(Sensdata.Timer);
+            delete(Sensdata.Timer);
+        end
+        close(hCalibration); 
+    end
+end
+
 delete(handles.ActTimer);
 close(gcbf);
 
@@ -478,5 +490,24 @@ end
 %col=data.col;
 %lastrow=data.lastrow;
 %set(hObject,'String',statusdata(lastrow,col.PDyelaser));
+
+
+
+
+% --- Executes on button press in Calibration.
+function Calibration_Callback(hObject, eventdata, handles)
+% hObject    handle to Calibration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+% open Sensors only if it is not already open
+if ~isfield(data,'hCalibration')
+    handleCalibration=Calibration('handle',num2str(gcbf,16));
+    data.hCalibration=num2str(handleCalibration,16);
+elseif ~ishandle(str2double(data.hCalibration)) 
+    handleCalibration=Calibration('handle',num2str(gcbf,16));
+    data.hCalibration=num2str(handleCalibration,16);
+end
+setappdata(gcbf, 'horusdata', data); 
 
 
