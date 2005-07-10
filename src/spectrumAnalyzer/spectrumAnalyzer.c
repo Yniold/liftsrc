@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-09 19:29:22 $ by $Author: rudolf $
+* $RCSfile: spectrumAnalyzer.c,v $ last changed on $Date: 2005-07-10 15:18:58 $ by $Author: rudolf $
 *
 * $Log: spectrumAnalyzer.c,v $
-* Revision 1.3  2005-07-09 19:29:22  rudolf
+* Revision 1.4  2005-07-10 15:18:58  rudolf
+* added basic support for plotting a spectrum via directFB
+*
+* Revision 1.3  2005/07/09 19:29:22  rudolf
 * fixed 480mbit mode, added basic evaluation of wavelength and counts
 *
 * Revision 1.2  2005/07/06 21:08:47  rudolf
@@ -28,21 +31,29 @@
 #include <netdb.h>
 #include <string.h>
 #include <usb.h>
+#include <directfb.h>
 #include "spectrumAnalyzer.h"
+
+// DFB globals
+
+static IDirectFB *dfb = NULL;
+static IDirectFBSurface *primary = NULL;
+static int screen_width  = 0;
+static int screen_height = 0;
 
 // globals
 int verbose = 0;
-int uiUSBSpeed = SPEED_HIGH; //SPEED_FULL;
-
-unsigned char ucBuffer[8192];		// datasets are 7616 bytes max.
 unsigned char ucCalibrationData[18][17];
 uint16_t uiSpectralData[3840];
+double dSpectralWavelengths[3840];
 double dCoeffs[4];
-
 unsigned char *pSpectralBuffer = NULL;
 int iByteCount = 0;
 int iNumberOfPackets = 0;
 
+// USB globals
+int uiUSBSpeed = SPEED_HIGH;		// default FULLSPEED, but will be read from device
+unsigned char ucBuffer[8192];		// datasets are 7616 bytes max.
 void *ptrVoid;
 int uiNumBusses = 0;
 int uiNumDevices =0;
@@ -64,7 +75,8 @@ int main(int argc, char *argv[])
 	
 	if (argc > 1 && !strcmp(argv[1], "-v"))
 		verbose = 1;
-	
+	DFBCHECK (DirectFBInit (&argc, &argv));
+
 	usb_init();
 	
 	// find busses
@@ -193,7 +205,7 @@ int main(int argc, char *argv[])
 		HR4000_ReadCalibrationData();
 //		HR4000_SetPowerdownMode();
 //		HR4000_Query_Status();
-//		HR4000_SetIntegrationTime(100000);
+		HR4000_SetIntegrationTime(100000);
 //		HR4000_Query_Status();
 		HR4000_AquireSpectrum();
 				
@@ -726,15 +738,64 @@ void HR4000_AquireSpectrum()
 	{
 		printf("Spectral size matches !\n\r");
 		int iLoop = 0;
+		int iRelevantPixels = 0;
+		int iStartOfSpectrum = 0;
+		
 		for(iLoop=0; iLoop < (sizeof(uiSpectralData)>>1);iLoop++)
 		{
-			printf("Wavelength for dataset point #%04d is %3.9f nm , readout is %05d\n\r", iLoop, 
-			(dCoeffs[0])+
-			((double)iLoop * dCoeffs[1]) +
-			((double)iLoop * (double)iLoop * dCoeffs[2])+
-			((double)iLoop * (double)iLoop * (double)iLoop * dCoeffs[3]),
-			uiSpectralData[iLoop]); 
+			dSpectralWavelengths[iLoop] = (dCoeffs[0])+
+													((double)iLoop * dCoeffs[1]) +
+													((double)iLoop * (double)iLoop * dCoeffs[2])+
+													((double)iLoop * (double)iLoop * (double)iLoop * dCoeffs[3]);
+
+			if((dSpectralWavelengths[iLoop] >= 610.00) && (dSpectralWavelengths[iLoop] < 620.00))
+			{
+				if(iStartOfSpectrum == 0)		// memorize the pixel which is the first > 610nm
+					iStartOfSpectrum = iLoop;
+			
+				iRelevantPixels++;
+				printf("Wavelength for dataset point #%04d is %3.9f nm , readout is %05d\n\r",
+					iLoop, 
+					dSpectralWavelengths[iLoop],
+					uiSpectralData[iLoop]); 
+			}
 		};
+		printf("%04d Pixels are in the range from 610 to 620nm\n\r",iRelevantPixels);
+		printf("Start of Spectrum is at: %04d\n\r",iStartOfSpectrum);
+
+		DFBSurfaceDescription dsc;
+		DFBCHECK (DirectFBCreate (&dfb));
+		DFBCHECK (dfb->SetCooperativeLevel (dfb, DFSCL_FULLSCREEN));
+		dsc.flags = DSDESC_CAPS;
+		dsc.caps  = DSCAPS_PRIMARY | DSCAPS_FLIPPING;
+		DFBCHECK (dfb->CreateSurface( dfb, &dsc, &primary ));
+		DFBCHECK (primary->GetSize (primary, &screen_width, &screen_height));
+		DFBCHECK (primary->FillRectangle (primary, 0, 0, screen_width, screen_height)); // en schworzen bildschirm
+		DFBCHECK (primary->SetColor (primary, 0x80, 0x80, 0xff, 0xff));
+		
+		double  dPixelPerCountY = screen_height / 65536;
+		double  dPixelPerDigitX = screen_width / iRelevantPixels;
+
+		int iStartOfLineX = 0;
+		int iStartOfLineY = 0;
+		int iEndOfLineX = 0;
+		int iEndOfLineY = 0;
+		
+		DFBCHECK (primary->DrawLine (primary, 0, screen_height-1, screen_width - 1, screen_height-1)); // plot X Axis
+		DFBCHECK (primary->DrawLine (primary, 0, 0 , 0 , screen_height-1)); // plot Y Axis
+
+		for(iLoop = 0; iLoop < (iRelevantPixels-1); iLoop++)
+		{
+			iStartOfLineX = iLoop * dPixelPerDigitX;
+			iStartOfLineY = (screen_height-1) - (uiSpectralData[iLoop+iStartOfSpectrum] / 64);
+			iEndOfLineX = (iLoop+1) * dPixelPerDigitX;
+			iEndOfLineY = (screen_height-1) - (uiSpectralData[iLoop+iStartOfSpectrum+1] / 64);
+			DFBCHECK (primary->DrawLine (primary, iStartOfLineX, iStartOfLineY , iEndOfLineX , iEndOfLineY)); //plot data
+		}
+		DFBCHECK (primary->Flip (primary, NULL, 0));
+		sleep (5);
+		primary->Release( primary );
+		dfb->Release( dfb );
 	}
 	else
 	{

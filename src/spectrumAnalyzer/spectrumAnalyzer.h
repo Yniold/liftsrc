@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrumAnalyzer.h,v $ last changed on $Date: 2005-07-09 19:29:22 $ by $Author: rudolf $
+* $RCSfile: spectrumAnalyzer.h,v $ last changed on $Date: 2005-07-10 15:18:58 $ by $Author: rudolf $
 *
 * $Log: spectrumAnalyzer.h,v $
-* Revision 1.3  2005-07-09 19:29:22  rudolf
+* Revision 1.4  2005-07-10 15:18:58  rudolf
+* added basic support for plotting a spectrum via directFB
+*
+* Revision 1.3  2005/07/09 19:29:22  rudolf
 * fixed 480mbit mode, added basic evaluation of wavelength and counts
 *
 * Revision 1.2  2005/07/06 21:08:47  rudolf
@@ -56,12 +59,14 @@
 #define SPEED_FULL 				(0x00)
 #define SPEED_HIGH				(0x01)
 
+// USB stuff
 void print_endpoint(struct usb_endpoint_descriptor *endpoint);
 void print_altsetting(struct usb_interface_descriptor *interface);
 void print_interface(struct usb_interface *interface);
 void print_configuration(struct usb_config_descriptor *config);
 int print_device(struct usb_device *dev, int level);
 
+// HR4000 stuff
 void HR4000_Init(void);
 void HR4000_Query_Status(void);
 void HR4000_SetIntegrationTime(unsigned int uiMicroSeconds);
@@ -70,4 +75,19 @@ void HR4000_ReadPCBTemp(void);
 void HR4000_ReadCalibrationData(void);
 void HR4000_SetPowerdownMode(void);
 void HR4000_AquireSpectrum(void);
+
+// Direct FB stuff
+
+#define DFBCHECK(x...)                                         \
+  {                                                            \
+    DFBResult err = x;                                         \
+                                                               \
+    if (err != DFB_OK)                                         \
+      {                                                        \
+        fprintf( stderr, "%s <%d>:\n\t", __FILE__, __LINE__ ); \
+        DirectFBErrorFatal( #x, err );                         \
+      }                                                        \
+  }
+
+void PlotData();
 #endif

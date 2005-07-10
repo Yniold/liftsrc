@@ -21,7 +21,10 @@ export CC
 
 LDFLAGS+=-ggdb
 LDFLAGS+=-lusb
+LDFLAGS+=-ldirectfb
+LDFLAGS+=-lpthread
 LDFLAGS+=-I/usr/local/include 
+LDFLAGS+=-I/usr/include/directfb
 LDFLAGS+=-L.
 LDFLAGS+=-lnsl
 LDFLAGS+=-lm
