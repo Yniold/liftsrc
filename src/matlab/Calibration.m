@@ -67,6 +67,7 @@ handles.Timer = timer('ExecutionMode','fixedDelay',...
       'BusyMode','drop',...
       'TimerFcn', {@CalRefresh,handles});   
 
+data.Timer=handles.Timer;  
 data.Counter=0;
 data.CounterOnl=0;
 data.CounterOffl=0;

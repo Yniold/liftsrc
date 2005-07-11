@@ -192,38 +192,45 @@ end
 
 % check which child GUIs are active and color push buttons accordingly
 if isfield(data,'hCounterCards')
-    if ishandle(str2double(data.hCounterCards)) 
+    if ishandle(data.hCounterCards) 
         set(handles.CounterCards,'BackgroundColor','g');
     else
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
 if isfield(data,'hDyelaser')
-    if ishandle(str2double(data.hDyelaser)) 
+    if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
         set(handles.Dyelaser,'BackgroundColor','c');
     end
 end
 if isfield(data,'hLaser')
-    if ishandle(str2double(data.hLaser)) 
+    if ishandle(data.hLaser)
         set(handles.Laser,'BackgroundColor','g');
     else
         set(handles.Laser,'BackgroundColor','c');
     end
 end
 if isfield(data,'hDetection')
-    if ishandle(str2double(data.hDetection)) 
+    if ishandle(data.hDetection) 
         set(handles.Detection,'BackgroundColor','g');
     else
         set(handles.Detection,'BackgroundColor','c');
     end
 end
 if isfield(data,'hSensors')
-    if ishandle(str2double(data.hSensors)) 
+    if ishandle(data.hSensors)
         set(handles.Sensors,'BackgroundColor','g');
     else
         set(handles.Sensors,'BackgroundColor','c');
+    end
+end
+if isfield(data,'hCalibration')
+    if ishandle(data.hCalibration)
+        set(handles.Calibration,'BackgroundColor','g');
+    else
+        set(handles.Calibration,'BackgroundColor','c');
     end
 end
 
@@ -365,9 +372,9 @@ if isfield(data,'hCalibration')
     hCalibration=str2double(data.hCalibration);
     if ishandle(hCalibration), 
         Sensdata = getappdata(hCalibration, 'Sensdata');
-        if isfield(Sensdata,'Timer')
-            stop(Sensdata.Timer);
-            delete(Sensdata.Timer);
+        if isfield(Caldata,'Timer')
+            stop(Caldata.Timer);
+            delete(Caldata.Timer);
         end
         close(hCalibration); 
     end
