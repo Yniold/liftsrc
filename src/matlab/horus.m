@@ -253,7 +253,7 @@ if isfield(data,'hDyelaser')
         set(handles.Dyelaser,'BackgroundColor','g');
     else
         if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39 |statusData(lastrow,col.IFilament)<10100
-            set(handles.Dyelaser,'BackgroundColor','r';
+            set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
         end
@@ -271,9 +271,9 @@ if isfield(data,'hDetection')
         set(handles.Detection,'BackgroundColor','g');
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow>6 ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6 ...
                 | statusData(lastrow,col.VHV)<12400
-            set(handles.Detection,'BackgroundColor','r';
+            set(handles.Detection,'BackgroundColor','r');
         else
             set(handles.Detection,'BackgroundColor','c');
         end
