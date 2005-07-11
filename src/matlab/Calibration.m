@@ -214,6 +214,10 @@ statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,4))./1440.0+...
            double(statusData(:,5))./86400.0;
 
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+
 if get(hObject,'Value')
     set(hObject,'String','Stop')
     data.Counter=0;
@@ -237,6 +241,5 @@ else
     stop(handles.Timer);
     % display system time
     set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13)));
-
 end
 
