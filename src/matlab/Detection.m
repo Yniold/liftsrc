@@ -113,7 +113,7 @@ set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str
 
 % calculate parameters from ADC counts
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
-x=double(statusData(:,col.Temp3WP)); eval(['TDet=',fcts2val.Temp3WP,';']);
+x=double(statusData(:,col.TempAxisPlate)); eval(['TDet=',fcts2val.TempAxisPlate,';']);
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
