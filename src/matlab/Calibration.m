@@ -111,7 +111,7 @@ maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
 % display system time
-set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
+set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13)));
 
 % calculate parameters from ADC counts
 x=double(statusData(lastrow-4:lastrow,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
