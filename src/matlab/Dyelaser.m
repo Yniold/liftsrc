@@ -149,6 +149,13 @@ else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
+if statusData(lastrow,col.IFilament)<10100
+    set(handles.txtIFilament,'BackgroundColor','r');
+else
+    set(handles.txtIFilament,'BackgroundColor',[0.7,0.7,0.7]);
+end
+
+
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
 EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
 EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;

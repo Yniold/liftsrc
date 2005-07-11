@@ -163,8 +163,6 @@ if PDyelaser(lastrow)>=Pset+5 | PDyelaser(lastrow)<=Pset-5
 else
     set(handles.txtPset,'BackgroundColor',[0.7 0.7 0.7])
 end
-
-
 if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     Valveword=bitset(statusData(lastrow,col.ValveLift),11); % switch vacuum on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -231,8 +229,18 @@ elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
     end
 end
 
+% calculate ADC values needed for warnings
+x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
+x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
+x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
+x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);
+x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
+x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
+x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
+
 
 % check which child GUIs are active and color push buttons accordingly
+% red color if warning applies to one of the values controlled in the GUI
 if isfield(data,'hCounterCards')
     if ishandle(data.hCounterCards) 
         set(handles.CounterCards,'BackgroundColor','g');
@@ -244,7 +252,11 @@ if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        set(handles.Dyelaser,'BackgroundColor','c');
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39 |statusData(lastrow,col.IFilament)<10100
+            set(handles.Dyelaser,'BackgroundColor','r';
+        else
+            set(handles.Dyelaser,'BackgroundColor','c');
+        end
     end
 end
 if isfield(data,'hLaser')
@@ -258,7 +270,13 @@ if isfield(data,'hDetection')
     if ishandle(data.hDetection) 
         set(handles.Detection,'BackgroundColor','g');
     else
-        set(handles.Detection,'BackgroundColor','c');
+        if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow>6 ...
+                | statusData(lastrow,col.VHV)<12400
+            set(handles.Detection,'BackgroundColor','r';
+        else
+            set(handles.Detection,'BackgroundColor','c');
+        end
     end
 end
 if isfield(data,'hSensors')
