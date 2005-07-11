@@ -166,27 +166,66 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     Valveword=bitset(statusData(lastrow,col.ValveLift),11); % switch vacuum on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleVacuum,'BackgroundColor','g','String','Valve Vacuum ON');
+        end
+    end
     pause(1);
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
+        end
+    end
     pause(1);
     Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
     Valveword=bitset(Valveword,11,0); % switch vaccuum off 
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
+            set(Dyelaserdata.toggleVacuum,'BackgroundColor','c','String','Valve Vacuum OFF');
+        end
+    end
 elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
     Valveword=bitset(statusData(lastrow,col.ValveLift),9); % switch air on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleN2,'BackgroundColor','g','String','Valve N2 ON');
+        end
+    end
     pause(1);
     Valveword=bitset(Valveword,9,0); % switch air off 
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
+            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
+        end
+    end
     pause(1);
     Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
     Valveword=bitset(Valveword,9,0); % switch air off 
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    if isfield(data,'hDyelaser')
+        if ishandle(data.hDyelaser), 
+            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
+            set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
+        end
+    end
 end
 
 
@@ -310,7 +349,7 @@ system('/lift/bin/eCmd @Lift w 0xa510 0');
 % close child GUIs
 
 if isfield(data,'hDyelaser')
-    hDyelaser=str2double(data.hDyelaser);
+    hDyelaser=data.hDyelaser;
     if ishandle(hDyelaser), 
         Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
         if isfield(Dyelaserdata,'ActTimer')
@@ -322,7 +361,7 @@ if isfield(data,'hDyelaser')
 end
 
 if isfield(data,'hCounterCards')
-    hCounterCards=str2double(data.hCounterCards);
+    hCounterCards=data.hCounterCards;
     if ishandle(hCounterCards)
         Gatedata = getappdata(hCounterCards, 'Gatedata');
         if isfield(Gatedata,'Timer')
@@ -334,7 +373,7 @@ if isfield(data,'hCounterCards')
 end
 
 if isfield(data,'hLaser')
-    hLaser=str2double(data.hLaser);
+    hLaser=data.hLaser;
     if ishandle(hLaser), 
         Laserdata = getappdata(hLaser, 'tcpdata');
         fclose(Laserdata.tport);
@@ -345,7 +384,7 @@ if isfield(data,'hLaser')
 end
 
 if isfield(data,'hDetection')
-    hDetection=str2double(data.hDetection);
+    hDetection=data.hDetection;
     if ishandle(hDetection), 
         Detdata = getappdata(hDetection, 'Detdata');
         if isfield(Detdata,'Timer')
@@ -357,7 +396,7 @@ if isfield(data,'hDetection')
 end
 
 if isfield(data,'hSensors')
-    hSensors=str2double(data.hSensors);
+    hSensors=data.hSensors;
     if ishandle(hSensors), 
         Sensdata = getappdata(hSensors, 'Sensdata');
         if isfield(Sensdata,'Timer')
@@ -369,7 +408,7 @@ if isfield(data,'hSensors')
 end
 
 if isfield(data,'hCalibration')
-    hCalibration=str2double(data.hCalibration);
+    hCalibration=data.hCalibration;
     if ishandle(hCalibration), 
         Sensdata = getappdata(hCalibration, 'Sensdata');
         if isfield(Caldata,'Timer')
