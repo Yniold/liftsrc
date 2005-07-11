@@ -267,6 +267,29 @@ else
     set(handles.toggleShutter,'BackgroundColor','c');
 end
 
+% check solenoids
+if bitget(statusData(lastrow,col.ValveLift),11)==0
+    set(handles.toggleVacuum,'BackgroundColor','c');
+else 
+    set(handles.toggleVacuum,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.ValveLift),8)==0
+    set(handles.toggleDyelaser,'BackgroundColor','c');
+else 
+    set(handles.toggleDyelaser,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.ValveLift),9)==0
+    set(handles.toggleN2,'BackgroundColor','c');
+else 
+    set(handles.toggleN2,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.ValveLift),10)==0
+    set(handles.toggleAmbient,'BackgroundColor','c');
+else 
+    set(handles.toggleAmbient,'BackgroundColor','g');
+end
+
+
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
 data.CurPos=EtalonCurPos;

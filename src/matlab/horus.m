@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 10-Jul-2005 19:24:12
+% Last Modified by GUIDE v2.5 11-Jul-2005 16:04:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -125,6 +125,9 @@ statustime=double(statusData(:,2))./1.0+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
+% display system time
+set(handles.txtTime,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
+
 % show if armAxis is working and switch on LED on armAxis
 if statusData(lastrow,col.ValidSlaveDataFlag) % if armAxis is active
     set(handles.txtarmAxis,'BackgroundColor','g','String','armAxis is ON');
@@ -168,7 +171,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleVacuum,'BackgroundColor','g','String','Valve Vacuum ON');
         end
     end
@@ -177,7 +180,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
         end
     end
@@ -188,7 +191,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
             set(Dyelaserdata.toggleVacuum,'BackgroundColor','c','String','Valve Vacuum OFF');
         end
@@ -199,7 +202,7 @@ elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleN2,'BackgroundColor','g','String','Valve N2 ON');
         end
     end
@@ -209,7 +212,7 @@ elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
             set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
         end
@@ -221,7 +224,7 @@ elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
     if isfield(data,'hDyelaser')
         if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(hDyelaser, 'Dyelaserdata');
+            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
             set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
             set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
         end
