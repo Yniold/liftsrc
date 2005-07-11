@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 06-Jun-2005 12:01:19
+% Last Modified by GUIDE v2.5 04-Jul-2005 12:23:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -98,8 +98,7 @@ AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
 
-statustime=double(statusData(:,1))+ ...
-           double(statusData(:,2))./1.0+ ...
+statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
            double(statusData(:,5))./86400.0;
@@ -120,19 +119,31 @@ maxTime=statustime(iZeit(size(iZeit,1)));
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
 x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
 x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
-x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.DiodeUV,';']);
+x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
+x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
+x=double(statusData(:,col.Temp1L)); eval(['TDyelaser=',fcts2val.Temp1L,';']);
 
-set(handles.txtDiodeGr,'String',DiodeGr);
-set(handles.txtDiodeUV,'String',DiodeUV);
+
+set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
+set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtDiodeEt,'String',statusData(lastrow,col.DiodeEtalon));
-set(handles.txtPDyelaser,'String',statusData(lastrow,col.PDyelaser));
-set(handles.txtPVent,'String',statusData(lastrow,col.PVent));
+set(handles.txtPDyelaser,'String',[num2str(PDyelaser(lastrow),4),' mbar']);
+set(handles.txtPVent,'String',[num2str(PVent(lastrow),4),' mbar']);
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
-set(handles.txtPRef,'String',statusData(lastrow,col.PRef));
+set(handles.txtPRef,'String',[num2str(PRef(lastrow),4),' mbar']);
+set(handles.txtTDyelaser,'String',[num2str(TDyelaser(lastrow),3),' C']);
+
+% warn with red background if values are off limits
 if statusData(lastrow,col.PRef)>10500
     set(handles.txtPRef,'BackgroundColor','r');
 else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
+end
+
+if TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39
+    set(handles.txtTDyelaser,'BackgroundColor','r');
+else
+    set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
@@ -143,9 +154,9 @@ Etalonhelp=int32(statusData(:,col.etaCurPosLow));
 EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
 EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
 
-Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+%Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+%EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
+%EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
 Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
 OnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
@@ -156,7 +167,6 @@ EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
-set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
@@ -172,7 +182,7 @@ end
 hold(handles.axes1,'off'); 
 
 if get(handles.checkDiodeGr,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.DiodeGr),'r');
+    plot(handles.axes1,statustime(iZeit),DiodeGr,'r');
     hold(handles.axes1,'on');
 end 
 
@@ -187,12 +197,12 @@ if get(handles.checkDiodeEt,'Value')
 end 
 
 if get(handles.checkPDyelaser,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PDyelaser),'r');
+    plot(handles.axes1,statustime(iZeit),PDyelaser,'r');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PVent),'r');
+    plot(handles.axes1,statustime(iZeit),PVent,'r');
     hold(handles.axes1,'on');
 end 
 
@@ -206,8 +216,8 @@ if get(handles.chkEtSetPos,'Value')
     hold(handles.axes1,'on');
 end 
 
-if get(handles.chkEtEncPos,'Value')
-    plot(handles.axes1,statustime(iZeit),EtalonEncPos(iZeit));
+if get(handles.chkTDyelaser,'Value')
+    plot(handles.axes1,statustime(iZeit),TDyelaser(iZeit));
     hold(handles.axes1,'on');
 end 
 
@@ -495,8 +505,8 @@ if isnan(scanstep)
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
-    scanstep=scanstep/16*16;
-    if scanstep<=0, scanstep=16; end;
+    scanstep=scanstep/4*4;
+    if scanstep<=0, scanstep=4; end;
     set(hObject,'string',num2str(scanstep));
 end
 
@@ -538,7 +548,12 @@ i=find(data.CurPos==curonlinepos,1,'last');
 [calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if calcOnlSign>statusData(i,col.ccCounts0) | isempty(i)
+if isempty(i)
+    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
+elseif calcOnlSign>statusData(i,col.ccCounts0)
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
     system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
@@ -571,10 +586,10 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=uint16(str2double(get(handles.txtonline,'String')));
 system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
-system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
-system(['/lift/bin/eCmd @Lift s etalonofflineright 1000']);
-system('/lift/bin/eCmd @Lift s etalondither 8');
+%system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
+%system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
+%system(['/lift/bin/eCmd @Lift s etalonofflineright 1000']);
+%system('/lift/bin/eCmd @Lift s etalondither 8');
 system('/lift/bin/eCmd @Lift s etalontoggle');
 
 
@@ -655,13 +670,13 @@ function chkEtCurPos_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkEtCurPos
 
 
-% --- Executes on button press in chkEtEncPos.
-function chkEtEncPos_Callback(hObject, eventdata, handles)
-% hObject    handle to chkEtEncPos (see GCBO)
+% --- Executes on button press in chkTDyelaser.
+function chkTDyelaser_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTDyelaser (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
+% Hint: get(hObject,'Value') returns toggle state of chkTDyelaser
 
 
 % --- Executes on button press in chkEtSetPos.

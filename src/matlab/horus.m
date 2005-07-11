@@ -389,11 +389,9 @@ function Dyelaser_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open Dyelaser only if it is not already open
 if ~isfield(data,'hDyelaser')
-    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
-    data.hDyelaser=num2str(handleDyelaser,16);
+    data.hDyelaser=Dyelaser('handle',num2str(gcbf,16));
 elseif ~ishandle(str2double(data.hDyelaser)) 
-    handleDyelaser=Dyelaser('handle',num2str(gcbf,16));
-    data.hDyelaser=num2str(handleDyelaser,16);
+    data.hDyelaser=Dyelaser('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data); 
 
@@ -411,11 +409,9 @@ function Laser_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open Laser only if it is not already open
 if ~isfield(data,'hLaser')
-    handleLaser=Laser('handle',num2str(gcbf,16));
-    data.hLaser=num2str(handleLaser,16);
+    data.hLaser=Laser('handle',num2str(gcbf,16));
 elseif ~ishandle(str2double(data.hLaser)) 
-    handleLaser=Laser('handle',num2str(gcbf,16));
-    data.hLaser=num2str(handleLaser,16);
+    data.hLaser=Laser('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data); 
 
@@ -434,11 +430,9 @@ function Detection_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open Detection only if it is not already open
 if ~isfield(data,'hDetection')
-    handleDetection=Detection('handle',num2str(gcbf,16));
-    data.hDetection=num2str(handleDetection,16);
+    data.hDetection=Detection('handle',num2str(gcbf,16));
 elseif ~ishandle(str2double(data.hDetection)) 
-    handleDetection=Detection('handle',num2str(gcbf,16));
-    data.hDetection=num2str(handleDetection,16);
+    data.hDetection=Detection('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data);
 
@@ -456,11 +450,9 @@ function Sensors_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open Sensors only if it is not already open
 if ~isfield(data,'hSensors')
-    handleSensors=Sensors('handle',num2str(gcbf,16));
-    data.hSensors=num2str(handleSensors,16);
+    data.hSensors=Sensors('handle',num2str(gcbf,16));
 elseif ~ishandle(str2double(data.hSensors)) 
-    handleSensors=Sensors('handle',num2str(gcbf,16));
-    data.hSensors=num2str(handleSensors,16);
+    data.hSensors=Sensors('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data); 
 
@@ -509,11 +501,9 @@ function Calibration_Callback(hObject, eventdata, handles)
 data = getappdata(gcbf, 'horusdata');
 % open Sensors only if it is not already open
 if ~isfield(data,'hCalibration')
-    handleCalibration=Calibration('handle',num2str(gcbf,16));
-    data.hCalibration=num2str(handleCalibration,16);
+    data.hCalibration=Calibration('handle',num2str(gcbf,16));
 elseif ~ishandle(str2double(data.hCalibration)) 
-    handleCalibration=Calibration('handle',num2str(gcbf,16));
-    data.hCalibration=num2str(handleCalibration,16);
+    data.hCalibration=Calibration('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data); 
 

@@ -81,6 +81,9 @@ catch
     rmfield(handles,'serport');
 end;
 
+data.toggleDyelaser=handles.toggleDyelaser;
+data.toggleVacuum=handles.toggleVacuum;
+data.toggleN2=handles.toggleN2;
 % Update handles structure
 guidata(hObject, handles);
 
