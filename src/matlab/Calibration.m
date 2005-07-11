@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 10-Jul-2005 20:54:39
+% Last Modified by GUIDE v2.5 11-Jul-2005 19:35:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -205,6 +205,15 @@ function tglStart_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data = getappdata(handles.output, 'Caldata');
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+
+% Calculate time as sum of day, hour, min, etc.
+statustime=double(statusData(:,2))./1.0+ ...
+           double(statusData(:,3))./24.0+...
+           double(statusData(:,4))./1440.0+...
+           double(statusData(:,5))./86400.0;
+
 if get(hObject,'Value')
     set(hObject,'String','Stop')
     data.Counter=0;
@@ -221,8 +230,13 @@ if get(hObject,'Value')
     setappdata(handles.output, 'Caldata', data);
 
     start(handles.Timer);
+    % display system time
+    set(handles.txtStartTime,'String',strcat(datestr(statustime(lastrow),13)));
 else
     set(hObject,'String','Start')
     stop(handles.Timer);
+    % display system time
+    set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13)));
+
 end
 
