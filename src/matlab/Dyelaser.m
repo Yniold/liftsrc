@@ -505,8 +505,8 @@ if isnan(scanstep)
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
-    scanstep=scanstep/16*16;
-    if scanstep<=0, scanstep=16; end;
+    scanstep=scanstep/4*4;
+    if scanstep<=0, scanstep=4; end;
     set(hObject,'string',num2str(scanstep));
 end
 
