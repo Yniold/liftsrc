@@ -230,7 +230,6 @@ grid(handles.axes1);
 PMTBase=col.ccData0;
 MCP1Base=col.ccData1;
 MCP2Base=col.ccData2;
-AVGBase=1;
 PMTMaskBase=col.ccMask0;
 MCP1MaskBase=col.ccMask1;
 MCP2MaskBase=col.ccMask2;
@@ -278,52 +277,42 @@ set(handles.txtMCP1Pulses,'String',statusData(lastrow,col.ccPulses1));
 set(handles.txtMCP2Pulses,'String',statusData(lastrow,col.ccPulses2));
 
 % calculate running averages for online and both offlines
-OnlineFilter=AvgData(:,AVGBase)>0;
-OfflineLeftFilter=AvgData(:,AVGBase+1)>0;
-OfflineRightFilter=AvgData(:,AVGBase+2)>0;
-
-PMTOnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase);  
-PMTOnlineAvg(~OnlineFilter)=NaN;
-PMTOfflineLeftAvg(OfflineLeftFilter)=AvgData(OfflineLeftFilter,AVGBase+1);
-PMTOfflineLeftAvg(~OfflineLeftFilter)=NaN;
-PMTOfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+2);
-PMTOfflineRightAvg(~OfflineRightFilter)=NaN;
+PMTOnlineAvg=AvgData(:,1);  
+PMTOfflineLeftAvg=AvgData(:,2);
+PMTOfflineRightAvg=AvgData(:,3);
 
 PMTOfflineAvg(1:size(statusData,1))=NaN;
-PMTOfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=PMTOfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
-PMTOfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=PMTOfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
+PMTOfflineAvg=PMTOfflineAvg';
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)==1)=PMTOfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=PMTOfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
 
 PMTAvg(statusData(:,col.RAvgOnOffFlag)==3)=PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
 PMTAvg(statusData(:,col.RAvgOnOffFlag)==2)=PMTOfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
 PMTAvg(statusData(:,col.RAvgOnOffFlag)==1)=PMTOfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
 PMTAvg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
-MCP1OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+3);
-MCP1OnlineAvg(~OnlineFilter)=NaN;
-MCP1OfflineLeftAvg(OfflineLeftFilter)=AvgData(OfflineLeftFilter,AVGBase+4);
-MCP1OfflineLeftAvg(~OfflineLeftFilter)=NaN;
-MCP1OfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+5);
-MCP1OfflineRightAvg(~OfflineRightFilter)=NaN;
+MCP1OnlineAvg=AvgData(:,4);
+MCP1OfflineLeftAvg=AvgData(:,5);
+MCP1OfflineRightAvg=AvgData(:,6);
 
 MCP1OfflineAvg(1:size(statusData,1))=NaN;
-MCP1OfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=MCP1OfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
-MCP1OfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=MCP1OfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
+MCP1OfflineAvg=MCP1OfflineAvg';
+MCP1OfflineAvg(statusData(:,col.RAvgOnOffFlag)==1)=MCP1OfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+MCP1OfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=MCP1OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
 
 MCP1Avg(statusData(:,col.RAvgOnOffFlag)==3)=MCP1OnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
 MCP1Avg(statusData(:,col.RAvgOnOffFlag)==2)=MCP1OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
 MCP1Avg(statusData(:,col.RAvgOnOffFlag)==1)=MCP1OfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
 MCP1Avg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
-MCP2OnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase+6);
-MCP2OnlineAvg(~OnlineFilter)=NaN;
-MCP2OfflineLeftAvg(OfflineLeftFilter)=AvgData(OfflineLeftFilter,AVGBase+7);
-MCP2OfflineLeftAvg(~OfflineLeftFilter)=NaN;
-MCP2OfflineRightAvg(OfflineRightFilter)=AvgData(OfflineRightFilter,AVGBase+8);
-MCP2OfflineRightAvg(~OfflineRightFilter)=NaN;
+MCP2OnlineAvg=AvgData(:,7);
+MCP2OfflineLeftAvg=AvgData(:,8);
+MCP2OfflineRightAvg=AvgData(:,9);
 
 MCP2OfflineAvg(1:size(statusData,1))=NaN;
-MCP2OfflineAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1)=MCP2OfflineRightAvg(OfflineRightFilter & statusData(:,col.RAvgOnOffFlag)==1);
-MCP2OfflineAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2)=MCP2OfflineLeftAvg(OfflineLeftFilter & statusData(:,col.RAvgOnOffFlag)==2);
+MCP2OfflineAvg=MCP2OfflineAvg';
+MCP2OfflineAvg(statusData(:,col.RAvgOnOffFlag)==1)=MCP2OfflineRightAvg(statusData(:,col.RAvgOnOffFlag)==1);
+MCP2OfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=MCP2OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
 
 MCP2Avg(statusData(:,col.RAvgOnOffFlag)==3)=MCP2OnlineAvg(statusData(:,col.RAvgOnOffFlag)==3);
 MCP2Avg(statusData(:,col.RAvgOnOffFlag)==2)=MCP2OfflineLeftAvg(statusData(:,col.RAvgOnOffFlag)==2);
@@ -338,6 +327,13 @@ set(handles.txtMCP2Offline,'String',MCP2OfflineAvg(lastrow));
 set(handles.txtPMTOnline,'String',PMTOnlineAvg(lastrow));
 set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
 set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
+
+% warn if PMTOnline is too low for valid online Signal
+if PMTOnlineAvg(lastrow)<500
+    set(handles.txtPMTOnline,'BackgroundColor','r');
+else
+    set(handles.txtPMTOnline,'BackgroundColor',[0.7 0.7 0.7]);
+end
 
 %calculate OH and HO2 mixing ratios
 if statusData(lastrow,col.ValidSlaveDataFlag)
@@ -363,7 +359,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     quen = (1/GAMMA).*((exp(-gate1*GAMMA)-exp(-gate2*GAMMA)));
     quencal = (1/GAMMAcal).*((exp(-gate1*GAMMAcal)-exp(-gate2*GAMMAcal)));
 
-    Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20/1013; %Converting to density
+    Dens=6.023E23/22400*273./(TDet(lastrow)+273)*P20(lastrow)/1013; %Converting to density
 
     COH=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
     COH=COH.*(DiodeWZ1in(lastrow)+DiodeWZ1out(lastrow))/2;

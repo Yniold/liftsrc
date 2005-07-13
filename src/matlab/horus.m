@@ -106,7 +106,7 @@ function ReadStatus(arg1,arg2,handles)
 data = getappdata(handles.output, 'horusdata');
 try     % start ReadAvgdata only if status.bin exists
     %[statusData,AvgData]=ReadDataAvg('filename',5*(time period to average in s),(min. online ref signal));
-    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,400);
+    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
 catch
     disp(['error trying to read data from status.bin: ',lasterr])
 end
@@ -238,7 +238,7 @@ x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
-PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
+PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
 
 % check which child GUIs are active and color push buttons accordingly
