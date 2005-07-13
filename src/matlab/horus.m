@@ -238,6 +238,8 @@ x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
+PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
+PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
 
 % check which child GUIs are active and color push buttons accordingly
 % red color if warning applies to one of the values controlled in the GUI
@@ -272,7 +274,7 @@ if isfield(data,'hDetection')
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6 ...
-                | statusData(lastrow,col.VHV)<12400
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<500
             set(handles.Detection,'BackgroundColor','r');
         else
             set(handles.Detection,'BackgroundColor','c');

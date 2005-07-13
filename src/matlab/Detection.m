@@ -1086,8 +1086,8 @@ function editxlim1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editxlimit1 as text
 %        str2double(get(hObject,'String')) returns contents of editxlimit1 as a double
-xlim1=uint8(str2double(get(hObject,'String')));
-if (xlim1>200) set(hObject,'String','200');
+xlim1=uint16(str2double(get(hObject,'String')));
+if (xlim1>600) set(hObject,'String','600');
 else set(hObject,'String',num2str(xlim1));
 end
 
@@ -1100,8 +1100,8 @@ function editxlim2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editxlim2 as text
 %        str2double(get(hObject,'String')) returns contents of editxlim2 as a double
-xlim2=uint8(str2double(get(hObject,'String')));
-if xlim2>200 set(hObject,'String','200');
+xlim2=uint16(str2double(get(hObject,'String')));
+if xlim2>600 set(hObject,'String','600');
 else set(hObject,'String',num2str(xlim2));
 end
 
