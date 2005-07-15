@@ -103,7 +103,7 @@ try fopen(tcpdata.tport);
         set(handles.txtsetIRPower,'String','4.45 W'); % IR intern
     end
     if HEADSN(1:8)=='2363/710'
-        set(handles.txtsetCrtemp,'String','151'); % ADC Counts
+        set(handles.txtsetCrtemp,'String','135'); % ADC Counts
         set(handles.txtsetTowerTemp,'String','31 C');
     elseif HEADSN(1:8)=='2366/712'
         set(handles.txtsetCrtemp,'String','130'); % ADC Counts
@@ -396,7 +396,7 @@ RepRate=tport.UserData;
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
 % check crystal temp.
-fprintf(tport,'?SHG'); 
+fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
@@ -535,7 +535,7 @@ RepRate=tport.UserData;
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
 % check crystal temperature
-fprintf(tport,'?SHG'); 
+fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
@@ -626,7 +626,7 @@ else
 end
 
 % check crystal temp.
-fprintf(tport,'?SHG'); 
+fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
