@@ -338,6 +338,96 @@ switch char(xpar)
         else
             x=double(statusData(:,col.MFCSetFlow)); eval(['xdata=',fcts2val.MFCSetFlow,';']);
         end
+    case 'ccMasterDelayLift'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccMasterDelayLift);
+        else
+            x=double(statusData(:,col.ccMasterDelayLift)); eval(['xdata=',fcts2val.ccMasterDelayLift,';']);
+        end
+    case 'ccMasterDelayarmAxis'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccMasterDelayarmAxis);
+        else
+            x=double(statusData(:,col.ccMasterDelayarmAxis)); eval(['xdata=',fcts2val.ccMasterDelayarmAxis,';']);
+        end
+    case 'ccShiftDelay0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay0);
+        else
+            x=double(statusData(:,col.ccShiftDelay0)); eval(['xdata=',fcts2val.ccShiftDelay0,';']);
+        end
+    case 'ccCounts0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts0);
+        else
+            x=double(statusData(:,col.ccCounts0)); eval(['xdata=',fcts2val.ccCounts0,';']);
+        end
+    case 'ccPulses0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses0);
+        else
+            x=double(statusData(:,col.ccPulses0)); eval(['xdata=',fcts2val.ccPulses0,';']);
+        end
+    case 'ccShiftDelay1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay1);
+        else
+            x=double(statusData(:,col.ccShiftDelay1)); eval(['xdata=',fcts2val.ccShiftDelay1,';']);
+        end
+    case 'ccGateDelay1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateDelay1);
+        else
+            x=double(statusData(:,col.ccGateDelay1)); eval(['xdata=',fcts2val.ccGateDelay1,';']);
+        end
+    case 'ccGateWidth1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateWidth1);
+        else
+            x=double(statusData(:,col.ccGateWidth1)); eval(['xdata=',fcts2val.ccGateWidth1,';']);
+        end
+    case 'ccCounts1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts1);
+        else
+            x=double(statusData(:,col.ccCounts1)); eval(['xdata=',fcts2val.ccCounts1,';']);
+        end
+    case 'ccPulses1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses1);
+        else
+            x=double(statusData(:,col.ccPulses1)); eval(['xdata=',fcts2val.ccPulses1,';']);
+        end
+    case 'ccShiftDelay2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay2);
+        else
+            x=double(statusData(:,col.ccShiftDelay2)); eval(['xdata=',fcts2val.ccShiftDelay2,';']);
+        end
+    case 'ccGateDelay2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateDelay2);
+        else
+            x=double(statusData(:,col.ccGateDelay2)); eval(['xdata=',fcts2val.ccGateDelay2,';']);
+        end
+    case 'ccGateWidth2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateWidth2);
+        else
+            x=double(statusData(:,col.ccGateWidth2)); eval(['xdata=',fcts2val.ccGateWidth2,';']);
+        end
+    case 'ccCounts2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts2);
+        else
+            x=double(statusData(:,col.ccCounts2)); eval(['xdata=',fcts2val.ccCounts2,';']);
+        end
+    case 'ccPulses2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses2);
+        else
+            x=double(statusData(:,col.ccPulses2)); eval(['xdata=',fcts2val.ccPulses2,';']);
+        end
     case 'GPSsecondsUTC'
         xdata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -1155,6 +1245,96 @@ switch char(ypar)
         else
             x=double(statusData(:,col.MFCSetFlow)); eval(['ydata=',fcts2val.MFCSetFlow,';']);
         end
+    case 'ccMasterDelayLift'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccMasterDelayLift);
+        else
+            x=double(statusData(:,col.ccMasterDelayLift)); eval(['ydata=',fcts2val.ccMasterDelayLift,';']);
+        end
+    case 'ccMasterDelayarmAxis'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccMasterDelayarmAxis);
+        else
+            x=double(statusData(:,col.ccMasterDelayarmAxis)); eval(['ydata=',fcts2val.ccMasterDelayarmAxis,';']);
+        end
+    case 'ccShiftDelay0'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay0);
+        else
+            x=double(statusData(:,col.ccShiftDelay0)); eval(['ydata=',fcts2val.ccShiftDelay0,';']);
+        end
+    case 'ccCounts0'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccCounts0);
+        else
+            x=double(statusData(:,col.ccCounts0)); eval(['ydata=',fcts2val.ccCounts0,';']);
+        end
+    case 'ccPulses0'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccPulses0);
+        else
+            x=double(statusData(:,col.ccPulses0)); eval(['ydata=',fcts2val.ccPulses0,';']);
+        end
+    case 'ccShiftDelay1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay1);
+        else
+            x=double(statusData(:,col.ccShiftDelay1)); eval(['ydata=',fcts2val.ccShiftDelay1,';']);
+        end
+    case 'ccGateDelay1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccGateDelay1);
+        else
+            x=double(statusData(:,col.ccGateDelay1)); eval(['ydata=',fcts2val.ccGateDelay1,';']);
+        end
+    case 'ccGateWidth1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccGateWidth1);
+        else
+            x=double(statusData(:,col.ccGateWidth1)); eval(['ydata=',fcts2val.ccGateWidth1,';']);
+        end
+    case 'ccCounts1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccCounts1);
+        else
+            x=double(statusData(:,col.ccCounts1)); eval(['ydata=',fcts2val.ccCounts1,';']);
+        end
+    case 'ccPulses1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccPulses1);
+        else
+            x=double(statusData(:,col.ccPulses1)); eval(['ydata=',fcts2val.ccPulses1,';']);
+        end
+    case 'ccShiftDelay2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay2);
+        else
+            x=double(statusData(:,col.ccShiftDelay2)); eval(['ydata=',fcts2val.ccShiftDelay2,';']);
+        end
+    case 'ccGateDelay2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccGateDelay2);
+        else
+            x=double(statusData(:,col.ccGateDelay2)); eval(['ydata=',fcts2val.ccGateDelay2,';']);
+        end
+    case 'ccGateWidth2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccGateWidth2);
+        else
+            x=double(statusData(:,col.ccGateWidth2)); eval(['ydata=',fcts2val.ccGateWidth2,';']);
+        end
+    case 'ccCounts2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccCounts2);
+        else
+            x=double(statusData(:,col.ccCounts2)); eval(['ydata=',fcts2val.ccCounts2,';']);
+        end
+    case 'ccPulses2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.ccPulses2);
+        else
+            x=double(statusData(:,col.ccPulses2)); eval(['ydata=',fcts2val.ccPulses2,';']);
+        end
     case 'GPSsecondsUTC'
         ydata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -1797,6 +1977,10 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';...
+    'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
+    'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
+    'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
+    'ccGateWidth2';'ccCounts2';'ccPulses2';
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
     'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
     'Temp0L';'TempDyelaser';'Temp2L';'TempDiodeEt';'Temp4L';'TempDiodeUV';'Temp6L';'Temp7L';'Temp8L';...
@@ -1839,6 +2023,10 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';...
+    'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
+    'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
+    'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
+    'ccGateWidth2';'ccCounts2';'ccPulses2';
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
     'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
     'Temp0L';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';'TempDiodeUV';'Temp6L';'Temp7L';'Temp8L';...
