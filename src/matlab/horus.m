@@ -194,7 +194,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
             set(Dyelaserdata.toggleVacuum,'BackgroundColor','c','String','Valve Vacuum OFF');
         end
     end
-elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
+elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
     Valveword=bitset(statusData(lastrow,col.ValveLift),9); % switch air on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
@@ -273,7 +273,7 @@ if isfield(data,'hDetection')
         set(handles.Detection,'BackgroundColor','g');
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6 ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
                 | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<500
             set(handles.Detection,'BackgroundColor','r');
         else

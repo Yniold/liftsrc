@@ -249,7 +249,7 @@ if get(handles.radioTime,'Value');
     xlim(handles.axes2,[minTime maxTime]);
 else
     hold(handles.axes2,'off');
-    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0)); 
+    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0),'.'); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minEtpos maxEtpos]);
 end

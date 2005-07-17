@@ -1246,91 +1246,91 @@ switch char(ypar)
             x=double(statusData(:,col.MFCSetFlow)); eval(['ydata=',fcts2val.MFCSetFlow,';']);
         end
     case 'ccMasterDelayLift'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccMasterDelayLift);
         else
             x=double(statusData(:,col.ccMasterDelayLift)); eval(['ydata=',fcts2val.ccMasterDelayLift,';']);
         end
     case 'ccMasterDelayarmAxis'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccMasterDelayarmAxis);
         else
             x=double(statusData(:,col.ccMasterDelayarmAxis)); eval(['ydata=',fcts2val.ccMasterDelayarmAxis,';']);
         end
     case 'ccShiftDelay0'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccShiftDelay0);
         else
             x=double(statusData(:,col.ccShiftDelay0)); eval(['ydata=',fcts2val.ccShiftDelay0,';']);
         end
     case 'ccCounts0'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccCounts0);
         else
             x=double(statusData(:,col.ccCounts0)); eval(['ydata=',fcts2val.ccCounts0,';']);
         end
     case 'ccPulses0'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccPulses0);
         else
             x=double(statusData(:,col.ccPulses0)); eval(['ydata=',fcts2val.ccPulses0,';']);
         end
     case 'ccShiftDelay1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccShiftDelay1);
         else
             x=double(statusData(:,col.ccShiftDelay1)); eval(['ydata=',fcts2val.ccShiftDelay1,';']);
         end
     case 'ccGateDelay1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccGateDelay1);
         else
             x=double(statusData(:,col.ccGateDelay1)); eval(['ydata=',fcts2val.ccGateDelay1,';']);
         end
     case 'ccGateWidth1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccGateWidth1);
         else
             x=double(statusData(:,col.ccGateWidth1)); eval(['ydata=',fcts2val.ccGateWidth1,';']);
         end
     case 'ccCounts1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccCounts1);
         else
             x=double(statusData(:,col.ccCounts1)); eval(['ydata=',fcts2val.ccCounts1,';']);
         end
     case 'ccPulses1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccPulses1);
         else
             x=double(statusData(:,col.ccPulses1)); eval(['ydata=',fcts2val.ccPulses1,';']);
         end
     case 'ccShiftDelay2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccShiftDelay2);
         else
             x=double(statusData(:,col.ccShiftDelay2)); eval(['ydata=',fcts2val.ccShiftDelay2,';']);
         end
     case 'ccGateDelay2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccGateDelay2);
         else
             x=double(statusData(:,col.ccGateDelay2)); eval(['ydata=',fcts2val.ccGateDelay2,';']);
         end
     case 'ccGateWidth2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccGateWidth2);
         else
             x=double(statusData(:,col.ccGateWidth2)); eval(['ydata=',fcts2val.ccGateWidth2,';']);
         end
     case 'ccCounts2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccCounts2);
         else
             x=double(statusData(:,col.ccCounts2)); eval(['ydata=',fcts2val.ccCounts2,';']);
         end
     case 'ccPulses2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ccPulses2);
         else
             x=double(statusData(:,col.ccPulses2)); eval(['ydata=',fcts2val.ccPulses2,';']);

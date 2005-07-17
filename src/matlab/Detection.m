@@ -162,7 +162,7 @@ if DiodeWZ2out(lastrow)<0.6*DiodeWZ2in
 else 
     set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if MFCFlow(lastrow)<5.5 | MFCFlow>6
+if MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5
     set(handles.txtMFC,'BackgroundColor','r');
 else 
     set(handles.txtMFC,'BackgroundColor',[0.7 0.7 0.7]);
