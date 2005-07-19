@@ -274,7 +274,7 @@ if isfield(data,'hDetection')
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<500
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450
             set(handles.Detection,'BackgroundColor','r');
         else
             set(handles.Detection,'BackgroundColor','c');

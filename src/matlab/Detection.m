@@ -329,7 +329,7 @@ set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
 set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
 
 % warn if PMTOnline is too low for valid online Signal
-if PMTOnlineAvg(lastrow)<500
+if PMTOnlineAvg(lastrow)<450
     set(handles.txtPMTOnline,'BackgroundColor','r');
 else
     set(handles.txtPMTOnline,'BackgroundColor',[0.7 0.7 0.7]);

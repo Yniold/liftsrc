@@ -289,7 +289,7 @@ switch char(xpar)
         EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         xdata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
         EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
         EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         xdata=EtalonCurPos;
@@ -1196,7 +1196,7 @@ switch char(ypar)
         EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
         EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
         EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         ydata=EtalonCurPos;
