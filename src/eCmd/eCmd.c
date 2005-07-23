@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.21 $
-last change on $Date: 2005-06-25 19:00:42 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.22 $
+last change on $Date: 2005-07-23 09:00:37 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.21  2005-06-25 19:00:42  martinez
+Revision 1.22  2005-07-23 09:00:37  rudolf
+added etalonditheronline command
+
+Revision 1.21  2005/06/25 19:00:42  martinez
 "included all possible parameters in error message"
 
 Revision 1.20  2005/06/08 23:29:40  rudolf
@@ -233,6 +236,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s instrumentaction data\n");
 	printf("eCmd @host s etalonnop\n");
 	printf("eCmd @host s etalontoggle\n");	
+	printf("eCmd @host s etalonditherOnline\n");		
 	printf("eCmd @host s stopquery\n");	
 	printf("eCmd @host s etalonscan\n");
 	printf("eCmd @host s etalonhome\n");	
@@ -382,6 +386,12 @@ int main(int argc, char *argv[])
 	      Value=ETALON_ACTION_TOGGLE;
 	    };
 
+	    if (strcasecmp(argv[ArgCount],"etalonditheronline")==0) {
+	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+	      Value=ETALON_ACTION_DITHER_ONLINE;
+	    };
+
 	    if (strcasecmp(argv[ArgCount],"etalonscan")==0) {
 	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
 	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
@@ -457,6 +467,7 @@ int main(int argc, char *argv[])
 		printf("Error please supply parameter for %s\n",argv[ArgCount]);
 	      }
 	    };	    	    
+
 	    if (strcasecmp(argv[ArgCount],"etalonofflineleft")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
 		Value=strtol(argv[ArgCount+1],NULL,0);

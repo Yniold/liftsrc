@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-06-28 15:34:12 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-07-23 09:00:29 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.13  2005-06-28 15:34:12  harder
+* Revision 1.14  2005-07-23 09:00:29  rudolf
+* added etalonditheronline command
+*
+* Revision 1.13  2005/06/28 15:34:12  harder
 * added sep. adr. const. for MFC @ WP
 *
 * Revision 1.12  2005/06/28 13:55:31  rudolf
@@ -181,12 +184,13 @@ struct CounterCardType {
 /*************************************************************************************************************/
 
 enum EtalonActionType { /* update also in etalon.c */
-    ETALON_ACTION_TOGGLE_ONLINE_LEFT,          /* etalon is on the left OFFLINE Position */
-    ETALON_ACTION_TOGGLE_ONLINE_RIGHT,         /* etalon is on the right OFFLINE Position */
+    ETALON_ACTION_TOGGLE_ONLINE_LEFT,          /* etalon is on the left ONLINE Position */
+    ETALON_ACTION_TOGGLE_ONLINE_RIGHT,         /* etalon is on the right ONLINE Position */
     ETALON_ACTION_TOGGLE,                      /* etalon is toggling between on and offline */
     ETALON_ACTION_TOGGLE_OFFLINE_LEFT,         /* etalon is on the left OFFLINE Position */
     ETALON_ACTION_TOGGLE_OFFLINE_RIGHT,        /* etalon is on the right OFFLINE Position */
     ETALON_ACTION_NOP,                         /* etalon is doing no atuomated operation */
+    ETALON_ACTION_DITHER_ONLINE,               /* stay online and dither */
     ETALON_ACTION_SCAN,                        /* etalon is scanning */
     ETALON_ACTION_HOME,                        /* etalon is on a home run */
     ETALON_ACTION_RECAL,                       /* etalon goes to home and comes back to same position */

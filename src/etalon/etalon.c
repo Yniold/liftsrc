@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-07-05 08:26:02 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-07-23 09:00:15 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.5  2005-07-05 08:26:02  rudolf
+* Revision 1.6  2005-07-23 09:00:15  rudolf
+* added etalonditheronline command
+*
+* Revision 1.5  2005/07/05 08:26:02  rudolf
 * change online pos only by half of the dither step size
 *
 * Revision 1.4  2005/06/24 18:48:27  martinez
@@ -99,6 +102,7 @@ static char *strEtalonAction[ETALON_ACTION_MAX+1]={   /* description of Etalon A
   "Toggle offline left",
   "Toggle offline right",
   "No Operation",
+  "Dither Online",
   "Scan",
   "Home",
   "Recalibration",
@@ -505,11 +509,13 @@ int main(int argc, char *argv[])
 		  break; /* ETALON_ACTION_NOP */
 		  
 		case ETALON_ACTION_TOGGLE:
-		case ETALON_ACTION_TOGGLE_ONLINE_LEFT:         /* etalon is on the left OFFLINE Position */
-		case ETALON_ACTION_TOGGLE_ONLINE_RIGHT:         /* etalon is on the right OFFLINE Position */
+		case ETALON_ACTION_TOGGLE_ONLINE_LEFT:         /* etalon is on the left ONLINE Position */
+		case ETALON_ACTION_TOGGLE_ONLINE_RIGHT:         /* etalon is on the right ONLINE Position */
 		case ETALON_ACTION_TOGGLE_OFFLINE_LEFT:        /* etalon is on the left OFFLINE Position */
 		case ETALON_ACTION_TOGGLE_OFFLINE_RIGHT:       /* etalon is on the right OFFLINE Position */
+		case ETALON_ACTION_DITHER_ONLINE:              /* etalon is in dither only mode */
 
+		  printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
 		  switch (State) {
 		  case ETALON_DITHER_LEFT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position;
@@ -521,15 +527,19 @@ int main(int argc, char *argv[])
 		    if (DitherLeftTime--<1) { 
 		      DitherRightTime=DITHER_RIGHT_TIME; 
 		      State=ETALON_DITHER_RIGHT;
-		      SetAction(ETALON_ACTION_TOGGLE_ONLINE_RIGHT);
+		      // we set the dithermode in the action flag only in toggle mode, stupid but easy for now
+		      if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE) 
+			SetAction(ETALON_ACTION_TOGGLE_ONLINE_RIGHT);		      		      
 		      //ResetAverageStruct(&OnlineRightCounts); 
 		    } /* if DitherleftTime */
-		    if (OnlineTime--<1) {
+		    // see wehter we were long enough online and we are not staying online
+		    if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE && 
+			OnlineTime--<1) {
 		      OfflineCounter++;
 		      // printf("Counts Left (%ld) : %d %lf %lf\n",SetPosition,OnlineLeftCounts.NumDat,OnlineLeftCounts.SumData,OnlineLeftCounts.Avg);
 		      if (OfflineCounter%2) { 
 			OfflineLeftTime=OFFLINE_LEFT_TIME; 
-			State=ETALON_OFFLINE_LEFT; 
+			State=ETALON_OFFLINE_LEFT; 			
 			SetAction(ETALON_ACTION_TOGGLE_OFFLINE_LEFT);
 		      } else { 
 			OfflineLeftTime=OFFLINE_LEFT_TIME; 
@@ -553,9 +563,12 @@ int main(int argc, char *argv[])
 		      DitherLeftTime=DITHER_LEFT_TIME;
 		      //ResetAverageStruct(&OnlineLeftCounts);
 		      State=ETALON_DITHER_LEFT;
-		      SetAction(ETALON_ACTION_TOGGLE_ONLINE_LEFT);
+		      // we set the dithermode in the action flag only in toggle mode, stupid but easy for now
+		      if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE) 
+			SetAction(ETALON_ACTION_TOGGLE_ONLINE_LEFT);
 		    } /* if DitherRightTime */
-		    if (OnlineTime--<1) {
+		    if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE &&
+			OnlineTime--<1) {
 		      OfflineCounter++;
 		      //printf("Counts Right (%ld) : %d %lf %lf\n",SetPosition,OnlineRightCounts.NumDat,
 		      //     OnlineRightCounts.SumData,OnlineRightCounts.Avg);		    
@@ -604,6 +617,7 @@ int main(int argc, char *argv[])
 		    break; /* ETALON_OFFLINE_RIGHT */
 		    
 		  default :
+		    printf("encountered Default mode\n");
 		    State=ETALON_OFFLINE_LEFT;
 		    SetAction(ETALON_ACTION_TOGGLE_OFFLINE_LEFT);
 		    OfflineLeftTime=OFFLINE_LEFT_TIME;
