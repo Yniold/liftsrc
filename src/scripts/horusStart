@@ -8,7 +8,6 @@ xterm +wf -geometry 456x26+316+150 -title 'elekStatus' -e nice elekStatus &
 xterm +wf -geometry 40x10+574+0 -title 'etalon' -e etalon 20000 1000 32  &
 xterm +wf -geometry 40x10+316+0 -title 'elekIOServ' -e nice -n-20 elekIOServ m &
 sleep 3
-GateSet  
 echo set etalon online to 20000
 eCmd @lift s etalononline 20000
 echo set etalon offline step to 1000
@@ -16,3 +15,5 @@ eCmd @Lift s etalonofflineleft 1000
 eCmd @Lift s etalonofflineright 1000
 echo set ditherstep to 32
 eCmd @lift s etalondither 32
+GateSet
+echo done
