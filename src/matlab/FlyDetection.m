@@ -122,7 +122,11 @@ x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.PNO)); eval(['PNO=',fcts2val.PNO,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
-%x=double(statusData(:,col.TPrall)); eval(['TPrall=',fcts2val.TPrall,';']);
+if ~isnan(col.TempPrallpl)
+    x=double(statusData(:,col.TempPrallpl)); eval(['TempPrallpl=',fcts2val.TempPrallpl,';']);
+else
+    TempPrallpl=statustime; TempPrallpl(:)=NaN;
+end
 %x=double(statusData(:,col.TLamp)); eval(['TLamp=',fcts2val.TLamp,';']);
 %x=double(statusData(:,col.TPhoto2)); eval(['TPhoto2=',fcts2val.TPhoto2,';']);
 
@@ -136,7 +140,7 @@ set(handles.txtP20,'String',[num2str(P20(lastrow),3),' mbar']);
 set(handles.txtPNO,'String',[num2str(PNO(lastrow),4),' mbar']);
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
-%set(handles.txtTPrall,'String',[num2str(TPrall(lastrow),3),' C']);
+set(handles.txtTPrall,'String',[num2str(TempPrallpl(lastrow),3),' C']);
 %set(handles.txtTLamp,'String',[num2str(TLamp(lastrow),3),' C']);
 %set(handles.txtTPhoto2,'String',[num2str(TPhoto2(lastrow),3),' C']);
 set(handles.txtPabs,'String',statusData(lastrow,col.PitotAbs));

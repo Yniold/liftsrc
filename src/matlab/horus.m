@@ -231,7 +231,11 @@ elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
 end
 
 % calculate ADC values needed for warnings
-x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
+if ~isnan(col.TempDyelaser)
+    x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
+else
+    TDyelaser=statustime; TDyelaser(:)=NaN;
+end
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
 x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2out,';']);

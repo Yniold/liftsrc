@@ -124,8 +124,11 @@ x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
 x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
 x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
-x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
-
+if ~isnan(col.TempDyelaser)
+    x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
+else
+    TDyelaser=statustime; TDyelaser(:)=NaN;
+end
 
 set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
