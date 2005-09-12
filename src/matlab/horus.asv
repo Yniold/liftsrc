@@ -106,7 +106,7 @@ function ReadStatus(arg1,arg2,handles)
 data = getappdata(handles.output, 'horusdata');
 try     % start ReadAvgdata only if status.bin exists
     %[statusData,AvgData]=ReadDataAvg('filename',5*(time period to average in s),(min. online ref signal));
-    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,400);
+    [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
 catch
     disp(['error trying to read data from status.bin: ',lasterr])
 end
@@ -194,7 +194,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
             set(Dyelaserdata.toggleVacuum,'BackgroundColor','c','String','Valve Vacuum OFF');
         end
     end
-elseif PDyelaser(lastrow)<=Pset-1; % PDyelaser too low
+elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
     Valveword=bitset(statusData(lastrow,col.ValveLift),9); % switch air on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
@@ -238,8 +238,8 @@ x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
-OnlineFilter=AvgData(:,1)>0;
-PMTOnlineAvg(OnlineFilter)=AvgData(OnlineFilter,AVGBase);  
+PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
+PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
 
 % check which child GUIs are active and color push buttons accordingly
 % red color if warning applies to one of the values controlled in the GUI
@@ -273,13 +273,20 @@ if isfield(data,'hDetection')
         set(handles.Detection,'BackgroundColor','g');
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<500
-    set(handles.txtPMTOnline,'BackgroundColor','r');
-else
-    set(handles.txtPMTOnline,'BackgroundColor',[0.7 0.7 0.7]);
-end    
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450 ...
+                | statusData(lastrow,col.Lamp1)>10010;
+    set(handles.txtLamp1,'BackgroundColor','r');
+else 
+    set(handles.txtLamp1,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if statusData(lastrow,col.Lamp2)>10010;
+    set(handles.txtLamp2,'BackgroundColor','r');
+else 
+    set(handles.txtLamp2,'BackgroundColor',[0.7 0.7 0.7]);
+end
 
+                
             set(handles.Detection,'BackgroundColor','r');
         else
             set(handles.Detection,'BackgroundColor','c');
@@ -421,6 +428,18 @@ if isfield(data,'hDetection')
     end
 end
 
+if isfield(data,'hFlyDetection')
+    hDetection=data.hFlyDetection;
+    if ishandle(hFlyDetection), 
+        FlyDetdata = getappdata(hFlyDetection, 'Detdata');
+        if isfield(FlyDetdata,'Timer')
+            stop(FlyDetdata.Timer);
+            delete(FlyDetdata.Timer);
+        end
+        close(hFlyDetection); 
+    end
+end
+
 if isfield(data,'hSensors')
     hSensors=data.hSensors;
     if ishandle(hSensors), 
@@ -509,6 +528,19 @@ end
 setappdata(gcbf, 'horusdata', data);
 
 
+% --- Executes on button press in FlyDetection.
+function FlyDetection_Callback(hObject, eventdata, handles)
+% hObject    handle to FlyDetection (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+% open Detection only if it is not already open
+if ~isfield(data,'hFlyDetection')
+    data.hFlyDetection=FlyDetection('handle',num2str(gcbf,16));
+elseif ~ishandle(str2double(data.hFlyDetection)) 
+    data.hFlyDetection=FlyDetection('handle',num2str(gcbf,16));
+end
+setappdata(gcbf, 'horusdata', data);
 
 
 

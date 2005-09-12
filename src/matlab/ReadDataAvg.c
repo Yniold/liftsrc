@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.20  2005-07-08 10:13:23  rudolf
+ * Revision 1.21  2005-09-12 10:06:20  martinez
+ * *** empty log message ***
+ *
+ * Revision 1.20  2005/07/08 10:13:23  rudolf
  * replaced localtime by gmtime
  *
  * Revision 1.19  2005/07/04 10:04:11  rudolf
@@ -37,7 +40,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.20 $ */
+ /* $Revision: 1.21 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -210,7 +213,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + 12;   /* etalon data type */
   dims[1]= dims[1] + (MAX_ADC_CARD_LIFT+MAX_ADC_CARD_WP)*(1+MAX_ADC_CHANNEL_PER_CARD*3+MAX_ADC_CHANNEL_PER_CARD*1);
   dims[1]= dims[1] + MAX_24BIT_ADC_CARDS_WP*(1+2*MAX_24BIT_ADC_CHANNEL_PER_CARD);
-  dims[1]= dims[1] + 2;  /* mfc data Master*/
+  dims[1]= dims[1] + 2*4;  /* mfc data Slave*/
   dims[1]= dims[1] + 2*2;  /* valve data Master and Slave*/  
   dims[1]= dims[1] + MAX_DCDC4_CHANNEL_PER_CARD;  /* dcdc data */
   dims[1]= dims[1] + (4 + MAX_TEMP_SENSOR*3)*2;  /* temp data Master and Slave*/
@@ -642,19 +645,23 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
 /******************* MFC Card ***************************/  
   /* we are only interested in the one Card for Slave, nothing connected to the card on Master */
+  /* Channel 0 read out here, other channels at the end of the Slave Data */	
   Card=0;
+  for (j=0; j<1; j++){
   #ifdef D_HEADER
-	mexPrintf("MFCSetFlow  %d %d\n",count,1+count/nelements);      
+	mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
   #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[0].SetFlow;       
-  }
-
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].SetFlow;     
+    }
+   		  
+  
   #ifdef D_HEADER
-    mexPrintf("MFCFlow  %d %d\n",count,1+count/nelements); 
+    mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
   #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[0].Flow;    
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].Flow;    
+    }
   }
 
 /******************* Valve Cards Master***************************/     
@@ -662,14 +669,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* we are only interested in Data of Card 0 */
   Card=0;
   #ifdef D_HEADER
-	mexPrintf("ValveVolt Master %d %d\n",count,1+count/nelements);      
+	mexPrintf("ValveVolt Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ValveCardMaster[Card].ValveVolt;       
   }
 
   #ifdef D_HEADER
-    mexPrintf("Valve Master  %d %d\n",count,1+count/nelements);      
+    mexPrintf("Valve Master  %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ValveCardMaster[Card].Valve;       
@@ -1408,7 +1415,26 @@ void mexFunction( int nlhs, mxArray *plhs[],
     *(z+count++)=elekStatus[i].uiValidSlaveDataFlag;
   }
 
-
+/******************* MFC Card ***************************/  
+  /* we are only interested in the one Card for Slave, nothing connected to the card on Master */
+  /* channel 0 has already been read, now reading additional 3 channels */
+  Card=0;
+  for (j=1; j<MAX_MFC_CHANNEL_PER_CARD; j++){
+  #ifdef D_HEADER
+	mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
+  #endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].SetFlow;     
+    }
+   		  
+  
+  #ifdef D_HEADER
+    mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
+  #endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].Flow;    
+    }
+  }
   
   return;
 }

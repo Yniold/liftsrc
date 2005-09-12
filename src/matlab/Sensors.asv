@@ -289,7 +289,7 @@ switch char(xpar)
         EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         xdata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
         EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
         EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         xdata=EtalonCurPos;
@@ -338,6 +338,120 @@ switch char(xpar)
         else
             x=double(statusData(:,col.MFCSetFlow)); eval(['xdata=',fcts2val.MFCSetFlow,';']);
         end
+    case 'PitotAbs'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PitotAbs);
+        else
+            x=double(statusData(:,col.PitotAbs)); eval(['xdata=',fcts2val.PitotAbs,';']);
+        end
+    case 'PitotDiff'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PitotDiff);
+        else
+            x=double(statusData(:,col.PitotDiff)); eval(['xdata=',fcts2val.PitotDiff,';']);
+        end
+    case 'PhototubeLamp1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PhototubeLamp1);
+        else
+            x=double(statusData(:,col.PhototubeLamp1)); eval(['xdata=',fcts2val.PhototubeLamp1,';']);
+        end
+    case 'PhototubeLamp2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PhototubeLamp2);
+        else
+            x=double(statusData(:,col.PhototubeLamp2)); eval(['xdata=',fcts2val.PhototubeLamp2,';']);
+        end
+    case 'ccMasterDelayLift'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccMasterDelayLift);
+        else
+            x=double(statusData(:,col.ccMasterDelayLift)); eval(['xdata=',fcts2val.ccMasterDelayLift,';']);
+        end
+    case 'ccMasterDelayarmAxis'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccMasterDelayarmAxis);
+        else
+            x=double(statusData(:,col.ccMasterDelayarmAxis)); eval(['xdata=',fcts2val.ccMasterDelayarmAxis,';']);
+        end
+    case 'ccShiftDelay0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay0);
+        else
+            x=double(statusData(:,col.ccShiftDelay0)); eval(['xdata=',fcts2val.ccShiftDelay0,';']);
+        end
+    case 'ccCounts0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts0);
+        else
+            x=double(statusData(:,col.ccCounts0)); eval(['xdata=',fcts2val.ccCounts0,';']);
+        end
+    case 'ccPulses0'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses0);
+        else
+            x=double(statusData(:,col.ccPulses0)); eval(['xdata=',fcts2val.ccPulses0,';']);
+        end
+    case 'ccShiftDelay1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay1);
+        else
+            x=double(statusData(:,col.ccShiftDelay1)); eval(['xdata=',fcts2val.ccShiftDelay1,';']);
+        end
+    case 'ccGateDelay1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateDelay1);
+        else
+            x=double(statusData(:,col.ccGateDelay1)); eval(['xdata=',fcts2val.ccGateDelay1,';']);
+        end
+    case 'ccGateWidth1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateWidth1);
+        else
+            x=double(statusData(:,col.ccGateWidth1)); eval(['xdata=',fcts2val.ccGateWidth1,';']);
+        end
+    case 'ccCounts1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts1);
+        else
+            x=double(statusData(:,col.ccCounts1)); eval(['xdata=',fcts2val.ccCounts1,';']);
+        end
+    case 'ccPulses1'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses1);
+        else
+            x=double(statusData(:,col.ccPulses1)); eval(['xdata=',fcts2val.ccPulses1,';']);
+        end
+    case 'ccShiftDelay2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccShiftDelay2);
+        else
+            x=double(statusData(:,col.ccShiftDelay2)); eval(['xdata=',fcts2val.ccShiftDelay2,';']);
+        end
+    case 'ccGateDelay2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateDelay2);
+        else
+            x=double(statusData(:,col.ccGateDelay2)); eval(['xdata=',fcts2val.ccGateDelay2,';']);
+        end
+    case 'ccGateWidth2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccGateWidth2);
+        else
+            x=double(statusData(:,col.ccGateWidth2)); eval(['xdata=',fcts2val.ccGateWidth2,';']);
+        end
+    case 'ccCounts2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccCounts2);
+        else
+            x=double(statusData(:,col.ccCounts2)); eval(['xdata=',fcts2val.ccCounts2,';']);
+        end
+    case 'ccPulses2'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.ccPulses2);
+        else
+            x=double(statusData(:,col.ccPulses2)); eval(['xdata=',fcts2val.ccPulses2,';']);
+        end
     case 'GPSsecondsUTC'
         xdata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -368,557 +482,703 @@ switch char(xpar)
         else
             x=double(statusData(:,col.TDet)); eval(['xdata=',fcts2val.TDet,';']);
         end
-    case 'Temp0L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp0L);
+    case 'TempMissedLift'
+        xdata=statusData(:,col.TempMissedLift);
+    case 'TempNumberLift'
+        xdata=statusData(:,col.TempNumberLift);
+    case 'TempErrCRCLift'
+        xdata=statusData(:,col.TempErrCRCLift);
+    case 'TempNoResponseLift'
+        xdata=statusData(:,col.TempNoResponseLift);
+    case 'TempLaserPlate'
+        if ~isnan(col.TempLaserPlate)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempLaserPlate);
+            else
+                x=double(statusData(:,col.TempLaserPlate)); eval(['xdata=',fcts2val.TempLaserPlate,';']);
+            end
         else
-            x=double(statusData(:,col.Temp0L)); eval(['xdata=',fcts2val.Temp0L,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDyelaser'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDyelaser);
+        if ~isnan(col.TempDyelaser)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDyelaser);
+            else
+                x=double(statusData(:,col.TempDyelaser)); eval(['xdata=',fcts2val.TempDyelaser,';']);
+            end
         else
-            x=double(statusData(:,col.Temp1L)); eval(['xdata=',fcts2val.TempDyelaser,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempRefCell'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempRefCell);
+        if ~isnan(col.TempRefCell)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempRefCell);
+            else
+                x=double(statusData(:,col.TempRefCell)); eval(['xdata=',fcts2val.TempRefCell,';']);
+            end
         else
-            x=double(statusData(:,col.TempRefCell)); eval(['xdata=',fcts2val.TempRefCell,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeEt'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeEt);
+        if ~isnan(col.TempDiodeEt)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeEt);
+            else
+                x=double(statusData(:,col.TempDiodeEt)); eval(['xdata=',fcts2val.TempDiodeEt,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeEt)); eval(['xdata=',fcts2val.TempDiodeEt,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'Temp4L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp4L);
+        if ~isnan(col.Temp4L)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.Temp4L);
+            else
+                x=double(statusData(:,col.Temp4L)); eval(['xdata=',fcts2val.Temp4L,';']);
+            end
         else
-            x=double(statusData(:,col.Temp4L)); eval(['xdata=',fcts2val.Temp4L,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeUV'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeUV);
+        if ~isnan(col.TempDiodeUV)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeUV);
+            else
+                x=double(statusData(:,col.TempDiodeUV)); eval(['xdata=',fcts2val.TempDiodeUV,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeUV)); eval(['xdata=',fcts2val.TempDiodeUV,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp6L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp6L);
+    case 'TempSensCardLift'
+        if ~isnan(col.TempSensCardLift)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempSensCardLift);
+            else
+                x=double(statusData(:,col.TempSensCardLift)); eval(['xdata=',fcts2val.TempSensCardLift,';']);
+            end
         else
-            x=double(statusData(:,col.Temp6L)); eval(['xdata=',fcts2val.Temp6L,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp7L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp7L);
+    case 'TempCPULift'
+        if ~isnan(col.TempCPULift)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempCPULift);
+            else
+                x=double(statusData(:,col.TempCPULift)); eval(['xdata=',fcts2val.TempCPULift,';']);
+            end
         else
-            x=double(statusData(:,col.Temp7L)); eval(['xdata=',fcts2val.Temp7L,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp8L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp8L);
+    case 'TempDiodeGr'
+        if ~isnan(col.TempDiodeGr)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeGr);
+            else
+                x=double(statusData(:,col.TempDiodeGr)); eval(['xdata=',fcts2val.TempDiodeGr,';']);
+            end
         else
-            x=double(statusData(:,col.Temp8L)); eval(['xdata=',fcts2val.Temp8L,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp9L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp9L);
-        else
-            x=double(statusData(:,col.Temp9L)); eval(['xdata=',fcts2val.Temp9L,';']);
-        end
-    case 'Temp10L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp10L);
-        else
-            x=double(statusData(:,col.Temp10L)); eval(['xdata=',fcts2val.Temp10L,';']);
-        end
-    case 'Temp11L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp11L);
-        else
-            x=double(statusData(:,col.Temp11L)); eval(['xdata=',fcts2val.Temp11L,';']);
-        end
-    case 'Temp12L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp12L);
-        else
-            x=double(statusData(:,col.Temp12L)); eval(['xdata=',fcts2val.Temp12L,';']);
-        end
-    case 'Temp13L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp13L);
-        else
-            x=double(statusData(:,col.Temp13L)); eval(['xdata=',fcts2val.Temp13L,';']);
-        end
-    case 'Temp14L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp14L);
-        else
-            x=double(statusData(:,col.Temp14L)); eval(['xdata=',fcts2val.Temp14L,';']);
-        end
-    case 'Temp15L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp15L);
-        else
-            x=double(statusData(:,col.Temp15L)); eval(['xdata=',fcts2val.Temp15L,';']);
-        end
-    case 'Temp16L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp16L);
-        else
-            x=double(statusData(:,col.Temp16L)); eval(['xdata=',fcts2val.Temp16L,';']);
-        end
-    case 'Temp17L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp17L);
-        else
-            x=double(statusData(:,col.Temp17L)); eval(['xdata=',fcts2val.Temp17L,';']);
-        end
-    case 'Temp18L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp18L);
-        else
-            x=double(statusData(:,col.Temp18L)); eval(['xdata=',fcts2val.Temp18L,';']);
-        end
-    case 'Temp19L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp19L);
-        else
-            x=double(statusData(:,col.Temp19L)); eval(['xdata=',fcts2val.Temp19L,';']);
-        end
-    case 'Temp20L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp20L);
-        else
-            x=double(statusData(:,col.Temp20L)); eval(['xdata=',fcts2val.Temp20L,';']);
-        end
-    case 'Temp21L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp21L);
-        else
-            x=double(statusData(:,col.Temp21L)); eval(['xdata=',fcts2val.Temp21L,';']);
-        end
-    case 'Temp22L'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp22L);
-        else
-            x=double(statusData(:,col.Temp22L)); eval(['xdata=',fcts2val.Temp22L,';']);
-        end
+    case 'TempMissedarmAxis'
+        xdata=statusData(:,col.TempMissedarmAxis);
+    case 'TempNumberarmAxis'
+        xdata=statusData(:,col.TempNumberarmAxis);
+    case 'TempErrCRCarmAxis'
+        xdata=statusData(:,col.TempErrCRCarmAxis);
+    case 'TempNoResponsearmAxis'
+        xdata=statusData(:,col.TempNoResponsearmAxis);
     case 'TempPump'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempPump);
+        if ~isnan(col.TempPump)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPump);
+            else
+                x=double(statusData(:,col.TempPump)); eval(['xdata=',fcts2val.TempPump,';']);
+            end
         else
-            x=double(statusData(:,col.TempPump)); eval(['xdata=',fcts2val.TempPump,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempPumpOil'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempPumpOil);
+        if ~isnan(col.TempPumpOil)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPumpOil);
+            else
+                x=double(statusData(:,col.TempPumpOil)); eval(['xdata=',fcts2val.TempPumpOil,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpOil)); eval(['xdata=',fcts2val.TempPumpOil,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ1out'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ1out);
+        if ~isnan(col.TempDiodeWZ1out)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ1out);
+            else
+                x=double(statusData(:,col.TempDiodeWZ1out)); eval(['xdata=',fcts2val.TempDiodeWZ1out,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1out)); eval(['xdata=',fcts2val.TempDiodeWZ1out,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'TempAxis'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempAxis);
+    case 'TempAxisPlate'
+        if ~isnan(col.TempAxisPlate)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempAxisPlate);
+            else
+                x=double(statusData(:,col.TempAxisPlate)); eval(['xdata=',fcts2val.TempAxisPlate,';']);
+            end
         else
-            x=double(statusData(:,col.TempAxis)); eval(['xdata=',fcts2val.TempAxis,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempArmPS'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempArmPS);
+        if ~isnan(col.TempArmPS)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmPS);
+            else
+                x=double(statusData(:,col.TempArmPS)); eval(['xdata=',fcts2val.TempArmPS,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmPS)); eval(['xdata=',fcts2val.TempArmPS,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ1in'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ1in);
+        if ~isnan(col.TempDiodeWZ1in)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ1in);
+            else
+                x=double(statusData(:,col.TempDiodeWZ1in)); eval(['xdata=',fcts2val.TempDiodeWZ1in,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1in)); eval(['xdata=',fcts2val.TempDiodeWZ1in,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ2in'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ2in);
+        if ~isnan(col.TempDiodeWZ2in)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ2in);
+            else
+                x=double(statusData(:,col.TempDiodeWZ2in)); eval(['xdata=',fcts2val.TempDiodeWZ2in,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ2in)); eval(['xdata=',fcts2val.TempDiodeWZ2in,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempTMPSensCard'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempTMPSensCard);
+        if ~isnan(col.TempTMPSensCard)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempTMPSensCard);
+            else
+                x=double(statusData(:,col.TempTMPSensCard)); eval(['xdata=',fcts2val.TempTMPSensCard,';']);
+            end
         else
-            x=double(statusData(:,col.TempTMPSensCard)); eval(['xdata=',fcts2val.TempTMPSensCard,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempLaserSync'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempLaserSync);
+        if ~isnan(col.TempLaserSync)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempLaserSync);
+            else
+                x=double(statusData(:,col.TempLaserSync)); eval(['xdata=',fcts2val.TempLaserSync,';']);
+            end
         else
-            x=double(statusData(:,col.TempLaserSync)); eval(['xdata=',fcts2val.TempLaserSync,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempInverter'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempInverter);
+        if ~isnan(col.TempInverter)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempInverter);
+            else
+                x=double(statusData(:,col.TempInverter)); eval(['xdata=',fcts2val.TempInverter,';']);
+            end
         else
-            x=double(statusData(:,col.TempInverter)); eval(['xdata=',fcts2val.TempInverter,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempArmBackWall'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempArmBackWall);
+        if ~isnan(col.TempArmBackWall)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmBackWall);
+            else
+                x=double(statusData(:,col.TempArmBackWall)); eval(['xdata=',fcts2val.TempArmBackWall,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmBackWall)); eval(['xdata=',fcts2val.TempArmBackWall,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempBlower'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempBlower);
+        if ~isnan(col.TempBlower)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempBlower);
+            else
+                x=double(statusData(:,col.TempBlower)); eval(['xdata=',fcts2val.TempBlower,';']);
+            end
         else
-            x=double(statusData(:,col.TempBlower)); eval(['xdata=',fcts2val.TempBlower,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp12WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp12WP);
+    case 'TempDiodeWZ2out'
+        if ~isnan(col.TempDiodeWZ2out)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ2out);
+            else
+                x=double(statusData(:,col.TempDiodeWZ2out)); eval(['xdata=',fcts2val.TempDiodeWZ2out,';']);
+            end
         else
-            x=double(statusData(:,col.Temp12WP)); eval(['xdata=',fcts2val.Temp12WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp13WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp13WP);
+    case 'TempCalPlate'
+        if ~isnan(col.TempCalPlate)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempCalPlate);
+            else
+                x=double(statusData(:,col.TempCalPlate)); eval(['xdata=',fcts2val.TempCalPlate,';']);
+            end
         else
-            x=double(statusData(:,col.Temp13WP)); eval(['xdata=',fcts2val.Temp13WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp14WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp14WP);
+    case 'TempHV'
+        if ~isnan(col.TempHV)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempHV);
+            else
+                x=double(statusData(:,col.TempHV)); eval(['xdata=',fcts2val.TempHV,';']);
+            end
         else
-            x=double(statusData(:,col.Temp14WP)); eval(['xdata=',fcts2val.Temp14WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp15WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp15WP);
+    case 'TempKuvette'
+        if ~isnan(col.TempKuvette)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempKuvette);
+            else
+                x=double(statusData(:,col.TempKuvette)); eval(['xdata=',fcts2val.TempKuvette,';']);
+            end
         else
-            x=double(statusData(:,col.Temp15WP)); eval(['xdata=',fcts2val.Temp15WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp16WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp16WP);
+    case 'TempPenray'
+        if ~isnan(col.TempPenray)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPenray);
+            else
+                x=double(statusData(:,col.TempPenray)); eval(['xdata=',fcts2val.TempPenray,';']);
+            end
         else
-            x=double(statusData(:,col.Temp16WP)); eval(['xdata=',fcts2val.Temp16WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp17WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp17WP);
+    case 'TempMCP1'
+        if ~isnan(col.TempMCP1)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempMCP1);
+            else
+                x=double(statusData(:,col.TempMCP1)); eval(['xdata=',fcts2val.TempMCP1,';']);
+            end
         else
-            x=double(statusData(:,col.Temp17WP)); eval(['xdata=',fcts2val.Temp17WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp18WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp18WP);
+    case 'TempMCP2'
+        if ~isnan(col.TempMCP2)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempMCP2);
+            else
+                x=double(statusData(:,col.TempMCP2)); eval(['xdata=',fcts2val.TempMCP2,';']);
+            end
         else
-            x=double(statusData(:,col.Temp18WP)); eval(['xdata=',fcts2val.Temp18WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp19WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp19WP);
+    case 'TempPreamp1'
+        if ~isnan(col.TempPreamp1)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPreamp1);
+            else
+                x=double(statusData(:,col.TempPreamp1)); eval(['xdata=',fcts2val.TempPreamp1,';']);
+            end
         else
-            x=double(statusData(:,col.Temp19WP)); eval(['xdata=',fcts2val.Temp19WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp20WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp20WP);
+    case 'TempPrallpl'
+        if ~isnan(col.TempPrallpl)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPrallpl);
+            else
+                x=double(statusData(:,col.TempPrallpl)); eval(['xdata=',fcts2val.TempPrallpl,';']);
+            end
         else
-            x=double(statusData(:,col.Temp20WP)); eval(['xdata=',fcts2val.Temp20WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp21WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp21WP);
+    case 'TempAxis'
+        if ~isnan(col.TempAxis)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempAxis);
+            else
+                x=double(statusData(:,col.TempAxis)); eval(['xdata=',fcts2val.TempAxis,';']);
+            end
         else
-            x=double(statusData(:,col.Temp21WP)); eval(['xdata=',fcts2val.Temp21WP,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp22WP'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp22WP);
+    case 'TempLaserPlateid'
+        if ~isnan(col.TempLaserPlateid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempLaserPlateid);
+            else
+                x=uint16(statusData(:,col.TempLaserPlateid)); eval(['xdata=',fcts2val.TempLaserPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp22WP)); eval(['xdata=',fcts2val.Temp22WP,';']);
-        end
-    case 'Temp0Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp0Lid);
-        else
-            x=double(statusData(:,col.Temp0Lid)); eval(['xdata=',fcts2val.Temp0Lid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDyelaserid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDyelaserid);
+        if ~isnan(col.TempDyelaserid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDyelaserid);
+            else
+                x=uint16(statusData(:,col.TempDyelaserid)); eval(['xdata=',fcts2val.TempDyelaserid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDyelaserid)); eval(['xdata=',fcts2val.TempDyelaserid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempRefCellid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempRefCellid);
+        if ~isnan(col.TempRefCellid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempRefCellid);
+            else
+                x=uint16(statusData(:,col.TempRefCellid)); eval(['xdata=',fcts2val.TempRefCellid,';']);
+            end
         else
-            x=double(statusData(:,col.TempRefCellid)); eval(['xdata=',fcts2val.TempRefCellid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeEtid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeEtid);
+        if ~isnan(col.TempDiodeEtid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeEtid);
+            else
+                x=uint16(statusData(:,col.TempDiodeEtid)); eval(['xdata=',fcts2val.TempDiodeEtid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeEtid)); eval(['xdata=',fcts2val.TempDiodeEtid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'Temp4Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp4Lid);
+        if ~isnan(col.Temp4Lid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.Temp4Lid);
+            else
+                x=uint16(statusData(:,col.Temp4Lid)); eval(['xdata=',fcts2val.Temp4Lid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp4Lid)); eval(['xdata=',fcts2val.Temp4Lid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeUVid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeUVid);
+        if ~isnan(col.TempDiodeUVid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeUVid);
+            else
+                x=uint16(statusData(:,col.TempDiodeUVid)); eval(['xdata=',fcts2val.TempDiodeUVid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeUVid)); eval(['xdata=',fcts2val.TempDiodeUVid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp6Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp6Lid);
+    case 'TempSensCardLiftid'
+        if ~isnan(col.TempSensCardLiftid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempSensCardLiftid);
+            else
+                x=uint16(statusData(:,col.TempSensCardLiftid)); eval(['xdata=',fcts2val.TempSensCardLiftid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp6Lid)); eval(['xdata=',fcts2val.Temp6Lid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp7Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp7Lid);
+    case 'TempCPULiftid'
+        if ~isnan(col.TempCPULiftid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempCPULiftid);
+            else
+                x=uint16(statusData(:,col.TempCPULiftid)); eval(['xdata=',fcts2val.TempCPULiftid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp7Lid)); eval(['xdata=',fcts2val.Temp7Lid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp8Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp8Lid);
+    case 'TempDiodeGrid'
+        if ~isnan(col.TempDiodeGrid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeGrid);
+            else
+                x=uint16(statusData(:,col.TempDiodeGrid)); eval(['xdata=',fcts2val.TempDiodeGrid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp8Lid)); eval(['xdata=',fcts2val.Temp8Lid,';']);
-        end
-    case 'Temp9Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp9Lid);
-        else
-            x=double(statusData(:,col.Temp9Lid)); eval(['xdata=',fcts2val.Temp9Lid,';']);
-        end
-    case 'Temp10Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp10Lid);
-        else
-            x=double(statusData(:,col.Temp10Lid)); eval(['xdata=',fcts2val.Temp10Lid,';']);
-        end
-    case 'Temp11Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp11Lid);
-        else
-            x=double(statusData(:,col.Temp11Lid)); eval(['xdata=',fcts2val.Temp11Lid,';']);
-        end
-    case 'Temp12Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp12Lid);
-        else
-            x=double(statusData(:,col.Temp12Lid)); eval(['xdata=',fcts2val.Temp12Lid,';']);
-        end
-    case 'Temp13Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp13Lid);
-        else
-            x=double(statusData(:,col.Temp13Lid)); eval(['xdata=',fcts2val.Temp13Lid,';']);
-        end
-    case 'Temp14Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp14Lid);
-        else
-            x=double(statusData(:,col.Temp14Lid)); eval(['xdata=',fcts2val.Temp14Lid,';']);
-        end
-    case 'Temp15Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp15Lid);
-        else
-            x=double(statusData(:,col.Temp15Lid)); eval(['xdata=',fcts2val.Temp15Lid,';']);
-        end
-    case 'Temp16Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp16Lid);
-        else
-            x=double(statusData(:,col.Temp16Lid)); eval(['xdata=',fcts2val.Temp16Lid,';']);
-        end
-    case 'Temp17Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp17Lid);
-        else
-            x=double(statusData(:,col.Temp17Lid)); eval(['xdata=',fcts2val.Temp17Lid,';']);
-        end
-    case 'Temp18Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp18Lid);
-        else
-            x=double(statusData(:,col.Temp18Lid)); eval(['xdata=',fcts2val.Temp18Lid,';']);
-        end
-    case 'Temp19Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp19Lid);
-        else
-            x=double(statusData(:,col.Temp19Lid)); eval(['xdata=',fcts2val.Temp19Lid,';']);
-        end
-    case 'Temp20Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp20Lid);
-        else
-            x=double(statusData(:,col.Temp20Lid)); eval(['xdata=',fcts2val.Temp20Lid,';']);
-        end
-    case 'Temp21Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp21Lid);
-        else
-            x=double(statusData(:,col.Temp21Lid)); eval(['xdata=',fcts2val.Temp21Lid,';']);
-        end
-    case 'Temp22Lid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp22Lid);
-        else
-            x=double(statusData(:,col.Temp22Lid)); eval(['xdata=',fcts2val.Temp22Lid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempPumpid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempPumpid);
+        if ~isnan(col.TempPumpid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPumpid);
+            else
+                x=uint16(statusData(:,col.TempPumpid)); eval(['xdata=',fcts2val.TempPumpid,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpid)); eval(['xdata=',fcts2val.TempPumpid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempPumpOilid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempPumpOilid);
+        if ~isnan(col.TempPumpOilid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPumpOilid);
+            else
+                x=uint16(statusData(:,col.TempPumpOilid)); eval(['xdata=',fcts2val.TempPumpOilid,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpOilid)); eval(['xdata=',fcts2val.TempPumpOilid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ1outid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ1outid);
+        if ~isnan(col.TempDiodeWZ1outid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ1outid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ1outid)); eval(['xdata=',fcts2val.TempDiodeWZ1outid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1outid)); eval(['xdata=',fcts2val.TempDiodeWZ1outid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'TempAxisid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempAxisid);
+    case 'TempAxisPlateid'
+        if ~isnan(col.TempAxisPlateid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempAxisPlateid);
+            else
+                x=uint16(statusData(:,col.TempAxisPlateid)); eval(['xdata=',fcts2val.TempAxisPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.TempAxisid)); eval(['xdata=',fcts2val.TempAxisid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempArmPSid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempArmPSid);
+        if ~isnan(col.TempArmPSid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmPSid);
+            else
+                x=uint16(statusData(:,col.TempArmPSid)); eval(['xdata=',fcts2val.TempArmPSid,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmPSid)); eval(['xdata=',fcts2val.TempArmPSid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ1inid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ1inid);
+        if ~isnan(col.TempDiodeWZ1inid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ1inid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ1inid)); eval(['xdata=',fcts2val.TempDiodeWZ1inid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1inid)); eval(['xdata=',fcts2val.TempDiodeWZ1inid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempDiodeWZ2inid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempDiodeWZ2inid);
+        if ~isnan(col.TempDiodeWZ2inid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ2inid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ2inid)); eval(['xdata=',fcts2val.TempDiodeWZ2inid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ2inid)); eval(['xdata=',fcts2val.TempDiodeWZ2inid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempTMPSensCardid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempTMPSensCardid);
+        if ~isnan(col.TempTMPSensCardid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempTMPSensCardid);
+            else
+                x=uint16(statusData(:,col.TempTMPSensCardid)); eval(['xdata=',fcts2val.TempTMPSensCardid,';']);
+            end
         else
-            x=double(statusData(:,col.TempTMPSensCardid)); eval(['xdata=',fcts2val.TempTMPSensCardid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempLaserSyncid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempLaserSyncid);
+        if ~isnan(col.TempLaserSyncid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempLaserSyncid);
+            else
+                x=uint16(statusData(:,col.TempLaserSyncid)); eval(['xdata=',fcts2val.TempLaserSyncid,';']);
+            end
         else
-            x=double(statusData(:,col.TempLaserSyncid)); eval(['xdata=',fcts2val.TempLaserSyncid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempInverterid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempInverterid);
+        if ~isnan(col.TempInverterid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempInverterid);
+            else
+                x=uint16(statusData(:,col.TempInverterid)); eval(['xdata=',fcts2val.TempInverterid,';']);
+            end
         else
-            x=double(statusData(:,col.TempInverterid)); eval(['xdata=',fcts2val.TempInverterid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempArmBackWallid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempArmBackWallid);
+        if ~isnan(col.TempArmBackWallid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmBackWallid);
+            else
+                x=uint16(statusData(:,col.TempArmBackWallid)); eval(['xdata=',fcts2val.TempArmBackWallid,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmBackWallid)); eval(['xdata=',fcts2val.TempArmBackWallid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
     case 'TempBlowerid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.TempBlowerid);
+        if ~isnan(col.TempBlowerid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempBlowerid);
+            else
+                x=uint16(statusData(:,col.TempBlowerid)); eval(['xdata=',fcts2val.TempBlowerid,';']);
+            end
         else
-            x=double(statusData(:,col.TempBlowerid)); eval(['xdata=',fcts2val.TempBlowerid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp12WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp12WPid);
+    case 'TempDiodeWZ2outid'
+        if ~isnan(col.TempDiodeWZ2outid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempDiodeWZ2outid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ2outid)); eval(['xdata=',fcts2val.TempDiodeWZ2outid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp12WPid)); eval(['xdata=',fcts2val.Temp12WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp13WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp13WPid);
+    case 'TempCalPlateid'
+        if ~isnan(col.TempCalPlateid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempCalPlateid);
+            else
+                x=uint16(statusData(:,col.TempCalPlateid)); eval(['xdata=',fcts2val.TempCalPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp13WPid)); eval(['xdata=',fcts2val.Temp13WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp14WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp14WPid);
+    case 'TempHVid'
+        if ~isnan(col.TempHVid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempHVid);
+            else
+                x=uint16(statusData(:,col.TempHVid)); eval(['xdata=',fcts2val.TempHVid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp14WPid)); eval(['xdata=',fcts2val.Temp14WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp15WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp15WPid);
+    case 'TempKuvetteid'
+        if ~isnan(col.TempKuvetteid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempKuvetteid);
+            else
+                x=uint16(statusData(:,col.TempKuvetteid)); eval(['xdata=',fcts2val.TempKuvetteid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp15WPid)); eval(['xdata=',fcts2val.Temp15WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp16WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp16WPid);
+    case 'TempPenrayid'
+        if ~isnan(col.TempPenrayid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPenrayid);
+            else
+                x=uint16(statusData(:,col.TempPenrayid)); eval(['xdata=',fcts2val.TempPenrayid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp16WPid)); eval(['xdata=',fcts2val.Temp16WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp17WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp17WPid);
+    case 'TempMCP1id'
+        if ~isnan(col.TempMCP1id)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempMCP1id);
+            else
+                x=uint16(statusData(:,col.TempMCP1id)); eval(['xdata=',fcts2val.TempMCP1id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp17WPid)); eval(['xdata=',fcts2val.Temp17WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp18WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp18WPid);
+    case 'TempMCP2id'
+        if ~isnan(col.TempMCP2id)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempMCP2id);
+            else
+                x=uint16(statusData(:,col.TempMCP2id)); eval(['xdata=',fcts2val.TempMCP2id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp18WPid)); eval(['xdata=',fcts2val.Temp18WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp19WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp19WPid);
+    case 'TempPreamp1id'
+        if ~isnan(col.TempPreamp1id)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPreamp1id);
+            else
+                x=uint16(statusData(:,col.TempPreamp1id)); eval(['xdata=',fcts2val.TempPreamp1id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp19WPid)); eval(['xdata=',fcts2val.Temp19WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp20WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp20WPid);
+    case 'TempPrallplid'
+        if ~isnan(col.TempPrallplid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPrallplid);
+            else
+                x=uint16(statusData(:,col.TempPrallplid)); eval(['xdata=',fcts2val.TempPrallplid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp20WPid)); eval(['xdata=',fcts2val.Temp20WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
-    case 'Temp21WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp21WPid);
+    case 'TempAxisid'
+        if ~isnan(col.TempAxisid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempAxisid);
+            else
+                x=uint16(statusData(:,col.TempAxisid)); eval(['xdata=',fcts2val.TempAxisid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp21WPid)); eval(['xdata=',fcts2val.Temp21WPid,';']);
-        end
-    case 'Temp22WPid'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.Temp22WPid);
-        else
-            x=double(statusData(:,col.Temp22WPid)); eval(['xdata=',fcts2val.Temp22WPid,';']);
+            xdata=statustime;
+            xdata(:)=NaN;
         end
 end
         
@@ -1106,7 +1366,7 @@ switch char(ypar)
         EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow+2));
+        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
         EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
         EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
         ydata=EtalonCurPos;
@@ -1155,6 +1415,120 @@ switch char(ypar)
         else
             x=double(statusData(:,col.MFCSetFlow)); eval(['ydata=',fcts2val.MFCSetFlow,';']);
         end
+    case 'PitotAbs'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.PitotAbs);
+        else
+            x=double(statusData(:,col.PitotAbs)); eval(['ydata=',fcts2val.PitotAbs,';']);
+        end
+    case 'PitotDiff'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.PitotDiff);
+        else
+            x=double(statusData(:,col.PitotDiff)); eval(['ydata=',fcts2val.PitotDiff,';']);
+        end
+    case 'PhototubeLamp1'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.PhototubeLamp1);
+        else
+            x=double(statusData(:,col.PhototubeLamp1)); eval(['ydata=',fcts2val.PhototubeLamp1,';']);
+        end
+    case 'PhototubeLamp2'
+        if get(handles.toggleX,'Value')==0
+            ydata=statusData(:,col.PhototubeLamp2);
+        else
+            x=double(statusData(:,col.PhototubeLamp2)); eval(['ydata=',fcts2val.PhototubeLamp2,';']);
+        end
+    case 'ccMasterDelayLift'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccMasterDelayLift);
+        else
+            x=double(statusData(:,col.ccMasterDelayLift)); eval(['ydata=',fcts2val.ccMasterDelayLift,';']);
+        end
+    case 'ccMasterDelayarmAxis'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccMasterDelayarmAxis);
+        else
+            x=double(statusData(:,col.ccMasterDelayarmAxis)); eval(['ydata=',fcts2val.ccMasterDelayarmAxis,';']);
+        end
+    case 'ccShiftDelay0'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay0);
+        else
+            x=double(statusData(:,col.ccShiftDelay0)); eval(['ydata=',fcts2val.ccShiftDelay0,';']);
+        end
+    case 'ccCounts0'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccCounts0);
+        else
+            x=double(statusData(:,col.ccCounts0)); eval(['ydata=',fcts2val.ccCounts0,';']);
+        end
+    case 'ccPulses0'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccPulses0);
+        else
+            x=double(statusData(:,col.ccPulses0)); eval(['ydata=',fcts2val.ccPulses0,';']);
+        end
+    case 'ccShiftDelay1'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay1);
+        else
+            x=double(statusData(:,col.ccShiftDelay1)); eval(['ydata=',fcts2val.ccShiftDelay1,';']);
+        end
+    case 'ccGateDelay1'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccGateDelay1);
+        else
+            x=double(statusData(:,col.ccGateDelay1)); eval(['ydata=',fcts2val.ccGateDelay1,';']);
+        end
+    case 'ccGateWidth1'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccGateWidth1);
+        else
+            x=double(statusData(:,col.ccGateWidth1)); eval(['ydata=',fcts2val.ccGateWidth1,';']);
+        end
+    case 'ccCounts1'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccCounts1);
+        else
+            x=double(statusData(:,col.ccCounts1)); eval(['ydata=',fcts2val.ccCounts1,';']);
+        end
+    case 'ccPulses1'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccPulses1);
+        else
+            x=double(statusData(:,col.ccPulses1)); eval(['ydata=',fcts2val.ccPulses1,';']);
+        end
+    case 'ccShiftDelay2'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccShiftDelay2);
+        else
+            x=double(statusData(:,col.ccShiftDelay2)); eval(['ydata=',fcts2val.ccShiftDelay2,';']);
+        end
+    case 'ccGateDelay2'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccGateDelay2);
+        else
+            x=double(statusData(:,col.ccGateDelay2)); eval(['ydata=',fcts2val.ccGateDelay2,';']);
+        end
+    case 'ccGateWidth2'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccGateWidth2);
+        else
+            x=double(statusData(:,col.ccGateWidth2)); eval(['ydata=',fcts2val.ccGateWidth2,';']);
+        end
+    case 'ccCounts2'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccCounts2);
+        else
+            x=double(statusData(:,col.ccCounts2)); eval(['ydata=',fcts2val.ccCounts2,';']);
+        end
+    case 'ccPulses2'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.ccPulses2);
+        else
+            x=double(statusData(:,col.ccPulses2)); eval(['ydata=',fcts2val.ccPulses2,';']);
+        end
     case 'GPSsecondsUTC'
         ydata=statusData(:,col.GPSsecondsUTC);
     case 'GPSLongitude'
@@ -1185,557 +1559,703 @@ switch char(ypar)
         else
             x=double(statusData(:,col.TDet)); eval(['ydata=',fcts2val.TDet,';']);
         end
-    case 'Temp0L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp0L);
+    case 'TempMissedLift'
+        ydata=statusData(:,col.TempMissedLift);
+    case 'TempNumberLift'
+        ydata=statusData(:,col.TempNumberLift);
+    case 'TempErrCRCLift'
+        ydata=statusData(:,col.TempErrCRCLift);
+    case 'TempNoResponseLift'
+        ydata=statusData(:,col.TempNoResponseLift);
+    case 'TempLaserPlate'
+        if ~isnan(col.TempLaserPlate)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempLaserPlate);
+            else
+                x=double(statusData(:,col.TempLaserPlate)); eval(['ydata=',fcts2val.TempLaserPlate,';']);
+            end
         else
-            x=double(statusData(:,col.Temp0L)); eval(['ydata=',fcts2val.Temp0L,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDyelaser'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDyelaser);
+        if ~isnan(col.TempDyelaser)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDyelaser);
+            else
+                x=double(statusData(:,col.TempDyelaser)); eval(['ydata=',fcts2val.TempDyelaser,';']);
+            end
         else
-            x=double(statusData(:,col.TempDyelaser)); eval(['ydata=',fcts2val.TempDyelaser,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempRefCell'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempRefCell);
+        if ~isnan(col.TempRefCell)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempRefCell);
+            else
+                x=double(statusData(:,col.TempRefCell)); eval(['ydata=',fcts2val.TempRefCell,';']);
+            end
         else
-            x=double(statusData(:,col.TempRefCell)); eval(['ydata=',fcts2val.TempRefCell,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeEt'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeEt);
+        if ~isnan(col.TempDiodeEt)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeEt);
+            else
+                x=double(statusData(:,col.TempDiodeEt)); eval(['ydata=',fcts2val.TempDiodeEt,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeEt)); eval(['ydata=',fcts2val.TempDiodeEt,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'Temp4L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp4L);
+        if ~isnan(col.Temp4L)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.Temp4L);
+            else
+                x=double(statusData(:,col.Temp4L)); eval(['ydata=',fcts2val.Temp4L,';']);
+            end
         else
-            x=double(statusData(:,col.Temp4L)); eval(['ydata=',fcts2val.Temp4L,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeUV'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeUV);
+        if ~isnan(col.TempDiodeUV)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeUV);
+            else
+                x=double(statusData(:,col.TempDiodeUV)); eval(['ydata=',fcts2val.TempDiodeUV,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeUV)); eval(['ydata=',fcts2val.TempDiodeUV,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp6L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp6L);
+    case 'TempSensCardLift'
+        if ~isnan(col.TempSensCardLift)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempSensCardLift);
+            else
+                x=double(statusData(:,col.TempSensCardLift)); eval(['ydata=',fcts2val.TempSensCardLift,';']);
+            end
         else
-            x=double(statusData(:,col.Temp6L)); eval(['ydata=',fcts2val.Temp6L,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp7L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp7L);
+    case 'TempCPULift'
+        if ~isnan(col.TempCPULift)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempCPULift);
+            else
+                x=double(statusData(:,col.TempCPULift)); eval(['ydata=',fcts2val.TempCPULift,';']);
+            end
         else
-            x=double(statusData(:,col.Temp7L)); eval(['ydata=',fcts2val.Temp7L,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp8L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp8L);
+    case 'TempDiodeGr'
+        if ~isnan(col.TempDiodeGr)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeGr);
+            else
+                x=double(statusData(:,col.TempDiodeGr)); eval(['ydata=',fcts2val.TempDiodeGr,';']);
+            end
         else
-            x=double(statusData(:,col.Temp8L)); eval(['ydata=',fcts2val.Temp8L,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp9L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp9L);
-        else
-            x=double(statusData(:,col.Temp9L)); eval(['ydata=',fcts2val.Temp9L,';']);
-        end
-    case 'Temp10L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp10L);
-        else
-            x=double(statusData(:,col.Temp10L)); eval(['ydata=',fcts2val.Temp10L,';']);
-        end
-    case 'Temp11L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp11L);
-        else
-            x=double(statusData(:,col.Temp11L)); eval(['ydata=',fcts2val.Temp11L,';']);
-        end
-    case 'Temp12L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp12L);
-        else
-            x=double(statusData(:,col.Temp12L)); eval(['ydata=',fcts2val.Temp12L,';']);
-        end
-    case 'Temp13L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp13L);
-        else
-            x=double(statusData(:,col.Temp13L)); eval(['ydata=',fcts2val.Temp13L,';']);
-        end
-    case 'Temp14L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp14L);
-        else
-            x=double(statusData(:,col.Temp14L)); eval(['ydata=',fcts2val.Temp14L,';']);
-        end
-    case 'Temp15L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp15L);
-        else
-            x=double(statusData(:,col.Temp15L)); eval(['ydata=',fcts2val.Temp15L,';']);
-        end
-    case 'Temp16L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp16L);
-        else
-            x=double(statusData(:,col.Temp16L)); eval(['ydata=',fcts2val.Temp16L,';']);
-        end
-    case 'Temp17L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp17L);
-        else
-            x=double(statusData(:,col.Temp17L)); eval(['ydata=',fcts2val.Temp17L,';']);
-        end
-    case 'Temp18L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp18L);
-        else
-            x=double(statusData(:,col.Temp18L)); eval(['ydata=',fcts2val.Temp18L,';']);
-        end
-    case 'Temp19L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp19L);
-        else
-            x=double(statusData(:,col.Temp19L)); eval(['ydata=',fcts2val.Temp19L,';']);
-        end
-    case 'Temp20L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp20L);
-        else
-            x=double(statusData(:,col.Temp20L)); eval(['ydata=',fcts2val.Temp20L,';']);
-        end
-    case 'Temp21L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp21L);
-        else
-            x=double(statusData(:,col.Temp21L)); eval(['ydata=',fcts2val.Temp21L,';']);
-        end
-    case 'Temp22L'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp22L);
-        else
-            x=double(statusData(:,col.Temp22L)); eval(['ydata=',fcts2val.Temp22L,';']);
-        end
+    case 'TempMissedarmAxis'
+        ydata=statusData(:,col.TempMissedarmAxis);
+    case 'TempNumberarmAxis'
+        ydata=statusData(:,col.TempNumberarmAxis);
+    case 'TempErrCRCarmAxis'
+        ydata=statusData(:,col.TempErrCRCarmAxis);
+    case 'TempNoResponsearmAxis'
+        ydata=statusData(:,col.TempNoResponsearmAxis);
     case 'TempPump'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempPump);
+        if ~isnan(col.TempPump)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPump);
+            else
+                x=double(statusData(:,col.TempPump)); eval(['ydata=',fcts2val.TempPump,';']);
+            end
         else
-            x=double(statusData(:,col.TempPump)); eval(['ydata=',fcts2val.TempPump,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempPumpOil'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempPumpOil);
+        if ~isnan(col.TempPumpOil)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPumpOil);
+            else
+                x=double(statusData(:,col.TempPumpOil)); eval(['ydata=',fcts2val.TempPumpOil,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpOil)); eval(['ydata=',fcts2val.TempPumpOil,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ1out'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ1out);
+        if ~isnan(col.TempDiodeWZ1out)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ1out);
+            else
+                x=double(statusData(:,col.TempDiodeWZ1out)); eval(['ydata=',fcts2val.TempDiodeWZ1out,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1out)); eval(['ydata=',fcts2val.TempDiodeWZ1out,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'TempAxis'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempAxis);
+    case 'TempAxisPlate'
+        if ~isnan(col.TempAxisPlate)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempAxisPlate);
+            else
+                x=double(statusData(:,col.TempAxisPlate)); eval(['ydata=',fcts2val.TempAxisPlate,';']);
+            end
         else
-            x=double(statusData(:,col.TempAxis)); eval(['ydata=',fcts2val.TempAxis,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempArmPS'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempArmPS);
+        if ~isnan(col.TempArmPS)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmPS);
+            else
+                x=double(statusData(:,col.TempArmPS)); eval(['ydata=',fcts2val.TempArmPS,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmPS)); eval(['ydata=',fcts2val.TempArmPS,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ1in'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ1in);
+        if ~isnan(col.TempDiodeWZ1in)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ1in);
+            else
+                x=double(statusData(:,col.TempDiodeWZ1in)); eval(['ydata=',fcts2val.TempDiodeWZ1in,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1in)); eval(['ydata=',fcts2val.TempDiodeWZ1in,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ2in'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ2in);
+        if ~isnan(col.TempDiodeWZ2in)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ2in);
+            else
+                x=double(statusData(:,col.TempDiodeWZ2in)); eval(['ydata=',fcts2val.TempDiodeWZ2in,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ2in)); eval(['ydata=',fcts2val.TempDiodeWZ2in,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempTMPSensCard'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempTMPSensCard);
+        if ~isnan(col.TempTMPSensCard)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempTMPSensCard);
+            else
+                x=double(statusData(:,col.TempTMPSensCard)); eval(['ydata=',fcts2val.TempTMPSensCard,';']);
+            end
         else
-            x=double(statusData(:,col.TempTMPSensCard)); eval(['ydata=',fcts2val.TempTMPSensCard,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempLaserSync'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempLaserSync);
+        if ~isnan(col.TempLaserSync)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempLaserSync);
+            else
+                x=double(statusData(:,col.TempLaserSync)); eval(['ydata=',fcts2val.TempLaserSync,';']);
+            end
         else
-            x=double(statusData(:,col.TempLaserSync)); eval(['ydata=',fcts2val.TempLaserSync,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempInverter'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempInverter);
+        if ~isnan(col.TempInverter)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempInverter);
+            else
+                x=double(statusData(:,col.TempInverter)); eval(['ydata=',fcts2val.TempInverter,';']);
+            end
         else
-            x=double(statusData(:,col.TempInverter)); eval(['ydata=',fcts2val.TempInverter,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempArmBackWall'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempArmBackWall);
+        if ~isnan(col.TempArmBackWall)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmBackWall);
+            else
+                x=double(statusData(:,col.TempArmBackWall)); eval(['ydata=',fcts2val.TempArmBackWall,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmBackWall)); eval(['ydata=',fcts2val.TempArmBackWall,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempBlower'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempBlower);
+        if ~isnan(col.TempBlower)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempBlower);
+            else
+                x=double(statusData(:,col.TempBlower)); eval(['ydata=',fcts2val.TempBlower,';']);
+            end
         else
-            x=double(statusData(:,col.TempBlower)); eval(['ydata=',fcts2val.TempBlower,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp12WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp12WP);
+    case 'TempDiodeWZ2out'
+        if ~isnan(col.TempDiodeWZ2out)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ2out);
+            else
+                x=double(statusData(:,col.TempDiodeWZ2out)); eval(['ydata=',fcts2val.TempDiodeWZ2out,';']);
+            end
         else
-            x=double(statusData(:,col.Temp12WP)); eval(['ydata=',fcts2val.Temp12WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp13WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp13WP);
+    case 'TempCalPlate'
+        if ~isnan(col.TempCalPlate)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempCalPlate);
+            else
+                x=double(statusData(:,col.TempCalPlate)); eval(['ydata=',fcts2val.TempCalPlate,';']);
+            end
         else
-            x=double(statusData(:,col.Temp13WP)); eval(['ydata=',fcts2val.Temp13WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp14WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp14WP);
+    case 'TempHV'
+        if ~isnan(col.TempHV)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempHV);
+            else
+                x=double(statusData(:,col.TempHV)); eval(['ydata=',fcts2val.TempHV,';']);
+            end
         else
-            x=double(statusData(:,col.Temp14WP)); eval(['ydata=',fcts2val.Temp14WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp15WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp15WP);
+    case 'TempKuvette'
+        if ~isnan(col.TempKuvette)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempKuvette);
+            else
+                x=double(statusData(:,col.TempKuvette)); eval(['ydata=',fcts2val.TempKuvette,';']);
+            end
         else
-            x=double(statusData(:,col.Temp15WP)); eval(['ydata=',fcts2val.Temp15WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp16WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp16WP);
+    case 'TempPenray'
+        if ~isnan(col.TempPenray)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPenray);
+            else
+                x=double(statusData(:,col.TempPenray)); eval(['ydata=',fcts2val.TempPenray,';']);
+            end
         else
-            x=double(statusData(:,col.Temp16WP)); eval(['ydata=',fcts2val.Temp16WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp17WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp17WP);
+    case 'TempMCP1'
+        if ~isnan(col.TempMCP1)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempMCP1);
+            else
+                x=double(statusData(:,col.TempMCP1)); eval(['ydata=',fcts2val.TempMCP1,';']);
+            end
         else
-            x=double(statusData(:,col.Temp17WP)); eval(['ydata=',fcts2val.Temp17WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp18WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp18WP);
+    case 'TempMCP2'
+        if ~isnan(col.TempMCP2)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempMCP2);
+            else
+                x=double(statusData(:,col.TempMCP2)); eval(['ydata=',fcts2val.TempMCP2,';']);
+            end
         else
-            x=double(statusData(:,col.Temp18WP)); eval(['ydata=',fcts2val.Temp18WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp19WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp19WP);
+    case 'TempPreamp1'
+        if ~isnan(col.TempPreamp1)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPreamp1);
+            else
+                x=double(statusData(:,col.TempPreamp1)); eval(['ydata=',fcts2val.TempPreamp1,';']);
+            end
         else
-            x=double(statusData(:,col.Temp19WP)); eval(['ydata=',fcts2val.Temp19WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp20WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp20WP);
+    case 'TempPrallpl'
+        if ~isnan(col.TempPrallpl)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPrallpl);
+            else
+                x=double(statusData(:,col.TempPrallpl)); eval(['ydata=',fcts2val.TempPrallpl,';']);
+            end
         else
-            x=double(statusData(:,col.Temp20WP)); eval(['ydata=',fcts2val.Temp20WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp21WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp21WP);
+    case 'TempAxis'
+        if ~isnan(col.TempAxis)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempAxis);
+            else
+                x=double(statusData(:,col.TempAxis)); eval(['ydata=',fcts2val.TempAxis,';']);
+            end
         else
-            x=double(statusData(:,col.Temp21WP)); eval(['ydata=',fcts2val.Temp21WP,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp22WP'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp22WP);
+    case 'TempLaserPlateid'
+        if ~isnan(col.TempLaserPlateid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempLaserPlateid);
+            else
+                x=uint16(statusData(:,col.TempLaserPlateid)); eval(['ydata=',fcts2val.TempLaserPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp22WP)); eval(['ydata=',fcts2val.Temp22WP,';']);
-        end
-    case 'Temp0Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp0Lid);
-        else
-            x=double(statusData(:,col.Temp0Lid)); eval(['ydata=',fcts2val.Temp0Lid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDyelaserid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDyelaserid);
+        if ~isnan(col.TempDyelaserid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDyelaserid);
+            else
+                x=uint16(statusData(:,col.TempDyelaserid)); eval(['ydata=',fcts2val.TempDyelaserid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDyelaserid)); eval(['ydata=',fcts2val.TempDyelaserid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempRefCellid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempRefCellid);
+        if ~isnan(col.TempRefCellid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempRefCellid);
+            else
+                x=uint16(statusData(:,col.TempRefCellid)); eval(['ydata=',fcts2val.TempRefCellid,';']);
+            end
         else
-            x=double(statusData(:,col.TempRefCellid)); eval(['ydata=',fcts2val.TempRefCellid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeEtid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeEtid);
+        if ~isnan(col.TempDiodeEtid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeEtid);
+            else
+                x=uint16(statusData(:,col.TempDiodeEtid)); eval(['ydata=',fcts2val.TempDiodeEtid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeEtid)); eval(['ydata=',fcts2val.TempDiodeEtid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'Temp4Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp4Lid);
+        if ~isnan(col.Temp4Lid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.Temp4Lid);
+            else
+                x=uint16(statusData(:,col.Temp4Lid)); eval(['ydata=',fcts2val.Temp4Lid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp4Lid)); eval(['ydata=',fcts2val.Temp4Lid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeUVid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeUVid);
+        if ~isnan(col.TempDiodeUVid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeUVid);
+            else
+                x=uint16(statusData(:,col.TempDiodeUVid)); eval(['ydata=',fcts2val.TempDiodeUVid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeUVid)); eval(['ydata=',fcts2val.TempDiodeUVid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp6Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp6Lid);
+    case 'TempSensCardLiftid'
+        if ~isnan(col.TempSensCardLiftid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempSensCardLiftid);
+            else
+                x=uint16(statusData(:,col.TempSensCardLiftid)); eval(['ydata=',fcts2val.TempSensCardLiftid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp6Lid)); eval(['ydata=',fcts2val.Temp6Lid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp7Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp7Lid);
+    case 'TempCPULiftid'
+        if ~isnan(col.TempCPULiftid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempCPULiftid);
+            else
+                x=uint16(statusData(:,col.TempCPULiftid)); eval(['ydata=',fcts2val.TempCPULiftid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp7Lid)); eval(['ydata=',fcts2val.Temp7Lid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp8Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp8Lid);
+    case 'TempDiodeGrid'
+        if ~isnan(col.TempDiodeGrid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeGrid);
+            else
+                x=uint16(statusData(:,col.TempDiodeGrid)); eval(['ydata=',fcts2val.TempDiodeGrid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp8Lid)); eval(['ydata=',fcts2val.Temp8Lid,';']);
-        end
-    case 'Temp9Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp9Lid);
-        else
-            x=double(statusData(:,col.Temp9Lid)); eval(['ydata=',fcts2val.Temp9Lid,';']);
-        end
-    case 'Temp10Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp10Lid);
-        else
-            x=double(statusData(:,col.Temp10Lid)); eval(['ydata=',fcts2val.Temp10Lid,';']);
-        end
-    case 'Temp11Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp11Lid);
-        else
-            x=double(statusData(:,col.Temp11Lid)); eval(['ydata=',fcts2val.Temp11Lid,';']);
-        end
-    case 'Temp12Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp12Lid);
-        else
-            x=double(statusData(:,col.Temp12Lid)); eval(['ydata=',fcts2val.Temp12Lid,';']);
-        end
-    case 'Temp13Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp13Lid);
-        else
-            x=double(statusData(:,col.Temp13Lid)); eval(['ydata=',fcts2val.Temp13Lid,';']);
-        end
-    case 'Temp14Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp14Lid);
-        else
-            x=double(statusData(:,col.Temp14Lid)); eval(['ydata=',fcts2val.Temp14Lid,';']);
-        end
-    case 'Temp15Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp15Lid);
-        else
-            x=double(statusData(:,col.Temp15Lid)); eval(['ydata=',fcts2val.Temp15Lid,';']);
-        end
-    case 'Temp16Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp16Lid);
-        else
-            x=double(statusData(:,col.Temp16Lid)); eval(['ydata=',fcts2val.Temp16Lid,';']);
-        end
-    case 'Temp17Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp17Lid);
-        else
-            x=double(statusData(:,col.Temp17Lid)); eval(['ydata=',fcts2val.Temp17Lid,';']);
-        end
-    case 'Temp18Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp18Lid);
-        else
-            x=double(statusData(:,col.Temp18Lid)); eval(['ydata=',fcts2val.Temp18Lid,';']);
-        end
-    case 'Temp19Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp19Lid);
-        else
-            x=double(statusData(:,col.Temp19Lid)); eval(['ydata=',fcts2val.Temp19Lid,';']);
-        end
-    case 'Temp20Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp20Lid);
-        else
-            x=double(statusData(:,col.Temp20Lid)); eval(['ydata=',fcts2val.Temp20Lid,';']);
-        end
-    case 'Temp21Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp21Lid);
-        else
-            x=double(statusData(:,col.Temp21Lid)); eval(['ydata=',fcts2val.Temp21Lid,';']);
-        end
-    case 'Temp22Lid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp22Lid);
-        else
-            x=double(statusData(:,col.Temp22Lid)); eval(['ydata=',fcts2val.Temp22Lid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempPumpid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempPumpid);
+        if ~isnan(col.TempPumpid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPumpid);
+            else
+                x=uint16(statusData(:,col.TempPumpid)); eval(['ydata=',fcts2val.TempPumpid,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpid)); eval(['ydata=',fcts2val.TempPumpid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempPumpOilid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempPumpOilid);
+        if ~isnan(col.TempPumpOilid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPumpOilid);
+            else
+                x=uint16(statusData(:,col.TempPumpOilid)); eval(['ydata=',fcts2val.TempPumpOilid,';']);
+            end
         else
-            x=double(statusData(:,col.TempPumpOilid)); eval(['ydata=',fcts2val.Temp1WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ1outid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ1outid);
+        if ~isnan(col.TempDiodeWZ1outid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ1outid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ1outid)); eval(['ydata=',fcts2val.TempDiodeWZ1outid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1outid)); eval(['ydata=',fcts2val.TempDiodeWZ1outid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'TempAxisid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempAxisid);
+    case 'TempAxisPlateid'
+        if ~isnan(col.TempAxisPlateid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempAxisPlateid);
+            else
+                x=uint16(statusData(:,col.TempAxisPlateid)); eval(['ydata=',fcts2val.TempAxisPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.TempAxisid)); eval(['ydata=',fcts2val.TempAxisid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempArmPSid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempArmPSid);
+        if ~isnan(col.TempArmPSid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmPSid);
+            else
+                x=uint16(statusData(:,col.TempArmPSid)); eval(['ydata=',fcts2val.TempArmPSid,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmPSid)); eval(['ydata=',fcts2val.TempArmPSid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ1inid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ1inid);
+        if ~isnan(col.TempDiodeWZ1inid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ1inid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ1inid)); eval(['ydata=',fcts2val.TempDiodeWZ1inid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ1inid)); eval(['ydata=',fcts2val.TempDiodeWZ1inid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempDiodeWZ2inid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempDiodeWZ2inid);
+        if ~isnan(col.TempDiodeWZ2inid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ2inid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ2inid)); eval(['ydata=',fcts2val.TempDiodeWZ2inid,';']);
+            end
         else
-            x=double(statusData(:,col.TempDiodeWZ2inid)); eval(['ydata=',fcts2val.TempDiodeWZ2inid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempTMPSensCardid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempTMPSensCardid);
+        if ~isnan(col.TempTMPSensCardid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempTMPSensCardid);
+            else
+                x=uint16(statusData(:,col.TempTMPSensCardid)); eval(['ydata=',fcts2val.TempTMPSensCardid,';']);
+            end
         else
-            x=double(statusData(:,col.TempTMPSensCardid)); eval(['ydata=',fcts2val.TempTMPSensCardid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempLaserSyncid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempLaserSyncid);
+        if ~isnan(col.TempLaserSyncid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempLaserSyncid);
+            else
+                x=uint16(statusData(:,col.TempLaserSyncid)); eval(['ydata=',fcts2val.TempLaserSyncid,';']);
+            end
         else
-            x=double(statusData(:,col.TempLaserSyncid)); eval(['ydata=',fcts2val.TempLaserSyncid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempInverterid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempInverterid);
+        if ~isnan(col.TempInverterid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempInverterid);
+            else
+                x=uint16(statusData(:,col.TempInverterid)); eval(['ydata=',fcts2val.TempInverterid,';']);
+            end
         else
-            x=double(statusData(:,col.TempInverterid)); eval(['ydata=',fcts2val.TempInverterid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
     case 'TempArmBackWallid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.TempArmBackWallid);
+        if ~isnan(col.TempArmBackWallid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmBackWallid);
+            else
+                x=uint16(statusData(:,col.TempArmBackWallid)); eval(['ydata=',fcts2val.TempArmBackWallid,';']);
+            end
         else
-            x=double(statusData(:,col.TempArmBackWallid)); eval(['ydata=',fcts2val.TempArmBackWallid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp1PumpOilid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp1PumpOilid);
+    case 'TempBlowerid'
+        if ~isnan(col.TempBlowerid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempBlowerid);
+            else
+                x=uint16(statusData(:,col.TempBlowerid)); eval(['ydata=',fcts2val.TempBlowerid,';']);
+            end
         else
-            x=double(statusData(:,col.TempBlowerid)); eval(['ydata=',fcts2val.TempBlowerid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp12WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp12WPid);
+    case 'TempDiodeWZ2outid'
+        if ~isnan(col.TempDiodeWZ2outid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempDiodeWZ2outid);
+            else
+                x=uint16(statusData(:,col.TempDiodeWZ2outid)); eval(['ydata=',fcts2val.TempDiodeWZ2outid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp12WPid)); eval(['ydata=',fcts2val.Temp12WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp13WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp13WPid);
+    case 'TempCalPlateid'
+        if ~isnan(col.TempCalPlateid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempCalPlateid);
+            else
+                x=uint16(statusData(:,col.TempCalPlateid)); eval(['ydata=',fcts2val.TempCalPlateid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp13WPid)); eval(['ydata=',fcts2val.Temp13WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp14WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp14WPid);
+    case 'TempHVid'
+        if ~isnan(col.TempHVid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempHVid);
+            else
+                x=uint16(statusData(:,col.TempHVid)); eval(['ydata=',fcts2val.TempHVid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp14WPid)); eval(['ydata=',fcts2val.Temp14WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp15WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp15WPid);
+    case 'TempKuvetteid'
+        if ~isnan(col.TempKuvetteid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempKuvetteid);
+            else
+                x=uint16(statusData(:,col.TempKuvetteid)); eval(['ydata=',fcts2val.TempKuvetteid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp15WPid)); eval(['ydata=',fcts2val.Temp15WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp16WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp16WPid);
+    case 'TempPenrayid'
+        if ~isnan(col.TempPenrayid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPenrayid);
+            else
+                x=uint16(statusData(:,col.TempPenrayid)); eval(['ydata=',fcts2val.TempPenrayid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp16WPid)); eval(['ydata=',fcts2val.Temp16WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp17WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp17WPid);
+    case 'TempMCP1id'
+        if ~isnan(col.TempMCP1id)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempMCP1id);
+            else
+                x=uint16(statusData(:,col.TempMCP1id)); eval(['ydata=',fcts2val.TempMCP1id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp17WPid)); eval(['ydata=',fcts2val.Temp17WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp18WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp18WPid);
+    case 'TempMCP2id'
+        if ~isnan(col.TempMCP2id)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempMCP2id);
+            else
+                x=uint16(statusData(:,col.TempMCP2id)); eval(['ydata=',fcts2val.TempMCP2id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp18WPid)); eval(['ydata=',fcts2val.Temp18WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp19WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp19WPid);
+    case 'TempPreamp1id'
+        if ~isnan(col.TempPreamp1id)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPreamp1id);
+            else
+                x=uint16(statusData(:,col.TempPreamp1id)); eval(['ydata=',fcts2val.TempPreamp1id,';']);
+            end
         else
-            x=double(statusData(:,col.Temp19WPid)); eval(['ydata=',fcts2val.Temp19WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp20WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp20WPid);
+    case 'TempPrallplid'
+        if ~isnan(col.TempPrallplid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPrallplid);
+            else
+                x=uint16(statusData(:,col.TempPrallplid)); eval(['ydata=',fcts2val.TempPrallplid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp20WPid)); eval(['ydata=',fcts2val.Temp20WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
-    case 'Temp21WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp21WPid);
+    case 'TempAxisid'
+        if ~isnan(col.TempAxisid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempAxisid);
+            else
+                x=uint16(statusData(:,col.TempAxisid)); eval(['ydata=',fcts2val.TempAxisid,';']);
+            end
         else
-            x=double(statusData(:,col.Temp21WPid)); eval(['ydata=',fcts2val.Temp21WPid,';']);
-        end
-    case 'Temp22WPid'
-        if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.Temp22WPid);
-        else
-            x=double(statusData(:,col.Temp22WPid)); eval(['ydata=',fcts2val.Temp22WPid,';']);
+            ydata=statustime;
+            ydata(:)=NaN;
         end
 end
 
@@ -1796,21 +2316,27 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
-    'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';...
+    'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'PitotAbs';'PitotDiff';...
+    'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
+    'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
+    'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
+    'ccGateWidth2';'ccCounts2';'ccPulses2';
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
     'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
-    'Temp0L';'TempDyelaser';'Temp2L';'TempDiodeEt';'Temp4L';'TempDiodeUV';'Temp6L';'Temp7L';'Temp8L';...
-    'Temp9L';'Temp10L';'Temp11L';'Temp12L';'Temp13L';'Temp14L';'Temp15L';'Temp16L';...
-    'Temp17L';'Temp18L';'Temp19L';'Temp20L';'Temp21L';'Temp22L';...
-    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxis';'TempArmPS';'TempDiodeWZ1in';'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';...
-    'TempInverter';'TempArmBackWall';'TempBlower';'Temp12WP';'Temp13WP';'Temp14WP';'Temp15WP';'Temp16WP';...
-    'Temp17WP';'Temp18WP';'Temp19WP';'Temp20WP';'Temp21WP';'Temp22WP';...
-    'Temp0Lid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';'TempDiodeUVid';'Temp6Lid';'Temp7Lid';'Temp8Lid';...
-    'Temp9Lid';'Temp10Lid';'Temp11Lid';'Temp12Lid';'Temp13Lid';'Temp14Lid';'Temp15Lid';'Temp16Lid';...
-    'Temp17Lid';'Temp18Lid';'Temp19Lid';'Temp20Lid';'Temp21Lid';'Temp22Lid';...
-    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisid';'TempArmPSid';'TempDiodeWZ1inid';'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';...
-    'TempInverterid';'TempArmBackWallid';'TempBlowerid';'Temp12WPid';'Temp13WPid';'Temp14WPid';'Temp15WPid';'Temp16WPid';...
-    'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
+    'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
+    'TempLaserPlate';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';...
+    'TempDiodeUV';'TempSensCardLift';'TempCPULift';'TempDiodeGr';...
+    'TempMissedarmAxis';'TempNumberarmAxis';'TempErrCRCarmAxis';'TempNoResponsearmAxis';
+    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
+    'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
+    'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
+    'TempPrallpl';'TempAxis';...
+    'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
+    'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
+    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
+    'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
+    'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
+    'TempPrallplid';'TempAxisid'};
 set(hObject,'String',vars);
 
 
@@ -1838,20 +2364,24 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
-    'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';...
+    'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'PitotAbs';'PitotDiff';...
+    'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
+    'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
+    'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
+    'ccGateWidth2';'ccCounts2';'ccPulses2';
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
     'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
     'Temp0L';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';'TempDiodeUV';'Temp6L';'Temp7L';'Temp8L';...
     'Temp9L';'Temp10L';'Temp11L';'Temp12L';'Temp13L';'Temp14L';'Temp15L';'Temp16L';...
     'Temp17L';'Temp18L';'Temp19L';'Temp20L';'Temp21L';'Temp22L';...
-    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxis';'TempArmPS';'TempDiodeWZ1in';'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';...
-    'TempInverter';'TempArmBackWall';'TempBlower';'Temp12WP';'Temp13WP';'Temp14WP';'Temp15WP';'Temp16WP';...
+    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';...
+    'TempInverter';'TempArmBackWall';'TempBlower';'TempDiodeWZ2out';'TempCalPlate';'TempHV';'Temp15WP';'Temp16WP';...
     'Temp17WP';'Temp18WP';'Temp19WP';'Temp20WP';'Temp21WP';'Temp22WP';...
     'Temp0Lid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';'TempDiodeUVid';'Temp6Lid';'Temp7Lid';'Temp8Lid';...
     'Temp9Lid';'Temp10Lid';'Temp11Lid';'Temp12Lid';'Temp13Lid';'Temp14Lid';'Temp15Lid';'Temp16Lid';...
     'Temp17Lid';'Temp18Lid';'Temp19Lid';'Temp20Lid';'Temp21Lid';'Temp22Lid';...
-    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisid';'TempArmPSid';'TempDiodeWZ1inid';'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';...
-    'TempInverterid';'TempArmBackWallid';'TempBlowerid';'Temp12WPid';'Temp13WPid';'Temp14WPid';'Temp15WPid';'Temp16WPid';...
+    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';...
+    'TempInverterid';'TempArmBackWallid';'TempBlowerid';'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'Temp15WPid';'Temp16WPid';...
     'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
 set(hObject,'String',vars);
 

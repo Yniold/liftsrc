@@ -220,7 +220,7 @@ col=horusdata.col;
 
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
-Detdata = getappdata(str2double(horusdata.hDetection),'Detdata');
+Detdata = getappdata(horusdata.hDetection,'Detdata');
 device = get(handles.device,'Value')-1;
 
 switch device

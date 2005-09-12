@@ -595,6 +595,7 @@ else % go to old online position
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
 end
+system(['/lift/bin/eCmd @Lift s etalonditheronline']);
 
 
 % --- Executes on button press in offline_pushbutton.

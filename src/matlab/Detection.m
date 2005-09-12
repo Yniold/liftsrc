@@ -784,11 +784,13 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             pause(5);
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
             Valveword=bitset(Valveword,9,0); % switch off blower
+            pause(10);
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+            Valveword=bitset(Valveword,9,0); % make sure blower is off
             Valveword=bitset(Valveword,10,0); % switch off pump
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             set(hObject,'BackgroundColor','c','String','Blower OFF');
-
         end
     end
 end

@@ -71,7 +71,8 @@ data.ActTimer=handles.ActTimer;
 
 % call function varassign.m to create structures containing column numbers
 % and conversion functions for the parameters in the data files
-[data.col,data.fcts2val]=varassign;
+[data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
+[data.col,data.fcts2val]=varassign(data.statusData);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -133,8 +134,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % if armAxis is active
     set(handles.txtarmAxis,'BackgroundColor','g','String','armAxis is ON');
     if bitget(statusData(lastrow,col.Valve2armAxis),14)==0  % if LED is off
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14);
-        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+%        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+%        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     end
 else
     set(handles.txtarmAxis,'BackgroundColor','r','String','armAxis is OFF');                
@@ -204,7 +205,7 @@ elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
             set(Dyelaserdata.toggleN2,'BackgroundColor','g','String','Valve N2 ON');
         end
     end
-    pause(1);
+    pause(0.5);
     Valveword=bitset(Valveword,9,0); % switch air off 
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
@@ -215,7 +216,7 @@ elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
             set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
         end
     end
-    pause(1);
+    pause(0.5);
     Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
     Valveword=bitset(Valveword,9,0); % switch air off 
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
@@ -274,10 +275,24 @@ if isfield(data,'hDetection')
     else
         if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450 
             set(handles.Detection,'BackgroundColor','r');
         else
             set(handles.Detection,'BackgroundColor','c');
+        end
+    end
+end
+if isfield(data,'hFlyDetection')
+    if ishandle(data.hFlyDetection) 
+        set(handles.FlyDetection,'BackgroundColor','g');
+    else
+        if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450 ...
+                | statusData(lastrow,col.Lamp1)>10010 | statusData(lastrow,col.Lamp2)>10010
+            set(handles.FlyDetection,'BackgroundColor','r');
+        else
+            set(handles.FlyDetection,'BackgroundColor','c');
         end
     end
 end
@@ -416,6 +431,18 @@ if isfield(data,'hDetection')
     end
 end
 
+if isfield(data,'hFlyDetection')
+    hFlyDetection=data.hFlyDetection;
+    if ishandle(hFlyDetection), 
+        FlyDetdata = getappdata(hFlyDetection, 'Detdata');
+        if isfield(FlyDetdata,'Timer')
+            stop(FlyDetdata.Timer);
+            delete(FlyDetdata.Timer);
+        end
+        close(hFlyDetection); 
+    end
+end
+
 if isfield(data,'hSensors')
     hSensors=data.hSensors;
     if ishandle(hSensors), 
@@ -504,6 +531,19 @@ end
 setappdata(gcbf, 'horusdata', data);
 
 
+% --- Executes on button press in FlyDetection.
+function FlyDetection_Callback(hObject, eventdata, handles)
+% hObject    handle to FlyDetection (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data = getappdata(gcbf, 'horusdata');
+% open Detection only if it is not already open
+if ~isfield(data,'hFlyDetection')
+    data.hFlyDetection=FlyDetection('handle',num2str(gcbf,16));
+elseif ~ishandle(str2double(data.hFlyDetection)) 
+    data.hFlyDetection=FlyDetection('handle',num2str(gcbf,16));
+end
+setappdata(gcbf, 'horusdata', data);
 
 
 

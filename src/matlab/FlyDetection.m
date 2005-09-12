@@ -1,6 +1,6 @@
 
-function varargout = Detection(varargin)
-% DETECTION M-file for Detection.fig
+function varargout = FlyDetection(varargin)
+% DETECTION M-file for FlyDetection.fig
 %      DETECTION, by itself, creates a new DETECTION or raises the existing
 %      singleton*.
 %
@@ -12,9 +12,9 @@ function varargout = Detection(varargin)
 %
 %      DETECTION('Property','Value',...) creates a new DETECTION or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before Detection_OpeningFunction gets called.  An
+%      applied to the GUI before FlyDetection_OpeningFunction gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to Detection_OpeningFcn via varargin.
+%      stop.  All inputs are passed to FlyDetection_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -23,14 +23,14 @@ function varargout = Detection(varargin)
 
 % Copyright 2002-2003 The MathWorks, Inc.
 
-% Edit the above text to modify the response to help Detection
+% Edit the above text to modify the response to help FlyDetection
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @Detection_OpeningFcn, ...
-                   'gui_OutputFcn',  @Detection_OutputFcn, ...
+                   'gui_OpeningFcn', @FlyDetection_OpeningFcn, ...
+                   'gui_OutputFcn',  @FlyDetection_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -45,15 +45,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before Detection is made visible.
-function Detection_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before FlyDetection is made visible.
+function FlyDetection_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to Detection (see VARARGIN)
+% varargin   command line arguments to FlyDetection (see VARARGIN)
 
-% Choose default command line output for Detection
+% Choose default command line output for FlyDetection
 handles.output = hObject;
 
 % get horus handle
@@ -113,7 +113,7 @@ set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str
 
 % calculate parameters from ADC counts
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
-x=double(statusData(:,col.TempAxisPlate)); eval(['TDet=',fcts2val.TempAxisPlate,';']);
+x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
 x=double(statusData(:,col.DiodeWZ1out)); eval(['DiodeWZ1out=',fcts2val.DiodeWZ1out,';']);
@@ -122,7 +122,9 @@ x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.PNO)); eval(['PNO=',fcts2val.PNO,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
-
+%x=double(statusData(:,col.TPrall)); eval(['TPrall=',fcts2val.TPrall,';']);
+%x=double(statusData(:,col.TLamp)); eval(['TLamp=',fcts2val.TLamp,';']);
+%x=double(statusData(:,col.TPhoto2)); eval(['TPhoto2=',fcts2val.TPhoto2,';']);
 
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtWZ1in,'String',[num2str(DiodeWZ1in(lastrow),3),' mW']);
@@ -134,10 +136,17 @@ set(handles.txtP20,'String',[num2str(P20(lastrow),3),' mbar']);
 set(handles.txtPNO,'String',[num2str(PNO(lastrow),4),' mbar']);
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
+%set(handles.txtTPrall,'String',[num2str(TPrall(lastrow),3),' C']);
+%set(handles.txtTLamp,'String',[num2str(TLamp(lastrow),3),' C']);
+%set(handles.txtTPhoto2,'String',[num2str(TPhoto2(lastrow),3),' C']);
+set(handles.txtPabs,'String',statusData(lastrow,col.PitotAbs));
+set(handles.txtPdiff,'String',statusData(lastrow,col.PitotDiff));
+set(handles.txtLamp1,'String',statusData(lastrow,col.PhototubeLamp1));
+set(handles.txtLamp2,'String',statusData(lastrow,col.PhototubeLamp2));
 set(handles.txtMFC,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
 
 % warn for ADC signals out of allowed range for measurements
-if P20(lastrow)<3 | P20(lastrow)>4
+if P20(lastrow)<1 | P20(lastrow)>5
     set(handles.txtP20,'BackgroundColor','r');
 else 
     set(handles.txtP20,'BackgroundColor',[0.7 0.7 0.7]);
@@ -171,6 +180,16 @@ if statusData(lastrow,col.VHV)<12400
     set(handles.txtVHV,'BackgroundColor','r');
 else 
     set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if statusData(lastrow,col.PhototubeLamp1)>10010;
+    set(handles.txtLamp1,'BackgroundColor','r');
+else 
+    set(handles.txtLamp1,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if statusData(lastrow,col.PhototubeLamp2)>10010;
+    set(handles.txtLamp2,'BackgroundColor','r');
+else 
+    set(handles.txtLamp2,'BackgroundColor',[0.7 0.7 0.7]);
 end
 
 
@@ -220,6 +239,34 @@ if get(handles.chkTDet,'Value')
 end 
 if get(handles.chkMFC,'Value')
     plot(handles.axes1,statustime(iZeit),MFCFlow(iZeit),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkPabs,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PitotAbs),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkPdiff,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PitotDiff),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkTPrall,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPrallpl),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkTLamp,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPenray),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkTPhoto2,'Value')
+%    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TPhoto2),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkLamp1,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PhototubeLamp1),'r');
+    hold(handles.axes1,'on');
+end 
+if get(handles.chkLamp2,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PhototubeLamp2),'r');
     hold(handles.axes1,'on');
 end 
 xlim(handles.axes1,[limTime1 limTime2]);
@@ -524,11 +571,38 @@ end
 
 
 
-% check Butterfly
-if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
-    set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
+% check Lamp
+if bitget(statusData(lastrow,col.Valve2armAxis),11)
+    set(handles.tglLamp,'BackgroundColor','g','String','Lamp ON');
 else
-    set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
+    set(handles.tglLamp,'BackgroundColor','c','String','Lamp OFF');
+end
+
+% check Pitot Zeroing Valve
+if bitget(statusData(lastrow,col.Valve1armAxis),12)
+    set(handles.tglPitot,'BackgroundColor','g','String','Pitot 0 ON');
+else
+    set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF');
+end
+
+% check Heaters
+% Heater Lamp
+if bitget(statusData(lastrow,col.Valve2armAxis),3)
+    set(handles.tglHeatLamp,'BackgroundColor','g');
+else
+    set(handles.tglHeatLamp,'BackgroundColor','c');
+end
+% Heater Prallplatte
+if bitget(statusData(lastrow,col.Valve2armAxis),4)
+    set(handles.tglHeatPrall,'BackgroundColor','g');
+else
+    set(handles.tglHeatPrall,'BackgroundColor','c');
+end
+% Heater Phototube 2
+if bitget(statusData(lastrow,col.Valve2armAxis),5)
+    set(handles.tglHeatPhoto2,'BackgroundColor','g');
+else
+    set(handles.tglHeatPhoto2,'BackgroundColor','c');
 end
 
 % check solenoids
@@ -567,13 +641,27 @@ if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
 else 
     set(handles.toggleNOPurge,'BackgroundColor','g');
 end
-
+if bitget(statusData(lastrow,col.Valve1armAxis),14)==0
+    set(handles.tglN2O,'BackgroundColor','c');
+else 
+    set(handles.tglN2O,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),13)==0
+    set(handles.tglVac,'BackgroundColor','c');
+else 
+    set(handles.tglVac,'BackgroundColor','g');
+end
+if bitget(statusData(lastrow,col.Valve2armAxis),12)==0
+    set(handles.tglKuv,'BackgroundColor','c');
+else 
+    set(handles.tglKuv,'BackgroundColor','g');
+end
 
 data.lastrow=lastrow;
 setappdata(handles.output, 'Detdata', data);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = Detection_OutputFcn(hObject, eventdata, handles) 
+function varargout = FlyDetection_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -786,12 +874,11 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             Valveword=bitset(Valveword,9,0); % switch off blower
             pause(10);
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-            Valveword=bitset(Valveword,9,0); % switch off blower
+            Valveword=bitset(Valveword,9,0); % make sure blower is off
             Valveword=bitset(Valveword,10,0); % switch off pump
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             set(hObject,'BackgroundColor','c','String','Blower OFF');
-
         end
     end
 end
@@ -846,7 +933,7 @@ end
 
 
 % --- Executes on button press in togglebutton5.
-function togButterfly_Callback(hObject, eventdata, handles)
+function tglLamp_Callback(hObject, eventdata, handles)
 % hObject    handle to togglebutton5 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -859,11 +946,11 @@ lastrow=data.lastrow;
 col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,0);  % Butterfly is normally open 
-        set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),11);
+        set(hObject,'BackgroundColor','g','String','Lamp ON');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2);
-        set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),11,0);
+        set(hObject,'BackgroundColor','c','String','Lamp OFF');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -912,7 +999,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -939,7 +1026,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -966,7 +1053,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -993,7 +1080,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -1020,7 +1107,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 % --- Executes on button press in toggleNO2.
@@ -1046,7 +1133,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -1073,7 +1160,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
 
@@ -1179,5 +1266,260 @@ function chkDiodeUV_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chkDiodeUV
+
+
+
+
+% --- Executes on button press in chkTPrall.
+function chkTPrall_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTPrall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkTPrall
+
+
+% --- Executes on button press in chkPabs.
+function chkPabs_Callback(hObject, eventdata, handles)
+% hObject    handle to chkPabs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkPabs
+
+
+% --- Executes on button press in tglN2O.
+function tglN2O_Callback(hObject, eventdata, handles)
+% hObject    handle to tglN2O (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglN2O
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+end
+
+% --- Executes on button press in tglVac.
+function tglVac_Callback(hObject, eventdata, handles)
+% hObject    handle to tglVac (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglVac
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+end
+
+
+% --- Executes on button press in tglKuv.
+function tglKuv_Callback(hObject, eventdata, handles)
+% hObject    handle to tglKuv (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglKuv
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+end
+
+
+% --- Executes on button press in tglKuvN2.
+%function tglKuvN2_Callback(hObject, eventdata, handles)
+% hObject    handle to tglKuv (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglKuv
+%if statusData(lastrow,col.ValidSlaveDataFlag)
+%    if get(hObject,'Value')
+%        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),13);
+%        set(hObject,'BackgroundColor','g');
+%    else
+%        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),13,0);
+%        set(hObject,'BackgroundColor','c');
+%    end
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+%    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18 needed to keep other valves working%
+%end
+
+
+% --- Executes on button press in chkLamp1.
+function chkLamp1_Callback(hObject, eventdata, handles)
+% hObject    handle to chkLamp1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkLamp1
+
+
+% --- Executes on button press in chkLamp2.
+function chkLamp2_Callback(hObject, eventdata, handles)
+% hObject    handle to chkLamp2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkLamp2
+
+
+
+
+% --- Executes on button press in tglPitot.
+function tglPitot_Callback(hObject, eventdata, handles)
+% hObject    handle to tglPitot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Hint: get(hObject,'Value') returns toggle state of tglPitot
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12);
+        set(hObject,'BackgroundColor','g','String','Pitot 0 ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+        set(hObject,'BackgroundColor','c','String','Pitot 0 OFF');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+end
+
+% --- Executes on button press in tglHeatLamp.
+function tglHeatLamp_Callback(hObject, eventdata, handles)
+% hObject    handle to tglHeatLamp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Hint: get(hObject,'Value') returns toggle state of tglHeatLamp
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),3);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),3,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+end
+
+% --- Executes on button press in chkTLamp.
+function chkTLamp_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTLamp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkTLamp
+
+
+% --- Executes on button press in chkTPhoto2.
+function chkTPhoto2_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTPhoto2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkTPhoto2
+
+
+% --- Executes on button press in tglHeatPrall.
+function tglHeatPrall_Callback(hObject, eventdata, handles)
+% hObject    handle to tglHeatPrall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tglHeatPrall
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),4);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),4,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+end
+
+
+% --- Executes on button press in tglHeatPhoto2.
+function tglHeatPhoto2_Callback(hObject, eventdata, handles)
+% hObject    handle to tglHeatPhoto2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Hint: get(hObject,'Value') returns toggle state of tglHeatPhoto2
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),5);
+        set(hObject,'BackgroundColor','g');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),5,0);
+        set(hObject,'BackgroundColor','c');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+end
 
 
