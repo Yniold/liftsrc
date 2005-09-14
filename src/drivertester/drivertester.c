@@ -1,8 +1,11 @@
 /*
- * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-14 16:05:00 $ by $Author: rudolf $
+ * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-14 18:17:09 $ by $Author: rudolf $
  *
  * $Log: drivertester.c,v $
- * Revision 1.2  2005-09-14 16:05:00  rudolf
+ * Revision 1.3  2005-09-14 18:17:09  rudolf
+ * changes for 3rd 16bit ADC Carc, WIP
+ *
+ * Revision 1.2  2005/09/14 16:05:00  rudolf
  * fix
  *
  *
@@ -123,6 +126,17 @@ int main()
 	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4BA + (0x0005 << 16));
 	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4BC + (0x0006 << 16));
 	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4BE + (0x0007 << 16));
+
+	// init ADC 16bit #3(#4)
+		
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4C0 + (0x0000 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4C2 + (0x0001 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4C4 + (0x0002 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4C6 + (0x0003 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4C8 + (0x0004 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4CA + (0x0005 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4CC + (0x0006 << 16));
+	ioctl(fd, SERBUS_IOCTWRITEWORD, 0xa4CE + (0x0007 << 16));
 	
 	// init ADC 24 Bit Card #1
 
@@ -144,7 +158,10 @@ int main()
 		uiVentState = ioctl(fd, SERBUS_IOCHREADWORD, 0xA40A);
 		uiVentState = uiVentState ^ (1<<13);
 		ioctl(fd, SERBUS_IOCTWRITEWORD, 0xA40A + (uiVentState<<16));
-		
+
+		printf("\n\rCounterCard: ADC Converter:\n\r");
+		printf("=====================================\n\r");
+				
 		for(iLoop = 0; iLoop < 8; iLoop++)
 		{
 			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xA300 + 2*iLoop);
@@ -174,41 +191,8 @@ int main()
 				printf("\n\r");
 		};
 		
-		printf("\n\r24bit AIN8eXX: Dumping 24bit ADC Memory:\n\r");
-		printf("==============================================\n\r");
-		
-		printf("Card Signature: ");
-		
-		for(iLoop = 0; iLoop < 8; iLoop++)
-		{
-			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xA500 + 2*iLoop);
-			printf("%c%c",(char)(retval & 0x00FF),(char)(retval >> 8));
-		};
-		printf("\n");
-		
-		for(iLoop = 0; iLoop < 64; iLoop++)
-		{
-			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xa500 + 2*iLoop);
-	
-			if(retval < 0)
-				perror("Error during ioctl() ");
-	
-			if(iLoop %8 == 0)
-				printf("0x%04x: ",0xA500+2*iLoop);
-				
-			printf("0x%04X ",retval);
-	
-			if(iLoop % 8 == 7)
-				printf("\n\r");
-		};
-		
-		for(iLoop = 0; iLoop < 8; iLoop++)
-		{
-			printf("Channel#%d: %08xl\n\r", iLoop, ReadADC24Channel(iLoop));
-		};
-		
 		printf("\n\r16bit AIN8XX #1: Dumping 16bit ADC Memory:\n\r");
-		printf("==============================================\n\r");
+		printf("=======================================================\n\r");
 		
 		for(iLoop = 0; iLoop < 8; iLoop++)
 		{
@@ -227,7 +211,7 @@ int main()
 		};
 	
 		printf("\n\r16bit AIN8XX #2: Dumping 16bit ADC Memory:\n\r");
-		printf("==============================================\n\r");
+		printf("=======================================================\n\r");
 		
 		for(iLoop = 0; iLoop < 8; iLoop++)
 		{
@@ -245,18 +229,37 @@ int main()
 				printf("\n\r");
 		};
 		
-		printf("\n\rMFC Actual Readouts:\n\r");
-		printf("==============================================\n\r");
+		printf("\n\r16bit AIN8XX #3: Dumping 16bit ADC Memory:\n\r");
+		printf("=======================================================\n\r");
 		
-		for(iLoop = 0; iLoop < 4; iLoop++)
+		for(iLoop = 0; iLoop < 8; iLoop++)
 		{
 			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xa4C0 + 2*iLoop);
 	
 			if(retval < 0)
 				perror("Error during ioctl() ");
 	
-			if(iLoop %4 == 0)
+			if(iLoop %8 == 0)
 				printf("0x%04x: ",0xA4C0+2*iLoop);
+				
+			printf("%05d ",retval);
+	
+			if(iLoop % 8 == 7)
+				printf("\n\r");
+		};
+		
+		printf("\n\rMFC @0xa4E0 Actual Readouts:\n\r");
+		printf("===============================\n\r");
+		
+		for(iLoop = 0; iLoop < 4; iLoop++)
+		{
+			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xa4E0 + 2*iLoop);
+	
+			if(retval < 0)
+				perror("Error during ioctl() ");
+	
+			if(iLoop %4 == 0)
+				printf("0x%04x: ",0xA4E0+2*iLoop);
 				
 			printf("%05d ",retval);
 	
