@@ -1,9 +1,9 @@
 /*
- * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-14 16:03:44 $ by $Author: rudolf $
+ * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-14 16:05:00 $ by $Author: rudolf $
  *
  * $Log: drivertester.c,v $
- * Revision 1.1  2005-09-14 16:03:44  rudolf
- * added driver test tool to CVS
+ * Revision 1.2  2005-09-14 16:05:00  rudolf
+ * fix
  *
  *
  *
