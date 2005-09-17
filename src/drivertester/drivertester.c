@@ -1,8 +1,11 @@
 /*
- * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-14 18:17:09 $ by $Author: rudolf $
+ * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-17 15:54:04 $ by $Author: rudolf $
  *
  * $Log: drivertester.c,v $
- * Revision 1.3  2005-09-14 18:17:09  rudolf
+ * Revision 1.4  2005-09-17 15:54:04  rudolf
+ * added debug code for 8MHz backplane
+ *
+ * Revision 1.3  2005/09/14 18:17:09  rudolf
  * changes for 3rd 16bit ADC Carc, WIP
  *
  * Revision 1.2  2005/09/14 16:05:00  rudolf
@@ -266,6 +269,13 @@ int main()
 			if(iLoop % 4 == 3)
 				printf("\n\r");
 		};
+		
+		iLoop = ioctl(fd, SERBUS_IOCHREADWORD, 0xa460); // VentCard#1 Readback Voltage
+		printf("Readback ValveCard#1 ADC Setpoint: %05d\n\r",iLoop);
+		
+		iLoop = ioctl(fd, SERBUS_IOCHREADWORD, 0xa462); // VentCard#1 Readback Voltage
+		printf("Readback ValveCard#2 ADC Setpoint: %05d\n\r",iLoop);
+		
 	};
 	
 	// close
