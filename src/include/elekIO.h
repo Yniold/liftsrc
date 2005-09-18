@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-07-23 09:00:29 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-18 22:44:49 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.14  2005-07-23 09:00:29  rudolf
+* Revision 1.15  2005-09-18 22:44:49  martinez
+* switch ARM LED
+*
+* Revision 1.14  2005/07/23 09:00:29  rudolf
 * added etalonditheronline command
 *
 * Revision 1.13  2005/06/28 15:34:12  harder
@@ -191,6 +194,8 @@ enum EtalonActionType { /* update also in etalon.c */
     ETALON_ACTION_TOGGLE_OFFLINE_RIGHT,        /* etalon is on the right OFFLINE Position */
     ETALON_ACTION_NOP,                         /* etalon is doing no atuomated operation */
     ETALON_ACTION_DITHER_ONLINE,               /* stay online and dither */
+    ETALON_ACTION_DITHER_ONLINE_LEFT,          /* stay online and dither left side */
+    ETALON_ACTION_DITHER_ONLINE_RIGHT,         /* stay online and dither right side */
     ETALON_ACTION_SCAN,                        /* etalon is scanning */
     ETALON_ACTION_HOME,                        /* etalon is on a home run */
     ETALON_ACTION_RECAL,                       /* etalon goes to home and comes back to same position */
@@ -413,10 +418,10 @@ enum InstrumentActionType { /* update also in instrument.c */
 
 
 struct InstrumentFlagsType {                      /* set of flags for the instrument Server status */
-    uint16_t  StatusSave:1;                       /* indicates if Status should be saved to disk */
-    uint16_t  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
-    enum EtalonActionType EtalonAction;           /* indicates what the etalon is doing */
-	enum InstrumentActionType InstrumentAction;		/* indicates what the instrument is doing (measuring, calibrating, etc.) */	
+  uint16_t  StatusSave:1;                       /* indicates if Status should be saved to disk */
+  uint16_t  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
+  enum EtalonActionType EtalonAction;           /* indicates what the etalon is doing */
+  enum InstrumentActionType InstrumentAction;		/* indicates what the instrument is doing (measuring, calibrating, etc.) */	
   /*  enum DebugType        Debug;                    /* indicates */ 
 }; /* ServerFlagsType */
 
@@ -424,10 +429,10 @@ struct InstrumentFlagsType {                      /* set of flags for the instru
 
 struct TSCType 
 {
-    uint16_t  TSCWord0;
-    uint16_t  TSCWord1;
-    uint16_t  TSCWord2;
-    uint16_t  TSCWord3;
+  uint16_t  TSCWord0;
+  uint16_t  TSCWord1;
+  uint16_t  TSCWord2;
+  uint16_t  TSCWord3;
 }; /* TSCStruct */
 
 union TSCUn 

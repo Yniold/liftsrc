@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-07-23 09:00:15 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-09-18 22:44:49 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.6  2005-07-23 09:00:15  rudolf
+* Revision 1.7  2005-09-18 22:44:49  martinez
+* switch ARM LED
+*
+* Revision 1.6  2005/07/23 09:00:15  rudolf
 * added etalonditheronline command
 *
 * Revision 1.5  2005/07/05 08:26:02  rudolf
@@ -364,6 +367,7 @@ int main(int argc, char *argv[])
     int EndOfSession;
 
 
+
     ArgCount=1;
     if (argc<2) {
       printf("Usage :\t%s  OnlinePos +StepOfflineLeft +StepDither\n", argv[0]);
@@ -510,10 +514,12 @@ int main(int argc, char *argv[])
 		  
 		case ETALON_ACTION_TOGGLE:
 		case ETALON_ACTION_TOGGLE_ONLINE_LEFT:         /* etalon is on the left ONLINE Position */
-		case ETALON_ACTION_TOGGLE_ONLINE_RIGHT:         /* etalon is on the right ONLINE Position */
+		case ETALON_ACTION_TOGGLE_ONLINE_RIGHT:        /* etalon is on the right ONLINE Position */
 		case ETALON_ACTION_TOGGLE_OFFLINE_LEFT:        /* etalon is on the left OFFLINE Position */
 		case ETALON_ACTION_TOGGLE_OFFLINE_RIGHT:       /* etalon is on the right OFFLINE Position */
 		case ETALON_ACTION_DITHER_ONLINE:              /* etalon is in dither only mode */
+		case ETALON_ACTION_DITHER_ONLINE_LEFT:         /* etalon is in dither only mode */
+		case ETALON_ACTION_DITHER_ONLINE_RIGHT:        /* etalon is in dither only mode */
 
 		  printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
 		  switch (State) {

@@ -134,8 +134,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % if armAxis is active
     set(handles.txtarmAxis,'BackgroundColor','g','String','armAxis is ON');
     if bitget(statusData(lastrow,col.Valve2armAxis),14)==0  % if LED is off
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),14);
-%        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-%        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     end
 else
     set(handles.txtarmAxis,'BackgroundColor','r','String','armAxis is OFF');                
