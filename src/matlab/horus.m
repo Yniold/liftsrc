@@ -465,10 +465,10 @@ end
 if isfield(data,'hFlyOp')
     hFlyOp=data.hFlyOp;
     if ishandle(hFlyOp), 
-        FlyDetdata = getappdata(hFlyOp, 'Detdata');
-        if isfield(FlyDetdata,'Timer')
-            stop(FlyDetdata.Timer);
-            delete(FlyDetdata.Timer);
+        FlyOpdata = getappdata(hFlyOp, 'Detdata');
+        if isfield(FlyOpdata,'Timer')
+            stop(FlyOpdata.Timer);
+            delete(FlyOpdata.Timer);
         end
         close(hFlyOp); 
     end

@@ -1735,7 +1735,7 @@ function toggleDyelaser_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
@@ -1760,7 +1760,7 @@ function toggleVacuumDye_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
@@ -1785,7 +1785,7 @@ function toggleN2Dye_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
@@ -1810,7 +1810,7 @@ function toggleAmbientDye_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
@@ -1973,7 +1973,7 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 
 % read in current online position from gui txt-field
 curonlinepos=str2double(get(handles.txtonline,'String'));
@@ -2047,7 +2047,7 @@ function toggleFilament_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 
 if get(hObject,'Value')
@@ -2080,7 +2080,7 @@ function toggleShutter_Callback(hObject, eventdata, handles)
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
 col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
+data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 if get(hObject,'Value')
     Valveword=bitset(statusData(lastrow,col.ValveLift),13);

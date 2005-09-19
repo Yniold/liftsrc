@@ -68,6 +68,7 @@ if length(varargin)==2 & varargin{1}=='handle'
 end
 
 % open tcpip port for communication with Laser
+echotcpip('off');
 echotcpip('on',10001);
 tcpdata.tport=tcpip('xpLaser',10001);
 set(tcpdata.tport,'ReadAsyncMode','continuous');
