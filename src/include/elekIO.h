@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-18 22:44:49 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-19 22:16:24 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.15  2005-09-18 22:44:49  martinez
+* Revision 1.16  2005-09-19 22:16:24  harder
+* extended Temperature Card sensors to 40, added info for second bank and changed addresses of temp card status words
+*
+* Revision 1.15  2005/09/18 22:44:49  martinez
 * switch ARM LED
 *
 * Revision 1.14  2005/07/23 09:00:29  rudolf
@@ -337,16 +340,18 @@ struct DCDC4CardType {
 
 
 /*************************************************************************************************************/
-#define MAX_TEMP_SENSOR   23
+#define MAX_TEMP_SENSOR   40
 #define MAX_TEMP_SENSOR_CARD_LIFT 1
 #define MAX_TEMP_SENSOR_CARD_WP 1
-#define MAX_TEMP_TIMEOUT  100                                         /* maximum Timeout to wait for Temperature Card to be ready */
+#define MAX_TEMP_TIMEOUT  100                                        /* maximum Timeout to wait for Temperature Card to be ready */
 #define MAX_TEMP_MISSED_READING 5                                    /* number of maximal reading failures before removing a temperature */
-#define ELK_TEMP_BASE           0xb000                                /* Base of Temperature Card */
-#define ELK_TEMP_CTRL           (ELK_TEMP_BASE+0x00f8)                /* Controlword */
-#define ELK_TEMP_FOUND          (ELK_TEMP_BASE+0x00fe)                /* Number of Sensors found */
-#define ELK_TEMP_ERR_CRC        (ELK_TEMP_BASE+0x00fa)                /* Number of CRC Errors */
-#define ELK_TEMP_ERR_NORESPONSE (ELK_TEMP_BASE+0x00fc)                /* Number of No Response Errors */
+#define ELK_TEMP_BASE           0xb000                               /* Base of Temperature Card */
+#define ELK_TEMP_CTRL           (ELK_TEMP_BASE+0x000)                /* Controlword */
+#define ELK_TEMP_FOUND          (ELK_TEMP_BASE+0x002)                /* Number of Sensors found */
+#define ELK_TEMP_ERR_CRC        (ELK_TEMP_BASE+0x004)                /* Number of CRC Errors */
+#define ELK_TEMP_ERR_NORESPONSE (ELK_TEMP_BASE+0x006)                /* Number of No Response Errors */
+#define ELK_TEMP_DATA           (ELK_TEMP_BASE+0x008)                /* here the data field starts */
+#define ELK_TEMP_DATA2          (ELK_TEMP_BASE + 0x200)              /* offset to next bank */
 
 #define ELK_TEMP_BUSYFLAG        0x0001                               /* we Request access */
 #define ELK_TEMP_UPDATEFLAG      0x0002                               /* AVR is busy       */
