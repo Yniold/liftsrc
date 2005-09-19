@@ -124,8 +124,11 @@ x=double(statusData(:,col.DiodeGr)); eval(['DiodeGr=',fcts2val.DiodeGr,';']);
 x=double(statusData(:,col.PVent)); eval(['PVent=',fcts2val.PVent,';']);
 x=double(statusData(:,col.PRef)); eval(['PRef=',fcts2val.PRef,';']);
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
-x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
-
+if ~isnan(col.TempDyelaser)
+    x=double(statusData(:,col.TempDyelaser)); eval(['TDyelaser=',fcts2val.TempDyelaser,';']);
+else
+    TDyelaser=statustime; TDyelaser(:)=NaN;
+end
 
 set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
@@ -148,6 +151,13 @@ if TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
 end
+
+if statusData(lastrow,col.IFilament)<10100
+    set(handles.txtIFilament,'BackgroundColor','r');
+else
+    set(handles.txtIFilament,'BackgroundColor',[0.7,0.7,0.7]);
+end
+
 
 Etalonhelp=int32(statusData(:,col.etaSetPosLow));
 EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
@@ -242,7 +252,7 @@ if get(handles.radioTime,'Value');
     xlim(handles.axes2,[minTime maxTime]);
 else
     hold(handles.axes2,'off');
-    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0)); 
+    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0),'.'); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minEtpos maxEtpos]);
 end
@@ -269,9 +279,9 @@ end
 
 % check solenoids
 if bitget(statusData(lastrow,col.ValveLift),11)==0
-    set(handles.toggleVacuum,'BackgroundColor','c');
+    set(handles.toggleVacuumDye,'BackgroundColor','c');
 else 
-    set(handles.toggleVacuum,'BackgroundColor','g');
+    set(handles.toggleVacuumDye,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),8)==0
     set(handles.toggleDyelaser,'BackgroundColor','c');
@@ -279,16 +289,15 @@ else
     set(handles.toggleDyelaser,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),9)==0
-    set(handles.toggleN2,'BackgroundColor','c');
+    set(handles.toggleN2Dye,'BackgroundColor','c');
 else 
-    set(handles.toggleN2,'BackgroundColor','g');
+    set(handles.toggleN2Dye,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),10)==0
-    set(handles.toggleAmbient,'BackgroundColor','c');
+    set(handles.toggleAmbientDye,'BackgroundColor','c');
 else 
-    set(handles.toggleAmbient,'BackgroundColor','g');
+    set(handles.toggleAmbientDye,'BackgroundColor','g');
 end
-
 
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
@@ -588,6 +597,7 @@ else % go to old online position
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
 end
+system(['/lift/bin/eCmd @Lift s etalonditheronline']);
 
 
 % --- Executes on button press in offline_pushbutton.
