@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-06-29 15:11:05 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-19 22:17:03 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.40  2005-06-29 15:11:05  harder
+ * Revision 1.41  2005-09-19 22:17:03  harder
+ * extended Temperature Card sensors to 40, added readout for second bank in Temp card
+ *
+ * Revision 1.40  2005/06/29 15:11:05  harder
  * added set mask support for slave
  *
  * Revision 1.39  2005/06/28 15:35:22  harder
@@ -1671,6 +1674,7 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
     extern struct MessagePortType MessageOutPortList[];
 	
     int            Card;
+    int            TempBaseAddr;
     int            Sensor;
     long           TimeOut=0;
     uint16_t       ret;
@@ -1723,18 +1727,21 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
 		
                 // now check each sensor
+		// we can have more sensors, but for now we use only 30
+		// they are split in two groups, 24 & 6
+		TempBaseAddr=ELK_TEMP_DATA; // first range
                 for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
-                {
-                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
-                    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
+		  {
+		    if (Sensor==25) TempBaseAddr=(ELK_TEMP_DATA2-(Sensor*10));
+		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+TempBaseAddr);
+		    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
-                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
-                } /* for Sensor */
-		
+		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+TempBaseAddr);
+		  } /* for Sensor */
 		
                 //      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
                 // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1794,17 +1801,35 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 ptrElekStatus->TempSensCardSlave[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
 		
                 // now check each sensor
+
+
+		// we can have more sensors, but for now we use only 30
+		// they are split in two groups, 24 & 6
+		TempBaseAddr=ELK_TEMP_DATA; // first range
                 for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
-                {
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
-                    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
+		  {
+		    if (Sensor==25) TempBaseAddr=(ELK_TEMP_DATA2-(Sensor*10));
+		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+TempBaseAddr);
+		    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
-                } /* for Sensor */
+		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+TempBaseAddr);
+                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+TempBaseAddr);
+		  } /* for Sensor */
+
+		// for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
+                //{
+                //    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+ELK_TEMP_BASE);
+                //    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
+                //    //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
+                //    //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
+                //    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+ELK_TEMP_BASE);
+                //    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+ELK_TEMP_BASE);
+                //    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+ELK_TEMP_BASE);
+                //    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+ELK_TEMP_BASE);
+                // } /* for Sensor */
 		
 		
                 //      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
@@ -2209,13 +2234,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.40 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
