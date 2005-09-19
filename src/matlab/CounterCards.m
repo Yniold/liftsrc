@@ -220,16 +220,16 @@ col=horusdata.col;
 
 data = getappdata(handles.output, 'Gatedata');
 lastrow=data.lastrow;
-Detdata = getappdata(horusdata.hDetection,'Detdata');
+FlyDetdata = getappdata(horusdata.hFlyDetection,'Detdata');
 device = get(handles.device,'Value')-1;
 
 switch device
     case 0
-        Mask=Detdata.PMTMask;
+        Mask=FlyDetdata.PMTMask;
     case 1
-        Mask=Detdata.MCP1Mask;
+        Mask=FlyDetdata.MCP1Mask;
     case 2
-        Mask=Detdata.MCP2Mask;
+        Mask=FlyDetdata.MCP2Mask;
 end
 
 MaskOption=get(handles.ToggleMaskUnmask,'Value');
