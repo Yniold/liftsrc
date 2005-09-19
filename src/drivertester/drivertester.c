@@ -1,8 +1,11 @@
 /*
- * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-17 15:54:04 $ by $Author: rudolf $
+ * $RCSfile: drivertester.c,v $ last changed on $Date: 2005-09-19 12:51:01 $ by $Author: rudolf $
  *
  * $Log: drivertester.c,v $
- * Revision 1.4  2005-09-17 15:54:04  rudolf
+ * Revision 1.5  2005-09-19 12:51:01  rudolf
+ * increased memory space of temp sensor card to double size
+ *
+ * Revision 1.4  2005/09/17 15:54:04  rudolf
  * added debug code for 8MHz backplane
  *
  * Revision 1.3  2005/09/14 18:17:09  rudolf
@@ -184,6 +187,19 @@ int main()
 		for(iLoop = 0; iLoop < 128; iLoop++)
 		{
 			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xB000 + 2*iLoop);
+	
+			if(retval < 0)
+				perror("Error during ioctl() ");
+	
+			printf("0x%04X ",retval);
+	
+			if(iLoop % 8 == 7)
+				printf("\n\r");
+		};
+		
+		for(iLoop = 0; iLoop < 128; iLoop++)
+		{
+			retval = ioctl(fd, SERBUS_IOCHREADWORD, 0xB200 + 2*iLoop);
 	
 			if(retval < 0)
 				perror("Error during ioctl() ");
