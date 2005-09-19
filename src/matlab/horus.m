@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 11-Jul-2005 16:04:23
+% Last Modified by GUIDE v2.5 19-Sep-2005 20:08:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -300,6 +300,21 @@ if isfield(data,'hFlyDetection')
         end
     end
 end
+if isfield(data,'hFlyOp')
+    if ishandle(data.hFlyOp) 
+        set(handles.FlyOp,'BackgroundColor','g');
+    else
+        if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450 ...
+                | statusData(lastrow,col.Lamp1)>10010 | statusData(lastrow,col.Lamp2)>10010 ...
+                | statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>51 | TDyelaser(lastrow)<49 |statusData(lastrow,col.IFilament)<10100
+            set(handles.FlyOp,'BackgroundColor','r');
+        else
+            set(handles.FlyOp,'BackgroundColor','c');
+        end
+    end
+end
 if isfield(data,'hSensors')
     if ishandle(data.hSensors)
         set(handles.Sensors,'BackgroundColor','g');
@@ -444,6 +459,18 @@ if isfield(data,'hFlyDetection')
             delete(FlyDetdata.Timer);
         end
         close(hFlyDetection); 
+    end
+end
+
+if isfield(data,'hFlyOp')
+    hFlyOp=data.hFlyOp;
+    if ishandle(hFlyOp), 
+        FlyDetdata = getappdata(hFlyOp, 'Detdata');
+        if isfield(FlyDetdata,'Timer')
+            stop(FlyDetdata.Timer);
+            delete(FlyDetdata.Timer);
+        end
+        close(hFlyOp); 
     end
 end
 
@@ -617,5 +644,24 @@ elseif ~ishandle(str2double(data.hCalibration))
     data.hCalibration=Calibration('handle',num2str(gcbf,16));
 end
 setappdata(gcbf, 'horusdata', data); 
+
+
+
+
+% --- Executes on button press in FlyOp.
+function FlyOp_Callback(hObject, eventdata, handles)
+% hObject    handle to FlyOp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of FlyOp
+data = getappdata(gcbf, 'horusdata');
+% open Detection only if it is not already open
+if ~isfield(data,'hFlyOp')
+    data.hFlyOp=FlyOp('handle',num2str(gcbf,16));
+elseif ~ishandle(str2double(data.hFlyOp)) 
+    data.hFlyOp=FlyOp('handle',num2str(gcbf,16));
+end
+setappdata(gcbf, 'horusdata', data);
 
 
