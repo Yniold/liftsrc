@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-19 22:17:03 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-19 22:34:16 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.41  2005-09-19 22:17:03  harder
+ * Revision 1.42  2005-09-19 22:34:16  harder
+ * minor bug. activated exclusive access on t Card, why was it commented out n the second place ?
+ *
+ * Revision 1.41  2005/09/19 22:17:03  harder
  * extended Temperature Card sensors to 40, added readout for second bank in Temp card
  *
  * Revision 1.40  2005/06/29 15:11:05  harder
@@ -1716,8 +1719,8 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
             else 
             {
                 // we set the busy flag to get exclusive access
-                //    ptrElekStatus->TempSensCard[Card].Control.Field.Busy=1;
-                // ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCard[Card].Control.Word );
+                ptrElekStatus->TempSensCardMaster[Card].Control.Field.Busy=1;
+                ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardMaster[Card].Control.Word );
 		
                 ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
 		
@@ -1725,7 +1728,7 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 ptrElekStatus->TempSensCardMaster[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
-		
+		//		printf("found %d sensors\n",ptrElekStatus->TempSensCardMaster[Card].NumSensor);
                 // now check each sensor
 		// we can have more sensors, but for now we use only 30
 		// they are split in two groups, 24 & 6
@@ -1733,14 +1736,14 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 for (Sensor=0; Sensor<MAX_TEMP_SENSOR; Sensor++) 
 		  {
 		    if (Sensor==25) TempBaseAddr=(ELK_TEMP_DATA2-(Sensor*10));
-		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+TempBaseAddr);
+		    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordTemp=elkReadData((Sensor*10)+TempBaseAddr);
 		    //	ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].Temperatur=
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempMain+
                     //  ptrElekStatus->TempSensCard[Card].TempSensor[Sensor].TempSens.TempFrac/16;
-		    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+TempBaseAddr);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+TempBaseAddr);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+TempBaseAddr);
-                    ptrElekStatus->TempSensCardSlave[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+TempBaseAddr);
+		    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[0]=elkReadData((Sensor*10)+2+TempBaseAddr);
+                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[1]=elkReadData((Sensor*10)+4+TempBaseAddr);
+                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordID[2]=elkReadData((Sensor*10)+6+TempBaseAddr);
+                    ptrElekStatus->TempSensCardMaster[Card].TempSensor[Sensor].Word.WordLimit=elkReadData((Sensor*10)+8+TempBaseAddr);
 		  } /* for Sensor */
 		
                 //      sprintf(buf,"...GetTemp: Timeout %d Sensor0 %x",TimeOut,ptrElekStatus->TempSensCard[0].TempSensor[0].Word.WordTemp );
@@ -2234,13 +2237,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.41 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
