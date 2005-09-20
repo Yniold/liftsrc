@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-20 12:05:01 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-20 14:36:53 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.44  2005-09-20 12:05:01  harder
+ * Revision 1.45  2005-09-20 14:36:53  harder
+ * removed ADC24, increased num of ADC in WP to 3
+ *
+ * Revision 1.44  2005/09/20 12:05:01  harder
  * fixed bug in temp card handling
  *
  * Revision 1.43  2005/09/20 11:52:17  harder
@@ -481,15 +484,15 @@ void LoadModulesConfig(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	ptrElekStatus->ADCCardSlave[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
 		
 	// ADC 24 bit
-	for (Card=0; Card<MAX_24BIT_ADC_CARDS_WP; Card ++) 
-	{
-            ptrElekStatus->ADC24CardsSlave[Card].NumSamples=0;
+/*       	for (Card=0; Card<MAX_24BIT_ADC_CARDS_WP; Card ++)  */
+/* 	{ */
+/*             ptrElekStatus->ADC24CardsSlave[Card].NumSamples=0; */
 		
-            for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++) 
-            {
-                ptrElekStatus->ADC24CardsSlave[Card].ADCChannelData[Channel].ADCChannelData = 0x00;	    
-            } /* for Channel */
-	} /* for Card */
+/*             for (Channel=0;Channel<MAX_ADC_CHANNEL_PER_CARD; Channel++)  */
+/*             { */
+/*                 ptrElekStatus->ADC24CardsSlave[Card].ADCChannelData[Channel].ADCChannelData = 0x00;	     */
+/*             } /\* for Channel *\/ */
+/* 	} /\* for Card *\/ */
 	
 	// MFC Channels
 	for (Card=0; Card<MAX_MFC_CARD_WP; Card ++) {
@@ -2250,13 +2253,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.44 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.45 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.44 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.45 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.44 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.45 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.44 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.45 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   

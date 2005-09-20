@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-19 22:16:24 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-20 14:36:53 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.16  2005-09-19 22:16:24  harder
+* Revision 1.17  2005-09-20 14:36:53  harder
+* removed ADC24, increased num of ADC in WP to 3
+*
+* Revision 1.16  2005/09/19 22:16:24  harder
 * extended Temperature Card sensors to 40, added info for second bank and changed addresses of temp card status words
 *
 * Revision 1.15  2005/09/18 22:44:49  martinez
@@ -53,7 +56,7 @@
 #define INIT_MODULE_SUCCESS 1
 
 #define MAX_ADC_CARD_LIFT              2       /* number of 16bit ADC Cards in Lift */
-#define MAX_ADC_CARD_WP                2       /* number of 16bit ADC Cards in Wingpod */
+#define MAX_ADC_CARD_WP                3       /* number of 16bit ADC Cards in Wingpod */
 #define MAX_ADC_CHANNEL_PER_CARD       8       /* number of Channels on each 16bit ADC Card */
 
 #define MAX_24BIT_ADC_CARDS_LIFT       0       /* number of 24bit ADC Cards in Lift */
@@ -110,7 +113,7 @@
 #define ELK_ADC_BASE_WP      (ELK_BACKPLANE_BASE+0x80)
 
 #define ELK_MFC_BASE         (ELK_BACKPLANE_BASE+0xa0)          /* Base adr. of MFC ADC channels */ 
-#define ELK_MFC_BASE_WP      (ELK_BACKPLANE_BASE+0xc0)
+#define ELK_MFC_BASE_WP      (ELK_BACKPLANE_BASE+0xe0)
 
 
 #define ELK_ADC_CONFIG          (0x0010)                        /* add to base addr */
@@ -502,7 +505,7 @@ struct elekStatusType {                                             /* combined 
   struct timeval             TimeOfDaySlave;
   struct CounterCardType     CounterCardSlave;                            /* OH and HO2*/
   struct ADCCardType         ADCCardSlave[MAX_ADC_CARD_WP];
-  struct ADC24CardType       ADC24CardsSlave[MAX_24BIT_ADC_CARDS_WP];
+  /*  struct ADC24CardType       ADC24CardsSlave[MAX_24BIT_ADC_CARDS_WP];   /* 24bit card is not working, so.... */
   struct MFCCardType         MFCCardSlave[MAX_ADC_CARD_WP];
   struct ValveCardType       ValveCardSlave[MAX_VALVE_CARD_WP];
   struct TempSensorCardType  TempSensCardSlave[MAX_TEMP_SENSOR_CARD_WP];
