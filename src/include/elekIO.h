@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-20 14:36:53 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-20 21:29:51 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.17  2005-09-20 14:36:53  harder
+* Revision 1.18  2005-09-20 21:29:51  harder
+* fixed order of temp card status words
+*
+* Revision 1.17  2005/09/20 14:36:53  harder
 * removed ADC24, increased num of ADC in WP to 3
 *
 * Revision 1.16  2005/09/19 22:16:24  harder
@@ -350,9 +353,9 @@ struct DCDC4CardType {
 #define MAX_TEMP_MISSED_READING 5                                    /* number of maximal reading failures before removing a temperature */
 #define ELK_TEMP_BASE           0xb000                               /* Base of Temperature Card */
 #define ELK_TEMP_CTRL           (ELK_TEMP_BASE+0x000)                /* Controlword */
-#define ELK_TEMP_FOUND          (ELK_TEMP_BASE+0x002)                /* Number of Sensors found */
-#define ELK_TEMP_ERR_CRC        (ELK_TEMP_BASE+0x004)                /* Number of CRC Errors */
-#define ELK_TEMP_ERR_NORESPONSE (ELK_TEMP_BASE+0x006)                /* Number of No Response Errors */
+#define ELK_TEMP_ERR_CRC        (ELK_TEMP_BASE+0x002)                /* Number of CRC Errors */
+#define ELK_TEMP_ERR_NORESPONSE (ELK_TEMP_BASE+0x004)                /* Number of No Response Errors */
+#define ELK_TEMP_FOUND          (ELK_TEMP_BASE+0x006)                /* Number of Sensors found */
 #define ELK_TEMP_DATA           (ELK_TEMP_BASE+0x008)                /* here the data field starts */
 #define ELK_TEMP_DATA2          (ELK_TEMP_BASE + 0x200)              /* offset to next bank */
 
