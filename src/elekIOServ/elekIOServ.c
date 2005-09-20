@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-19 22:34:16 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-20 11:52:17 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.42  2005-09-19 22:34:16  harder
+ * Revision 1.43  2005-09-20 11:52:17  harder
+ * fixed bugs in temp card handling
+ *
+ * Revision 1.42  2005/09/19 22:34:16  harder
  * minor bug. activated exclusive access on t Card, why was it commented out n the second place ?
  *
  * Revision 1.41  2005/09/19 22:17:03  harder
@@ -1688,13 +1691,18 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
     {
         for (Card=0; Card<MAX_TEMP_SENSOR_CARD_LIFT; Card++) 
         {
+	  // get current control word status
+	  ptrElekStatus->TempSensCardMaster[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
+	  // we set the busy flag to get exclusive access
+	  ptrElekStatus->TempSensCardMaster[Card].Control.Field.Busy=1;
+	  ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardMaster[Card].Control.Word );
 		
-            // check if AVR busy
-            do 
+	  // check if AVR busy
+	  do 
             {
-                ptrElekStatus->TempSensCardMaster[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
+	      ptrElekStatus->TempSensCardMaster[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
             } 
-            while ((TimeOut++<MAX_TEMP_TIMEOUT)&&(ptrElekStatus->TempSensCardMaster[Card].Control.Field.Update));
+	  while ((TimeOut++<MAX_TEMP_TIMEOUT)&&(ptrElekStatus->TempSensCardMaster[Card].Control.Field.Update));
 			
             if (TimeOut>MAX_TEMP_TIMEOUT) 
             {
@@ -1718,9 +1726,6 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
             } 
             else 
             {
-                // we set the busy flag to get exclusive access
-                ptrElekStatus->TempSensCardMaster[Card].Control.Field.Busy=1;
-                ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardMaster[Card].Control.Word );
 		
                 ptrElekStatus->TempSensCardMaster[Card].NumMissed=0;              // reset Missed Reading Counter
 		
@@ -1728,7 +1733,7 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 ptrElekStatus->TempSensCardMaster[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
-		//		printf("found %d sensors\n",ptrElekStatus->TempSensCardMaster[Card].NumSensor);
+      		printf("found %d sensors\n",ptrElekStatus->TempSensCardMaster[Card].NumSensor);
                 // now check each sensor
 		// we can have more sensors, but for now we use only 30
 		// they are split in two groups, 24 & 6
@@ -1761,8 +1766,13 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
     //**************************
     else
     {
-        for (Card=0; Card<MAX_TEMP_SENSOR_CARD_WP; Card++) {
-		
+    	for (Card=0; Card<MAX_TEMP_SENSOR_CARD_WP; Card++) {
+              
+		// we want exclusive access, get control word, mark busy and write back
+		ptrElekStatus->TempSensCardSlave[Card].Control.Word=(uint16_t)elkReadData(ELK_TEMP_CTRL);
+		ptrElekStatus->TempSensCardSlave[Card].Control.Field.Busy=1;
+		ret=elkWriteData(ELK_TEMP_CTRL, ptrElekStatus->TempSensCardSlave[Card].Control.Word );
+
             // check if AVR busy
             do 
             {
@@ -2237,13 +2247,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.43 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.43 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.43 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.42 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.43 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
