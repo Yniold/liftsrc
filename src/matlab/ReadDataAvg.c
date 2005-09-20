@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.21  2005-09-12 10:06:20  martinez
+ * Revision 1.22  2005-09-20 15:52:32  martinez
+ * deleted ADC24, one more slave ADC card, max temp sensors increased to 40
+ *
+ * Revision 1.21  2005/09/12 10:06:20  martinez
  * *** empty log message ***
  *
  * Revision 1.20  2005/07/08 10:13:23  rudolf
@@ -40,7 +43,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.21 $ */
+ /* $Revision: 1.22 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -1164,7 +1167,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 /******************* ADC Cards Slave ***************************/     	 
     
-  for (k=0; k<MAX_ADC_CARD_LIFT; k++) {
+  for (k=0; k<MAX_ADC_CARD_WP; k++) {
 
 	#ifdef D_HEADER
 	  mexPrintf("NumSamples Slave %d %d\n",count,1+count/nelements);      
@@ -1205,36 +1208,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
   /*  mexPrintf("%d/%d %d %d\n",count,dims[0]*dims[1],dims[0],dims[1]);
   */
-
-
-    
-/******************* ADC24 Cards Slave ***************************/     	 
-    
-  for (k=0; k<MAX_24BIT_ADC_CARDS_WP; k++) {
-
-	#ifdef D_HEADER
-	  mexPrintf("NumSamples ADC24 Slave %d %d\n",count,1+count/nelements);      
-	#endif
-    for (i=0; i<nelements;i++) 
-	  *(z+count++)=elekStatus[i].ADC24CardsSlave[k].NumSamples;       
-    
-    for (j=0;j<MAX_24BIT_ADC_CHANNEL_PER_CARD;j++) {       	
-	  #ifdef D_HEADER
-		mexPrintf("adc24Data Low Slave #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
-      for (i=0; i<nelements;i++) 
-          *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelData[j].ADCChannelDataLowHigh.ADCDataLow;
-	  #ifdef D_HEADER
-		mexPrintf("adc24Data High Slave #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
-      for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADC24CardsSlave[k].ADCChannelData[j].ADCChannelDataLowHigh.ADCDataHigh;       
-
-	}
-      
-      
-  }
-    
 
 
     
