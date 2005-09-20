@@ -11,7 +11,7 @@ function [col,fcts2val]=varassign(Data);
 % edit 3rd column if sensor calibrations change
 
 colTemp0L=742;
-for i=0:22
+for i=0:39
     x=median(uint16(Data(:,colTemp0L+3*i+2))); 
     eval(['Tempid(',num2str(i+1),',:)=','dec2hex(x);']);
     if strcmp('6B92',Tempid(i+1,:)) colTempLaserPlate=colTemp0L+3*i;
@@ -23,12 +23,13 @@ for i=0:22
     elseif strcmp('3D47',Tempid(i+1,:)) colTempSensCardLift=colTemp0L+3*i;
     elseif strcmp('403F',Tempid(i+1,:)) colTempCPULift=colTemp0L+3*i;
     elseif strcmp('614B',Tempid(i+1,:)) colTempDiodeGr=colTemp0L+3*i;
+    else colTempLUnknown=colTemp0L+3*i;
     end
 end
 clear Tempid;
 
-colTemp0WP=924;
-for i=0:22
+colTemp0WP=991;
+for i=0:39
     x=median(uint16(Data(:,colTemp0WP+3*i+2))); 
     eval(['Tempid(',num2str(i+1),',:)=','dec2hex(x);']);
     if strcmp('3E04',Tempid(i+1,:)) colTempKuvette=colTemp0WP+3*i;
@@ -53,6 +54,7 @@ for i=0:22
     elseif strcmp('5AC5',Tempid(i+1,:)) colTempWZ2in=colTemp0WP+3*i;
     elseif strcmp('A2EF',Tempid(i+1,:)) colTempSensCard=colTemp0WP+3*i;
     elseif strcmp('63EB',Tempid(i+1,:)) colTempWZ2out=colTemp0WP+3*i;
+    else colTempWPUnknown=colTemp0WP+3*i;
     end
 end
 
@@ -65,6 +67,7 @@ if exist('colTempDiodeUV')==0 colTempDiodeUV=NaN; end
 if exist('colTempSensCardLift')==0 colTempSensCardLift=NaN; end
 if exist('colTempCPULift')==0 colTempCPULift=NaN; end
 if exist('colTempDiodeGr')==0 colTempDiodeGr=NaN; end
+if exist('colTempLUnknown')==0 colTempLUnknown=NaN; end
 
 if exist('colTempKuvette')==0 colTempKuvette=NaN; end
 if exist('colTempPenray')==0 colTempPenray=NaN; end
@@ -88,7 +91,7 @@ if exist('colTempWZ1in')==0 colTempWZ1in=NaN; end
 if exist('colTempWZ2in')==0 colTempWZ2in=NaN; end
 if exist('colTempSensCard')==0 colTempSensCard=NaN; end
 if exist('colTempWZ2out')==0 colTempWZ2out=NaN; end
-
+if exist('colTempWPUnknown')==0 colTempLUnknown=NaN; end
 
 statusDataCols=...
 {'PMTThresh',7,'5*(bitand(x,4095))/4096','V';
@@ -171,67 +174,67 @@ statusDataCols=...
 'DiodeGrConfig',694,'x*NaN','';
 'PVentConfig',695,'x*NaN','';
 'PVentSupplyVConfig',696,'x*NaN','';
-'NumSamplesarmAxisADC2',866,'x*5','s';
-'P1000',867,'x*NaN','mbar';
-'P1000SumDat',868,'x*NaN','mbar';
-'P1000SumSqr',869,'x*NaN','mbar';
-'P20',870,'(x-10019)/(13140-10019)*26.664','mbar';
-'P20SumDat',871,'(x-10019)/(13140-10019)*26.664','mbar';
-'P20SumSqr',872,'(x-10019)/(13140-10019)*26.664','mbar';
-'PNO',873,'(x-10130)/(10600-10130)*998.7','mbar';
-'PNOSumDat',874,'(x-10130)/(10600-10130)*998.7','mbar';
-'PNOSumSqr',875,'(x-10130)/(10600-10130)*998.7','mbar';
-'VHV',876,'(x-10000)*13.28205/3030','V';
-'VHVSumDat',877,'x*NaN','V';
-'VHVSumSqr',878,'x*NaN','V';
-'TDet',879,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
-'TDetSumDat',880,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
-'TDetSumSqr',881,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
-'DiodeWZ1out',882,'(x-10000.0)/(11040-10000)*7.3','mW';
-'DiodeWZ1outSumDat',883,'(x-10000.0)/(11040-10000)*7.3','mW';
-'DiodeWZ1outSumSqr',884,'(x-10000.0)/(11040-10000)*7.3','mW';
-'DiodeWZ2out',885,'(x-10000.0)/(10710-10000)*5.5','mW';
-'DiodeWZ2outSumDat',886,'(x-10000.0)/(10710-10000)*5.5','mW';
-'DiodeWZ2outSumSqr',887,'(x-10000.0)/(10710-10000)*5.5','mW';
-'DiodeWZ1in',888,'0.0047728*(x-10000.0)','mW';
-'DiodeWZ1inSumDat',889,'0.0047728*(x-10000.0)','mW';
-'DiodeWZ1inSumSqr',890,'0.0047728*(x-10000.0)','mW';
-'DiodeWZ2in',840,'0.0052868*(x-9997)','mW';
-'DiodeWZ2inSumDat',841,'0.0052868*(x-9997)','mW';
-'DiodeWZ2inSumSqr',842,'0.0052868*(x-9997)','mW';
-'PitotAbs',846,'(x-10000).*1500./3030','mbar';
-'PitotAbsSumDat',847,'(x-10000).*1500./3030','mbar';
-'PitotAbsSumSqr',848,'(x-10000).*1500./3030','mbar';
-'PitotDiff',849,'(x-10000)*5/3030','mbar';
-'PitotDiffSumDat',850,'(x-10000)*5/3030','mbar';
-'PitotDiffSumSqr',851,'(x-10000)*5/3030','mbar';
+'NumSamplesarmAxisADC2',917,'x*5','s';
+'P1000',918,'x*NaN','mbar';
+'P1000SumDat',919,'x*NaN','mbar';
+'P1000SumSqr',920,'x*NaN','mbar';
+'P20',921,'(x-10019)/(13140-10019)*26.664','mbar';
+'P20SumDat',922,'(x-10019)/(13140-10019)*26.664','mbar';
+'P20SumSqr',923,'(x-10019)/(13140-10019)*26.664','mbar';
+'PNO',924,'(x-10130)/(10600-10130)*998.7','mbar';
+'PNOSumDat',925,'(x-10130)/(10600-10130)*998.7','mbar';
+'PNOSumSqr',926,'(x-10130)/(10600-10130)*998.7','mbar';
+'VHV',927,'(x-10000)*13.28205/3030','V';
+'VHVSumDat',928,'x*NaN','V';
+'VHVSumSqr',929,'x*NaN','V';
+'TDet',930,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
+'TDetSumDat',931,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
+'TDetSumSqr',932,'1./(3.3539646E-3+2.565409E-4.*log(680./3000.*(5.*1750./(x-10000)-1))+1.9243889E-6.*(log(680./3000.*(5.*1750./(x-10000)-1))).^2+1.0969244E-7.*(log(680./3000.*(5.*1750./(x-10000)-1))).^3)-273.15','C';
+'DiodeWZ1out',933,'(x-10000.0)/(11040-10000)*7.3','mW';
+'DiodeWZ1outSumDat',934,'(x-10000.0)/(11040-10000)*7.3','mW';
+'DiodeWZ1outSumSqr',935,'(x-10000.0)/(11040-10000)*7.3','mW';
+'DiodeWZ2out',936,'(x-10000.0)/(10710-10000)*5.5','mW';
+'DiodeWZ2outSumDat',937,'(x-10000.0)/(10710-10000)*5.5','mW';
+'DiodeWZ2outSumSqr',938,'(x-10000.0)/(10710-10000)*5.5','mW';
+'DiodeWZ1in',939,'0.0047728*(x-10000.0)','mW';
+'DiodeWZ1inSumDat',940,'0.0047728*(x-10000.0)','mW';
+'DiodeWZ1inSumSqr',941,'0.0047728*(x-10000.0)','mW';
+'DiodeWZ2in',891,'0.0052868*(x-9997)','mW';
+'DiodeWZ2inSumDat',892,'0.0052868*(x-9997)','mW';
+'DiodeWZ2inSumSqr',893,'0.0052868*(x-9997)','mW';
+'PitotAbs',897,'(x-10000).*1500./3030','mbar';
+'PitotAbsSumDat',898,'(x-10000).*1500./3030','mbar';
+'PitotAbsSumSqr',899,'(x-10000).*1500./3030','mbar';
+'PitotDiff',900,'(x-10000)*5/3030','mbar';
+'PitotDiffSumDat',901,'(x-10000)*5/3030','mbar';
+'PitotDiffSumSqr',902,'(x-10000)*5/3030','mbar';
 'IFilament',716,'x*NaN','A';
 'IFilamentSumDat',717,'x*NaN','A';
 'IFilamentSumSqr',718,'x*NaN','A';
 'Ophir',719,'x','W';
 'OphirSumDat',720,'x','W';
 'OphirSumSqr',721,'x','W';
-'P1000Config',891,'x*NaN','';
-'P20Config',892,'x*NaN','';
-'PNOConfig',893,'x*NaN','';
-'VHVConfig',894,'x*NaN','';
-'TDetSupplyVConfig',895,'x*NaN','';
-'DiodeWZ1outConfig',896,'x*NaN','';
-'DiodeWZ2outConfig',897,'x*NaN','';
-'DiodeWZ1inConfig',898,'x*NaN','';
-'DiodeWZ2inConfig',860,'x*NaN','';
-'PitotAbsConfig',861,'x*NaN','';
-'PitotDiffConfig',862,'x*NaN','';
+'P1000Config',942,'x*NaN','';
+'P20Config',943,'x*NaN','';
+'PNOConfig',944,'x*NaN','';
+'VHVConfig',945,'x*NaN','';
+'TDetSupplyVConfig',946,'x*NaN','';
+'DiodeWZ1outConfig',947,'x*NaN','';
+'DiodeWZ2outConfig',948,'x*NaN','';
+'DiodeWZ1inConfig',949,'x*NaN','';
+'DiodeWZ2inConfig',911,'x*NaN','';
+'PitotAbsConfig',913,'x*NaN','';
+'PitotDiffConfig',914,'x*NaN','';
 'IFilamentConfig',728,'x*NaN','';
 'OphirConfig',729,'x*NaN','';
 'MFCSetFlow',730,'20*x/255','sccm';
 'MFCFlow',731,'20*(x-9996)/(11447-9996)','sccm';
 'ValveVoltLift',732,'x/140','V';
 'ValveLift',733,'x*NaN','';
-'Valve1VoltarmAxis',916,'x/140','V';
-'Valve1armAxis',917,'x*NaN','';
-'Valve2VoltarmAxis',918,'x/140','V';
-'Valve2armAxis',919,'x*NaN','';
+'Valve1VoltarmAxis',983,'x/140','V';
+'Valve1armAxis',984,'x*NaN','';
+'Valve2VoltarmAxis',985,'x/140','V';
+'Valve2armAxis',986,'x*NaN','';
 'DCDC4ch0SwitchV',734,'x/140','V';
 'DCDC4ch1SwitchV',735,'x/140','V';
 'DCDC4ch2SwitchV',736,'x/140','V';
@@ -267,10 +270,13 @@ statusDataCols=...
 'TempDiodeGr',colTempDiodeGr,'x/100-273.15','C';
 'TempDiodeGrStatus',colTempDiodeGr+1,'x*NaN','';
 'TempDiodeGrid',colTempDiodeGr+2,'dec2hex(x)','';
-'TempMissedarmAxis',920,'x*NaN','';
-'TempNumberarmAxis',921,'dec2hex(x)','';
-'TempErrCRCarmAxis',922,'x*NaN','';
-'TempNoResponsearmAxis',923,'dec2hex(x)','';
+'TempLUnknown',colTempLUnknown,'x/100-273.15','C';
+'TempLUnknownStatus',colTempLUnknown+1,'x*NaN','';
+'TempLUnknownid',colTempLUnknown+2,'dec2hex(x)','';
+'TempMissedarmAxis',987,'x*NaN','';
+'TempNumberarmAxis',988,'dec2hex(x)','';
+'TempErrCRCarmAxis',989,'x*NaN','';
+'TempNoResponsearmAxis',990,'dec2hex(x)','';
 'TempPump',colTempPump,'x/100-273.15','C';
 'TempPumpStatus',colTempPump+1,'x*NaN','';
 'TempPumpid',colTempPump+2,'dec2hex(x)','';
@@ -337,25 +343,30 @@ statusDataCols=...
 'TempAxis',colTempAxis,'x/100-273.15','C';
 'TempAxisStatus',colTempAxis+1,'x*NaN','';
 'TempAxisid',colTempAxis+2,'x*NaN','';
-'EtalonAction',811,'x*NaN','';
-'etaOnlinePosLow',812,'x*NaN','';
-'etaOnlinePosHigh',813,'x*NaN','';
-'RAvgOnOffFlag',814,'x*NaN','';
-'InstrumentAction',815,'x*NaN','';
-'GPSsecondsUTC',993,'x','s';
-'GPSLongitude',994,'x/60-180','deg';
-'GPSLongitudeDecimals',995,'x/10000','min';
-'GPSLatitude',996,'x/60-90','deg';
-'GPSLatitudeDecimals',997,'x/10000','min';
-'GPSAltitude',998,'x','m';
-'GPSHDOP',999,'x','';
-'GPSnumSat',1000,'x','';
-'GPSLastValidData',1001,'x*5','s';
-'GPSGroundSpeed',1002,'x/100','m/s';
-'GPSHeading',1003,'x/10','deg';
-'ValidSlaveDataFlag',1004,'x','';
-'PhototubeLamp1',1006,'x*NaN','';
-'PhototubeLamp2',1008,'x*NaN',''};
+'TempWPUnknown',colTempWPUnknown,'x/100-273.15','C';
+'TempWPUnknownStatus',colTempWPUnknown+1,'x*NaN','';
+'TempWPUnknownid',colTempWPUnknown+2,'dec2hex(x)','';
+'EtalonAction',862,'x*NaN','';
+'etaOnlinePosLow',863,'x*NaN','';
+'etaOnlinePosHigh',864,'x*NaN','';
+'RAvgOnOffFlag',865,'x*NaN','';
+'InstrumentAction',866,'x*NaN','';
+'GPSsecondsUTC',1111,'x','s';
+'GPSLongitude',1112,'x/60-180','deg';
+'GPSLongitudeDecimals',1113,'x/10000','min';
+'GPSLatitude',1114,'x/60-90','deg';
+'GPSLatitudeDecimals',1115,'x/10000','min';
+'GPSAltitude',1116,'x','m';
+'GPSHDOP',1117,'x','';
+'GPSnumSat',1118,'x','';
+'GPSLastValidData',1119,'x*5','s';
+'GPSGroundSpeed',1120,'x/100','m/s';
+'GPSHeading',1121,'x/10','deg';
+'ValidSlaveDataFlag',1122,'x','';
+'PhototubeLamp1',951,'x*NaN','';
+'PhototubeLamp2',954,'x*NaN','';
+'PCuvette',957,'x*NaN','mbar';
+'PCuvetteSupply',960,'x*NaN',''};
 
 % create structure 'col' with field names taken from 1st column of
 % statusDataCols and values from 2nd column
