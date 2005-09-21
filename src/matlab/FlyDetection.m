@@ -630,12 +630,12 @@ if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
 else 
     set(handles.toggleOHInj,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
     set(handles.toggleNO1,'BackgroundColor','c');
 else 
     set(handles.toggleNO1,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
     set(handles.toggleNO2,'BackgroundColor','c');
 else 
     set(handles.toggleNO2,'BackgroundColor','g');
@@ -1103,10 +1103,10 @@ lastrow=data.lastrow;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -1129,10 +1129,10 @@ lastrow=data.lastrow;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7);
         set(hObject,'BackgroundColor','g');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),6,0);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),7,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on

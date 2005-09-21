@@ -73,7 +73,7 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+handles.serport=serial('/dev/ttyS1','BaudRate',19200,'Terminator','CR');
 set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
 try fopen(handles.serport);
 catch 
