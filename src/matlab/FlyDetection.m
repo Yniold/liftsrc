@@ -127,8 +127,12 @@ if ~isnan(col.TempPrallpl)
 else
     TempPrallpl=statustime; TempPrallpl(:)=NaN;
 end
-%x=double(statusData(:,col.TLamp)); eval(['TLamp=',fcts2val.TLamp,';']);
-%x=double(statusData(:,col.TPhoto2)); eval(['TPhoto2=',fcts2val.TPhoto2,';']);
+if ~isnan(col.TempPenray)
+    x=double(statusData(:,col.TempPenray)); eval(['TempPenray=',fcts2val.TempPenray,';']);
+else
+    TempPenray=statustime; TempPenray(:)=NaN;
+end
+x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtWZ1in,'String',[num2str(DiodeWZ1in(lastrow),3),' mW']);
@@ -141,8 +145,8 @@ set(handles.txtPNO,'String',[num2str(PNO(lastrow),4),' mbar']);
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
 set(handles.txtTPrall,'String',[num2str(TempPrallpl(lastrow),3),' C']);
-%set(handles.txtTLamp,'String',[num2str(TLamp(lastrow),3),' C']);
-%set(handles.txtTPhoto2,'String',[num2str(TPhoto2(lastrow),3),' C']);
+set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
+set(handles.txtPCuv,'String',[num2str(PCuvette(lastrow),3),'']);
 set(handles.txtPabs,'String',statusData(lastrow,col.PitotAbs));
 set(handles.txtPdiff,'String',statusData(lastrow,col.PitotDiff));
 set(handles.txtLamp1,'String',statusData(lastrow,col.PhototubeLamp1));
@@ -261,8 +265,8 @@ if get(handles.chkTLamp,'Value')
     plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPenray),'r');
     hold(handles.axes1,'on');
 end 
-if get(handles.chkTPhoto2,'Value')
-%    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TPhoto2),'r');
+if get(handles.chkPCuv,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PCuvette),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkLamp1,'Value')
@@ -1469,13 +1473,13 @@ function chkTLamp_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkTLamp
 
 
-% --- Executes on button press in chkTPhoto2.
-function chkTPhoto2_Callback(hObject, eventdata, handles)
-% hObject    handle to chkTPhoto2 (see GCBO)
+% --- Executes on button press in chkPCuv.
+function chkPCuv_Callback(hObject, eventdata, handles)
+% hObject    handle to chkPCuv (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkTPhoto2
+% Hint: get(hObject,'Value') returns toggle state of chkPCuv
 
 
 % --- Executes on button press in tglHeatPrall.

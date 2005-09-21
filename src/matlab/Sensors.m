@@ -193,6 +193,12 @@ switch char(xpar)
         else
             x=double(statusData(:,col.PNO)); eval(['xdata=',fcts2val.PNO,';']);
         end
+    case 'PCuvette'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PCuvette);
+        else
+            x=double(statusData(:,col.PCuvette)); eval(['xdata=',fcts2val.PCuvette,';']);
+        end
     case 'IFilament'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.IFilament);
@@ -1270,6 +1276,12 @@ switch char(ypar)
         else
             x=double(statusData(:,col.PNO)); eval(['ydata=',fcts2val.PNO,';']);
         end
+    case 'PCuvette'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.PCuvette);
+        else
+            x=double(statusData(:,col.PCuvette)); eval(['ydata=',fcts2val.PCuvette,';']);
+        end
     case 'IFilament'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.IFilament);
@@ -2312,7 +2324,7 @@ function listboxX_CreateFcn(hObject, eventdata, handles)
 % Hint: listbox controls usually have a white background on Windows.
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
-    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
+    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
@@ -2360,7 +2372,7 @@ function listboxY_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
-    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
+    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
