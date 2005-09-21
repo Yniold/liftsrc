@@ -3,12 +3,15 @@
 // Implementation
 // ============================================
 
-// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-01-31 11:36:31 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-09-21 21:02:48 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.c,v $
-// Revision 1.3  2005-01-31 11:36:31  rudolf
+// Revision 1.4  2005-09-21 21:02:48  rudolf
+// fixed Latitude and Longitude parsing, changed tty to S1
+//
+// Revision 1.3  2005/01/31 11:36:31  rudolf
 // Added parsing of NMEA GPVTG datafield (groundspeed and heading)
 //
 // Revision 1.2  2005/01/27 18:16:12  rudolf
@@ -304,8 +307,6 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	// Time
 	//
-	//printf("Processing GPGGA\n");
-
 	if(GetField(pData, pField, 0, MAXFIELD))
 	{
 		// Hour
@@ -332,10 +333,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 1, MAXFIELD))
 	{
-		dGGALatitude = atof((unsigned char*)pField+2) / 60.0;
-		pField[2] = '\0';
-		dGGALatitude += atof((unsigned char *)pField);
-
+		dGGALatitude = atof((unsigned char*)pField);
 	}
 	if(GetField(pData, pField, 2, MAXFIELD))
 	{
@@ -350,9 +348,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 3, MAXFIELD))
 	{
-		dGGALongitude = atof((unsigned char *)pField+3) / 60.0;
-		pField[3] = '\0';
-		dGGALongitude += atof((unsigned char *)pField);
+		dGGALongitude = atof((unsigned char *)pField);
 	}
 	if(GetField(pData, pField, 4, MAXFIELD))
 	{
@@ -427,7 +423,6 @@ void ProcessGPVTG(unsigned char *pData)
 {
    unsigned char pField[MAXFIELD];
    unsigned char pBuff[10];
-
    if(GetField(pData, pField, 0, MAXFIELD))
    {
       // True Heading

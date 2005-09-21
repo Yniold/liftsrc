@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-06-27 10:12:42 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-09-21 21:02:48 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.11  2005-06-27 10:12:42  rudolf
+// Revision 1.12  2005-09-21 21:02:48  rudolf
+// fixed Latitude and Longitude parsing, changed tty to S1
+//
+// Revision 1.11  2005/06/27 10:12:42  rudolf
 // changed TimerStates numbering (HH), fixed bug
 //
 // Revision 1.10  2005/06/26 13:02:17  rudolf
@@ -77,7 +80,7 @@ struct SlaveListType {
 // Globals for GPS
 // ========================
 
-unsigned char port[256] = "/dev/ttyS0";   // serial device used for the incoming GPS data
+unsigned char port[256] = "/dev/ttyS1";   // serial device used for the incoming GPS data
 unsigned char pDataBuffer[1024];
 
 char aProgramName[] = "GPS";              // needed for serial.c 's debug output
