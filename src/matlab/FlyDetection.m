@@ -65,7 +65,7 @@ end
 handles.Timer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
       'BusyMode','drop',...
-      'TimerFcn', {@DetRefresh,handles});   
+      'TimerFcn', {@FlyDetRefresh,handles});   
 
 data.Timer=handles.Timer;
 
@@ -75,7 +75,7 @@ setappdata(handles.output, 'Detdata', data);
 start(handles.Timer);
 
 
-function DetRefresh(arg1,arg2,handles)
+function FlyDetRefresh(arg1,arg2,handles)
 
 data = getappdata(handles.output, 'Detdata');
 
