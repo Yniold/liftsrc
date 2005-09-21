@@ -132,6 +132,8 @@ if ~isnan(col.TempPenray)
 else
     TempPenray=statustime; TempPenray(:)=NaN;
 end
+x=double(statusData(:,col.PitotAbs)); eval(['PitotAbs=',fcts2val.PitotAbs,';']);
+x=double(statusData(:,col.PitotDiff)); eval(['PitotDiff=',fcts2val.PitotDiff,';']);
 x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
@@ -146,9 +148,9 @@ set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
 set(handles.txtTPrall,'String',[num2str(TempPrallpl(lastrow),3),' C']);
 set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
-set(handles.txtPCuv,'String',[num2str(PCuvette(lastrow),3),'']);
-set(handles.txtPabs,'String',statusData(lastrow,col.PitotAbs));
-set(handles.txtPdiff,'String',statusData(lastrow,col.PitotDiff));
+set(handles.txtPCuv,'String',statusData(lastrow,col.PCuvette));
+set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
+set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
 set(handles.txtLamp1,'String',statusData(lastrow,col.PhototubeLamp1));
 set(handles.txtLamp2,'String',statusData(lastrow,col.PhototubeLamp2));
 set(handles.txtMFC,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
