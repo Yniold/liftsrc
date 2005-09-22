@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 04-Jul-2005 12:23:03
+% Last Modified by GUIDE v2.5 22-Sep-2005 12:37:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -167,9 +167,9 @@ Etalonhelp=int32(statusData(:,col.etaCurPosLow));
 EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
 EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
 
-%Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-%EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-%EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
+EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
+EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
 
 Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
 OnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
@@ -180,6 +180,7 @@ EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
+set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
@@ -228,6 +229,11 @@ if get(handles.chkEtSetPos,'Value')
     plot(handles.axes1,statustime(iZeit),EtalonSetPos(iZeit));
     hold(handles.axes1,'on');
 end 
+
+if get(handles.chkEtEncPos,'Value')
+    plot(handles.axes1,statustime(iZeit),EtalonEncPos(iZeit));
+    hold(handles.axes1,'on');
+end
 
 if get(handles.chkTDyelaser,'Value')
     plot(handles.axes1,statustime(iZeit),TDyelaser(iZeit));
@@ -918,5 +924,16 @@ else
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setpos)]);
 end
+
+
+
+
+% --- Executes on button press in chkEtEncPos.
+function chkEtEncPos_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtEncPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
 
 
