@@ -73,7 +73,7 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-handles.serport=serial('/dev/ttyS1','BaudRate',19200,'Terminator','CR');
+handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
 set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
 try fopen(handles.serport);
 catch 
@@ -146,7 +146,7 @@ else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39
+if TDyelaser(lastrow)>51 | TDyelaser(lastrow)<49
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
