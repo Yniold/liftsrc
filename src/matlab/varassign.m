@@ -203,9 +203,9 @@ statusDataCols=...
 'DiodeWZ2in',891,'(x-10000.0)/(10159-10000)*0.97','mW';
 'DiodeWZ2inSumDat',892,'x*NaN','mW';
 'DiodeWZ2inSumSqr',893,'x*NaN','mW';
-'PitotAbs',897,'(x-10000).*1500./3030','mbar';
-'PitotAbsSumDat',898,'(x-10000).*1500./3030','mbar';
-'PitotAbsSumSqr',899,'(x-10000).*1500./3030','mbar';
+'PitotAbs',897,'(x-10000-3030/5).*1500./3030','mbar';
+'PitotAbsSumDat',898,'(x-10000-3030/5).*1500./3030','mbar';
+'PitotAbsSumSqr',899,'(x-10000-3030/5).*1500./3030','mbar';
 'PitotDiff',900,'(x-10000)*5/3030','mbar';
 'PitotDiffSumDat',901,'(x-10000)*5/3030','mbar';
 'PitotDiffSumSqr',902,'(x-10000)*5/3030','mbar';
