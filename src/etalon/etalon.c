@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-09-18 22:44:49 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2005-12-14 13:53:28 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.7  2005-09-18 22:44:49  martinez
+* Revision 1.8  2005-12-14 13:53:28  rudolf
+* GABRIEL campaign changes
+*
+* Revision 1.7  2005/09/18 22:44:49  martinez
 * switch ARM LED
 *
 * Revision 1.6  2005/07/23 09:00:15  rudolf
@@ -285,22 +288,22 @@ int AdjustOnline(struct AverageDataType *ptrOnlineLeftCounts,
     if ( (ptrOnlineLeftCounts->Avg+ptrOnlineRightCounts->Avg)>0 ) { // if the sum of both is zero no need to change
       LeftRightBalance=(ptrOnlineLeftCounts->Avg-ptrOnlineRightCounts->Avg)/
 	(ptrOnlineLeftCounts->Avg+ptrOnlineRightCounts->Avg);
-      printf("Left %f Right %f Balance %f",ptrOnlineLeftCounts->Avg,ptrOnlineRightCounts->Avg,LeftRightBalance);
+      // printf("Left %f Right %f Balance %f",ptrOnlineLeftCounts->Avg,ptrOnlineRightCounts->Avg,LeftRightBalance);
       if ( LeftRightBalance>MAX_AVG_DIFF ) { // if we get a higher left Count
 	// step to the left
 	StepPosOnline=ptrElekStatus->EtalonData.Online.Position-(ptrElekStatus->EtalonData.DitherStepWidth/2);
 	SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
-	printf("go left %d->%d\n", ptrElekStatus->EtalonData.Online.Position, StepPosOnline);
+	// printf("go left %d->%d\n", ptrElekStatus->EtalonData.Online.Position, StepPosOnline);
       } else if ( -LeftRightBalance>MAX_AVG_DIFF ) { // if we get a higher right Count
 	StepPosOnline=ptrElekStatus->EtalonData.Online.Position+(ptrElekStatus->EtalonData.DitherStepWidth/2);
 	SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
-	printf("go right %d->%d\n", ptrElekStatus->EtalonData.Online.Position, StepPosOnline);
+	// printf("go right %d->%d\n", ptrElekStatus->EtalonData.Online.Position, StepPosOnline);
       } else {
-	printf("stay %d\n",ptrElekStatus->EtalonData.Online.Position);
+	// printf("stay %d\n",ptrElekStatus->EtalonData.Online.Position);
       }
     } /* if sum>0 */
     ResetAverageStruct(ptrOnlineLeftCounts); 
@@ -454,9 +457,9 @@ int main(int argc, char *argv[])
       //        printf("wait for data ....\n");
 	
       if ( LastEtalonAction!=ElekStatus.InstrumentFlags.EtalonAction) {
-	printf("Etalonmode : %s->%s\n",
-	       strEtalonAction[LastEtalonAction],
-	       strEtalonAction[ElekStatus.InstrumentFlags.EtalonAction]); 
+	// printf("Etalonmode : %s->%s\n",
+	//       strEtalonAction[LastEtalonAction],
+	//       strEtalonAction[ElekStatus.InstrumentFlags.EtalonAction]); 
 	LastEtalonAction=ElekStatus.InstrumentFlags.EtalonAction;
       } /* LastEtalonAction */
 
@@ -521,7 +524,7 @@ int main(int argc, char *argv[])
 		case ETALON_ACTION_DITHER_ONLINE_LEFT:         /* etalon is in dither only mode */
 		case ETALON_ACTION_DITHER_ONLINE_RIGHT:        /* etalon is in dither only mode */
 
-		  printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
+		  // printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
 		  switch (State) {
 		  case ETALON_DITHER_LEFT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position;
@@ -660,7 +663,7 @@ int main(int argc, char *argv[])
 		case ETALON_ACTION_HOME:
 		  if (RunningCommand!=ETALON_ACTION_HOME) { // are we already homeing ?
 		    RunningCommand=ETALON_ACTION_HOME;      // not yet so lets do it
-		    ret=StepperGoTo(1000000);               // lets go to a position far far away
+		    ret=StepperGoTo(-1000000);               // lets go to a position far far away
 		  } else {
 		    // already send to home position.. hopefully we will encounter an endswitch
 		    

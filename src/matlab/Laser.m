@@ -29,7 +29,7 @@ function varargout = Laser(varargin)
 
 % Edit the above text to modify the response to help Laser
 
-% Last Modified by GUIDE v2.5 09-Feb-2005 14:06:24
+% Last Modified by GUIDE v2.5 08-Oct-2005 11:20:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -153,6 +153,7 @@ set(handles.txtDiodeCurrent,'ForegroundColor','r');
 set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 set(handles.txtTowerTemp,'ForegroundColor','r');
+set(handles.txtHSTemp,'ForegroundColor','r');
 
 % switch laser on or off
 tcpdata = getappdata(handles.output, 'tcpdata'); 
@@ -234,6 +235,12 @@ pause(0.5);
 TowerTemp=tport.UserData;
 set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
+% heat sink temperature
+fprintf(tport,'?HS1');
+pause(0.5);
+HSTemp=tport.UserData;
+set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
+
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
 
 
@@ -292,6 +299,7 @@ set(handles.txtDiodeMaxCurrent,'ForegroundColor','r');
 set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 set(handles.txtTowerTemp,'ForegroundColor','r');
+set(handles.txtHSTemp,'ForegroundColor','r');
 
 tcpdata = getappdata(handles.output, 'tcpdata'); 
 tport=tcpdata.tport;
@@ -402,6 +410,12 @@ pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check heat sink temperature
+fprintf(tport,'?HS1');
+pause(0.5);
+HSTemp=tport.UserData;
+set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
+
 % check tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
@@ -469,6 +483,7 @@ set(handles.txtDiodeMaxCurrent,'ForegroundColor','r');
 set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 set(handles.txtTowerTemp,'ForegroundColor','r');
+set(handles.txtHSTemp,'ForegroundColor','r');
 
 % check diode switch status and update laser toggle
 fprintf(tport,'?D');
@@ -541,6 +556,12 @@ pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
+% check heat sink temperature
+fprintf(tport,'?HS1');
+pause(0.5);
+HSTemp=tport.UserData;
+set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
+
 % check tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
@@ -587,6 +608,7 @@ set(handles.txtIRPower,'ForegroundColor','r');
 set(handles.txtCrtemp,'ForegroundColor','r');
 set(handles.txtDiodeTemp,'ForegroundColor','r');
 set(handles.txtTowerTemp,'ForegroundColor','r');
+set(handles.txtHSTemp,'ForegroundColor','r');
 
 % current depends on power supply
 fprintf(tport,'?PSSN'); 
@@ -631,6 +653,12 @@ fprintf(tport,'?SHGD');
 pause(0.5);
 CrystalTmp=tport.UserData;
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
+
+% check heat sink temperature
+fprintf(tport,'?HS1');
+pause(0.5);
+HSTemp=tport.UserData;
+set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
 
 % check tower temperature
 fprintf(tport,'?TT');

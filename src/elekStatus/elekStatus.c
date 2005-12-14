@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-07-08 06:14:43 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-12-14 13:53:28 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.22  2005-07-08 06:14:43  rudolf
+ * Revision 1.23  2005-12-14 13:53:28  rudolf
+ * GABRIEL campaign changes
+ *
+ * Revision 1.22  2005/07/08 06:14:43  rudolf
  * replaced localtime by gmtime, added 1 to yday in filename generation, display ditherstepwidth in etalonstatus
  *
  * Revision 1.21  2005/06/30 21:52:09  rudolf
@@ -96,7 +99,7 @@
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
 
-#define STATUSFILE_RING_LEN 500
+#define STATUSFILE_RING_LEN 250
 
 #define DEBUGLEVEL 1
 
@@ -831,9 +834,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.22 2005-07-08 06:14:43 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.23 2005-12-14 13:53:28 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.22 2005-07-08 06:14:43 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.23 2005-12-14 13:53:28 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);

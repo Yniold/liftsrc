@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-09-20 15:31:48 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-12-14 13:53:27 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.46  2005-09-20 15:31:48  harder
+ * Revision 1.47  2005-12-14 13:53:27  rudolf
+ * GABRIEL campaign changes
+ *
+ * Revision 1.46  2005/09/20 15:31:48  harder
  * added bridge mode for slave adc card 3 channel 2&3
  *
  * Revision 1.45  2005/09/20 14:36:53  harder
@@ -1052,7 +1055,7 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
         NMEAParserInit();
 	
         // open TTY
-        fdGPS = serial_open(port , baud);
+        fdGPS = serial_open(port , baudmaster);
 	
         if(fdGPS == 1)
         {
@@ -1742,7 +1745,7 @@ void GetTemperatureCardData ( struct elekStatusType *ptrElekStatus, int IsMaster
                 ptrElekStatus->TempSensCardMaster[Card].NumSensor=elkReadData(ELK_TEMP_FOUND);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrCRC=elkReadData(ELK_TEMP_ERR_CRC);
                 ptrElekStatus->TempSensCardMaster[Card].NumErrNoResponse=elkReadData(ELK_TEMP_ERR_NORESPONSE);
-      		printf("found %d sensors\n",ptrElekStatus->TempSensCardMaster[Card].NumSensor);
+      		// printf("found %d sensors\n",ptrElekStatus->TempSensCardMaster[Card].NumSensor);
                 // now check each sensor
 		// we can have more sensors, but for now we use only 30
 		// they are split in two groups, 24 & 6
@@ -2256,13 +2259,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.46 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.46 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.46 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.46 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   

@@ -642,7 +642,7 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift w 0xa510 0');
+system('/lift/bin/eCmd @Lift s etalonhome');
 
 
 
@@ -875,6 +875,7 @@ switch get(handles.popupmirror,'Value')
         else chl='2';
         end
 end
+fprintf(serport,['vel ',driver,' ',chl,'=100']);
 fprintf(serport,['chl ',driver,'=',chl]);
 if forw==1
     fprintf(serport,['rel ',driver,' ',steps]);

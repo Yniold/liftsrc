@@ -30,8 +30,8 @@ MCP2GainWidth=500
 eCmd @lift w 0xa310 $PMTCounts
 eCmd @lift w 0xa316 $MasterLift
 
-echo $ArmOn
-if [ $ArmOn -gt 0 ]; then
+echo ArmOn : $ArmOn
+if [ $ArmOn -eq 0 ]; then
      
    echo init Arm
    eCmd @armAxis w 0xa312 $MCP1Counts
@@ -68,7 +68,7 @@ echo MCP2: channel 1-20
 /lift/bin/eCmd @lift s setmask 8 0xFFFF
 /lift/bin/eCmd @lift s setmask 9 0xFFFF
 
-if [ $ArmOn -gt 0 ]; then
+if [ $ArmOn -eq 0 ]; then
      
 #MCP1
    /lift/bin/eCmd @armAxis s setmask 10 0x0000

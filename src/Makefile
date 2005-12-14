@@ -88,12 +88,12 @@ clean:
 	rm -f ./bin/etalon
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
-#	rm -f ../bin/debugMon
-#	rm -f ../bin/eCmd
-#	rm -f ../bin/elekIOServ
-#	rm -f ../bin/elekStatus
-#	rm -f ../bin/statView
-#	rm -f ../bin/etalon
+	rm -f ../bin/debugMon
+	rm -f ../bin/eCmd
+	rm -f ../bin/elekIOServ
+	rm -f ../bin/elekStatus
+	rm -f ../bin/statView
+	rm -f ../bin/etalon
 	rm -f ./spectrumAnalyzer/spectrumAnalyzer
 	rm -f ./spectrumAnalyzer/*.o
 	

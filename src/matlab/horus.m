@@ -245,6 +245,8 @@ x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)==1)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==1,1);  
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)~=1)=NaN;
 
 % check which child GUIs are active and color push buttons accordingly
 % red color if warning applies to one of the values controlled in the GUI
@@ -290,10 +292,9 @@ if isfield(data,'hFlyDetection')
     if ishandle(data.hFlyDetection) 
         set(handles.FlyDetection,'BackgroundColor','g');
     else
-        if P20(lastrow)<3 | P20(lastrow)>4 | DiodeWZ1in(lastrow)<3 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.6*DiodeWZ2in | MFCFlow(lastrow)<5.5 | MFCFlow(lastrow)>6.5 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<450 ...
-                | statusData(lastrow,col.Lamp1)>10010 | statusData(lastrow,col.Lamp2)>10010
+        if P20(lastrow)<1 | P20(lastrow)>5 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.4*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow)
             set(handles.FlyDetection,'BackgroundColor','r');
         else
             set(handles.FlyDetection,'BackgroundColor','c');

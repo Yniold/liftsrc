@@ -1,17 +1,36 @@
-echo move etalon to 0
-eCmd w 0xa510 0
+#!/bin/sh
 
-echo switch off HV
-HVOff
+echo check whether ArmAxis is online
+ping armAxis -c 1 -w 1 -q
+ArmOn=$?
+if [ $ArmOn -gt 0 ]; then
+   echo !!!!!!!!!!! ArmAxis not responding !!!!!!!
+else
+   echo found him
+fi
+
+#echo move etalon to 0
+#eCmd s etalonnop
+#eCmd s etalonnop
+
+#eCmd w 0xa510 0
+#eCmd w 0xa512 0
 
 echo switch off Filament
 FilamentOff
 
-echo close Butterfly
-ButterFlyOff
+if [ $ArmOn -eq 0 ]; then
+     
+  echo switch off HV
+  HVOff
+#  echo close Butterfly
+#  ButterFlyOff
+  echo turn off Blower
+  BlowerOff
 
-echo turn off Blower
-BlowerOff
+fi
+
+
 
 echo close all solenoids
 SolenoidsOff

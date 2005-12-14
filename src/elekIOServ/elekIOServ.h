@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-09-21 21:02:48 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-12-14 13:53:27 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.12  2005-09-21 21:02:48  rudolf
+// Revision 1.13  2005-12-14 13:53:27  rudolf
+// GABRIEL campaign changes
+//
+// Revision 1.12  2005/09/21 21:02:48  rudolf
 // fixed Latitude and Longitude parsing, changed tty to S1
 //
 // Revision 1.11  2005/06/27 10:12:42  rudolf
@@ -88,6 +91,7 @@ char *progname = (char *) aProgramName;   // export pointer to debug string
 
 int verbose = 255;                        // be very verbose
 long baud = 4800;                         // serial baudrate
+long baudmaster= 38400;                   // baudrate master
 volatile char ucDataReadyFlag = 0;        // Data ready flag
 int fdGPS = -1;                           // file descriptor for serial communication
 char ucPortOpened = 0;                    // flag for the timer routine wether port is available or not
