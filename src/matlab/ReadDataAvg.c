@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.22  2005-09-20 15:52:32  martinez
+ * Revision 1.23  2006-01-12 13:23:49  kubistin
+ * include usec in initial sorting
+ *
+ * Revision 1.22  2005/09/20 15:52:32  martinez
  * deleted ADC24, one more slave ADC card, max temp sensors increased to 40
  *
  * Revision 1.21  2005/09/12 10:06:20  martinez
@@ -43,7 +46,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.22 $ */
+ /* $Revision: 1.23 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -97,7 +100,10 @@ int cmptimesort(const void *ptrElekStatus1,
     ret=0;
     if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec) ret=1;
     if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec) ret=-1;
-    
+    if (ret==0) { /* same second, now look for usec */
+            if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec) ret=1;
+            if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec) ret=-1;
+    } /* if ret */
     return (ret);
 } /* timesort */
 
