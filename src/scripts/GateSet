@@ -13,17 +13,17 @@ fi
      
 
 MasterLift=133
-MasterarmAxis=150
+MasterarmAxis=155
 
 PMTCounts=100
-MCP1Counts=55
-MCP2Counts=55
+MCP1Counts=50
+MCP2Counts=50
 
 # add 0x8000 to MCP?Gain to activate gain switching
-MCP1Gain=75
+MCP1Gain=70
 MCP1GainWidth=500
 
-MCP2Gain=75
+MCP2Gain=70
 MCP2GainWidth=500
 
 
