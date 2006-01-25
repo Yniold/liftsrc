@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.23  2006-01-12 13:23:49  kubistin
+ * Revision 1.24  2006-01-25 16:54:02  kubistin
+ * shift status bits of tempsensor card in opposite direction
+ *
+ * Revision 1.23  2006/01/12 13:23:49  kubistin
  * include usec in initial sorting
  *
  * Revision 1.22  2005/09/20 15:52:32  martinez
@@ -46,7 +49,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.23 $ */
+ /* $Revision: 1.24 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -751,7 +754,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("Temp Master #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position */
+	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
     }
 
 	#ifdef D_HEADER
@@ -1280,7 +1283,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  mexPrintf("Temp Slave #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
 	#endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordTemp <<12; /* shift 4 status bits to lsb position */
+	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
     }
 
 	#ifdef D_HEADER
