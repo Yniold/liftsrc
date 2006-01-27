@@ -2280,7 +2280,7 @@ xlim2=double(str2double(get(handles.editxlim2,'String')));
 ylim1=double(str2double(get(handles.editylim1,'String')));
 ylim2=double(str2double(get(handles.editylim2,'String')));
 if isa(xdata(lastrow),'numeric') & isa(ydata(lastrow),'numeric')
-    plot(handles.axes1,xdata,ydata,'.');
+    plot(handles.axes1,xdata,ydata,'o');
     xlimits=[xlim1/100*(max(xdata)-min(xdata))+min(xdata), xlim2/100*(max(xdata)-min(xdata))+min(xdata)];
     ylimits=[ylim1/100*(max(ydata)-min(ydata))+min(ydata), ylim2/100*(max(ydata)-min(ydata))+min(ydata)];
     if isnan(xlimits) xlimits=[0,1]; end
