@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.24  2006-01-25 16:54:02  kubistin
+ * Revision 1.25  2006-02-16 14:48:07  harder
+ * ReadDataAvg prints version info when called without argument
+ *
+ * Revision 1.24  2006/01/25 16:54:02  kubistin
  * shift status bits of tempsensor card in opposite direction
  *
  * Revision 1.23  2006/01/12 13:23:49  kubistin
@@ -49,7 +52,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.24 $ */
+ /* $Revision: 1.25 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -157,18 +160,23 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
-  if (mxIsChar(prhs[0]) != 1)
+  if (mxIsChar(prhs[0]) != 1) {
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
     mexErrMsgTxt("Input must be a string.");
-  
+}  
   /* Input must be a row vector. */
-  if (mxGetM(prhs[0]) != 1)
+  if (mxGetM(prhs[0]) != 1) {
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
+  }
   
   /* Get the length of the input string. */
   buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0])) + 1;
