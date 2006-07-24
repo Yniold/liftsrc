@@ -876,24 +876,29 @@ switch get(handles.popupmirror,'Value')
         end
 end
 fprintf(serport,['vel ',driver,' ',chl,'=100']);
+pause(0.1)
 fprintf(serport,['chl ',driver,'=',chl]);
+pause(0.1)
 if forw==1
     fprintf(serport,['rel ',driver,' ',steps]);
 else
     fprintf(serport,['rel ',driver,' -',steps]);
 end
+pause(0.1);
 fprintf(serport,['go ',driver]);
-
 % check if motor is still moving
+pause(0.1)
 fprintf(serport,['pos ',driver]);
+pause(0.1)
 x=find(serport.UserData=='=');
 pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
 %serport.UserData
 pos1=pos2-1;
 while pos2~=pos1
     pos1=pos2;
-    pause(1);
+    pause(1)
     fprintf(serport,['pos ',driver]);
+    pause(0.1)
     x=find(serport.UserData=='=');
     pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
 end

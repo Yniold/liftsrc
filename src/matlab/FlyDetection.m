@@ -580,7 +580,12 @@ else
     set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
 end
 
-
+% check Butterfly
+if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
+    set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
+else
+    set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
+end
 
 % check Lamp
 if bitget(statusData(lastrow,col.Valve2armAxis),11)
@@ -1567,6 +1572,31 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+end
+
+
+% --- Executes on button press in togButterfly.
+function togButterfly_Callback(hObject, eventdata, handles)
+% hObject    handle to togButterfly (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of togButterfly
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,0);  % Butterfly is normally open 
+        set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
+    else
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2);
+        set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
+    end
+    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 end
 
 
