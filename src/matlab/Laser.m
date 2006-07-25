@@ -68,11 +68,11 @@ if length(varargin)==2 & varargin{1}=='handle'
 end
 
 % open tcpip port for communication with Laser
-tcpdata.tport=tcpip('xpLaser',10001);
-set(tcpdata.tport,'ReadAsyncMode','continuous');
-set(tcpdata.tport,'BytesAvailableFcn',{'tcpipdatacallback'});
-try fopen(tcpdata.tport);
-    tport=tcpdata.tport;
+tport=tcpip('xpLaser',10001);
+set(tport,'ReadAsyncMode','continuous');
+set(tport,'BytesAvailableFcn',{'tcpipdatacallback'});
+try fopen(tport);
+    handles.tport=tport;
 
 % check which laser head and power supply is being used and display what
 % the settings should be
@@ -111,15 +111,15 @@ try fopen(tcpdata.tport);
 
 % if communication with laser did not work
 catch 
-    delete(tcpdata.tport);
+    delete(tport);
+    clear('tport');
     set(handles.txtCommandAnswer,'String','communication FAILED','BackgroundColor','r');
 end
 
 % Update handles structure
 guidata(hObject, handles);
 
-setappdata(handles.output, 'tcpdata', tcpdata); 
-if isvalid(tcpdata.tport)
+if isfield(handles,'tport')
     Update_Callback(hObject, eventdata, handles);
 end
 
@@ -153,8 +153,7 @@ set(handles.txtTowerTemp,'ForegroundColor','r');
 set(handles.txtHSTemp,'ForegroundColor','r');
 
 % switch laser on or off
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
+tport=handles.tport;
 if get(hObject,'Value')
     fprintf(tport,'D1'); 
     set(hObject,'BackgroundColor','g');
@@ -247,8 +246,7 @@ function toggleShutter_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
+tport=handles.tport;
 % switch shutter on or off
 if get(hObject,'Value')
     fprintf(tport,'SHT:1'); 
@@ -298,8 +296,7 @@ set(handles.txtDiodeTemp,'ForegroundColor','r');
 set(handles.txtTowerTemp,'ForegroundColor','r');
 set(handles.txtHSTemp,'ForegroundColor','r');
 
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
+tport=handles.tport;
 
 LaserCmd=get(hObject,'String');
 
@@ -447,10 +444,9 @@ function pubExit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % shut down tcpip connection
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-if isvalid(tcpdata.tport)
-    fclose(tcpdata.tport);
-    delete(tcpdata.tport);
+if isfield(handles,'tport')
+    fclose(handles.tport);
+    delete(handles.tport);
 end
 close(handles.figure1);
 
@@ -465,8 +461,7 @@ function Update_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
 
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
+tport=handles.tport;
 
 Zeit=clock;
 set(handles.txtZeit,'String',datestr(Zeit,13));
@@ -595,8 +590,7 @@ function togglePower_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of togglePower
 set(handles.txtStatus,'String','Query Status','ForegroundColor','r');
 
-tcpdata = getappdata(handles.output, 'tcpdata'); 
-tport=tcpdata.tport;
+tport=handles.tport;
 
 % mark strings to be updated
 set(handles.txtDiodeCurrent,'ForegroundColor','r');

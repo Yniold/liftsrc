@@ -73,13 +73,24 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
-set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
-try fopen(handles.serport);
+
+%handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+%set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+%try fopen(handles.serport);
+%catch 
+%    delete(handles.serport);
+%    rmfield(handles,'serport');
+%end;
+picotport=tcpip('PicoController',23);
+set(picotport,'ReadAsyncMode','continuous');
+set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
+try fopen(picotport);
+    handles.picotport=picotport;
 catch 
-    delete(handles.serport);
-    rmfield(handles,'serport');
-end;
+    delete(picotport);
+    clear('picotport');
+    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+end
 
 data.toggleDyelaser=handles.toggleDyelaser;
 data.toggleVacuum=handles.toggleVacuum;
@@ -475,9 +486,9 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
-if isvalid(handles.serport)
-    fclose(handles.serport);
-    delete(handles.serport);
+if isfield(handles,'picotport')
+    fclose(handles.picotport);
+    delete(handles.picotport);
 end;
 close(handles.figure1);
 
@@ -849,7 +860,7 @@ function pushgo_Callback(hObject, eventdata, handles)
 set(handles.textPos,'BackgroundColor','r');
 set(handles.pushgo,'BackgroundColor','r');
 
-serport=handles.serport;
+picotport=handles.picotport;
 steps=get(handles.editsteps,'String');
 hor=get(handles.radiohor,'Value');
 forw=get(handles.radiofor,'Value');
@@ -875,32 +886,32 @@ switch get(handles.popupmirror,'Value')
         else chl='2';
         end
 end
-fprintf(serport,['vel ',driver,' ',chl,'=100']);
+fprintf(picotport,['vel ',driver,' ',chl,'=100']);
 pause(0.1)
-fprintf(serport,['chl ',driver,'=',chl]);
+fprintf(picotport,['chl ',driver,'=',chl]);
 pause(0.1)
 if forw==1
-    fprintf(serport,['rel ',driver,' ',steps]);
+    fprintf(picotport,['rel ',driver,' ',steps]);
 else
-    fprintf(serport,['rel ',driver,' -',steps]);
+    fprintf(picotport,['rel ',driver,' -',steps]);
 end
 pause(0.1);
-fprintf(serport,['go ',driver]);
+fprintf(picotport,['go ',driver]);
 % check if motor is still moving
 pause(0.1)
-fprintf(serport,['pos ',driver]);
+fprintf(picotport,['pos ',driver]);
 pause(0.1)
-x=find(serport.UserData=='=');
-pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
-%serport.UserData
+x=find(picotport.UserData=='=');
+pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
+%picotport.UserData
 pos1=pos2-1;
 while pos2~=pos1
     pos1=pos2;
     pause(1)
-    fprintf(serport,['pos ',driver]);
+    fprintf(picotport,['pos ',driver]);
     pause(0.1)
-    x=find(serport.UserData=='=');
-    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+    x=find(picotport.UserData=='=');
+    pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
 end
 % display new motor position after motor has stopped
 newpos=oldpos+pos2;
@@ -915,7 +926,7 @@ function pushStop_Callback(hObject, eventdata, handles)
 % hObject    handle to pushStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fprintf(handles.serport,'hal');
+fprintf(handles.picotport,'hal');
 
 
 % --- Executes on button press in pushgoto.
