@@ -68,8 +68,6 @@ if length(varargin)==2 & varargin{1}=='handle'
 end
 
 % open tcpip port for communication with Laser
-echotcpip('off');
-echotcpip('on',10001);
 tcpdata.tport=tcpip('xpLaser',10001);
 set(tcpdata.tport,'ReadAsyncMode','continuous');
 set(tcpdata.tport,'BytesAvailableFcn',{'tcpipdatacallback'});
@@ -114,7 +112,6 @@ try fopen(tcpdata.tport);
 % if communication with laser did not work
 catch 
     delete(tcpdata.tport);
-    echotcpip('off');
     set(handles.txtCommandAnswer,'String','communication FAILED','BackgroundColor','r');
 end
 
@@ -454,7 +451,6 @@ tcpdata = getappdata(handles.output, 'tcpdata');
 if isvalid(tcpdata.tport)
     fclose(tcpdata.tport);
     delete(tcpdata.tport);
-    echotcpip('off');
 end
 close(handles.figure1);
 
