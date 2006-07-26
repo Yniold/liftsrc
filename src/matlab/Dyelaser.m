@@ -416,18 +416,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11);
-    set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
-    set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
+% allow switching only if N2 and Ambient valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,col.ValveLift),10)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),11);
+        set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
+        set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
-
 
 % --- Executes on button press in toggleN2.
 function toggleN2_Callback(hObject, eventdata, handles)
@@ -441,17 +442,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),9);
-    set(hObject,'BackgroundColor','g','String','Valve N2 ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
-    set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
+% allow switching only if Vacuum and Ambient valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),11)==0 & bitget(statusData(lastrow,col.ValveLift),10)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),9);
+        set(hObject,'BackgroundColor','g','String','Valve N2 ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
+        set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleAmbient.
@@ -466,17 +469,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),10);
-    set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
-    set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
+% allow switching only if N2 and Vacuum valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,col.ValveLift),11)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),10);
+        set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
+        set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in Exit.
