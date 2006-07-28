@@ -171,28 +171,20 @@ end
 
 
 Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
-EtalonSetPos=int32(statusData(:,col.etaSetPosHigh)).*65536+int32(statusData(:,col.etaSetPosHigh));
-if Etalonhelp==1
-    EtalonSetPos=EtalonSetPos-65536;
-end
+EtalonSetPos=int32(int16(statusData(:,col.etaSetPosHigh))).*65536+int32(statusData(:,col.etaSetPosLow));
+EtalonSetPos(Etalonhelp==1)=EtalonSetPos(Etalonhelp==1)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
-EtalonCurPos=int32(statusData(:,col.etaCurPosHigh)).*65536+int32(statusData(:,col.etaCurPosHigh));
-if Etalonhelp==1
-    EtalonCurPos=EtalonCurPos-65536;
-end
+EtalonCurPos=int32(int16(statusData(:,col.etaCurPosHigh))).*65536+int32(statusData(:,col.etaCurPosLow));
+EtalonCurPos(Etalonhelp==1)=EtalonCurPos(Etalonhelp==1)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
-EtalonEncPos=int32(statusData(:,col.etaEncoderPosHigh)).*65536+int32(statusData(:,col.etaEncoderPosHigh));
-if Etalonhelp==1
-    EtalonEncPos=EtalonEncPos-65536;
-end
+EtalonEncPos=int32(int16(statusData(:,col.etaEncoderPosHigh))).*65536+int32(statusData(:,col.etaEncoderPosLow));
+EtalonEncPos(Etalonhelp==1)=EtalonEncPos(Etalonhelp==1)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
-OnlinePos=int32(statusData(:,col.etaOnlinePosHigh)).*65536+int32(statusData(:,col.etaOnlinePosHigh));
-if Etalonhelp==1
-    OnlinePos=OnlinePos-65536;
-end
+OnlinePos=int32(int16(statusData(:,col.etaOnlinePosHigh))).*65536+int32(statusData(:,col.etaOnlinePosLow));
+OnlinePos(Etalonhelp==1)=OnlinePos(Etalonhelp==1)-2^32/2;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
@@ -516,7 +508,7 @@ function set_pos_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of set_pos as text
 %        str2double(get(hObject,'String')) returns contents of set_pos as a double
-onlinepos=uint16(str2double(get(hObject,'String')));
+onlinepos=int32(str2double(get(hObject,'String')));
 if isnan(onlinepos)
     set(hObject,'BackgroundColor','red');
 else 
@@ -947,7 +939,7 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % hObject    handle to pushgoto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-setpos=uint16(str2double(get(handles.set_pos,'String')));
+setpos=int32(str2double(get(handles.set_pos,'String')));
 if isnan(setpos)
     error('invalid values');
 else
