@@ -940,11 +940,32 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 setpos=int32(str2double(get(handles.set_pos,'String')));
+
 if isnan(setpos)
     error('invalid values');
 else
+
+    if setpos<0
+        setpos=setpos+2^32/2;
+        negpos=1;
+    else
+        negpos=0;
+    end
+    setposhex=dec2hex(setpos);
+    setposlow=hex2dec(setposhex(5:8));
+    setposhigh=hex2dec(setposhex(1:4));
+    if negpos==1
+        setposhigh=bitset(setposhigh,16,1);
+    end
+
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setpos)]);
+    %set etalon acc and spd to 0
+    system(['/lift/bin/eCmd @Lift w 0xa514 0']);
+    %set position
+    system(['/lift/bin/eCmd @Lift w 0xa512 ',num2str(setposhigh)]);
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setposlow)]);
+    %set etalon acc and spd to 10
+    system(['/lift/bin/eCmd @Lift w 0xa514 0x1010']);
 end
 
 
