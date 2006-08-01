@@ -952,6 +952,7 @@ else
         negpos=0;
     end
     setposhex=dec2hex(setpos);
+    setposhex=[zeros(1,8-length(setposhex)),setposhex];
     setposlow=hex2dec(setposhex(5:8));
     setposhigh=hex2dec(setposhex(1:4));
     if negpos==1
