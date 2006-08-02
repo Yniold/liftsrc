@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2005-12-14 13:53:28 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-02 15:29:49 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.8  2005-12-14 13:53:28  rudolf
+* Revision 1.9  2006-08-02 15:29:49  martinez
+* corrected variable assignment in StepperGoTo and changed speed to 0 before setting new position in main
+*
+* Revision 1.8  2005/12/14 13:53:28  rudolf
 * GABRIEL campaign changes
 *
 * Revision 1.7  2005/09/18 22:44:49  martinez
@@ -264,12 +267,13 @@ int SortAndAddCounts(struct AverageDataType *ptrOnlineLeftCounts,
 } /* SortAndAddCounts */
 
 
-int StepperGoTo(int64_t Position) {
+int StepperGoTo(int32_t Position) {
 
   union PositionType ElekPosition;
   int ret;
 
   ElekPosition.Position=Position;
+  ret=WriteCommand(ELK_STEP_SETSPD, 0);         //default StepSpeed & Acceleration
   ret=WriteCommand(ELK_STEP_SETPOS,ElekPosition.PositionWord.Low );
   ret=WriteCommand(ELK_STEP_SETPOS+2,ElekPosition.PositionWord.High );
   ret=WriteCommand(ELK_STEP_SETSPD, ETALON_DEFAULT_ACCSPD);         //default StepSpeed & Acceleration
