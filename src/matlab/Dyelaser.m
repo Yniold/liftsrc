@@ -171,20 +171,20 @@ end
 
 
 Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
-EtalonSetPos=int32(int16(statusData(:,col.etaSetPosHigh))).*65536+int32(statusData(:,col.etaSetPosLow));
-EtalonSetPos(Etalonhelp==1)=EtalonSetPos(Etalonhelp==1)-2^32/2;
+EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
+EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
-EtalonCurPos=int32(int16(statusData(:,col.etaCurPosHigh))).*65536+int32(statusData(:,col.etaCurPosLow));
-EtalonCurPos(Etalonhelp==1)=EtalonCurPos(Etalonhelp==1)-2^32/2;
+EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
-EtalonEncPos=int32(int16(statusData(:,col.etaEncoderPosHigh))).*65536+int32(statusData(:,col.etaEncoderPosLow));
-EtalonEncPos(Etalonhelp==1)=EtalonEncPos(Etalonhelp==1)-2^32/2;
+EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
 
 Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
-OnlinePos=int32(int16(statusData(:,col.etaOnlinePosHigh))).*65536+int32(statusData(:,col.etaOnlinePosLow));
-OnlinePos(Etalonhelp==1)=OnlinePos(Etalonhelp==1)-2^32/2;
+OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
+OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
