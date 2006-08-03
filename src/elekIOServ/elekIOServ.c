@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-03 15:40:37 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-03 15:43:09 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.49  2006-08-03 15:40:37  martinez
+ * Revision 1.50  2006-08-03 15:43:09  martinez
+ * *** empty log message ***
+ *
+ * Revision 1.49  2006/08/03 15:40:37  martinez
  * use ETALON_DEFAULT_ACCSPD instead of 0x1010
  *
  * Revision 1.48  2006/08/03 15:38:51  martinez
@@ -899,7 +902,7 @@ int InitEtalonCard (struct elekStatusType *ptrElekStatus) {
     int ret;
 
     // configure Etalon Card
-    // set speed to 0x10 and acceleration to 0x10
+    // set speed to 0x20 and acceleration to 0x20
     elkWriteData(ELK_STEP_SETSPD,ETALON_DEFAULT_ACCSPD);
     ret=elkReadData(ELK_STEP_SETSPD);
   
@@ -2265,13 +2268,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.50 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.50 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.50 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.50 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
