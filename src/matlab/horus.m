@@ -121,10 +121,12 @@ statusData=data.statusData;
 col=data.col;
 fcts2val=data.fcts2val;
 
+% Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0;
+           double(statusData(:,5))./86400.0+...
+           double(statusData(:,6))./86400000.0;
 
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);

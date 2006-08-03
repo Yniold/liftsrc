@@ -193,6 +193,12 @@ switch char(xpar)
         else
             x=double(statusData(:,col.PNO)); eval(['xdata=',fcts2val.PNO,';']);
         end
+    case 'PCuvette'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.PCuvette);
+        else
+            x=double(statusData(:,col.PCuvette)); eval(['xdata=',fcts2val.PCuvette,';']);
+        end
     case 'IFilament'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.IFilament);
@@ -284,30 +290,30 @@ switch char(xpar)
             x=double(statusData(:,col.etaCurSpd)); eval(['xdata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
-        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
-        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
-        xdata=EtalonSetPos;
+        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
+        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
-        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
-        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
-        xdata=EtalonCurPos;
+        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
-        xdata=EtalonEncPos;
+        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
-        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
-        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
-        xdata=EtalonIndPos;
+        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
+        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
-        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
-        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
-        xdata=EtalonOnlinePos;
+        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
+        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.ValveVoltLift);
@@ -1270,6 +1276,12 @@ switch char(ypar)
         else
             x=double(statusData(:,col.PNO)); eval(['ydata=',fcts2val.PNO,';']);
         end
+    case 'PCuvette'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.PCuvette);
+        else
+            x=double(statusData(:,col.PCuvette)); eval(['ydata=',fcts2val.PCuvette,';']);
+        end
     case 'IFilament'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.IFilament);
@@ -1361,30 +1373,30 @@ switch char(ypar)
             x=double(statusData(:,col.etaCurSpd)); eval(['ydata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
-        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
-        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
+        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
-        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
-        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
-        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
-        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
+        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
-        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
-        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
-        ydata=EtalonOnlinePos;
+        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
+        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ValveVoltLift);
@@ -2268,7 +2280,7 @@ xlim2=double(str2double(get(handles.editxlim2,'String')));
 ylim1=double(str2double(get(handles.editylim1,'String')));
 ylim2=double(str2double(get(handles.editylim2,'String')));
 if isa(xdata(lastrow),'numeric') & isa(ydata(lastrow),'numeric')
-    plot(handles.axes1,xdata,ydata,'.');
+    plot(handles.axes1,xdata,ydata,'o');
     xlimits=[xlim1/100*(max(xdata)-min(xdata))+min(xdata), xlim2/100*(max(xdata)-min(xdata))+min(xdata)];
     ylimits=[ylim1/100*(max(ydata)-min(ydata))+min(ydata), ylim2/100*(max(ydata)-min(ydata))+min(ydata)];
     if isnan(xlimits) xlimits=[0,1]; end
@@ -2312,7 +2324,7 @@ function listboxX_CreateFcn(hObject, eventdata, handles)
 % Hint: listbox controls usually have a white background on Windows.
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
-    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
+    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
@@ -2360,7 +2372,7 @@ function listboxY_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
-    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'IFilament';...
+    'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
@@ -2371,18 +2383,20 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'ccGateWidth2';'ccCounts2';'ccPulses2';
     'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
     'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
-    'Temp0L';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';'TempDiodeUV';'Temp6L';'Temp7L';'Temp8L';...
-    'Temp9L';'Temp10L';'Temp11L';'Temp12L';'Temp13L';'Temp14L';'Temp15L';'Temp16L';...
-    'Temp17L';'Temp18L';'Temp19L';'Temp20L';'Temp21L';'Temp22L';...
-    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';...
-    'TempInverter';'TempArmBackWall';'TempBlower';'TempDiodeWZ2out';'TempCalPlate';'TempHV';'Temp15WP';'Temp16WP';...
-    'Temp17WP';'Temp18WP';'Temp19WP';'Temp20WP';'Temp21WP';'Temp22WP';...
-    'Temp0Lid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';'TempDiodeUVid';'Temp6Lid';'Temp7Lid';'Temp8Lid';...
-    'Temp9Lid';'Temp10Lid';'Temp11Lid';'Temp12Lid';'Temp13Lid';'Temp14Lid';'Temp15Lid';'Temp16Lid';...
-    'Temp17Lid';'Temp18Lid';'Temp19Lid';'Temp20Lid';'Temp21Lid';'Temp22Lid';...
-    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';...
-    'TempInverterid';'TempArmBackWallid';'TempBlowerid';'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'Temp15WPid';'Temp16WPid';...
-    'Temp17WPid';'Temp18WPid';'Temp19WPid';'Temp20WPid';'Temp21WPid';'Temp22WPid'};
+    'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
+    'TempLaserPlate';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';...
+    'TempDiodeUV';'TempSensCardLift';'TempCPULift';'TempDiodeGr';...
+    'TempMissedarmAxis';'TempNumberarmAxis';'TempErrCRCarmAxis';'TempNoResponsearmAxis';
+    'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
+    'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
+    'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
+    'TempPrallpl';'TempAxis';...
+    'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
+    'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
+    'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
+    'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
+    'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
+    'TempPrallplid';'TempAxisid'};
 set(hObject,'String',vars);
 
 

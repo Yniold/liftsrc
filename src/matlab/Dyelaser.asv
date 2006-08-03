@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 04-Jul-2005 12:23:03
+% Last Modified by GUIDE v2.5 22-Sep-2005 12:37:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,13 +73,24 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
-set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
-try fopen(handles.serport);
+
+%handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+%set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+%try fopen(handles.serport);
+%catch 
+%    delete(handles.serport);
+%    rmfield(handles,'serport');
+%end;
+picotport=tcpip('PicoController',23);
+set(picotport,'ReadAsyncMode','continuous');
+set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
+try fopen(picotport);
+    handles.picotport=picotport;
 catch 
-    delete(handles.serport);
-    rmfield(handles,'serport');
-end;
+    delete(picotport);
+    clear('picotport');
+    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+end
 
 data.toggleDyelaser=handles.toggleDyelaser;
 data.toggleVacuum=handles.toggleVacuum;
@@ -159,27 +170,28 @@ else
 end
 
 
-Etalonhelp=int32(statusData(:,col.etaSetPosLow));
-EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
-EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
+Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+EtalonSetPos=int32(int16(statusData(:,col.etaSetPosHigh))).*65536+int32(statusData(:,col.etaSetPosLow));
+EtalonSetPos(Etalonhelp==1)=EtalonSetPos(Etalonhelp==1)-2^32/2;
 
-Etalonhelp=int32(statusData(:,col.etaCurPosLow));
-EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
-EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
+Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+EtalonCurPos=int32(int16(statusData(:,col.etaCurPosHigh))).*65536+int32(statusData(:,col.etaCurPosLow));
+EtalonCurPos(Etalonhelp==1)=EtalonCurPos(Etalonhelp==1)-2^32/2;
 
-%Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-%EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-%EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+EtalonEncPos=int32(int16(statusData(:,col.etaEncoderPosHigh))).*65536+int32(statusData(:,col.etaEncoderPosLow));
+EtalonEncPos(Etalonhelp==1)=EtalonEncPos(Etalonhelp==1)-2^32/2;
 
-Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
-OnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
-OnlinePos(Etalonhelp>32767)=OnlinePos(Etalonhelp>32767)-65535;
+Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+OnlinePos=int32(int16(statusData(:,col.etaOnlinePosHigh))).*65536+int32(statusData(:,col.etaOnlinePosLow));
+OnlinePos(Etalonhelp==1)=OnlinePos(Etalonhelp==1)-2^32/2;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
 
 set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
+set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
@@ -228,6 +240,11 @@ if get(handles.chkEtSetPos,'Value')
     plot(handles.axes1,statustime(iZeit),EtalonSetPos(iZeit));
     hold(handles.axes1,'on');
 end 
+
+if get(handles.chkEtEncPos,'Value')
+    plot(handles.axes1,statustime(iZeit),EtalonEncPos(iZeit));
+    hold(handles.axes1,'on');
+end
 
 if get(handles.chkTDyelaser,'Value')
     plot(handles.axes1,statustime(iZeit),TDyelaser(iZeit));
@@ -279,9 +296,9 @@ end
 
 % check solenoids
 if bitget(statusData(lastrow,col.ValveLift),11)==0
-    set(handles.toggleVacuumDye,'BackgroundColor','c');
+    set(handles.toggleVacuum,'BackgroundColor','c');
 else 
-    set(handles.toggleVacuumDye,'BackgroundColor','g');
+    set(handles.toggleVacuum,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),8)==0
     set(handles.toggleDyelaser,'BackgroundColor','c');
@@ -289,15 +306,16 @@ else
     set(handles.toggleDyelaser,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),9)==0
-    set(handles.toggleN2Dye,'BackgroundColor','c');
+    set(handles.toggleN2,'BackgroundColor','c');
 else 
-    set(handles.toggleN2Dye,'BackgroundColor','g');
+    set(handles.toggleN2,'BackgroundColor','g');
 end
 if bitget(statusData(lastrow,col.ValveLift),10)==0
-    set(handles.toggleAmbientDye,'BackgroundColor','c');
+    set(handles.toggleAmbient,'BackgroundColor','c');
 else 
-    set(handles.toggleAmbientDye,'BackgroundColor','g');
+    set(handles.toggleAmbient,'BackgroundColor','g');
 end
+
 
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
@@ -398,18 +416,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11);
-    set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
-    set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
+% allow switching only if N2 and Ambient valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,col.ValveLift),10)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),11);
+        set(hObject,'BackgroundColor','g','String','Valve Vacuum ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),11,0);
+        set(hObject,'BackgroundColor','c','String','Valve Vacuum OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
-
 
 % --- Executes on button press in toggleN2.
 function toggleN2_Callback(hObject, eventdata, handles)
@@ -423,17 +442,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),9);
-    set(hObject,'BackgroundColor','g','String','Valve N2 ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
-    set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
+% allow switching only if Vacuum and Ambient valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),11)==0 & bitget(statusData(lastrow,col.ValveLift),10)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),9);
+        set(hObject,'BackgroundColor','g','String','Valve N2 ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),9,0);
+        set(hObject,'BackgroundColor','c','String','Valve N2 OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in toggleAmbient.
@@ -448,17 +469,19 @@ statusData=horusdata.statusData;
 col=horusdata.col;
 data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
-
-if get(hObject,'Value')
-    Valveword=bitset(statusData(lastrow,col.ValveLift),10);
-    set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
-else
-    Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
-    set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
+% allow switching only if N2 and Vacuum valves are closed
+if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,col.ValveLift),11)==0)
+    if get(hObject,'Value')
+        Valveword=bitset(statusData(lastrow,col.ValveLift),10);
+        set(hObject,'BackgroundColor','g','String','Valve Ambient ON');
+    else
+        Valveword=bitset(statusData(lastrow,col.ValveLift),10,0);
+        set(hObject,'BackgroundColor','c','String','Valve Ambient OFF');
+    end
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
 % --- Executes on button press in Exit.
@@ -468,9 +491,9 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
-if isvalid(handles.serport)
-    fclose(handles.serport);
-    delete(handles.serport);
+if isfield(handles,'picotport')
+    fclose(handles.picotport);
+    delete(handles.picotport);
 end;
 close(handles.figure1);
 
@@ -485,7 +508,7 @@ function set_pos_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of set_pos as text
 %        str2double(get(hObject,'String')) returns contents of set_pos as a double
-onlinepos=uint16(str2double(get(hObject,'String')));
+onlinepos=int32(str2double(get(hObject,'String')));
 if isnan(onlinepos)
     set(hObject,'BackgroundColor','red');
 else 
@@ -635,7 +658,7 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift w 0xa510 0');
+system('/lift/bin/eCmd @Lift s etalonhome');
 
 
 
@@ -842,7 +865,7 @@ function pushgo_Callback(hObject, eventdata, handles)
 set(handles.textPos,'BackgroundColor','r');
 set(handles.pushgo,'BackgroundColor','r');
 
-serport=handles.serport;
+picotport=handles.picotport;
 steps=get(handles.editsteps,'String');
 hor=get(handles.radiohor,'Value');
 forw=get(handles.radiofor,'Value');
@@ -868,26 +891,32 @@ switch get(handles.popupmirror,'Value')
         else chl='2';
         end
 end
-fprintf(serport,['chl ',driver,'=',chl]);
+fprintf(picotport,['vel ',driver,' ',chl,'=100']);
+pause(0.1)
+fprintf(picotport,['chl ',driver,'=',chl]);
+pause(0.1)
 if forw==1
-    fprintf(serport,['rel ',driver,' ',steps]);
+    fprintf(picotport,['rel ',driver,' ',steps]);
 else
-    fprintf(serport,['rel ',driver,' -',steps]);
+    fprintf(picotport,['rel ',driver,' -',steps]);
 end
-fprintf(serport,['go ',driver]);
-
+pause(0.1);
+fprintf(picotport,['go ',driver]);
 % check if motor is still moving
-fprintf(serport,['pos ',driver]);
-x=find(serport.UserData=='=');
-pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
-%serport.UserData
+pause(0.1)
+fprintf(picotport,['pos ',driver]);
+pause(0.1)
+x=find(picotport.UserData=='=');
+pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
+%picotport.UserData
 pos1=pos2-1;
 while pos2~=pos1
     pos1=pos2;
-    pause(1);
-    fprintf(serport,['pos ',driver]);
-    x=find(serport.UserData=='=');
-    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+    pause(1)
+    fprintf(picotport,['pos ',driver]);
+    pause(0.1)
+    x=find(picotport.UserData=='=');
+    pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
 end
 % display new motor position after motor has stopped
 newpos=oldpos+pos2;
@@ -902,7 +931,7 @@ function pushStop_Callback(hObject, eventdata, handles)
 % hObject    handle to pushStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fprintf(handles.serport,'hal');
+fprintf(handles.picotport,'hal');
 
 
 % --- Executes on button press in pushgoto.
@@ -910,12 +939,38 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % hObject    handle to pushgoto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-setpos=uint16(str2double(get(handles.set_pos,'String')));
+setpos=int32(str2double(get(handles.set_pos,'String')));
+
+if setpos<0
+    setpos=setpos+2^32/2;
+    negpos=1;
+else
+    negpos=0;
+end
+setposhex=dec2hex(setpos);
+setposlow=hex2dec(setposhex(5:8));
+setposhigh=hex2dec(setposhex(1:4));
+if negpos==1
+    setposhigh=bitset(setposhigh,16,1);
+end
+
 if isnan(setpos)
     error('invalid values');
 else
     system(['/lift/bin/eCmd @Lift s etalonnop']);    
+
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setpos)]);
 end
+
+
+
+
+% --- Executes on button press in chkEtEncPos.
+function chkEtEncPos_Callback(hObject, eventdata, handles)
+% hObject    handle to chkEtEncPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
 
 
