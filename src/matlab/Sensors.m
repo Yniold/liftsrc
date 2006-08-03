@@ -290,30 +290,30 @@ switch char(xpar)
             x=double(statusData(:,col.etaCurSpd)); eval(['xdata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
-        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
-        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
+        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
         xdata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
-        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
-        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
         xdata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
         xdata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
-        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
-        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
+        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
         xdata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
-        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
-        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
-        xdata=EtalonOnlinePos;
+        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
+        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+        xdata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.ValveVoltLift);
@@ -1373,30 +1373,30 @@ switch char(ypar)
             x=double(statusData(:,col.etaCurSpd)); eval(['ydata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=int32(statusData(:,col.etaSetPosLow));
-        EtalonSetPos=(Etalonhelp)+int32(statusData(:,col.etaSetPosHigh));
-        EtalonSetPos(Etalonhelp>32767)=EtalonSetPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
+        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=int32(statusData(:,col.etaCurPosLow));
-        EtalonCurPos=(Etalonhelp)+int32(statusData(:,col.etaCurPosHigh)); 
-        EtalonCurPos(Etalonhelp>32767)=EtalonCurPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=int32(statusData(:,col.etaEncoderPosLow)); 
-        EtalonEncPos=(Etalonhelp)+int32(statusData(:,col.etaEncoderPosHigh)); 
-        EtalonEncPos(Etalonhelp>32767)=EtalonEncPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=int32(statusData(:,col.etaIndexPosLow)); 
-        EtalonIndPos=(Etalonhelp)+int32(statusData(:,col.etaIndexPosHigh)); 
-        EtalonIndPos(Etalonhelp>32767)=EtalonIndPos(Etalonhelp>32767)-65535;
+        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
+        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
         ydata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=int32(statusData(:,col.etaOnlinePosLow)); 
-        EtalonOnlinePos=(Etalonhelp)+int32(statusData(:,col.etaOnlinePosHigh)); 
-        EtalonOnlinePos(Etalonhelp>32767)=EtalonOnlinePos(Etalonhelp>32767)-65535;
-        ydata=EtalonOnlinePos;
+        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
+        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+        ydata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.ValveVoltLift);
