@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-02 15:29:49 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-03 15:38:51 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.9  2006-08-02 15:29:49  martinez
+* Revision 1.10  2006-08-03 15:38:51  martinez
+* define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
+*
+* Revision 1.9  2006/08/02 15:29:49  martinez
 * corrected variable assignment in StepperGoTo and changed speed to 0 before setting new position in main
 *
 * Revision 1.8  2005/12/14 13:53:28  rudolf
@@ -49,8 +52,6 @@
 #include "../include/elekGeneral.h"
 #include "../include/elekIOPorts.h"
 #include "../include/elekIO.h"
-
-#define ETALON_DEFAULT_ACCSPD 0x2020
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
     ELEK_ELEKIO_IN,

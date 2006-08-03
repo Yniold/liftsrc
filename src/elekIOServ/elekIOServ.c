@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2005-12-14 13:53:27 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-03 15:38:51 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.47  2005-12-14 13:53:27  rudolf
+ * Revision 1.48  2006-08-03 15:38:51  martinez
+ * define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
+ *
+ * Revision 1.47  2005/12/14 13:53:27  rudolf
  * GABRIEL campaign changes
  *
  * Revision 1.46  2005/09/20 15:31:48  harder
@@ -894,7 +897,7 @@ int InitEtalonCard (struct elekStatusType *ptrElekStatus) {
 
     // configure Etalon Card
     // set speed to 0x10 and acceleration to 0x10
-    elkWriteData(ELK_STEP_SETSPD,0x1010);
+    elkWriteData(ELK_STEP_SETSPD,ETALON_DEFAULT_ACCSPD);
     ret=elkReadData(ELK_STEP_SETSPD);
   
     // check if we got the same value that we wrote
@@ -2259,13 +2262,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.47 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   

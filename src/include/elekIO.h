@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2005-09-20 21:29:51 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-03 15:38:52 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.18  2005-09-20 21:29:51  harder
+* Revision 1.19  2006-08-03 15:38:52  martinez
+* define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
+*
+* Revision 1.18  2005/09/20 21:29:51  harder
 * fixed order of temp card status words
 *
 * Revision 1.17  2005/09/20 14:36:53  harder
@@ -221,6 +224,7 @@ enum EtalonActionType { /* update also in etalon.c */
 #define ETALON_STEP_DITHER         16
 #define ETALON_STEP_OFFLINE        64
 
+#define ETALON_DEFAULT_ACCSPD 0x2020
 
 
 struct LongWordType {
