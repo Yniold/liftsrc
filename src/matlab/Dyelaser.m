@@ -965,8 +965,8 @@ else
     %set position
     system(['/lift/bin/eCmd @Lift w 0xa512 ',num2str(setposhigh)]);
     system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setposlow)]);
-    %set etalon acc and spd to 10
-    system(['/lift/bin/eCmd @Lift w 0xa514 0x1010']);
+    %set etalon acc and spd to 20
+    system(['/lift/bin/eCmd @Lift w 0xa514 0x2020']);
 end
 
 
