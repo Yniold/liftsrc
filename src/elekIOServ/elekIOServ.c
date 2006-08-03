@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-03 15:38:51 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-03 15:40:37 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.48  2006-08-03 15:38:51  martinez
+ * Revision 1.49  2006-08-03 15:40:37  martinez
+ * use ETALON_DEFAULT_ACCSPD instead of 0x1010
+ *
+ * Revision 1.48  2006/08/03 15:38:51  martinez
  * define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
  *
  * Revision 1.47  2005/12/14 13:53:27  rudolf
@@ -901,7 +904,7 @@ int InitEtalonCard (struct elekStatusType *ptrElekStatus) {
     ret=elkReadData(ELK_STEP_SETSPD);
   
     // check if we got the same value that we wrote
-    if (ret!=0x1010) {
+    if (ret!=ETALON_DEFAULT_ACCSPD) {
         return (INIT_MODULE_FAILED);
     }
 
@@ -2262,13 +2265,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.48 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.49 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
