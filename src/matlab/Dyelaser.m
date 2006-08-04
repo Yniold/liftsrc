@@ -195,9 +195,9 @@ set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
 
 if bitget(EtalonStatus(lastrow),9)
-    set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
-elseif bitget(EtalonStatus(lastrow),10)
     set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
+elseif bitget(EtalonStatus(lastrow),10)
+    set(handles.txtLimitSwitch,'String','left','BackgroundColor','r');
 else
     set(handles.txtLimitSwitch,'String','none','BackgroundColor','c');
 end
@@ -508,12 +508,12 @@ function set_pos_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of set_pos as text
 %        str2double(get(hObject,'String')) returns contents of set_pos as a double
-onlinepos=int32(str2double(get(hObject,'String')));
-if isnan(onlinepos)
+setpos=int32(str2double(get(hObject,'String')));
+if isnan(setpos)
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
-    set(hObject,'string',num2str(onlinepos));
+    set(hObject,'string',num2str(setpos));
 end
 
 
@@ -593,34 +593,36 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
-
+system(['/lift/bin/eCmd @Lift s etalonnop']);    
+system(['/lift/bin/eCmd @Lift s findonline']);    
+system(['/lift/bin/eCmd @Lift s etalonditheronline']);
+%horusdata = getappdata(handles.parenthandle, 'horusdata');
+%statusData=horusdata.statusData;
+%col=horusdata.col;
+%data = getappdata(handles.output, 'Dyelaserdata');
 % read in current online position from gui txt-field
-curonlinepos=str2double(get(handles.txtonline,'String'));
+%curonlinepos=str2double(get(handles.txtonline,'String'));
 % find last data point when etalon was in online position
-i=find(data.CurPos==curonlinepos,1,'last');
+%i=find(data.CurPos==curonlinepos,1,'last');
 % find maximum reference Signal and corresponding data point 
-[calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
+%[calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if isempty(i)
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
-elseif calcOnlSign>statusData(i,col.ccCounts0)
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
-else % go to old online position
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
-end
-system(['/lift/bin/eCmd @Lift s etalonditheronline']);
+%if isempty(i)
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+%    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+%    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
+%elseif calcOnlSign>statusData(i,col.ccCounts0)
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+%    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+%    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
+%else % go to old online position
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
+%end
+%system(['/lift/bin/eCmd @Lift s etalonditheronline']);
 
 
 % --- Executes on button press in offline_pushbutton.
@@ -628,14 +630,36 @@ function offline_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to offline_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-onlinepos=uint16(str2double(get(handles.set_pos,'String')));
-offlinepos=onlinepos+1000;
+onlinepos=str2double(get(handles.txtonline,'String'));
+currentpos=str2double(get(handles.EtCurPos,'String'));
+encoderpos=str2double(get(handles.EtEncPos,'String'));
+setpos=onlinepos+1000+currentpos-encoderpos;
 if isnan(onlinepos)
     error('invalid values');
 else
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(offlinepos)]);
+    if setpos<0
+        setpos=setpos+2^32/2;
+        negpos=1;
+    else
+        negpos=0;
+    end
+    setposhex=dec2hex(setpos);
+    setposhex=[zeros(1,8-length(setposhex)),setposhex];
+    setposlow=hex2dec(setposhex(5:8));
+    setposhigh=hex2dec(setposhex(1:4));
+    if negpos==1
+        setposhigh=bitset(setposhigh,16,1);
+    end
+    system(['/lift/bin/eCmd @Lift s etalonnop']);
+    %set etalon acc and spd to 0
+    system(['/lift/bin/eCmd @Lift w 0xa514 0']);
+    %set position
+    system(['/lift/bin/eCmd @Lift w 0xa512 ',num2str(setposhigh)]);
+    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setposlow)]);
+    %set etalon acc and spd to 20
+    system(['/lift/bin/eCmd @Lift w 0xa514 0x2020']);
 end
+
 
 
 % --- Executes on button press in toggle_pushbutton.
@@ -643,7 +667,7 @@ function toggle_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to toggle_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-onlinepos=uint16(str2double(get(handles.txtonline,'String')));
+%onlinepos=uint16(str2double(get(handles.txtonline,'String')));
 system(['/lift/bin/eCmd @Lift s etalonnop']);    
 %system(['/lift/bin/eCmd @Lift s etalononline ',num2str(onlinepos)]);
 %system(['/lift/bin/eCmd @Lift s etalonofflineleft 1000']);
@@ -657,9 +681,30 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to home_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift s etalonhome');
-
+currentpos=str2double(get(handles.EtCurPos,'String'));
+encoderpos=str2double(get(handles.EtEncPos,'String'));
+setpos=currentpos-encoderpos;
+if setpos<0
+    setpos=setpos+2^32/2;
+    negpos=1;
+else
+    negpos=0;
+end
+setposhex=dec2hex(setpos);
+setposhex=[zeros(1,8-length(setposhex)),setposhex];
+setposlow=hex2dec(setposhex(5:8));
+setposhigh=hex2dec(setposhex(1:4));
+if negpos==1
+    setposhigh=bitset(setposhigh,16,1);
+end
+system(['/lift/bin/eCmd @Lift s etalonnop']);
+%set etalon acc and spd to 0
+system(['/lift/bin/eCmd @Lift w 0xa514 0']);
+%set position
+system(['/lift/bin/eCmd @Lift w 0xa512 ',num2str(setposhigh)]);
+system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setposlow)]);
+%set etalon acc and spd to 20
+system(['/lift/bin/eCmd @Lift w 0xa514 0x2020']);
 
 
 % --- Executes on button press in toggleFilament.
@@ -939,7 +984,10 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % hObject    handle to pushgoto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-setpos=int32(str2double(get(handles.set_pos,'String')));
+onlinepos=str2double(get(handles.txtonline,'String'));
+currentpos=str2double(get(handles.EtCurPos,'String'));
+encoderpos=str2double(get(handles.EtEncPos,'String'));
+setpos=str2double(get(handles.set_pos,'String'))+currentpos-encoderpos;
 
 if isnan(setpos)
     error('invalid values');

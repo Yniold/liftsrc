@@ -1,9 +1,15 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-03 15:38:52 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-04 17:41:05 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.19  2006-08-03 15:38:52  martinez
+* Revision 1.20  2006-08-04 17:41:05  martinez
+* related all etalon positions to encoder position;
+* homing etalon sets encoder position to 0 at left end switch in etalon.c;
+* homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
+* included online find in etalon.c and eCmd.c, replaced in Dyelaser.m
+*
+* Revision 1.19  2006/08/03 15:38:52  martinez
 * define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
 *
 * Revision 1.18  2005/09/20 21:29:51  harder
@@ -204,13 +210,14 @@ enum EtalonActionType { /* update also in etalon.c */
     ETALON_ACTION_TOGGLE,                      /* etalon is toggling between on and offline */
     ETALON_ACTION_TOGGLE_OFFLINE_LEFT,         /* etalon is on the left OFFLINE Position */
     ETALON_ACTION_TOGGLE_OFFLINE_RIGHT,        /* etalon is on the right OFFLINE Position */
-    ETALON_ACTION_NOP,                         /* etalon is doing no atuomated operation */
+    ETALON_ACTION_NOP,                         /* etalon is doing no automated operation */
     ETALON_ACTION_DITHER_ONLINE,               /* stay online and dither */
     ETALON_ACTION_DITHER_ONLINE_LEFT,          /* stay online and dither left side */
     ETALON_ACTION_DITHER_ONLINE_RIGHT,         /* stay online and dither right side */
     ETALON_ACTION_SCAN,                        /* etalon is scanning */
     ETALON_ACTION_HOME,                        /* etalon is on a home run */
     ETALON_ACTION_RECAL,                       /* etalon goes to home and comes back to same position */
+    ETALON_ACTION_FIND_ONLINE,		       /* etalon sets ONLINE Position to largest recent ref. signal */
 
     ETALON_ACTION_MAX
 };
@@ -226,6 +233,7 @@ enum EtalonActionType { /* update also in etalon.c */
 
 #define ETALON_DEFAULT_ACCSPD 0x2020
 
+#define LIFE_REFSIGNAL 300
 
 struct LongWordType {
   uint16_t Low;
@@ -237,6 +245,18 @@ union PositionType {
   struct LongWordType PositionWord;
   uint32_t Position;
 }; /* union PositionType */
+
+struct StatusFieldType {                                            /* Bit Field */
+  unsigned int  Unused1:8;                                             /* */
+  unsigned int  EndswitchRight:1;                                               /* Endschalter rechts aktiv */
+  unsigned int  EndswitchLeft:1;                                            /* Endschalter links aktiv */
+  unsigned int  Unused2:6;                                          /*  */
+};
+
+union StatusType {
+  struct StatusFieldType StatusField;
+  uint16_t StatusWord;                    /* Status, end switch, index      */
+};
 
 struct EtalonDataType {
 
@@ -255,7 +275,7 @@ struct EtalonDataType {
   uint16_t CurSpeed;               /* Current Speed */
   uint16_t SetSpeed;
   uint16_t SetAccl;
-  uint16_t Status;                    /* Status, end switch, index      */
+  union StatusType Status;		/* Status, end switch, index      */
 
 }; /* EtalonDataType */
 

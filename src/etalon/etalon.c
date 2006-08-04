@@ -1,8 +1,14 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-03 15:38:51 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-04 17:41:04 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.10  2006-08-03 15:38:51  martinez
+* Revision 1.11  2006-08-04 17:41:04  martinez
+* related all etalon positions to encoder position;
+* homing etalon sets encoder position to 0 at left end switch in etalon.c;
+* homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
+* included online find in etalon.c and eCmd.c, replaced in Dyelaser.m
+*
+* Revision 1.10  2006/08/03 15:38:51  martinez
 * define ETALON_DEFAULT_ACCSPD as 0x2020 in elekIO.h and use it in etalon.c and elekIOServ.c
 *
 * Revision 1.9  2006/08/02 15:29:49  martinez
@@ -317,6 +323,8 @@ int AdjustOnline(struct AverageDataType *ptrOnlineLeftCounts,
   } /* if NumData > 0 */
 } /* Adjust OnlinePos */
 
+
+
 int main(int argc, char *argv[])
 {
     extern int errno;
@@ -373,6 +381,12 @@ int main(int argc, char *argv[])
 
     int State;
     int EndOfSession;
+    int endswitchtouchdown;
+    
+    uint16_t RefSignal;
+    uint64_t RefSignalPos;
+    uint16_t maxRefSignal=0;
+    uint64_t maxRefSignalPos=0;
 
 
 
@@ -514,6 +528,16 @@ int main(int argc, char *argv[])
 		//      		ElekStatus.InstrumentFlags.EtalonAction );
 		//		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		
+		// record size and position of max. ref. signals as a tool to define online position
+		RefSignal=ElekStatus.CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts;
+		RefSignalPos=ElekStatus.EtalonData.Encoder.Position;
+		if RefSignal>maxRefSignal { // if the actual ref. signal is greater than previously recorded
+			maxRefSignal=RefSignal;  //set new max. signal value and position
+			maxRefSignalPos=RefSignalPos;
+	        } else {
+			maxRefSignal+=(-1/LIFE_REFSIGNAL); /* reduce max Signal with time to remove obsolete data */
+	        }
+		
 		switch (ElekStatus.InstrumentFlags.EtalonAction) {
 		  
 		case ETALON_ACTION_NOP:
@@ -532,7 +556,8 @@ int main(int argc, char *argv[])
 		  // printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
 		  switch (State) {
 		  case ETALON_DITHER_LEFT:
-		    SetPosition=ElekStatus.EtalonData.Online.Position;
+		    SetPosition=ElekStatus.EtalonData.Online.Position+
+		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
 		    //AddCounts(&OnlineLeftCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		    //printf("Left (%d/%d): %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		    //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -567,7 +592,8 @@ int main(int argc, char *argv[])
 		    break; /* ETALON_DITHER_LEFT */
 		    
 		  case ETALON_DITHER_RIGHT:
-		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.DitherStepWidth;
+		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.DitherStepWidth+
+		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
 		    //AddCounts(&OnlineRightCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		    //printf("Right (%d/%d) : %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		    //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -602,7 +628,8 @@ int main(int argc, char *argv[])
 		    break; /*ETALON_DITHER_RIGHT*/
 		    
 		  case ETALON_OFFLINE_LEFT:
-		    SetPosition=ElekStatus.EtalonData.Online.Position-ElekStatus.EtalonData.OfflineStepLeft;
+		    SetPosition=ElekStatus.EtalonData.Online.Position-ElekStatus.EtalonData.OfflineStepLeft+
+		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
 		    
 		    if (OfflineLeftTime--<1) { 
 		      OnlineTime=ONLINE_TIME; 
@@ -617,7 +644,8 @@ int main(int argc, char *argv[])
 		    break; /* ETALON_OFFLINE_LEFT */
 		    
 		  case ETALON_OFFLINE_RIGHT:
-		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight;
+		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight+
+		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
 		    if (OfflineRightTime--<1) { 
 		      OnlineTime=ONLINE_TIME; 
 		      DitherRightTime=DITHER_RIGHT_TIME; 
@@ -651,7 +679,7 @@ int main(int argc, char *argv[])
 		case ETALON_ACTION_SCAN:
 		  if (RunningCommand!=ETALON_ACTION_SCAN) {
 		    RunningCommand=ETALON_ACTION_SCAN;
-		    SavePos=ElekStatus.EtalonData.Current.Position;
+		    SavePos=ElekStatus.EtalonData.Encoder.Position;
 		    EtalonScanPos=ElekStatus.EtalonData.ScanStart.Position;
 		  } else { /* if RunningCommand */
 		    if (EtalonScanPos<ElekStatus.EtalonData.ScanStop.Position) {
@@ -663,18 +691,33 @@ int main(int argc, char *argv[])
 		      SetAction(ETALON_ACTION_NOP);
 		    } /* if EtalonScanPos */
 		  } /* if RunningCommand */
-		  ret=StepperGoTo(EtalonScanPos);
+		  SetPosition=EtalonScanPos+ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		  ret=StepperGoTo(SetPosition);
 		  break; /* ETALON_ACTION_SCAN */
 		case ETALON_ACTION_HOME:
 		  if (RunningCommand!=ETALON_ACTION_HOME) { // are we already homeing ?
 		    RunningCommand=ETALON_ACTION_HOME;      // not yet so lets do it
 		    ret=StepperGoTo(-1000000);               // lets go to a position far far away
+		    endswitchtouchdown=1;
 		  } else {
 		    // already send to home position.. hopefully we will encounter an endswitch
-		    
-		    
-		  } /* Running Command */
+		    if (ElekStatus.EtalonData.Status.StatusField.EndswitchLeft==1 && endswitchtouchdown==1) { // have we just reached the end switch ?
+			ret=WriteCommand(ELK_STEP_MODE,4); // set encoder position to 0
+			endswitchtouchdown=0;
+		    } /* if EndswitchLeft */
+		  } /* if Running Command */
 		  break; /* ETALON_ACTION_HOME */
+		case ETALON_ACTION_FIND_ONLINE;
+		  if (RunningCommand!=ETALON_ACTION_FIND_ONLINE) { 
+		    RunningCommand=ETALON_ACTION_FIND_ONLINE;      // not yet so lets do it
+		    StepPosOnline=maxRefSignalPos;		
+		    SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, 
+			 SYS_PARAMETER_ETALON_ONLINE,
+			 StepPosOnline);
+		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    ret=StepperGoTo(SetPosition);               // go to new online position
+		  } /* if Running Command */
+		  break; /* ETALON_ACTION_FIND_ONLINE */
 		case ETALON_ACTION_RECAL:
 		  break; /* ETALON_ACTION_RECAL */
 		  

@@ -77,10 +77,6 @@ data.ActTimer=handles.ActTimer;
 % Update handles structure
 guidata(hObject, handles);
 
-% home Etalon 
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift s etalonhome');
-
 % UIWAIT makes ADC wait for user response (see UIRESUME)
 % uiwait(handles.figDataGUI);
 setappdata(handles.output, 'horusdata', data);
@@ -405,9 +401,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 end
-% home Etalon 
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift s etalonhome');
 
 % close child GUIs
 
