@@ -1,10 +1,16 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.22 $
-last change on $Date: 2005-07-23 09:00:37 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.23 $
+last change on $Date: 2006-08-04 17:11:28 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
-Revision 1.22  2005-07-23 09:00:37  rudolf
+Revision 1.23  2006-08-04 17:11:28  martinez
+related all etalon positions to encoder position;
+homing etalon sets encoder position to 0 at left end switch in etalon.c;
+homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
+included online find in etalon.c and eCmd.c, replaced in Dyelaser.m
+
+Revision 1.22  2005/07/23 09:00:37  rudolf
 added etalonditheronline command
 
 Revision 1.21  2005/06/25 19:00:42  martinez
@@ -249,6 +255,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s etalonofflineleft data\n");
 	printf("eCmd @host s etalonofflineright data\n");
 	printf("eCmd @host s setmask addr data\n");
+	printf("eCmd @host s findonline\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -499,6 +506,13 @@ int main(int argc, char *argv[])
 	      }
 	    };	    	    
 	    
+	    if (strcasecmp(argv[ArgCount],"findonline")==0) {
+	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+	      Value=ETALON_ACTION_FIND_ONLINE;
+            };
+
+
 	    // if we got a valid Msg send it
 	    if (MsgType<MAX_MSG_TYPE) {
 	      SetStatusCommand(MsgType,Addr,Value); 
