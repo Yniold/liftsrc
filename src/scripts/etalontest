@@ -1,0 +1,9 @@
+eCmd @Lift s etalonnop
+eCmd @Lift s etalonhome
+eCmd @lift w 0xa51c 0x0004
+eCmd @Lift w 0xa514 0
+eCmd @Lift w 0xa512 0
+eCmd @Lift w 0xa510 1000
+eCmd @Lift w 0xa514 0x2020
+eCmd @Lift r 0xa524
+
