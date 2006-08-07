@@ -1187,6 +1187,28 @@ switch char(xpar)
             xdata=statustime;
             xdata(:)=NaN;
         end
+    case 'EtalonAction'
+        if ~isnan(col.EtalonAction)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.EtalonAction);
+            else
+                x=uint16(statusData(:,col.EtalonAction)); eval(['xdata=',fcts2val.EtalonAction,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'InstrumentAction'
+        if ~isnan(col.InstrumentAction)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.InstrumentAction);
+            else
+                x=uint16(statusData(:,col.InstrumentAction)); eval(['xdata=',fcts2val.InstrumentAction,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
 end
         
 % assign data to y-axis
@@ -2270,6 +2292,28 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
+    case 'EtalonAction'
+        if ~isnan(col.EtalonAction)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.EtalonAction);
+            else
+                x=uint16(statusData(:,col.EtalonAction)); eval(['ydata=',fcts2val.EtalonAction,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'InstrumentAction'
+        if ~isnan(col.InstrumentAction)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.InstrumentAction);
+            else
+                x=uint16(statusData(:,col.InstrumentAction)); eval(['ydata=',fcts2val.InstrumentAction,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
 end
 
 % display latest x and y values
@@ -2349,7 +2393,7 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid'};
+    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction'};
 set(hObject,'String',vars);
 
 
@@ -2397,7 +2441,7 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid'};
+    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction'};
 set(hObject,'String',vars);
 
 
