@@ -15,4 +15,6 @@ eCmd @Lift s etalonofflineleft 1000
 eCmd @Lift s etalonofflineright 1000
 echo set ditherstep to 32
 eCmd @lift s etalondither 32
+eCmd @Lift s etalonhome
 GateSet
+echo done

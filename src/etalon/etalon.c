@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 13:53:45 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 15:41:11 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.14  2006-08-07 13:53:45  rudolf
+* Revision 1.15  2006-08-07 15:41:11  rudolf
+* allow deviation of 10 in Encoder Position to define on- and offline status, corrected minor errors
+*
+* Revision 1.14  2006/08/07 13:53:45  rudolf
 * corrected syntax error in maxRefSignal
 *
 * Revision 1.13  2006/08/07 11:50:16  martinez
@@ -540,12 +543,14 @@ int main(int argc, char *argv[])
 		// record size and position of max. ref. signals as a tool to define online position
 		RefSignal=ElekStatus.CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts;
 		RefSignalPos=ElekStatus.EtalonData.Encoder.Position;
-		if (RefSignal>maxRefSignal) { // if the actual ref. signal is greater than previously recorded
-			maxRefSignal=RefSignal;  //set new max. signal value and position
-			maxRefSignalPos=RefSignalPos;
-	        } else {
-			maxRefSignal=(1.0-1.0/LIFE_REFSIGNAL)*maxRefSignal; /* reduce max Signal with time to remove obsolete data */
-	        }
+		if (RefSignal<10000){ // exclude spike at startup
+			if (RefSignal>maxRefSignal) { // if the actual ref. signal is greater than previously recorded
+				maxRefSignal=RefSignal;  //set new max. signal value and position
+				maxRefSignalPos=RefSignalPos;
+	        	} else {
+				maxRefSignal=(1.0-1.0/LIFE_REFSIGNAL)*maxRefSignal; /* reduce max Signal with time to remove obsolete data */
+	        	}
+		}
 		
 		switch (ElekStatus.InstrumentFlags.EtalonAction) {
 		  
@@ -728,6 +733,9 @@ int main(int argc, char *argv[])
 		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-
 		        ElekStatus.EtalonData.Encoder.Position;
 		    ret=StepperGoTo(SetPosition);               // go to new online position
+		    RunningCommand=ETALON_ACTION_DITHER_ONLINE;
+		    SetAction(ETALON_ACTION_DITHER_ONLINE);
+
 		  } /* if Running Command */
 		  break; /* ETALON_ACTION_FIND_ONLINE */
 		  		  
