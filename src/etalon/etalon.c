@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 11:50:16 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 13:53:45 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.13  2006-08-07 11:50:16  martinez
+* Revision 1.14  2006-08-07 13:53:45  rudolf
+* corrected syntax error in maxRefSignal
+*
+* Revision 1.13  2006/08/07 11:50:16  martinez
 * corrected syntax errors, removed option "RECAL" from etalon Actions
 *
 * Revision 1.12  2006/08/07 11:20:24  rudolf
@@ -389,9 +392,9 @@ int main(int argc, char *argv[])
     int EndOfSession;
     int endswitchtouchdown;
     
-    uint16_t RefSignal;
+    double RefSignal;
     uint64_t RefSignalPos;
-    uint16_t maxRefSignal=0;
+    double maxRefSignal=0;
     uint64_t maxRefSignalPos=0;
 
 
@@ -541,7 +544,7 @@ int main(int argc, char *argv[])
 			maxRefSignal=RefSignal;  //set new max. signal value and position
 			maxRefSignalPos=RefSignalPos;
 	        } else {
-			maxRefSignal+=(-1/LIFE_REFSIGNAL); /* reduce max Signal with time to remove obsolete data */
+			maxRefSignal=(1.0-1.0/LIFE_REFSIGNAL)*maxRefSignal; /* reduce max Signal with time to remove obsolete data */
 	        }
 		
 		switch (ElekStatus.InstrumentFlags.EtalonAction) {
@@ -716,6 +719,8 @@ int main(int argc, char *argv[])
 		case ETALON_ACTION_FIND_ONLINE:
 		  if (RunningCommand!=ETALON_ACTION_FIND_ONLINE) { 
 		    RunningCommand=ETALON_ACTION_FIND_ONLINE;      // not yet so lets do it
+		    printf("RefSignal: %f \n",RefSignal);
+		    printf("maxRefSignal: %f \n",maxRefSignal);
 		    StepPosOnline=maxRefSignalPos;		
 		    SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, 
 			 SYS_PARAMETER_ETALON_ONLINE,
