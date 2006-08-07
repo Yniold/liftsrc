@@ -631,8 +631,8 @@ function offline_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=str2double(get(handles.txtonline,'String'));
-currentpos=str2double(get(handles.EtCurPos,'String'));
-encoderpos=str2double(get(handles.EtEncPos,'String'));
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
 setpos=onlinepos+1000+currentpos-encoderpos;
 if isnan(onlinepos)
     error('invalid values');
@@ -681,8 +681,8 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to home_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-currentpos=str2double(get(handles.EtCurPos,'String'));
-encoderpos=str2double(get(handles.EtEncPos,'String'));
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
 setpos=currentpos-encoderpos;
 if setpos<0
     setpos=setpos+2^32/2;
@@ -985,8 +985,8 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=str2double(get(handles.txtonline,'String'));
-currentpos=str2double(get(handles.EtCurPos,'String'));
-encoderpos=str2double(get(handles.EtEncPos,'String'));
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
 setpos=str2double(get(handles.set_pos,'String'))+currentpos-encoderpos;
 
 if isnan(setpos)
