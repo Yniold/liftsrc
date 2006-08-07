@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-04 17:41:04 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 11:20:24 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.11  2006-08-04 17:41:04  martinez
+* Revision 1.12  2006-08-07 11:20:24  rudolf
+* corrected syntax errors
+*
+* Revision 1.11  2006/08/04 17:41:04  martinez
 * related all etalon positions to encoder position;
 * homing etalon sets encoder position to 0 at left end switch in etalon.c;
 * homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
@@ -531,7 +534,7 @@ int main(int argc, char *argv[])
 		// record size and position of max. ref. signals as a tool to define online position
 		RefSignal=ElekStatus.CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts;
 		RefSignalPos=ElekStatus.EtalonData.Encoder.Position;
-		if RefSignal>maxRefSignal { // if the actual ref. signal is greater than previously recorded
+		if (RefSignal>maxRefSignal) { // if the actual ref. signal is greater than previously recorded
 			maxRefSignal=RefSignal;  //set new max. signal value and position
 			maxRefSignalPos=RefSignalPos;
 	        } else {
@@ -707,6 +710,8 @@ int main(int argc, char *argv[])
 		    } /* if EndswitchLeft */
 		  } /* if Running Command */
 		  break; /* ETALON_ACTION_HOME */
+                case ETALON_ACTION_RECAL:
+                  break; /* ETALON_ACTION_RECAL */
 		case ETALON_ACTION_FIND_ONLINE;
 		  if (RunningCommand!=ETALON_ACTION_FIND_ONLINE) { 
 		    RunningCommand=ETALON_ACTION_FIND_ONLINE;      // not yet so lets do it
@@ -714,13 +719,12 @@ int main(int argc, char *argv[])
 		    SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, 
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
-		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-
+		        ElekStatus.EtalonData.Encoder.Position;
 		    ret=StepperGoTo(SetPosition);               // go to new online position
 		  } /* if Running Command */
 		  break; /* ETALON_ACTION_FIND_ONLINE */
-		case ETALON_ACTION_RECAL:
-		  break; /* ETALON_ACTION_RECAL */
-		  
+		  		  
 		default:
 		  sprintf(buf,"Etalon: %d unknown action",ElekStatus.InstrumentFlags.EtalonAction);
 		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
