@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.25  2006-02-16 14:48:07  harder
+ * Revision 1.26  2006-08-07 15:18:54  martinez
+ * included second fractions in time calculation
+ *
+ * Revision 1.25  2006/02/16 14:48:07  harder
  * ReadDataAvg prints version info when called without argument
  *
  * Revision 1.24  2006/01/25 16:54:02  kubistin
@@ -52,7 +55,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.25 $ */
+ /* $Revision: 1.26 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -160,21 +163,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.25 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
@@ -612,7 +615,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
 /* 11*/
   for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].EtalonData.Status;       
+    *(z+count++)=elekStatus[i].EtalonData.Status.StatusWord;       
   }
     
 /*  mexPrintf("%d/%d\n",count,dims[1]); */
@@ -818,8 +821,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
 	  /* first decide if we are on or offline */
 	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
-		   (abs(elekStatus[i].EtalonData.Current.Position-                  /* not further than Dithersteps of OnlienPos */
-	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
+		   (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* not further than Dithersteps of OnlinePos + uncertainty of 10 */
+	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth+10) &&
 		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
 			  elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
 	     
@@ -829,8 +832,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
 	    OnlineAverage[Channel].OnOffFlag[i]=3;
 	  } else { /* if not, are we offline ? */
-		if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are left side offline */
-			     (elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
+		if ( (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are left side offline */
+			     elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.OfflineStepLeft+10) && /* left steps away from Online */
 	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
 		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
 	      elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
@@ -840,8 +843,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		} else { 
 	    /* are we right side offline ? */
 	    
-	      if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are right side offline */
-					(elekStatus[i].EtalonData.Online.Position+elekStatus[i].EtalonData.OfflineStepRight)) && /* left steps away from Online */
+	      if ( (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are right side offline */
+					elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.OfflineStepRight+10) && /* left steps away from Online */
 			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
 	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
 				elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
@@ -901,7 +904,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
 	  /* first decide if we are on or offline */
 	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
-		   (abs(elekStatus[i].EtalonData.Current.Position-                  /* not further than Dithersteps of OnlienPos */
+		   (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* not further than Dithersteps of OnlienPos */
 	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
 		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
 			  elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
@@ -912,7 +915,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    if (Channel==0) OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
 	    OnlineAverage[Channel].OnOffFlag[i]=3;
 	  } else { /* if not, are we offline ? */
-		if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are left side offline */
+		if ( (elekStatus[i].EtalonData.Encoder.Position==                  /* lets see if we are left side offline */
 			     (elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
 	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
 		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
@@ -923,7 +926,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		} else { 
 	    /* are we right side offline ? */
 	    
-	      if ( (elekStatus[i].EtalonData.Current.Position==                  /* lets see if we are right side offline */
+	      if ( (elekStatus[i].EtalonData.Encoder.Position==                  /* lets see if we are right side offline */
 					(elekStatus[i].EtalonData.Online.Position+elekStatus[i].EtalonData.OfflineStepRight)) && /* left steps away from Online */
 			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
 	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
