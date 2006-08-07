@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.23 $
-last change on $Date: 2006-08-04 17:11:28 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.24 $
+last change on $Date: 2006-08-07 11:50:15 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
-Revision 1.23  2006-08-04 17:11:28  martinez
+Revision 1.24  2006-08-07 11:50:15  martinez
+corrected syntax errors, removed option "RECAL" from etalon Actions
+
+Revision 1.23  2006/08/04 17:11:28  martinez
 related all etalon positions to encoder position;
 homing etalon sets encoder position to 0 at left end switch in etalon.c;
 homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
@@ -243,10 +246,8 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s etalonnop\n");
 	printf("eCmd @host s etalontoggle\n");	
 	printf("eCmd @host s etalonditherOnline\n");		
-	printf("eCmd @host s stopquery\n");	
 	printf("eCmd @host s etalonscan\n");
 	printf("eCmd @host s etalonhome\n");	
-	printf("eCmd @host s etalonrecal\n");	
 	printf("eCmd @host s etalonscanstart data\n");
 	printf("eCmd @host s etalonscanstop data\n");
 	printf("eCmd @host s etalonscanstep data\n");
@@ -410,20 +411,6 @@ int main(int argc, char *argv[])
 	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
 	      Value=ETALON_ACTION_HOME;
 	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalonrecal")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_RECAL;
-	    };
-	    
-
-	    if (strcasecmp(argv[ArgCount],"etalonrecal")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_RECAL;
-	    };	    	    
-
 
 	    if (strcasecmp(argv[ArgCount],"etalonscanstart")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?

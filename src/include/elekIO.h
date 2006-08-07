@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-04 17:41:05 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-07 11:50:16 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.20  2006-08-04 17:41:05  martinez
+* Revision 1.21  2006-08-07 11:50:16  martinez
+* corrected syntax errors, removed option "RECAL" from etalon Actions
+*
+* Revision 1.20  2006/08/04 17:41:05  martinez
 * related all etalon positions to encoder position;
 * homing etalon sets encoder position to 0 at left end switch in etalon.c;
 * homing is done only in horusStart, home etalon in Dyelaser.m only moves etalon to 0 position;
@@ -216,7 +219,6 @@ enum EtalonActionType { /* update also in etalon.c */
     ETALON_ACTION_DITHER_ONLINE_RIGHT,         /* stay online and dither right side */
     ETALON_ACTION_SCAN,                        /* etalon is scanning */
     ETALON_ACTION_HOME,                        /* etalon is on a home run */
-    ETALON_ACTION_RECAL,                       /* etalon goes to home and comes back to same position */
     ETALON_ACTION_FIND_ONLINE,		       /* etalon sets ONLINE Position to largest recent ref. signal */
 
     ETALON_ACTION_MAX

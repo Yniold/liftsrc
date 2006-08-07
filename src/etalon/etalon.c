@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 11:20:24 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 11:50:16 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.12  2006-08-07 11:20:24  rudolf
+* Revision 1.13  2006-08-07 11:50:16  martinez
+* corrected syntax errors, removed option "RECAL" from etalon Actions
+*
+* Revision 1.12  2006/08/07 11:20:24  rudolf
 * corrected syntax errors
 *
 * Revision 1.11  2006/08/04 17:41:04  martinez
@@ -115,6 +118,7 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={ // orde
 static uint64_t MessageNumber=0;
 
 static char *strEtalonAction[ETALON_ACTION_MAX+1]={   /* description of Etalon Actions, defined in elekIO.h, for display*/ 
+
   "Toggle online left",
   "Toggle online right",
   "Toggle online",
@@ -124,8 +128,7 @@ static char *strEtalonAction[ETALON_ACTION_MAX+1]={   /* description of Etalon A
   "Dither Online",
   "Scan",
   "Home",
-  "Recalibration",
-  "Unknown"};
+  "Find Online"};
 
 int ReadCommand(uint16_t Addr) {
 
@@ -710,9 +713,7 @@ int main(int argc, char *argv[])
 		    } /* if EndswitchLeft */
 		  } /* if Running Command */
 		  break; /* ETALON_ACTION_HOME */
-                case ETALON_ACTION_RECAL:
-                  break; /* ETALON_ACTION_RECAL */
-		case ETALON_ACTION_FIND_ONLINE;
+		case ETALON_ACTION_FIND_ONLINE:
 		  if (RunningCommand!=ETALON_ACTION_FIND_ONLINE) { 
 		    RunningCommand=ETALON_ACTION_FIND_ONLINE;      // not yet so lets do it
 		    StepPosOnline=maxRefSignalPos;		
