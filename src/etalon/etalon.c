@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 11:41:55 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 11:59:03 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.17  2006-08-08 11:41:55  rudolf
+* Revision 1.18  2006-08-08 11:59:03  rudolf
+* allowed imprecision of half dither step in determining dithering position for SortandAddCounts
+*
+* Revision 1.17  2006/08/08 11:41:55  rudolf
 * changed MAX_AVG_DIFF from 0.03 to 0.01
 *
 * Revision 1.16  2006/08/08 11:17:22  martinez
@@ -280,13 +283,13 @@ void AddCounts(struct AverageDataType *ptrData, uint16_t Counts) {
 int SortAndAddCounts(struct AverageDataType *ptrOnlineLeftCounts, 
 		 struct AverageDataType *ptrOnlineRightCounts,
 		 struct elekStatusType  *ptrElekStatus) {
-
-  if (ptrElekStatus->EtalonData.Encoder.Position==ptrElekStatus->EtalonData.Online.Position) // do we dither on left ?
+		 
+  if (abs(ptrElekStatus->EtalonData.Encoder.Position-ptrElekStatus->EtalonData.Online.Position)<
+  		(ptrElekStatus->EtalonData.DitherStepWidth)/2) // do we dither on left ?
     AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
 
-  if (ptrElekStatus->EtalonData.Encoder.Position==
-      (ptrElekStatus->EtalonData.Online.Position) + 
-      (ptrElekStatus->EtalonData.DitherStepWidth) ) // do we dither on right ?
+  if ((ptrElekStatus->EtalonData.Encoder.Position- ptrElekStatus->EtalonData.Online.Position) > 
+      (ptrElekStatus->EtalonData.DitherStepWidth/2)) // do we dither on right ?
     AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
 
 } /* SortAndAddCounts */
