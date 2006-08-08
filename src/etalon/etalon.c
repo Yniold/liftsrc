@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-07 15:41:11 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 11:17:22 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.15  2006-08-07 15:41:11  rudolf
+* Revision 1.16  2006-08-08 11:17:22  martinez
+* exchanged current for encoder position in SortandAddCounts
+*
+* Revision 1.15  2006/08/07 15:41:11  rudolf
 * allow deviation of 10 in Encoder Position to define on- and offline status, corrected minor errors
 *
 * Revision 1.14  2006/08/07 13:53:45  rudolf
@@ -275,10 +278,10 @@ int SortAndAddCounts(struct AverageDataType *ptrOnlineLeftCounts,
 		 struct AverageDataType *ptrOnlineRightCounts,
 		 struct elekStatusType  *ptrElekStatus) {
 
-  if (ptrElekStatus->EtalonData.Current.Position==ptrElekStatus->EtalonData.Online.Position) // do we dither on left ?
+  if (ptrElekStatus->EtalonData.Encoder.Position==ptrElekStatus->EtalonData.Online.Position) // do we dither on left ?
     AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
 
-  if (ptrElekStatus->EtalonData.Current.Position==
+  if (ptrElekStatus->EtalonData.Encoder.Position==
       (ptrElekStatus->EtalonData.Online.Position) + 
       (ptrElekStatus->EtalonData.DitherStepWidth) ) // do we dither on right ?
     AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
