@@ -594,9 +594,7 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
 system(['/lift/bin/eCmd @Lift s findonline']);    
-system(['/lift/bin/eCmd @Lift s etalonditheronline']);
 %horusdata = getappdata(handles.parenthandle, 'horusdata');
 %statusData=horusdata.statusData;
 %col=horusdata.col;
