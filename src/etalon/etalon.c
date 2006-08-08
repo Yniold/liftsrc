@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 11:17:22 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 11:41:55 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.16  2006-08-08 11:17:22  martinez
+* Revision 1.17  2006-08-08 11:41:55  rudolf
+* changed MAX_AVG_DIFF from 0.03 to 0.01
+*
+* Revision 1.16  2006/08/08 11:17:22  martinez
 * exchanged current for encoder position in SortandAddCounts
 *
 * Revision 1.15  2006/08/07 15:41:11  rudolf
@@ -108,7 +111,7 @@ struct AverageDataType {
 
 
 
-#define MAX_AVG_DIFF       0.03
+#define MAX_AVG_DIFF       0.01
 
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling
