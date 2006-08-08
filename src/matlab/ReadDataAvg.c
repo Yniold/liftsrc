@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.26  2006-08-07 15:18:54  martinez
+ * Revision 1.27  2006-08-08 16:15:06  martinez
+ * corrected on/offline average calculations allowing deviations of 10 for encoder position
+ *
+ * Revision 1.26  2006/08/07 15:18:54  martinez
  * included second fractions in time calculation
  *
  * Revision 1.25  2006/02/16 14:48:07  harder
@@ -55,7 +58,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.26 $ */
+ /* $Revision: 1.27 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -105,13 +108,12 @@ int cmptimesort(const void *ptrElekStatus1,
                 const void *ptrElekStatus2) {
         
     int ret;
-    
     ret=0;
     if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec) ret=1;
     if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_sec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_sec) ret=-1;
     if (ret==0) { /* same second, now look for usec */
-            if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec) ret=1;
-            if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec) ret=-1;
+      if (((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec) ret=1;
+      if (((struct elekStatusType*)ptrElekStatus2)->TimeOfDayMaster.tv_usec>((struct elekStatusType*)ptrElekStatus1)->TimeOfDayMaster.tv_usec) ret=-1;
     } /* if ret */
     return (ret);
 } /* timesort */
@@ -163,21 +165,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.26 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
@@ -231,8 +233,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[0]= nelements;
 
   dims[1]= 6 * 2;              /* Jahr JulTag Stunde Minute Sekunde Mikrosek f?r Master und Slave*/
-  dims[1]= dims[1] + (ADC_CHANNEL_COUNTER_CARD+1)*2 + 
-    MAX_COUNTER_CHANNEL*(5+MAX_COUNTER_TIMESLOT+COUNTER_MASK_WIDTH);
+  dims[1]= dims[1] + (ADC_CHANNEL_COUNTER_CARD+1)*2 + MAX_COUNTER_CHANNEL*(5+MAX_COUNTER_TIMESLOT+COUNTER_MASK_WIDTH);
   dims[1]= dims[1] + 12;   /* etalon data type */
   dims[1]= dims[1] + (MAX_ADC_CARD_LIFT+MAX_ADC_CARD_WP)*(1+MAX_ADC_CHANNEL_PER_CARD*3+MAX_ADC_CHANNEL_PER_CARD*1);
   dims[1]= dims[1] + MAX_24BIT_ADC_CARDS_WP*(1+2*MAX_24BIT_ADC_CHANNEL_PER_CARD);
@@ -410,110 +411,110 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 
   j=0;  
-	#ifdef D_HEADER
-      mexPrintf("ccShiftDelay #%d %d\n",j,1+count/nelements);      
-	#endif
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].ShiftDelay;       
-    }	
+  #ifdef D_HEADER
+    mexPrintf("ccShiftDelay #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].ShiftDelay;       
+  }	
 
-	#ifdef D_HEADER
-	  mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
-	#endif
+  #ifdef D_HEADER
+    mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateDelay;       
+  }
+    
+  #ifdef D_HEADER
+    mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateWidth;       
+  }
+    
+  #ifdef D_HEADER
+    mexPrintf("ccData #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (k=0; k<MAX_COUNTER_TIMESLOT;k++) {
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateDelay;       
-    }
-    
-	#ifdef D_HEADER
-	  mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
-	#endif
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].GateWidth;       
-    }
-    
-	#ifdef D_HEADER
-	  mexPrintf("ccData #%d %d\n",j,1+count/nelements);      
-	#endif
-    for (k=0; k<MAX_COUNTER_TIMESLOT;k++) {
-      for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Data[k];       
-	  }	
-    }
-    
-	#ifdef D_HEADER
-	  mexPrintf("ccMask #%d %d\n",j,1+count/nelements);      
-	#endif
-    for (k=0; k<COUNTER_MASK_WIDTH;k++) {
-      for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Mask[k];       
-	  }	
-    }
-    
-	#ifdef D_HEADER
-	  mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
-	#endif
-    for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Counts;       
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Data[k];       
     }	
+  }
     
-	#ifdef D_HEADER
-	  mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
-	#endif
+  #ifdef D_HEADER
+    mexPrintf("ccMask #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (k=0; k<COUNTER_MASK_WIDTH;k++) {
     for (i=0; i<nelements;i++) {
-      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Pulses;       
-    }	   
+      *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Mask[k];       
+    }	
+  }
+    
+  #ifdef D_HEADER
+    mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Counts;       
+  }	
+    
+  #ifdef D_HEADER
+    mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].CounterCardMaster.Channel[j].Pulses;       
+  }	   
    
  
   for (j=1;j<MAX_COUNTER_CHANNEL;j++) { 
-	#ifdef D_HEADER
+    #ifdef D_HEADER
       mexPrintf("ccShiftDelay #%d %d\n",j,1+count/nelements);      
-	#endif
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].ShiftDelay;       
     }	
 
-	#ifdef D_HEADER
-	  mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccGateDelay #%d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].GateDelay;       
+      *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].GateDelay;       
     }
     
-	#ifdef D_HEADER
-	  mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccGateWidth #%d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].GateWidth;       
     }
     
-	#ifdef D_HEADER
-	  mexPrintf("ccData #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccData #%d %d\n",j,1+count/nelements);      
+    #endif
     for (k=0; k<MAX_COUNTER_TIMESLOT;k++) {
       for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Data[k];       
-	  }	
+        *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Data[k];       
+      }	
     }
     
-	#ifdef D_HEADER
-	  mexPrintf("ccMask #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccMask #%d %d\n",j,1+count/nelements);      
+    #endif
     for (k=0; k<COUNTER_MASK_WIDTH;k++) {
       for (i=0; i<nelements;i++) {
-		*(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Mask[k];       
-	  }	
+        *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Mask[k];       
+      }	
     }
     
-	#ifdef D_HEADER
-	  mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccCounts #%d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Counts;       
     }	
     
-	#ifdef D_HEADER
-	  mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("ccPulses #%d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].CounterCardSlave.Channel[j].Pulses;       
     }	   
@@ -527,11 +528,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
   #endif
 /* 0*/
   for (i=0; i<nelements;i++) {
-	*(z+count++)=elekStatus[i].EtalonData.Set.PositionWord.Low;       
+    *(z+count++)=elekStatus[i].EtalonData.Set.PositionWord.Low;       
   }
 
   #ifdef D_HEADER
-	mexPrintf("etaSetPosHigh  %d %d\n",count,1+count/nelements);      
+    mexPrintf("etaSetPosHigh  %d %d\n",count,1+count/nelements);      
   #endif
 /* 1*/
   for (i=0; i<nelements;i++) {
@@ -539,7 +540,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   }
 
   #ifdef D_HEADER
-	mexPrintf("etaCurPosLow  %d %d\n",count,1+count/nelements);      
+    mexPrintf("etaCurPosLow  %d %d\n",count,1+count/nelements);      
   #endif
 /* 2*/
   for (i=0; i<nelements;i++) {
@@ -624,39 +625,39 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
   for (k=0; k<MAX_ADC_CARD_LIFT; k++) {
 
-	#ifdef D_HEADER
-	  mexPrintf("NumSamples Master %d %d\n",count,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("NumSamples Master %d %d\n",count,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) 
-	  *(z+count++)=elekStatus[i].ADCCardMaster[k].NumSamples;       
+      *(z+count++)=elekStatus[i].ADCCardMaster[k].NumSamples;       
     
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {       	
-	  #ifdef D_HEADER
-		mexPrintf("adcData Master #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
+      #ifdef D_HEADER
+	mexPrintf("adcData Master #%d.%d %d\n",k,j,1+count/nelements);      
+      #endif
       for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].ADCData;       
+	*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].ADCData;       
 
-	  #ifdef D_HEADER
-		mexPrintf("adcSumDat Master  %d %d\n",count,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumDat;       
+      #ifdef D_HEADER
+	mexPrintf("adcSumDat Master  %d %d\n",count,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+	*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumDat;       
 	
-	  #ifdef D_HEADER
-		mexPrintf("adcSumSqr Master  %d %d\n",count,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumSqr;                              	
-	}
+      #ifdef D_HEADER
+	mexPrintf("adcSumSqr Master  %d %d\n",count,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+        *(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelData[j].SumSqr;                              	
+    }
       
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {  
-	  #ifdef D_HEADER
-		mexPrintf("adcConfig Master #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelConfig[j].ADCChannelConfig;
-	}
+      #ifdef D_HEADER
+	mexPrintf("adcConfig Master #%d.%d %d\n",k,j,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+	*(z+count++)=elekStatus[i].ADCCardMaster[k].ADCChannelConfig[j].ADCChannelConfig;
+    }
       
   }
     
@@ -671,17 +672,16 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Channel 0 read out here, other channels at the end of the Slave Data */	
   Card=0;
   for (j=0; j<1; j++){
-  #ifdef D_HEADER
-	mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
-  #endif
+    #ifdef D_HEADER
+      mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].SetFlow;     
     }
-   		  
   
-  #ifdef D_HEADER
-    mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
-  #endif
+    #ifdef D_HEADER
+      mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].Flow;    
     }
@@ -692,7 +692,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* we are only interested in Data of Card 0 */
   Card=0;
   #ifdef D_HEADER
-	mexPrintf("ValveVolt Master %d\n",1+count/nelements);      
+    mexPrintf("ValveVolt Master %d\n",1+count/nelements);      
   #endif
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ValveCardMaster[Card].ValveVolt;       
@@ -710,12 +710,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* we are only interested in Data of Card 0 */
   Card=0;    
   for (j=0; j<MAX_DCDC4_CHANNEL_PER_CARD; j++) { 
-
-	#ifdef D_HEADER
-	  mexPrintf("DCDC4channel #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("DCDC4channel #%d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].DCDC4CardMaster[Card].Channel[j];       
+      *(z+count++)=elekStatus[i].DCDC4CardMaster[Card].Channel[j];       
     }
   }
 
@@ -752,27 +751,27 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
   for (j=0; j<MAX_TEMP_SENSOR; j++) { 
 
-	#ifdef D_HEADER
-	  mexPrintf("Temp Master #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Master #%d %d\n",j,1+count/nelements);      
+    #endif
     /* we represent the temperature in 1/100K) */
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
+      *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
 		elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Field.TempMain*100)+27320);  
     }
 
-	#ifdef D_HEADER
-	  mexPrintf("Temp Master #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Master #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
+      *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
     }
 
-	#ifdef D_HEADER
-	  mexPrintf("Temp Master #%d ID %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Master #%d ID %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordID[0];       
+      *(z+count++)=elekStatus[i].TempSensCardMaster[Card].TempSensor[j].Word.WordID[0];       
     }
   }
 
@@ -809,208 +808,133 @@ void mexFunction( int nlhs, mxArray *plhs[],
   OfflineLeftCounter=0;
   OfflineRightCounter=0;
   for (i=0; i<nelements;i++) {
-    Channel=0;       /* PMT */
+    for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each MCP Channel */
       /* reset fields */
-	  OnlineAverage[Channel].Num[i]=0;
-	  OfflineLeftAverage[Channel].Num[i]=0;
-	  OfflineRightAverage[Channel].Num[i]=0;
-	  OnlineAverage[Channel].Avg[i]=0;
-	  OfflineLeftAverage[Channel].Avg[i]=0;
-	  OfflineRightAverage[Channel].Avg[i]=0;
-
-	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
-	  /* first decide if we are on or offline */
-	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
-		   (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* not further than Dithersteps of OnlinePos + uncertainty of 10 */
-	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth+10) &&
-		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
-			  elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
-	     
-		 ) {             /* so we are online */
-		OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=
-	    elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
-	    OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
-	    OnlineAverage[Channel].OnOffFlag[i]=3;
-	  } else { /* if not, are we offline ? */
-		if ( (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are left side offline */
-			     elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.OfflineStepLeft+10) && /* left steps away from Online */
-	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
-		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
-	      elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
-		  OfflineLeftCounter++;
-	      OnlineAverage[Channel].OnOffFlag[i]=2;
-	      /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-		} else { 
-	    /* are we right side offline ? */
-	    
-	      if ( (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are right side offline */
-					elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.OfflineStepRight+10) && /* left steps away from Online */
-			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
-	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
-				elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
-			if (Channel==0) OfflineRightCounter++;
-			OnlineAverage[Channel].OnOffFlag[i]=1;
-			/* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+      OnlineAverage[Channel].Num[i]=0;
+      OfflineLeftAverage[Channel].Num[i]=0;
+      OfflineRightAverage[Channel].Num[i]=0;
+      OnlineAverage[Channel].Avg[i]=0;
+      OfflineLeftAverage[Channel].Avg[i]=0;
+      OfflineRightAverage[Channel].Avg[i]=0;
+      OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
+      /* first decide if we are on or offline */
+      if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
+		(abs(elekStatus[i].EtalonData.Encoder.Position-                  /* not further than Dithersteps of OnlinePos */
+	        elekStatus[i].EtalonData.Online.Position)<=(elekStatus[i].EtalonData.DitherStepWidth+10)) &&
+		(elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
+		elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
+	        ) {             /* so we are online */
+        if (Channel==0) {
+	  OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+	  OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
+	} else {
+	  OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
+	}			
+	OnlineAverage[Channel].OnOffFlag[i]=3;
+      } else { /* if not, are we offline ? */
+	if ( ((elekStatus[i].EtalonData.Online.Position-                  /* lets see if we are left side offline */
+		elekStatus[i].EtalonData.Encoder.Position)>=(elekStatus[i].EtalonData.OfflineStepLeft-10)) && /* left steps away from Online */
+		((elekStatus[i].EtalonData.Online.Position-                  
+		elekStatus[i].EtalonData.Encoder.Position)<=(elekStatus[i].EtalonData.OfflineStepLeft+10)) &&
+	        (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
+	  if (Channel==0) {
+	    OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+	    OfflineLeftCounter++;
+	  } else {
+	    OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
+	  }			
+	  OnlineAverage[Channel].OnOffFlag[i]=2;
+	  /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	} else { 
+	  /* are we right side offline ? */
+          if ( ((elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are right side offline */
+		elekStatus[i].EtalonData.Online.Position)>=(elekStatus[i].EtalonData.OfflineStepRight-10)) && /* left steps away from Online */
+		((elekStatus[i].EtalonData.Encoder.Position-                  /* lets see if we are right side offline */
+		elekStatus[i].EtalonData.Online.Position)<=(elekStatus[i].EtalonData.OfflineStepRight+10)) && /* left steps away from Online */
+		(elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
+	    if (Channel==0) {
+	      OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=elekStatus[i].CounterCardMaster.Channel[Channel].Counts;
+	      OfflineRightCounter++;
+	    } else {
+	      OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
+	    }
+	    OnlineAverage[Channel].OnOffFlag[i]=1;
+	    /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
 	      
-		  } /* if offline right */
-		} /* if offline left */
-	  } /* if on/offline */
+	  } /* if offline right */
+	} /* if offline left */
+      } /* if on/offline */
 	
-	  if (OnlineCounter>5) { /* do we have enough statistics for Calc Online Avg */	  
-	    OnlineOfflineCounts[Channel].OnlineSum=0;
-	    maxSteps=(OnlineCounter>RunAverageLen ) ? RunAverageLen : OnlineCounter;
+      if (OnlineCounter>5) { /* do we have enough statistics for Calc Online Avg */	  
+	OnlineOfflineCounts[Channel].OnlineSum=0;
+	maxSteps=(OnlineCounter>RunAverageLen ) ? RunAverageLen : OnlineCounter;
 	  
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OnlineSum+=OnlineOfflineCounts[Channel].Online[j];
-		} /* for j */
-	    OnlineAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OnlineSum;
-	    OnlineAverage[Channel].Num[i]=j;
-	  } /* if OnlineCounter */
+	for (j=0; j<maxSteps; j++) {
+	  OnlineOfflineCounts[Channel].OnlineSum+=OnlineOfflineCounts[Channel].Online[j];
+	} /* for j */
+	OnlineAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OnlineSum;
+	OnlineAverage[Channel].Num[i]=j;
+      } /* if OnlineCounter */
 	
 
-	  if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Offline Left Avg */
-	    OnlineOfflineCounts[Channel].OfflineLeftSum=0;
-	    maxSteps=(OfflineLeftCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineLeftCounter;
-	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OfflineLeftSum+=OnlineOfflineCounts[Channel].OfflineLeft[j];
-		} /* for j */
-	    OfflineLeftAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineLeftSum;
-	    OfflineLeftAverage[Channel].Num[i]=j;
-	  } /* if OfflineCounter */
+      if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Offline Left Avg */
+	OnlineOfflineCounts[Channel].OfflineLeftSum=0;
+	maxSteps=(OfflineLeftCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineLeftCounter;
+	/*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	for (j=0; j<maxSteps; j++) {
+	  OnlineOfflineCounts[Channel].OfflineLeftSum+=OnlineOfflineCounts[Channel].OfflineLeft[j];
+	} /* for j */
+	OfflineLeftAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineLeftSum;
+	OfflineLeftAverage[Channel].Num[i]=j;
+      } /* if OfflineCounter */
 
       if (OfflineRightCounter>5) { /* do we have enough statistics for Calc Online Avg */
-	    OnlineOfflineCounts[Channel].OfflineRightSum=0;
-	    maxSteps=(OfflineRightCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineRightCounter;
-	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OfflineRightSum+=OnlineOfflineCounts[Channel].OfflineRight[j];
-		} /* for j */
-	    OfflineRightAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineRightSum;
-	    OfflineRightAverage[Channel].Num[i]=j;
-	  } /* if OfflineCounter */
-
-      
-
-    for (Channel=1; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each MCP Channel */
-      /* reset fields */
-	  OnlineAverage[Channel].Num[i]=0;
-	  OfflineLeftAverage[Channel].Num[i]=0;
-	  OfflineRightAverage[Channel].Num[i]=0;
-	  OnlineAverage[Channel].Avg[i]=0;
-	  OfflineLeftAverage[Channel].Avg[i]=0;
-	  OfflineRightAverage[Channel].Avg[i]=0;
-
-	  OnlineAverage[Channel].OnOffFlag[i]=0; /* we don't know wether we are on=3 leftoff=2 or rightoffline=1 */
-	  /* first decide if we are on or offline */
-	  if ( (elekStatus[i].CounterCardMaster.Channel[0].Counts>MinRefCellCounts) &&             /* when PMTCounts>MinRefCellCounts and */
-		   (abs(elekStatus[i].EtalonData.Encoder.Position-                  /* not further than Dithersteps of OnlienPos */
-	         elekStatus[i].EtalonData.Online.Position)<=elekStatus[i].EtalonData.DitherStepWidth) &&
-		   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_LEFT ||             /* we intend to be online */
-			  elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_ONLINE_RIGHT)
-	     
-		 ) {             /* so we are online */
-		OnlineOfflineCounts[Channel].Online[OnlineCounter % RunAverageLen ]=
-	    elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
-	    if (Channel==0) OnlineCounter++;                                           /* in the case of RefCell Channel, increase number of Onlinecounts */
-	    OnlineAverage[Channel].OnOffFlag[i]=3;
-	  } else { /* if not, are we offline ? */
-		if ( (elekStatus[i].EtalonData.Encoder.Position==                  /* lets see if we are left side offline */
-			     (elekStatus[i].EtalonData.Online.Position-elekStatus[i].EtalonData.OfflineStepLeft)) && /* left steps away from Online */
-	         (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_LEFT) ) {      /* intend to be there */
-		  OnlineOfflineCounts[Channel].OfflineLeft[OfflineLeftCounter % RunAverageLenOffl ]=
-	      elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
-		  if (Channel==0) OfflineLeftCounter++;
-	      OnlineAverage[Channel].OnOffFlag[i]=2;
-	      /* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-		} else { 
-	    /* are we right side offline ? */
-	    
-	      if ( (elekStatus[i].EtalonData.Encoder.Position==                  /* lets see if we are right side offline */
-					(elekStatus[i].EtalonData.Online.Position+elekStatus[i].EtalonData.OfflineStepRight)) && /* left steps away from Online */
-			   (elekStatus[i].InstrumentFlags.EtalonAction==ETALON_ACTION_TOGGLE_OFFLINE_RIGHT) ) {      /* intend to be there */
-	        OnlineOfflineCounts[Channel].OfflineRight[OfflineRightCounter % RunAverageLen ]=
-				elekStatus[i].CounterCardSlave.Channel[Channel].Counts;
-			if (Channel==0) OfflineRightCounter++;
-			OnlineAverage[Channel].OnOffFlag[i]=1;
-			/* mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-	      
-		  } /* if offline right */
-		} /* if offline left */
-	  } /* if on/offline */
-	
-	  if (OnlineCounter>5) { /* do we have enough statistics for Calc Online Avg */	  
-	    OnlineOfflineCounts[Channel].OnlineSum=0;
-	    maxSteps=(OnlineCounter>RunAverageLen ) ? RunAverageLen : OnlineCounter;
-	  
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OnlineSum+=OnlineOfflineCounts[Channel].Online[j];
-		} /* for j */
-	    OnlineAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OnlineSum;
-	    OnlineAverage[Channel].Num[i]=j;
-	  } /* if OnlineCounter */
-	
-
-	  if (OfflineLeftCounter>5) { /* do we have enough statistics for Calc Offline Left Avg */
-	    OnlineOfflineCounts[Channel].OfflineLeftSum=0;
-	    maxSteps=(OfflineLeftCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineLeftCounter;
-	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OfflineLeftSum+=OnlineOfflineCounts[Channel].OfflineLeft[j];
-		} /* for j */
-	    OfflineLeftAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineLeftSum;
-	    OfflineLeftAverage[Channel].Num[i]=j;
-	  } /* if OfflineCounter */
-
-      if (OfflineRightCounter>5) { /* do we have enough statistics for Calc Online Avg */
-	    OnlineOfflineCounts[Channel].OfflineRightSum=0;
-	    maxSteps=(OfflineRightCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineRightCounter;
-	    /*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
-	    for (j=0; j<maxSteps; j++) {
-	      OnlineOfflineCounts[Channel].OfflineRightSum+=OnlineOfflineCounts[Channel].OfflineRight[j];
-		} /* for j */
-	    OfflineRightAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineRightSum;
-	    OfflineRightAverage[Channel].Num[i]=j;
-	  } /* if OfflineCounter */
-	} /* for Channel*/
-      
-
+	OnlineOfflineCounts[Channel].OfflineRightSum=0;
+	maxSteps=(OfflineRightCounter>RunAverageLenOffl) ? RunAverageLenOffl : OfflineRightCounter;
+	/*if (i<10) mexPrintf("OfflineCounter #%d %d\n",Channel,OfflineCounter); */
+	for (j=0; j<maxSteps; j++) {
+	  OnlineOfflineCounts[Channel].OfflineRightSum+=OnlineOfflineCounts[Channel].OfflineRight[j];
+	} /* for j */
+	OfflineRightAverage[Channel].Avg[i]=OnlineOfflineCounts[Channel].OfflineRightSum;
+	OfflineRightAverage[Channel].Num[i]=j;
+      } /* if OfflineCounter */
+    } /* for Channel*/
   } /* for i */
     
   /* now we copy them into the array */
 
   for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {           /* for each Channel */
 
-	#ifdef D_HEADER
+    #ifdef D_HEADER
       mexPrintf("RAvgOnline #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
-	#endif 
+    #endif 
     for (i=0; i<nelements;i++) {
       if (OnlineAverage[Channel].Num[i]!=0){
-		*(ptrAvg+countAvg++)=(float)OnlineAverage[Channel].Avg[i]/(float)OnlineAverage[Channel].Num[i];      
+	*(ptrAvg+countAvg++)=(float)OnlineAverage[Channel].Avg[i]/(float)OnlineAverage[Channel].Num[i];      
       } else {
-		*(ptrAvg+countAvg++)=0;
+	*(ptrAvg+countAvg++)=0;
       }
     }
 
-	#ifdef D_HEADER
+    #ifdef D_HEADER
       mexPrintf("RAvgOfflineLeft #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
-	#endif 
+    #endif 
     for (i=0; i<nelements;i++) {
       if (OfflineLeftAverage[Channel].Num[i]!=0){
-		*(ptrAvg+countAvg++)=(float)OfflineLeftAverage[Channel].Avg[i]/(float)OfflineLeftAverage[Channel].Num[i];      
+	*(ptrAvg+countAvg++)=(float)OfflineLeftAverage[Channel].Avg[i]/(float)OfflineLeftAverage[Channel].Num[i];      
       } else {
-		*(ptrAvg+countAvg++)=0;
+	*(ptrAvg+countAvg++)=0;
       }
     }
 
-	#ifdef D_HEADER
+    #ifdef D_HEADER
       mexPrintf("RAvgOfflineRight #%d : 2. Ergebnismatrix %d\n",Channel,1+countAvg/nelements);      
-	#endif 
+    #endif 
     for (i=0; i<nelements;i++) {
       if (OfflineRightAverage[Channel].Num[i]!=0){
-		*(ptrAvg+countAvg++)=(float)OfflineRightAverage[Channel].Avg[i]/(float)OfflineRightAverage[Channel].Num[i];      
+	*(ptrAvg+countAvg++)=(float)OfflineRightAverage[Channel].Avg[i]/(float)OfflineRightAverage[Channel].Num[i];      
       } else {
-		*(ptrAvg+countAvg++)=0;
+	*(ptrAvg+countAvg++)=0;
       }      
     }
 
@@ -1189,39 +1113,39 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
   for (k=0; k<MAX_ADC_CARD_WP; k++) {
 
-	#ifdef D_HEADER
-	  mexPrintf("NumSamples Slave %d %d\n",count,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("NumSamples Slave %d %d\n",count,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) 
-	  *(z+count++)=elekStatus[i].ADCCardSlave[k].NumSamples;       
+      *(z+count++)=elekStatus[i].ADCCardSlave[k].NumSamples;       
     
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {       	
-	  #ifdef D_HEADER
-		mexPrintf("adcData Slave #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
+      #ifdef D_HEADER
+        mexPrintf("adcData Slave #%d.%d %d\n",k,j,1+count/nelements);      
+      #endif
       for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].ADCData;       
+        *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].ADCData;       
 
-	  #ifdef D_HEADER
-		mexPrintf("adcSumDat Slave  %d %d\n",count,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumDat;       
+      #ifdef D_HEADER
+        mexPrintf("adcSumDat Slave  %d %d\n",count,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+        *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumDat;       
 	
-	  #ifdef D_HEADER
-		mexPrintf("adcSumSqr Slave  %d %d\n",count,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-	    *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumSqr;                              	
-	}
+      #ifdef D_HEADER
+        mexPrintf("adcSumSqr Slave  %d %d\n",count,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+        *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelData[j].SumSqr;                              	
+    }
       
     for (j=0;j<MAX_ADC_CHANNEL_PER_CARD;j++) {  
-	  #ifdef D_HEADER
-		mexPrintf("adcConfig Slave #%d.%d %d\n",k,j,1+count/nelements);      
-	  #endif
-	  for (i=0; i<nelements;i++) 
-		*(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelConfig[j].ADCChannelConfig;
-	}
+      #ifdef D_HEADER
+        mexPrintf("adcConfig Slave #%d.%d %d\n",k,j,1+count/nelements);      
+      #endif
+      for (i=0; i<nelements;i++) 
+        *(z+count++)=elekStatus[i].ADCCardSlave[k].ADCChannelConfig[j].ADCChannelConfig;
+    }
       
   }
     
@@ -1233,19 +1157,19 @@ void mexFunction( int nlhs, mxArray *plhs[],
     
 /******************* Valve Cards ***************************/     
   for (k=0; k<MAX_VALVE_CARD_WP; k++) { 
-  #ifdef D_HEADER
-	mexPrintf("ValveVolt Slave %d %d\n",k,1+count/nelements);      
-  #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCardSlave[k].ValveVolt;       
-  }
+    #ifdef D_HEADER
+      mexPrintf("ValveVolt Slave %d %d\n",k,1+count/nelements);      
+    #endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].ValveCardSlave[k].ValveVolt;       
+    }
 
-  #ifdef D_HEADER
-    mexPrintf("Valve Slave  %d %d\n",k,1+count/nelements);      
-  #endif
-  for (i=0; i<nelements;i++) {
-    *(z+count++)=elekStatus[i].ValveCardSlave[k].Valve;   
-  } 
+    #ifdef D_HEADER
+      mexPrintf("Valve Slave  %d %d\n",k,1+count/nelements);      
+    #endif
+    for (i=0; i<nelements;i++) {
+      *(z+count++)=elekStatus[i].ValveCardSlave[k].Valve;   
+    } 
   }
 
 /******************* TempSensor Card Slave ***************************/  
@@ -1280,28 +1204,27 @@ void mexFunction( int nlhs, mxArray *plhs[],
   }
 
   for (j=0; j<MAX_TEMP_SENSOR; j++) { 
-
-	#ifdef D_HEADER
-	  mexPrintf("Temp Slave #%d %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Slave #%d %d\n",j,1+count/nelements);      
+    #endif
     /* we represent the temperature in 1/100K) */
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
+      *(z+count++)=(uint16_t) ( (elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Field.TempFrac*100.0/16.0+
 		elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Field.TempMain*100)+27320);  
     }
 
-	#ifdef D_HEADER
-	  mexPrintf("Temp Slave #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Slave #%d valid_CRCerr_noresp_alarm %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
+      *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordTemp >>12; /* shift 4 status bits to lsb position */
     }
 
-	#ifdef D_HEADER
-	  mexPrintf("Temp Slave #%d ID %d\n",j,1+count/nelements);      
-	#endif
+    #ifdef D_HEADER
+      mexPrintf("Temp Slave #%d ID %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
-	  *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordID[0];       
+      *(z+count++)=elekStatus[i].TempSensCardSlave[Card].TempSensor[j].Word.WordID[0];       
     }
   }
 
@@ -1413,17 +1336,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* channel 0 has already been read, now reading additional 3 channels */
   Card=0;
   for (j=1; j<MAX_MFC_CHANNEL_PER_CARD; j++){
-  #ifdef D_HEADER
-	mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
-  #endif
+    #ifdef D_HEADER
+      mexPrintf("MFCSetFlow  %d %d\n",j,1+count/nelements);      
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].SetFlow;     
     }
-   		  
-  
-  #ifdef D_HEADER
-    mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
-  #endif
+    #ifdef D_HEADER
+      mexPrintf("MFCFlow  %d %d\n",j,1+count/nelements); 
+    #endif
     for (i=0; i<nelements;i++) {
       *(z+count++)=elekStatus[i].MFCCardSlave[Card].MFCChannelData[j].Flow;    
     }
