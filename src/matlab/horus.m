@@ -167,7 +167,8 @@ else
     set(handles.txtPset,'BackgroundColor',[0.7 0.7 0.7])
 end
 if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11); % switch vacuum on
+    Valveword=bitset(statusData(lastrow,col.ValveLift),9,0); % make sure air is switched off
+    Valveword=bitset(Valveword,11); % switch vacuum on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
@@ -198,7 +199,8 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
         end
     end
 elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
-    Valveword=bitset(statusData(lastrow,col.ValveLift),9); % switch air on
+    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0); % make sure vacuum is switched off
+    Valveword=bitset(Valveword,9); % switch air on
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
