@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-08 12:25:19 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-14 11:51:40 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.19  2006-08-08 12:25:19  rudolf
+* Revision 1.20  2006-08-14 11:51:40  rudolf
+* use old set position instead of current position to calculate new set position
+*
+* Revision 1.19  2006/08/08 12:25:19  rudolf
 * corrected error for left dither determination
 *
 * Revision 1.18  2006/08/08 11:59:03  rudolf
@@ -585,7 +588,7 @@ int main(int argc, char *argv[])
 		  switch (State) {
 		  case ETALON_DITHER_LEFT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position+
-		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    	ElekStatus.EtalonData.Set.Position-ElekStatus.EtalonData.Encoder.Position;
 		    //AddCounts(&OnlineLeftCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		    //printf("Left (%d/%d): %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		    //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -621,7 +624,7 @@ int main(int argc, char *argv[])
 		    
 		  case ETALON_DITHER_RIGHT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.DitherStepWidth+
-		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    	ElekStatus.EtalonData.Set.Position-ElekStatus.EtalonData.Encoder.Position;
 		    //AddCounts(&OnlineRightCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		    //printf("Right (%d/%d) : %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		    //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -657,7 +660,7 @@ int main(int argc, char *argv[])
 		    
 		  case ETALON_OFFLINE_LEFT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position-ElekStatus.EtalonData.OfflineStepLeft+
-		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    	ElekStatus.EtalonData.Set.Position-ElekStatus.EtalonData.Encoder.Position;
 		    
 		    if (OfflineLeftTime--<1) { 
 		      OnlineTime=ONLINE_TIME; 
@@ -673,7 +676,7 @@ int main(int argc, char *argv[])
 		    
 		  case ETALON_OFFLINE_RIGHT:
 		    SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight+
-		    	ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    	ElekStatus.EtalonData.Set.Position-ElekStatus.EtalonData.Encoder.Position;
 		    if (OfflineRightTime--<1) { 
 		      OnlineTime=ONLINE_TIME; 
 		      DitherRightTime=DITHER_RIGHT_TIME; 
@@ -719,7 +722,7 @@ int main(int argc, char *argv[])
 		      SetAction(ETALON_ACTION_NOP);
 		    } /* if EtalonScanPos */
 		  } /* if RunningCommand */
-		  SetPosition=EtalonScanPos+ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		  SetPosition=EtalonScanPos+ElekStatus.EtalonData.Set.Position-ElekStatus.EtalonData.Encoder.Position;
 		  ret=StepperGoTo(SetPosition);
 		  break; /* ETALON_ACTION_SCAN */
 		case ETALON_ACTION_HOME:
@@ -744,7 +747,7 @@ int main(int argc, char *argv[])
 		    SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, 
 			 SYS_PARAMETER_ETALON_ONLINE,
 			 StepPosOnline);
-		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-
+		    SetPosition=StepPosOnline+ElekStatus.EtalonData.Set.Position-
 		        ElekStatus.EtalonData.Encoder.Position;
 		    ret=StepperGoTo(SetPosition);               // go to new online position
 		    RunningCommand=ETALON_ACTION_DITHER_ONLINE;
