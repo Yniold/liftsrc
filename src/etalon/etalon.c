@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-14 13:32:06 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-14 14:15:56 $ by $Author: rudolf $
 *
 * $Log: etalon.c,v $
-* Revision 1.21  2006-08-14 13:32:06  rudolf
+* Revision 1.22  2006-08-14 14:15:56  rudolf
+* corrected syntax error
+*
+* Revision 1.21  2006/08/14 13:32:06  rudolf
 * use current position, but change position only if etalon has reached set position
 *
 * Revision 1.20  2006/08/14 11:51:40  rudolf
@@ -560,6 +563,8 @@ int main(int argc, char *argv[])
 		if (ElekStatus.EtalonData.Current.Position == ElekStatus.EtalonData.Set.Position 
 			|| ElekStatus.EtalonData.Status.StatusField.EndswitchLeft==1 
 			|| ElekStatus.EtalonData.Status.StatusField.EndswitchRight==1 ) {
+			
+		// printf("Endswitch left: %d, right: %d/n", ElekStatus.EtalonData.Status.StatusField.EndswitchLeft, ElekStatus.EtalonData.Status.StatusField.EndswitchRight);	
 		
 				
 		  //		sprintf(buf,"Etalon: -----------------------> ElekIO with EtalonAction %d ",
@@ -770,7 +775,7 @@ int main(int argc, char *argv[])
 		    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		    break; /* default */
 		  } /* Etalon Action */
-		} /* if Set.Position == Current.Position
+		} /* if Set.Position == Current.Position */
 		break; /*MSG_TYPE_SIGNAL*/
 	        default:
 		  sprintf(buf,"Etalon: %d unknown Message Type",Message.MsgType);
