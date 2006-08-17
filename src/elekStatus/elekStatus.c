@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2005-12-14 13:53:28 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-08-17 15:58:56 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.23  2005-12-14 13:53:28  rudolf
+ * Revision 1.24  2006-08-17 15:58:56  rudolf
+ * fixed GPS typo
+ *
+ * Revision 1.23  2005/12/14 13:53:28  rudolf
  * GABRIEL campaign changes
  *
  * Revision 1.22  2005/07/08 06:14:43  rudolf
@@ -402,7 +405,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
       // SLAVE
       // GPS Data
 	
-      printf("GPS(M) T:");
+      printf("GPS(S) T:");
       printf("%02d:",ptrElekStatus->GPSDataSlave.ucUTCHours);   /* binary, not BCD coded (!) 0 - 23 decimal*/
       printf("%02d:",ptrElekStatus->GPSDataSlave.ucUTCMins);    /* binary, 0-59 decimal */
       printf("%02d ",ptrElekStatus->GPSDataSlave.ucUTCSeconds); /* binary 0-59 decimal */
@@ -834,9 +837,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.23 2005-12-14 13:53:28 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.24 2006-08-17 15:58:56 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.23 2005-12-14 13:53:28 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.24 2006-08-17 15:58:56 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
