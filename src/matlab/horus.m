@@ -414,6 +414,10 @@ if isfield(data,'hDyelaser')
             stop(Dyelaserdata.ActTimer);
             delete(Dyelaserdata.ActTimer);
         end
+        if isfield(Dyelaserdata,'picotport')
+            fclose(Dyelaserdata.picotport);
+            delete(Dyelaserdata.picotport);
+        end;
         close(hDyelaser); 
     end
 end

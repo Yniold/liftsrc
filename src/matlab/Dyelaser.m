@@ -86,6 +86,7 @@ set(picotport,'ReadAsyncMode','continuous');
 set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
 try fopen(picotport);
     handles.picotport=picotport;
+    data.picotport=picotport;
 catch 
     delete(picotport);
     clear('picotport');
