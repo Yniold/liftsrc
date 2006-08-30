@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-07 11:50:16 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-30 15:06:40 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.21  2006-08-07 11:50:16  martinez
+* Revision 1.22  2006-08-30 15:06:40  rudolf
+* startet work on calibrator structures
+*
+* Revision 1.21  2006/08/07 11:50:16  martinez
 * corrected syntax errors, removed option "RECAL" from etalon Actions
 *
 * Revision 1.20  2006/08/04 17:41:05  martinez
@@ -72,6 +75,7 @@
 
 #define MAX_ADC_CARD_LIFT              2       /* number of 16bit ADC Cards in Lift */
 #define MAX_ADC_CARD_WP                3       /* number of 16bit ADC Cards in Wingpod */
+#define MAX_ADC_CARD_CALIB             1       /* number of 16bit ADC Cards in Calibrator */
 #define MAX_ADC_CHANNEL_PER_CARD       8       /* number of Channels on each 16bit ADC Card */
 
 #define MAX_24BIT_ADC_CARDS_LIFT       0       /* number of 24bit ADC Cards in Lift */
@@ -79,7 +83,8 @@
 #define MAX_24BIT_ADC_CHANNEL_PER_CARD 8       /* number of Channels on each 24bit ADC card */
 
 #define MAX_MFC_CARD_LIFT              1       /* number of MFC Cards in Lift */
-#define MAX_MFC_CARD_WP                1       /* number of MFC Cards in Lift */
+#define MAX_MFC_CARD_WP                1       /* number of MFC Cards in Wingpod */
+#define MAX_MFC_CARD_CALIB             1       /* number of MFC Cards in Calibrator */
 #define MAX_MFC_CHANNEL_PER_CARD       4       /* number of Channels on each MFC Card */
 
 #define MAX_VALVE_CARD_LIFT            2       /* number of Valve Cards in Lift */
@@ -89,6 +94,10 @@
 #define MAX_DCDC4_CARD_LIFT            1       /* number of DCDC4 in Lift */
 #define MAX_DCDC4_CHANNEL_PER_CARD     4       /* number of Channels on DCDC4 */
 
+#define MAX_SCR3XB_CALIB               1       /* number of SCR3XB Cards in Calibrator (for AC power devices) */
+#define MAX_SCR3XB_CHANNEL_PER_CARD    3       /* number of Channels on SCR3XB*/
+
+#define MAX_LICORS_CALIB               1       /* number of LICORs on Calibrator Unit */
 
 
 #define ELK_TIMEOUT (unsigned) 0x1000
@@ -129,6 +138,7 @@
 
 #define ELK_MFC_BASE         (ELK_BACKPLANE_BASE+0xa0)          /* Base adr. of MFC ADC channels */ 
 #define ELK_MFC_BASE_WP      (ELK_BACKPLANE_BASE+0xe0)
+#define ELK_MFC_BASE_CALIB   (ELK_BACKPLANE_BASE+0xa0)
 
 
 #define ELK_ADC_CONFIG          (0x0010)                        /* add to base addr */
@@ -141,6 +151,10 @@
 #define ELK_MFC_CONFIG_WP       (ELK_ADC_CONFIG)                /* offs. base addr for MFC Config*/
 #define ELK_MFC_NUM_ADR_WP      (ELK_ADC_NUM_ADR)               /* number of addresses each MFC channel has */
 #define ELK_DAC_NUM_ADR_WP      (MAX_DCDC4_CHANNEL_PER_CARD<<1) /* number of addresses each MFC channel has */
+
+#define ELK_MFC_CONFIG_CALIB    (ELK_ADC_CONFIG)                /* offs. base addr for MFC Config*/
+#define ELK_MFC_NUM_ADR_CALIB   (ELK_ADC_NUM_ADR)               /* number of addresses each MFC channel has */
+#define ELK_DAC_NUM_ADR_CALIB   (MAX_DCDC4_CHANNEL_PER_CARD<<1) /* number of addresses each MFC channel has */
 
 /* defines for the 24bit ADC */
 
@@ -356,6 +370,9 @@ struct MFCCardType {
   union  MFCChannelConfigType MFCChannelConfig[MAX_MFC_CHANNEL_PER_CARD];
 }; /* MFCCardType */
 
+struct SCRCardType {
+  uint16_t SCRPowerValue[MAX_SCR3XB_CHANNEL_PER_CARD];
+}; /* SCRCardType */
 
 /*************************************************************************************************************/
 
@@ -438,6 +455,40 @@ struct TempSensorCardType {
 
 }; /* TempSensorCardType */
 
+/*************************************************************************************************************/
+/* LICOR stuff */
+/*************************************************************************************************************/
+
+struct LicorStatusFieldType
+{
+   uint16_t Reserved:13;    /* not used up to now */
+   uint16_t Found:1;        /* LICOR is recognized by calibrator task */
+   uint16_t Initialising:1;  /* LICOR is warming up */
+   uint16_t DataValid:1;     /* LICOR data are valid */
+};
+
+union LicorStatusType
+{
+   struct LicorStatusFieldType Field;
+   uint16_t Word;
+};
+
+struct LicorH2OCO2Type 
+{
+   union LicorStatusType      Status;
+   uint16_t                   LicorTemperature; /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
+   uint16_t                   AmbientPressure;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+
+   uint16_t                   CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+   uint16_t                   C02B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+   uint16_t                   C02D;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+
+   uint16_t                   H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+   uint16_t                   H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+   uint16_t                   H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+};
+						 
+   
 /*************************************************************************************************************/
 
 enum InstrumentActionType { /* update also in instrument.c */
@@ -546,6 +597,17 @@ struct elekStatusType {                                             /* combined 
                                   
 										  /* GPS Data */
 }; /* elekStatusType */
+
+
+struct calibStatusType     /* new structure introduced for the calibrator automation process */ 
+{
+  /* data structures for the calibrator box */
+  struct timeval             TimeOfDayCalib;
+  struct ADCCardType         ADCCardCalib[MAX_ADC_CARD_CALIB];
+  struct MFCCardType         MFCCardCalib[MAX_ADC_CARD_CALIB];
+  struct TempSensorCardType  TempSensCardCalib;
+  struct LicorH2OCO2Type     LicorCalib;
+};
 
 
 
