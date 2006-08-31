@@ -10,6 +10,7 @@ SHELL=/bin/sh
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-
+LDFLAGS :=-lrt
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC -Wa,-mfpu=softvfp
