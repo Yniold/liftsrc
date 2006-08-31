@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-30 15:06:40 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-31 13:52:07 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.22  2006-08-30 15:06:40  rudolf
+* Revision 1.23  2006-08-31 13:52:07  rudolf
+* added elekIOcalib to TL makefile, made it at least compile properly, work in progress
+*
+* Revision 1.22  2006/08/30 15:06:40  rudolf
 * startet work on calibrator structures
 *
 * Revision 1.21  2006/08/07 11:50:16  martinez
@@ -392,6 +395,7 @@ struct DCDC4CardType {
 #define MAX_TEMP_SENSOR   40
 #define MAX_TEMP_SENSOR_CARD_LIFT 1
 #define MAX_TEMP_SENSOR_CARD_WP 1
+#define MAX_TEMP_SENSOR_CARD_CALIB 1
 #define MAX_TEMP_TIMEOUT  100                                        /* maximum Timeout to wait for Temperature Card to be ready */
 #define MAX_TEMP_MISSED_READING 5                                    /* number of maximal reading failures before removing a temperature */
 #define ELK_TEMP_BASE           0xb000                               /* Base of Temperature Card */
@@ -605,7 +609,7 @@ struct calibStatusType     /* new structure introduced for the calibrator automa
   struct timeval             TimeOfDayCalib;
   struct ADCCardType         ADCCardCalib[MAX_ADC_CARD_CALIB];
   struct MFCCardType         MFCCardCalib[MAX_ADC_CARD_CALIB];
-  struct TempSensorCardType  TempSensCardCalib;
+  struct TempSensorCardType  TempSensCardCalib[MAX_TEMP_SENSOR_CARD_CALIB];
   struct LicorH2OCO2Type     LicorCalib;
 };
 

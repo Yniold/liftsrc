@@ -12,7 +12,7 @@ CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-
 else
 CROSS_COMPILE=
-CPPFLAGS :=-DRUNONPC
+CPPFLAGS :=-DRUNONPC -Wa,-mfpu=softvfp
 LDFLAGS :=-lrt
 endif
 

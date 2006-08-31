@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-07 11:20:24 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-31 13:52:06 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.51  2006-08-07 11:20:24  rudolf
+ * Revision 1.52  2006-08-31 13:52:06  rudolf
+ * added elekIOcalib to TL makefile, made it at least compile properly, work in progress
+ *
+ * Revision 1.51  2006/08/07 11:20:24  rudolf
  * corrected syntax errors
  *
  * Revision 1.50  2006/08/03 15:43:09  martinez
@@ -1129,8 +1132,8 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
         ptrElekStatus->GPSDataSlave.ucUTCMins    = 0;
         ptrElekStatus->GPSDataSlave.ucUTCSeconds = 0;
 	
-        ptrElekStatus->GPSDataSlave.dLongitude   = 999.99;      // normal range -180 to +180
-        ptrElekStatus->GPSDataSlave.dLatitude    = 99.99;       // normal range -90 to +90
+        ptrElekStatus->GPSDataSlave.dLongitude   = (double)(98765.4321f);      // normal range -180 to +180
+        ptrElekStatus->GPSDataSlave.dLatitude    = (double)(12345.6789f);       // normal range -90 to +90
 	
         ptrElekStatus->GPSDataSlave.fAltitude    = -99999;      // normal range 0 to 18000 m
         ptrElekStatus->GPSDataSlave.fHDOP        = 999;         // normal range 0 to 100 ?
@@ -2271,13 +2274,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.51 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.51 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.51 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.51 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   

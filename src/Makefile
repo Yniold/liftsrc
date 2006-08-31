@@ -19,7 +19,7 @@ INSTDIR:=$(shell /bin/pwd)/bin/
 LIBDIR:=$(shell /bin/pwd)/lib/
 
 ifeq ($(ARMBUILD),1)
-CPPFLAGS :=-DRUNONARM
+CPPFLAGS :=-DRUNONARM -Wa,-mapcsfloat
 CROSS_COMPILE=arm-linux-
 else
 CROSS_COMPILE=
@@ -50,6 +50,7 @@ all : $(modules) $(headers)
 
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOcalib
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekStatus
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
@@ -62,6 +63,7 @@ all : $(modules) $(headers)
 #	cp $(INSTDIR)* ../bin
 	cp $(INSTDIR)eCmd ../bin
 	cp $(INSTDIR)elekIOServ ../bin
+	cp $(INSTDIR)elekIOcalib ../bin
 	cp $(INSTDIR)elekStatus ../bin
 	cp $(INSTDIR)statView ../bin
 	cp $(INSTDIR)etalon ../bin
@@ -79,6 +81,8 @@ clean:
 	rm -f ./bin/eCmd
 	rm -f ./elekIOServ/elekIOServ
 	rm -f ./elekIOServ/*.o
+	rm -f ./elekIOcalib/elekIOcalib
+	rm -f ./elekIOcalib/*.o
 	rm -f ./bin/elekIOServ
 	rm -f ./elekStatus/elekStatus
 	rm -f ./bin/elekStatus
@@ -91,6 +95,7 @@ clean:
 	rm -f ../bin/debugMon
 	rm -f ../bin/eCmd
 	rm -f ../bin/elekIOServ
+	rm -f ../bin/elekIOcalib
 	rm -f ../bin/elekStatus
 	rm -f ../bin/statView
 	rm -f ../bin/etalon
