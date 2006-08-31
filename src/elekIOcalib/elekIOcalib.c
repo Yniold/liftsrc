@@ -1,9 +1,9 @@
 				     /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-08-31 13:52:06 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-08-31 17:13:51 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
- * Revision 1.2  2006-08-31 13:52:06  rudolf
- * added elekIOcalib to TL makefile, made it at least compile properly, work in progress
+ * Revision 1.3  2006-08-31 17:13:51  rudolf
+ * formatted debug output, more work in progress
  *
  * Revision 1.1  2006/08/30 15:56:30  rudolf
  * started writing new elekIOcalib based on elekIOserv
@@ -99,26 +99,6 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
      {"Etalon",     ELEK_ETALON_OUT,ELEK_ETALON_STATUS_OUT},    // Etalon Task needs Status info
      {"Script",     ELEK_SCRIPT_OUT,                    -1},
      {      "",                  -1,                    -1}
-};
-
-static struct SlaveListType SlaveList[MAXSLAVES]=
-{
-   // list of slave elekIO units like wingpod or cal box
-    /* SlaveName  SlaveIP */
-     {"ArmAxis",   IP_ARMAXIS},
-     {NULL,NULL},
-     {NULL,NULL}
-};
-
-static char *strSysParameterDescription[MAX_SYS_PARAMETER]=
-{
-   "Etalon online position",
-     "Etalon offline step size left",
-     "Etalon offline step size right",
-     "Etalon online dither step size",
-     "Etalon scan start position",
-     "Etalon scan stop position",
-     "Etalon scan step size"
 };
 
 /**********************************************************************************************************/
@@ -752,7 +732,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.2 $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.3 $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.3 $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -792,7 +773,7 @@ int main(int argc, char *argv[])
    // change scheduler and set priority
    if (-1==(ret=ChangePriority()))
      {
-        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: cannot set Priority");
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : cannot set Priority");
      }
 
    sigemptyset(&SignalMask);
@@ -866,7 +847,7 @@ int main(int argc, char *argv[])
 		       // lets see whether there is still an open data request
 		       if (RequestDataFlag)
 			 {
-			    sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
+			    sprintf(buf,"[ElekIOcalib] still missing %d data set BUT send flagged data",
 				    RequestDataFlag);
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			    // Send Status to Status process
@@ -883,7 +864,7 @@ int main(int argc, char *argv[])
 	       {
 		  //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
 		  perror("select");
-		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with select");
+		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib: Problem with select");
 	       }
 	     // if errno
 	  }
@@ -912,7 +893,7 @@ int main(int argc, char *argv[])
 						   (struct sockaddr *)&their_addr, &addr_len)) == -1)
 			      {
 				 perror("recvfrom");
-				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Problem with recieve");
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib: Problem with receive");
 			      }
 #ifdef DEBUG_SLAVECOM
 			    sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
@@ -957,7 +938,7 @@ int main(int argc, char *argv[])
 
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: ReadCmd from %4d Port %04x Value %d (%04x)",
+				 sprintf(buf,"ElekIOcalib : ReadCmd from %05d Port %04x Value %d (%04x)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -973,7 +954,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_WRITE_DATA:
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %d (%04x)",
+				 sprintf(buf,"ElekIOcalib : WriteCmd from %05d Port %04x Value %d (%04x)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1015,7 +996,7 @@ int main(int argc, char *argv[])
 		       break;
 
 		     default:
-		       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Unknown Port Type");
+		       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib: Unknown Port Type");
 		       break;
 
 		    }
@@ -1041,14 +1022,14 @@ int main(int argc, char *argv[])
 	/* ret==0*/
 	//	    printf("timeout...\n");
 	write(2,"timeout........\r",16);
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: TimeOut");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : TimeOut");
      }
 
 #ifdef RUNONPC
    if (timer_getoverrun(StatusTimer_id)>0)
      {
 	printf("OVERRUN\n\r");
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ: Overrun");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : Overrun");
      }
    /* if overrun */
 #endif
@@ -1056,7 +1037,7 @@ int main(int argc, char *argv[])
    gettimeofday(&StopAction, NULL);
 
 #ifdef DEBUG_TIME_TASK
-   sprintf(buf,"ElekIOServ: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
+   sprintf(buf,"ElekIOcalib: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
 	   StopAction.tv_usec-StartAction.tv_usec, (StartAction.tv_usec-LastAction.tv_usec)/1000);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 #endif

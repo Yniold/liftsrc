@@ -1,14 +1,17 @@
 // ============================================
-// elekIOServ.h
+// elekIOcalib.h
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-08-30 15:56:30 $ by $Author: rudolf $
+// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-08-31 17:13:51 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOcalib.h,v $
-// Revision 1.1  2006-08-30 15:56:30  rudolf
+// Revision 1.2  2006-08-31 17:13:51  rudolf
+// formatted debug output, more work in progress
+//
+// Revision 1.1  2006/08/30 15:56:30  rudolf
 // started writing new elekIOcalib based on elekIOserv
 //
 // Revision 1.13  2005/12/14 13:53:27  rudolf
