@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-08-31 17:13:51 $ by $Author: rudolf $
+// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-09-01 15:49:08 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOcalib.h,v $
-// Revision 1.2  2006-08-31 17:13:51  rudolf
+// Revision 1.3  2006-09-01 15:49:08  rudolf
+// more work on calibrator UDP handling
+//
+// Revision 1.2  2006/08/31 17:13:51  rudolf
 // formatted debug output, more work in progress
 //
 // Revision 1.1  2006/08/30 15:56:30  rudolf
@@ -86,20 +89,19 @@ struct SlaveListType {
 
 
 // ========================
-// Globals for GPS
+// Globals for licor
 // ========================
 
 unsigned char port[256] = "/dev/ttyS1";   // serial device used for the incoming GPS data
 unsigned char pDataBuffer[1024];
 
-char aProgramName[] = "GPS";              // needed for serial.c 's debug output
+char aProgramName[] = "elekIOcalib";      // needed for serial.c 's debug output
 char *progname = (char *) aProgramName;   // export pointer to debug string
 
 int verbose = 255;                        // be very verbose
-long baud = 4800;                         // serial baudrate
-long baudmaster= 38400;                   // baudrate master
+long baud = 9600;                         // serial baudrate
 volatile char ucDataReadyFlag = 0;        // Data ready flag
-int fdGPS = -1;                           // file descriptor for serial communication
+int fdLicor = -1;                         // file descriptor for serial communication
 char ucPortOpened = 0;                    // flag for the timer routine wether port is available or not
 
 
