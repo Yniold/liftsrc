@@ -3,12 +3,15 @@
 // Implementation
 // ============================================
 
-// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2005-09-21 21:02:48 $ by $Author: rudolf $
+// $RCSfile: NMEAParser.c,v $ last changed on $Date: 2006-09-04 13:05:50 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: NMEAParser.c,v $
-// Revision 1.4  2005-09-21 21:02:48  rudolf
+// Revision 1.5  2006-09-04 13:05:50  rudolf
+// fix for GCC 4.03
+//
+// Revision 1.4  2005/09/21 21:02:48  rudolf
 // fixed Latitude and Longitude parsing, changed tty to S1
 //
 // Revision 1.3  2005/01/31 11:36:31  rudolf
@@ -313,19 +316,19 @@ void ProcessGPGGA(unsigned char *pData)
 		pBuff[0] = pField[0];
 		pBuff[1] = pField[1];
 		pBuff[2] = '\0';
-		ucGGAHour = atoi(pBuff);
+		ucGGAHour = atoi((char*)pBuff);
 
 		// minute
 		pBuff[0] = pField[2];
 		pBuff[1] = pField[3];
 		pBuff[2] = '\0';
-		ucGGAMinute = atoi(pBuff);
+		ucGGAMinute = atoi((char*)pBuff);
 
 		// Second
 		pBuff[0] = pField[4];
 		pBuff[1] = pField[5];
 		pBuff[2] = '\0';
-		ucGGASecond = atoi(pBuff);
+		ucGGASecond = atoi((char*)pBuff);
 	}
 
 	//
@@ -333,7 +336,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 1, MAXFIELD))
 	{
-		dGGALatitude = atof((unsigned char*)pField);
+		dGGALatitude = atof((char*)pField);
 	}
 	if(GetField(pData, pField, 2, MAXFIELD))
 	{
@@ -348,7 +351,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 3, MAXFIELD))
 	{
-		dGGALongitude = atof((unsigned char *)pField);
+		dGGALongitude = atof((char *)pField);
 	}
 	if(GetField(pData, pField, 4, MAXFIELD))
 	{
@@ -374,7 +377,7 @@ void ProcessGPGGA(unsigned char *pData)
 		pBuff[0] = pField[0];
 		pBuff[1] = pField[1];
 		pBuff[2] = '\0';
-		ucGGANumOfSatsInUse = atoi(pBuff);
+		ucGGANumOfSatsInUse = atoi((char*)pBuff);
 	}
 
 	//
@@ -382,7 +385,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 7, MAXFIELD))
 	{
-		dGGAHDOP = atof((unsigned char *)pField);
+		dGGAHDOP = atof((char *)pField);
 	}
 
 	//
@@ -390,7 +393,7 @@ void ProcessGPGGA(unsigned char *pData)
 	//
 	if(GetField(pData, pField, 8, MAXFIELD))
 	{
-		dGGAAltitude = atof((unsigned char *)pField);
+		dGGAAltitude = atof((char *)pField);
 	}
 
 	//
@@ -434,7 +437,7 @@ void ProcessGPVTG(unsigned char *pData)
       pBuff[4] = pField[4];
       pBuff[5] = '\0';
 
-      dVTGTrueHeading = atof(pBuff);
+      dVTGTrueHeading = atof((char*)pBuff);
    }
 
    if(GetField(pData, pField, 2, MAXFIELD))
@@ -448,7 +451,7 @@ void ProcessGPVTG(unsigned char *pData)
       pBuff[4] = pField[4];
       pBuff[5] = '\0';
 
-      dVTGMagneticHeading = atof(pBuff);
+      dVTGMagneticHeading = atof((char*)pBuff);
    }
 
    if(GetField(pData, pField, 4, MAXFIELD))
@@ -462,7 +465,7 @@ void ProcessGPVTG(unsigned char *pData)
       pBuff[4] = pField[4];
       pBuff[5] = '\0';
 
-      dVTGSpeedInknots = atof(pBuff);
+      dVTGSpeedInknots = atof((char*)pBuff);
    }
 
    if(GetField(pData, pField, 6, MAXFIELD))
@@ -476,7 +479,7 @@ void ProcessGPVTG(unsigned char *pData)
       pBuff[4] = pField[4];
       pBuff[5] = '\0';
 
-      dVTGSpeedInKmh = atof(pBuff);
+      dVTGSpeedInKmh = atof((char*)pBuff);
    }
 
    dwVTGCount++;

@@ -1,8 +1,11 @@
 				     /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-09-01 15:49:08 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-09-04 13:04:21 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
- * Revision 1.4  2006-09-01 15:49:08  rudolf
+ * Revision 1.5  2006-09-04 13:04:21  rudolf
+ * fix for GCC 4.03
+ *
+ * Revision 1.4  2006/09/01 15:49:08  rudolf
  * more work on calibrator UDP handling
  *
  * Revision 1.3  2006/08/31 17:13:51  rudolf
@@ -701,7 +704,8 @@ int main(int argc, char *argv[])
    struct timespec RealTime;         // Real time clock
    struct sockaddr_in my_addr;     // my address information
    struct sockaddr_in their_addr;  // connector's address information
-   int    addr_len, numbytes;
+   int    numbytes;
+   socklen_t addr_len;
    char   buf[GENERIC_BUF_LEN];
    bool   EndOfSession;
    int    MessagePort;
@@ -731,8 +735,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.4 $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.4 $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.5 $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $RCSfile: elekIOcalib.c,v $ $Revision: 1.5 $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
