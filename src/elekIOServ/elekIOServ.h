@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2005-12-14 13:53:27 $ by $Author: rudolf $
+// $RCSfile: elekIOServ.h,v $ last changed on $Date: 2006-09-04 10:47:22 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOServ.h,v $
-// Revision 1.13  2005-12-14 13:53:27  rudolf
+// Revision 1.14  2006-09-04 10:47:22  rudolf
+// fixed compiler warning for GCC 4.03
+//
+// Revision 1.13  2005/12/14 13:53:27  rudolf
 // GABRIEL campaign changes
 //
 // Revision 1.12  2005/09/21 21:02:48  rudolf
@@ -83,7 +86,7 @@ struct SlaveListType {
 // Globals for GPS
 // ========================
 
-unsigned char port[256] = "/dev/ttyS1";   // serial device used for the incoming GPS data
+char port[256] = "/dev/ttyS1";   // serial device used for the incoming GPS data
 unsigned char pDataBuffer[1024];
 
 char aProgramName[] = "GPS";              // needed for serial.c 's debug output

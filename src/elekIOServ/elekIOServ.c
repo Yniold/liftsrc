@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-08-31 13:52:06 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-09-04 10:49:08 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.52  2006-08-31 13:52:06  rudolf
+ * Revision 1.53  2006-09-04 10:49:08  rudolf
+ * fixed compiler warning for GCC 4.03
+ *
+ * Revision 1.52  2006/08/31 13:52:06  rudolf
  * added elekIOcalib to TL makefile, made it at least compile properly, work in progress
  *
  * Revision 1.51  2006/08/07 11:20:24  rudolf
@@ -2233,7 +2236,8 @@ int main(int argc, char *argv[])
     struct timespec RealTime;         // Real time clock 
     struct sockaddr_in my_addr;     // my address information
     struct sockaddr_in their_addr;  // connector's address information
-    int    addr_len, numbytes;
+    int    numbytes;
+    socklen_t addr_len;
     char   buf[GENERIC_BUF_LEN];
     bool   EndOfSession;    
     int    MessagePort;
@@ -2274,13 +2278,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.52 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
