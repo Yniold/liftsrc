@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIO.c,v $ last changed on $Date: 2005-04-21 15:01:58 $ by $Author: rudolf $
+* $RCSfile: elekIO.c,v $ last changed on $Date: 2006-09-04 11:40:36 $ by $Author: rudolf $
 *
 * $Log: elekIO.c,v $
-* Revision 1.3  2005-04-21 15:01:58  rudolf
+* Revision 1.4  2006-09-04 11:40:36  rudolf
+* Fixed warnings for GCC 4.03
+*
+* Revision 1.3  2005/04/21 15:01:58  rudolf
 * made elekIO work with ARM controller. Added routines to open device driver for read and write to the backplane
 *
 * Revision 1.2  2005/04/21 14:11:42  rudolf
@@ -14,7 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <asm/io.h>
+#include <sys/io.h>
 #include <stdint.h>
 
 #include <ctype.h>

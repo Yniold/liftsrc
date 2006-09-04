@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.24 $
-last change on $Date: 2006-08-07 11:50:15 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.25 $
+last change on $Date: 2006-09-04 11:38:16 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.24  2006-08-07 11:50:15  martinez
+Revision 1.25  2006-09-04 11:38:16  rudolf
+Fixed warnings for GCC 4.03
+
+Revision 1.24  2006/08/07 11:50:15  martinez
 corrected syntax errors, removed option "RECAL" from etalon Actions
 
 Revision 1.23  2006/08/04 17:11:28  martinez
@@ -319,7 +322,7 @@ int main(int argc, char *argv[])
 	}
 	pptr=ptrHostAddr->h_addr_list;
 	
-	ptr=inet_ntop(ptrHostAddr->h_addrtype,*pptr,DestAddress,LEN_IP_ADDR); // copy default address
+	ptr=(char*)inet_ntop(ptrHostAddr->h_addrtype,*pptr,DestAddress,LEN_IP_ADDR); // copy default address
 	printf("sending command to %s\n",DestAddress);
 
 	ArgCount++; // next argument
