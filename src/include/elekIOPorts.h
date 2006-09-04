@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2005-06-25 18:32:58 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-09-04 09:33:38 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.9  2005-06-25 18:32:58  rudolf
+* Revision 1.10  2006-09-04 09:33:38  rudolf
+* added ports and IP for Calibrator
+*
+* Revision 1.9  2005/06/25 18:32:58  rudolf
 * changed IP to lift
 *
 * Revision 1.8  2005/06/22 18:09:43  rudolf
@@ -35,7 +38,7 @@
 #define IP_SCRIPT_CLIENT            "127.0.0.1"
 #define IP_LOCALHOST                "127.0.0.1"
 #define IP_ARMAXIS                  "10.111.111.10" // wingpod IP 
-
+#define IP_ARMCALIBRATOR            "10.111.111.13" // calibrator IP
 #define LEN_IP_ADDR                 16
 
 
@@ -44,6 +47,7 @@
 #define UDP_ELEK_ETALON_INPORT         1130    // port for Etalon Task
 #define UDP_ELEK_SCRIPT_INPORT         1140    // port for Script Task
 #define UDP_ELEK_SLAVE_DATA_INPORT     1150    // port for reception of slave data in MasterMode
+#define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
