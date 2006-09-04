@@ -1,8 +1,11 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2005-06-27 19:39:11 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2006-09-04 11:53:29 $ by $Author: rudolf $
 *
 * $Log: udptools.c,v $
-* Revision 1.6  2005-06-27 19:39:11  rudolf
+* Revision 1.7  2006-09-04 11:53:29  rudolf
+* Fixed warnings for GCC 4.03, added newline and CVS revision info
+*
+* Revision 1.6  2005/06/27 19:39:11  rudolf
 * disabled in udp debuglevels
 *
 * Revision 1.5  2005/06/22 13:17:14  rudolf
@@ -110,7 +113,7 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
     memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
        
     if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
-		     (struct sockaddr_in *)&their_addr, sizeof(struct sockaddr_in))) == -1){
+		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr_in))) == -1){
         printf("\nproblem with sendto MsgPort: %d %s\n",
 	ptrMessagePort->PortNumber,ptrMessagePort->PortName);
         perror("sendto");
@@ -190,7 +193,7 @@ int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void 
 
     struct sockaddr_in their_addr;
     int numbytes;
-    int addr_len;
+    socklen_t addr_len;
 
     addr_len = sizeof(struct sockaddr);
 

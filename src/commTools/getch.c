@@ -1,4 +1,13 @@
-/* portable_getch.c */
+/*
+* $RCSfile: getch.c,v $ last changed on $Date: 2006-09-04 11:53:29 $ by $Author: rudolf $
+*
+* $Log: getch.c,v $
+* Revision 1.2  2006-09-04 11:53:29  rudolf
+* Fixed warnings for GCC 4.03, added newline and CVS revision info
+*
+*
+*
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
