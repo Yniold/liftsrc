@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-08-17 15:58:56 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-09-04 10:19:46 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.24  2006-08-17 15:58:56  rudolf
+ * Revision 1.25  2006-09-04 10:19:46  rudolf
+ * fixed compiler warning for GCC 4.03
+ *
+ * Revision 1.24  2006/08/17 15:58:56  rudolf
  * fixed GPS typo
  *
  * Revision 1.23  2005/12/14 13:53:28  rudolf
@@ -791,7 +794,8 @@ int main()
   struct timespec RealTime;         // Real time clock 
   struct sockaddr_in my_addr;     // my address information
   struct sockaddr_in their_addr;  // connector's address information
-  int    addr_len, ElekStatus_len, numbytes;
+  int    ElekStatus_len, numbytes;
+  socklen_t addr_len;
   bool   EndOfSession;  
 
   char buf[GENERIC_BUF_LEN];
@@ -837,9 +841,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.24 2006-08-17 15:58:56 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.25 2006-09-04 10:19:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.24 2006-08-17 15:58:56 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.25 2006-09-04 10:19:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);

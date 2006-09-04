@@ -1,8 +1,11 @@
 /*
-* $RCSfile: debugMon.c,v $ last changed on $Date: 2005-04-22 13:13:58 $ by $Author: rudolf $
+* $RCSfile: debugMon.c,v $ last changed on $Date: 2006-09-04 10:17:20 $ by $Author: rudolf $
 *
 * $Log: debugMon.c,v $
-* Revision 1.3  2005-04-22 13:13:58  rudolf
+* Revision 1.4  2006-09-04 10:17:20  rudolf
+* fixed compiler warning for GCC 4.03
+*
+* Revision 1.3  2005/04/22 13:13:58  rudolf
 * added timestamp to debugMon (local time)
 *
 * Revision 1.2  2005/04/21 13:48:32  rudolf
@@ -39,7 +42,8 @@ int main(int argc, char *argv[])
     struct sockaddr_in my_addr;    // my address information
     struct sockaddr_in their_addr; // connector's address information
     struct timespec RealTime;         // Real time clock
-    int addr_len, numbytes;
+    int numbytes;
+    socklen_t addr_len;
     char buf[MAXBUFLEN];
     char timebuf[MAXBUFLEN];
     uint64_t TSC;
