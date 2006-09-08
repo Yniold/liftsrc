@@ -24,7 +24,7 @@ export CC
 
 LDFLAGS+=-ggdb
 
-modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o serial.o
+modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o serial.c
 
 headers=elekIOcalib.h ../include/elekIO.h ../include/elekIOPorts.h
 
