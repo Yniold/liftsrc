@@ -59,6 +59,8 @@ install:
 ifeq ($(ARMBUILD),1)
 	@echo ARM-Install
 	if [ ! -d $(SOURCEDIR)/bin ]; then mkdir $(SOURCEDIR)/bin; fi
+	if [ -f $(DESTDIR) ]; then rmdir $(DESTDIR); fi
+	if [ ! -d $(DESTDIR) ]; then mkdir $(DESTDIR); fi
 	cp $(SOURCEDIR)/eCmd/eCmd $(DESTDIR)
 	cp $(SOURCEDIR)/elekIOServ/elekIOServ $(DESTDIR)
 	cp $(SOURCEDIR)/elekIOcalib/elekIOcalib $(DESTDIR)
