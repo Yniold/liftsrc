@@ -7,6 +7,8 @@ PROJECT=eCmd
 
 SHELL=/bin/sh
 
+INSTDIR?=../bin
+
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-
@@ -28,7 +30,8 @@ headers=../include/elekIO.h ../include/elekIOPorts.h
 .SUFFIXES: .c .o
 
 $(PROJECT) : $(PROJECT).c $(modules) $(headers)
-	     echo $(PROJECT) $(VERSION)
-	     $(CC)  $(CPPFLAGS) $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
-	     cp $(PROJECT) $(INSTDIR)
+	echo $(PROJECT) $(VERSION)
+	$(CC)  $(CPPFLAGS) $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
+	if [ ! -d $(INSTDIR) ]; then mkdir $(INSTDIR); fi
+	cp $(PROJECT) $(INSTDIR)
 

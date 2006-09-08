@@ -8,6 +8,8 @@ PROJECT=statView
 CC=gcc
 SHELL=/bin/sh
 
+INSTDIR?=../bin
+
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-

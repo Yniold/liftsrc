@@ -7,6 +7,8 @@ PROJECT=debugMon
 
 SHELL=/bin/sh
 
+INSTDIR?=../bin
+
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-
