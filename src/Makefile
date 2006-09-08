@@ -15,8 +15,22 @@ VERSION=08
 PROJECT=all
 
 SHELL:=/bin/sh
-INSTDIR:=$(shell /bin/pwd)/bin/
+
+# print our environment
+	echo CROSS_COMPILE=$(CROSS_COMPILE)
+	echo CC=$(CC)
+	echo GCC=$(GCC)
+	echo INSTDIR=$(INSTDIR)
+	echo DESTDIR=$(DESTDIR)
+	echo CFLAGS=$(CFLAGS)
+	echo CPPFLAGS=$(CPPFLAGS)
+
+# check if INSTDIR is passed to us by ptxdist build system, else use default location
+INSTDIR ?= $(shell /bin/pwd)/bin/
+
 LIBDIR:=$(shell /bin/pwd)/lib/
+
+# check for target system and make defines (might became obsolete in future)
 
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM -Wa,-mapcsfloat
