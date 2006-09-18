@@ -872,7 +872,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             set(hObject,'BackgroundColor','r','String','switching Blower ON');
             % switch on Blower only when pump is on and cell pressure P1000 is low enough
-            if ( bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | statusData(lastrow,col.P1000)>11500 )
+            if ( bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | statusData(lastrow,col.P1000)>10300 )
                 set(handles.txtP1000,'BackgroundColor','r');
                 disp('Pressure too high');
                 set(hObject,'BackgroundColor','c','String','Blower OFF');                
