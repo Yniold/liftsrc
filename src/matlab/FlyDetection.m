@@ -568,18 +568,19 @@ else
     end
 end
 
-% check Blower
-if bitget(statusData(lastrow,col.Valve2armAxis),9)==0 | ...
-        bitget(statusData(lastrow,col.Valve2armAxis),1)==0
-    if bitget(statusData(lastrow,col.Valve2armAxis),10)
-        set(handles.togBlower,'BackgroundColor','r','String','Pump ON');
-    else
-    %    set(handles.togBlower,'Value',0)
-        set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
-    end
+% check Pump
+if bitget(statusData(lastrow,col.Valve2armAxis),10)
+    set(handles.togPump,'BackgroundColor','g','String','Pump ON');
 else
-%    set(handles.togBlower,'Value',1)
+    set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+end
+
+% check Blower
+if bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
+    bitget(statusData(lastrow,col.Valve2armAxis),1)
     set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+else
+    set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
 end
 
 % check Butterfly
@@ -870,30 +871,24 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             set(hObject,'BackgroundColor','r','String','switching Blower ON');
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            set(hObject,'BackgroundColor','r','String','Pump ON');
-            pause(5);
-%            while statusData(lastrow,col.P1000)>11500 % switch on Blower only when cell pressure P1000 is low enough
-%                set(handles.txtP1000,'BackgroundColor','r');
-%                pause(1);
-%            end
-            set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
-            Valveword=bitset(Valveword,9); % switch on blower
-            Valveword=bitset(Valveword,1); % ramp blower up 
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            set(hObject,'BackgroundColor','g','String','Blower ON');
+            % switch on Blower only when pump is on and cell pressure P1000 is low enough
+            if ( bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | statusData(lastrow,col.P1000)>11500 )
+                set(handles.txtP1000,'BackgroundColor','r');
+                disp('Pressure too high');
+                set(hObject,'BackgroundColor','c','String','Blower OFF');                
+            else
+                set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
+                Valveword=bitset(Valveword,9); % switch on blower
+                Valveword=bitset(Valveword,1); % ramp blower up 
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                set(hObject,'BackgroundColor','g','String','Blower ON');
+            end
         end
     else
         if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
             set(hObject,'BackgroundColor','r','String','switching Blower OFF');
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            set(hObject,'BackgroundColor','r','String','Pump ON');
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
             Valveword=bitset(Valveword,13); % ventilate Pump
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -904,7 +899,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
             Valveword=bitset(Valveword,13); % ventilate Pump
             Valveword=bitset(Valveword,9,0); % switch off blower
-            Valveword=bitset(Valveword,10,0); % switch off pump
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             set(hObject,'BackgroundColor','c','String','Blower OFF');
@@ -1601,4 +1595,44 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
 end
 
+
+
+
+% --- Executes on button press in togPump.
+function togPump_Callback(hObject, eventdata, handles)
+% hObject    handle to togPump (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of togPump
+
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+data = getappdata(handles.output, 'Detdata');
+lastrow=data.lastrow;
+col=horusdata.col;
+
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if get(hObject,'Value')
+        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            set(hObject,'BackgroundColor','g','String','Pump ON');
+        end
+    else
+        if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+            set(handles.tglVent,'BackgroundColor','r');
+            if bitget(statusData(lastrow,col.Valve2armAxis),9)==0 % make sure blower is off
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10,0); % switch off pump
+                Valveword=bitset(Valveword,13);  % ventilate Pump
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+                set(hObject,'BackgroundColor','c','String','Pump OFF');
+                set(handles.tglVent,'BackgroundColor','r');
+            end
+        end
+    end
+end
 
