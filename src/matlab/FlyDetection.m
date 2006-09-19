@@ -1623,8 +1623,9 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     else
         if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
             set(handles.tglVent,'BackgroundColor','r');
-            if bitget(statusData(lastrow,col.Valve2armAxis),9)==0 % make sure blower is off
-                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10,0); % switch off pump
+            if bitget(statusData(lastrow,col.Valve2armAxis),1)==0 % make sure blower is ramped down
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
+                Valveword=bitset(Valveword,10,0);  % switch off Pump
                 Valveword=bitset(Valveword,13);  % ventilate Pump
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
