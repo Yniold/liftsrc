@@ -683,7 +683,7 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 currentpos=str2double(get(handles.txtEtCurPos,'String'));
 encoderpos=str2double(get(handles.txtEtEncPos,'String'));
-setpos=currentpos-encoderpos;
+setpos=currentpos-encoderpos-10000;
 if setpos<0
     setpos=setpos+2^32/2;
     negpos=1;
