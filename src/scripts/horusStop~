@@ -9,12 +9,12 @@ else
    echo found him
 fi
 
-echo move etalon to 0
-eCmd s etalonnop
-eCmd s etalonnop
+#echo move etalon to 0
+#eCmd s etalonnop
+#eCmd s etalonnop
 
-eCmd w 0xa510 0
-eCmd w 0xa512 0
+#eCmd w 0xa510 0
+#eCmd w 0xa512 0
 
 echo switch off Filament
 FilamentOff
