@@ -568,8 +568,8 @@ else
     end
 end
 
-% check Pump
-if bitget(statusData(lastrow,col.Valve2armAxis),10)
+% check Pump, Bit 10 is Leybold, Bit 7 is Scroll Pump
+if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
     set(handles.togPump,'BackgroundColor','g','String','Pump ON');
 else
     set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
@@ -872,13 +872,15 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             set(hObject,'BackgroundColor','r','String','switching Blower ON');
             % switch on Blower only when pump is on and cell pressure P1000 is low enough
-            if ( bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | statusData(lastrow,col.P1000)>10300 )
+            if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
+                    | statusData(lastrow,col.P1000)>10300 )
                 set(handles.txtP1000,'BackgroundColor','r');
                 disp('Pressure too high');
                 set(hObject,'BackgroundColor','c','String','Blower OFF');                
             else
                 set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
-                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure pump is not switched off
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure Leybold pump is not switched off
+                Valveword=bitset(Valveword,7);  % make sure Scroll pump is not switched off
                 Valveword=bitset(Valveword,9); % switch on blower
                 Valveword=bitset(Valveword,1); % ramp blower up 
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
@@ -1615,7 +1617,8 @@ col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch pump on
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch Leybold pump on
+            Valveword=bitset(Valveword,7);  % switch Scroll pump on
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             set(hObject,'BackgroundColor','g','String','Pump ON');
@@ -1625,7 +1628,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             set(handles.tglVent,'BackgroundColor','r');
             if bitget(statusData(lastrow,col.Valve2armAxis),1)==0 % make sure blower is ramped down
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
-                Valveword=bitset(Valveword,10,0);  % switch off Pump
+                Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
+                Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
                 Valveword=bitset(Valveword,13);  % ventilate Pump
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
