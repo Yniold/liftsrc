@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-09-04 10:49:08 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-09-29 15:15:21 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.53  2006-09-04 10:49:08  rudolf
+ * Revision 1.54  2006-09-29 15:15:21  rudolf
+ * fixed endianess bug for doubles in structure, Slave-ARM now sends proper data
+ *
+ * Revision 1.53  2006/09/04 10:49:08  rudolf
  * fixed compiler warning for GCC 4.03
  *
  * Revision 1.52  2006/08/31 13:52:06  rudolf
@@ -177,6 +180,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <sched.h>
+#include <pthread.h>
 
 #include "../include/elekGeneral.h"
 #include "../include/elekIO.h"
@@ -1135,8 +1139,8 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
         ptrElekStatus->GPSDataSlave.ucUTCMins    = 0;
         ptrElekStatus->GPSDataSlave.ucUTCSeconds = 0;
 	
-        ptrElekStatus->GPSDataSlave.dLongitude   = (double)(98765.4321f);      // normal range -180 to +180
-        ptrElekStatus->GPSDataSlave.dLatitude    = (double)(12345.6789f);       // normal range -90 to +90
+        ptrElekStatus->GPSDataSlave.dLongitude   = 999.99;      // normal range -180 to +180
+        ptrElekStatus->GPSDataSlave.dLatitude    = 99.99;       // normal range -90 to +90
 	
         ptrElekStatus->GPSDataSlave.fAltitude    = -99999;      // normal range 0 to 18000 m
         ptrElekStatus->GPSDataSlave.fHDOP        = 999;         // normal range 0 to 100 ?
@@ -2278,13 +2282,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.53 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2535,6 +2539,62 @@ int main(int argc, char *argv[])
 #endif
                                     gettimeofday(&GetStatusStartTime, NULL);
                                     GetElekStatus(&ElekStatus,IsMaster);
+#ifdef RUNONARM
+
+				    // swap all doubles in endianess when running on ARM as softfloat is still big endian
+				    // this is a quick'n'dirty hack
+				    // should be removed ASAP when softfloat is fixed
+
+				    void* pDest;
+			            void* pSource;				    
+				    unsigned char aTempInBuffer[8];
+				    unsigned char aTempOutBuffer[8];
+      				    int iNumBytes = sizeof(double);
+				    int iCopyLoop = 0;
+				    
+				    // Longitude
+				    pDest = (void*) aTempInBuffer;
+				    pSource = (void*) &(ElekStatus.GPSDataSlave.dLongitude);
+				    memcpy(pDest,pSource,iNumBytes);
+
+				    // swap endianess using quad words
+				    aTempOutBuffer[0] = aTempInBuffer[4];
+				    aTempOutBuffer[1] = aTempInBuffer[5];
+				    aTempOutBuffer[2] = aTempInBuffer[6];
+				    aTempOutBuffer[3] = aTempInBuffer[7];
+
+				    aTempOutBuffer[4] = aTempInBuffer[0];
+				    aTempOutBuffer[5] = aTempInBuffer[1];
+				    aTempOutBuffer[6] = aTempInBuffer[2];
+				    aTempOutBuffer[7] = aTempInBuffer[3];
+
+				    // copy back into struct
+				    pDest = (void*) &(ElekStatus.GPSDataSlave.dLongitude);
+				    pSource = (void*) aTempOutBuffer;
+				    memcpy(pDest,pSource,iNumBytes);
+
+				    // Latitude
+				    pDest = (void*) aTempInBuffer;
+				    pSource = (void*) &(ElekStatus.GPSDataSlave.dLatitude);
+				    memcpy(pDest,pSource,iNumBytes);
+
+				    // swap endianess using quad words
+				    aTempOutBuffer[0] = aTempInBuffer[4];
+				    aTempOutBuffer[1] = aTempInBuffer[5];
+				    aTempOutBuffer[2] = aTempInBuffer[6];
+				    aTempOutBuffer[3] = aTempInBuffer[7];
+
+				    aTempOutBuffer[4] = aTempInBuffer[0];
+				    aTempOutBuffer[5] = aTempInBuffer[1];
+				    aTempOutBuffer[6] = aTempInBuffer[2];
+				    aTempOutBuffer[7] = aTempInBuffer[3];
+
+				    // copy back into struct
+				    pDest = (void*) &(ElekStatus.GPSDataSlave.dLatitude);
+				    pSource = (void*) aTempOutBuffer;
+				    memcpy(pDest,pSource,iNumBytes);
+#endif
+
                                     gettimeofday(&GetStatusStopTime, NULL);
 #ifdef DEBUG_SLAVECOM
                                     // printf("ElekIOServ(s): Data aquisition took: %02d.%03ds\n\r",
@@ -2754,7 +2814,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG_SLAVECOM
                                     // printf("elekIOServ(M): copying %d bytes from SlaveStruct to MasterStruct\n\r",numBytes);
 #endif
-                                    memcpy(pDest,pSource,numBytes);               
+                                    memcpy(pDest,pSource,numBytes);
                                     ElekStatus.uiValidSlaveDataFlag=TRUE;
                                     RequestDataFlag--; // we got one more data set
 				    // printf("elekIOServ(m): waiting for %d more data set\n",
