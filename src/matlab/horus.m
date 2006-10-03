@@ -261,11 +261,12 @@ if isfield(data,'hCounterCards')
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
+data.setTDyelaser=50; % define temperature Dye Laser heating is set to
 if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>setTDyelaser+1 | TDyelaser(lastrow)<setTDyelaser-1 |statusData(lastrow,col.IFilament)<10100
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
