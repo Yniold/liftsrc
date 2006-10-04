@@ -115,7 +115,12 @@ set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str
 
 % calculate parameters from ADC counts
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
-x=double(statusData(:,col.TDet)); eval(['TDet=',fcts2val.TDet,';']);
+x=double(statusData(:,col.TDet)); 
+if x>10000
+    eval(['TDet=',fcts2val.TDet,';']);
+else
+    TDet=statustime; TDet(:)=NaN;
+end
 %TDet=double(statusData(:,col.TDet));
 x=double(statusData(:,col.P20)); eval(['P20=',fcts2val.P20,';']);
 %x=double(statusData(:,col.P1000)); eval(['P1000=',fcts2val.P1000,';']);
@@ -426,13 +431,17 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 
     CHO2b=quen.*bc.*(str2double(get(handles.editC,'String'))/quencal/densCal)*Dens;
     CHO2b=CHO2b.*(DiodeWZ2in(lastrow)+DiodeWZ2out(lastrow))/2;
-    if rank(COH)~=0
-        XOH = (MCP1OnlineAvg-MCP1OfflineAvg).*5./COH';
+    if ~isnan(COH)
+        if rank(COH)~=0
+             XOH = (MCP1OnlineAvg-MCP1OfflineAvg).*5./COH';
+        end
     else
         XOH = MCP1OnlineAvg; XOH(:)=NaN;
     end
-    if rank(CHO2b)~=0
-        XHOx = (MCP2OnlineAvg-MCP2OfflineAvg).*5./CHO2b';
+    if ~isnan(COH)
+        if rank(CHO2b)~=0
+            XHOx = (MCP2OnlineAvg-MCP2OfflineAvg).*5./CHO2b';
+        end
     else
         XHOx = MCP1OnlineAvg; XHOx(:)=NaN;
     end
