@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-08-31 13:52:07 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-05 15:32:40 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.23  2006-08-31 13:52:07  rudolf
+* Revision 1.24  2006-10-05 15:32:40  rudolf
+* extenden slave structure with butterfly data
+*
+* Revision 1.23  2006/08/31 13:52:07  rudolf
 * added elekIOcalib to TL makefile, made it at least compile properly, work in progress
 *
 * Revision 1.22  2006/08/30 15:06:40  rudolf
@@ -492,6 +495,76 @@ struct LicorH2OCO2Type
    uint16_t                   H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 };
 						 
+/*************************************************************************************************************/
+/* BUTTERFLY  */
+/*************************************************************************************************************/
+
+/* the stepperdriver on the butterfly tells us some parameters*/
+/* might be interesting for debugging */
+
+struct ButterflyMotorStatusFieldType
+{
+   uint16_t OCA:1;      /* overcurrent phase A */
+   uint16_t OCB:1;      /* overcurrent phase B */
+   uint16_t OLA:1;      /* open load bridge A */
+   uint16_t OLB:1;      /* open load bridge B */
+   uint16_t OCHS:1;     /* overcurrent highside */
+   uint16_t UV:1;       /* undervoltage */
+   uint16_t OTPW:1;     /* overtemperature prewarning */
+   uint16_t OT:1;       /* overtemperature */
+   uint16_t ONE:1;      /* always "1" */
+   uint16_t LOAD:3;     /* load indicator */
+   uint16_t unused:4;	/* not used (probably 0) */
+};
+
+union ButterflyMotorStatusType {
+  struct ButterflyMotorStatusFieldType StatusField;
+  uint16_t ButterflyStatusWord;
+};
+
+/* the AVR on the butterfly tells us the cause of the last RESET */
+/* might be interesting for debugging */
+
+struct ButterflyCPUStatusFieldType
+{
+   uint16_t UNUSED:11;   /* not used, 0 */
+   uint16_t JTRF:1;      /* JTAG reset (from debugger)*/
+   uint16_t WDRF:1;      /* watchdog reset */
+   uint16_t BORF:1;      /* brown out reset flag */
+   uint16_t EXTRF:1;     /* external reset flag (normal RC-reset)*/
+   uint16_t PORF:1;      /* Power on reset flag */
+};
+
+union ButterflyCPUStatusType {
+  struct ButterflyCPUStatusFieldType StatusField;
+  uint16_t ButterflyCPUWord;
+};
+
+/* The butterfly has positions from 0 to 2499, only 0-624 make sense (90°) 
+The valve is closed when position is valid and zero,
+and fully opened when position is valid and 624.
+
+The AVR controller on the butterfly sends back the target position
+it has understood, this number is reflected in the TargetPositionGot field
+
+When the elekIOServ receives a Set Position command it writes the required
+position into the TargetPositionSet field, from where it is read by
+the serial communication thread in butterfly.c and sent via RS232 to the
+AVR
+
+Normally both fields should be identical after about 500ms, otherwise this
+might indicate a communication problem */
+
+struct ButterflyType {
+  uint16_t                          PositionValid;        /* tells us if the encoder has seen the index hole once */
+  uint16_t                          CurrentPosition;      /* tells us where the butterfly stands */
+  uint16_t                          TargetPositionGot;    /* the target position the AVR should go to (readback from AVR)*/
+  uint16_t                          TargetPositionSet;    /* the target position desired */
+  union ButterflyMotorStatusType    MotorStatus;          /* motor status bitfield */
+  union ButterflyCPUStatusType      CPUStatus;            /* CPU status */ 
+}; /* ButterflyType */
+
+
    
 /*************************************************************************************************************/
 
@@ -597,7 +670,8 @@ struct elekStatusType {                                             /* combined 
   
   /* needed for calculation of processing time */
   struct TSCDataType         TimeStampCommand;
-  
+
+  struct ButterflyType       ButterflySlave;
                                   
 										  /* GPS Data */
 }; /* elekStatusType */
