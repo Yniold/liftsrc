@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-09-04 10:19:46 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-10-06 10:19:45 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.25  2006-09-04 10:19:46  rudolf
+ * Revision 1.26  2006-10-06 10:19:45  rudolf
+ * added butterfly structure as new group
+ *
+ * Revision 1.25  2006/09/04 10:19:46  rudolf
  * fixed compiler warning for GCC 4.03
  *
  * Revision 1.24  2006/08/17 15:58:56  rudolf
@@ -455,6 +458,20 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 
   } // if GROUP_VALVEDATA
 	   
+  // ***************** BUTTERFLY DATA **************		 
+	
+  if (uiGroupFlags & GROUP_BUTTERFLYDATA) {
+
+    printf("BFV(S):");
+      printf("VAL: %01d CP:%05d TPR:%05d TPS:%05d MCW:0x%04X CPU:0x%02X",
+	ptrElekStatus->ButterflySlave.PositionValid,
+	ptrElekStatus->ButterflySlave.CurrentPosition,
+	ptrElekStatus->ButterflySlave.TargetPositionGot,
+	ptrElekStatus->ButterflySlave.TargetPositionSet,
+	ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord,
+	ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord);
+  } // if GROUP_BUTTERFLYDATA
+	   
 
 
     
@@ -739,6 +756,14 @@ void EvaluateKeyboard(void)
 	  else
 	    printf("\n\rDisplay of VALVE DATA is now off.\n\r");
 	  break;
+
+	case 'B':					// Butterfly
+	  uiGroupFlags ^= GROUP_BUTTERFLYDATA;
+	  if (uiGroupFlags & GROUP_BUTTERFLYDATA)
+	    printf("\n\rDisplay of BUTTERFLY DATA is now on.\n\r");
+	  else
+	    printf("\n\rDisplay of BUTTERFLY DATA is now off.\n\r");
+	  break;
 				
 				
 	case 'S':					// Show all
@@ -766,7 +791,7 @@ void ShowHelp(void)
   printf("\n\rPress to toggle displaying of:\n\r\n\r");
   printf("[A] ADC DATA    \t[E] ETALON DATA     \t[G] GPS DATA\n\r");
   printf("[C] CC DATA     \t[M] CC Mask info    \t[P] TEMPERATURE DATA\n\r");
-  printf("[D] DATASET DATA\t[V] VALVE DATA\n\r");
+  printf("[D] DATASET DATA\t[V] VALVE DATA      \t[B] BUTTERFLY DATA\n\r");
   printf("[T] TIME DATA   \t[S] SHOW ALL        \t[R] RESET ALL\n\r");
   printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
@@ -841,9 +866,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.25 2006-09-04 10:19:46 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.26 2006-10-06 10:19:45 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.25 2006-09-04 10:19:46 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.26 2006-10-06 10:19:45 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);

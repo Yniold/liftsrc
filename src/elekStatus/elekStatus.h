@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2005-06-29 12:46:18 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2006-10-06 10:19:45 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
-* Revision 1.7  2005-06-29 12:46:18  rudolf
+* Revision 1.8  2006-10-06 10:19:45  rudolf
+* added butterfly structure as new group
+*
+* Revision 1.7  2005/06/29 12:46:18  rudolf
 * preparation to display mask in status
 *
 * Revision 1.6  2005/06/26 16:50:17  rudolf
@@ -28,6 +31,7 @@
 #define GROUP_GPSDATA		(1<< 6)
 #define GROUP_ETALONDATA	(1<< 7)
 #define GROUP_VALVEDATA	        (1<< 8)
+#define GROUP_BUTTERFLYDATA	(1<< 9)
 
 // GLOBALS
 
