@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-05 15:32:40 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-06 13:36:44 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.24  2006-10-05 15:32:40  rudolf
+* Revision 1.25  2006-10-06 13:36:44  rudolf
+* added define for switching off timeout when no backplane is physically present
+*
+* Revision 1.24  2006/10/05 15:32:40  rudolf
 * extenden slave structure with butterfly data
 *
 * Revision 1.23  2006/08/31 13:52:07  rudolf
@@ -75,6 +78,7 @@
 *
 *
 */
+// #define DEBUG_NOHARDWARE
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
@@ -106,7 +110,12 @@
 #define MAX_LICORS_CALIB               1       /* number of LICORs on Calibrator Unit */
 
 
+#ifndef DEBUG_NOHARDWARE
 #define ELK_TIMEOUT (unsigned) 0x1000
+#else
+#define ELK_TIMEOUT (unsigned) 0x0001
+#endif
+
 #define ELK_BASE (unsigned)0x200
 #define ELK_ADR  ELK_BASE
 #define ELK_DATA (ELK_BASE + (unsigned) 2)
