@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-09-29 15:15:21 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-06 11:24:22 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.54  2006-09-29 15:15:21  rudolf
+ * Revision 1.55  2006-10-06 11:24:22  rudolf
+ * added butterfly to elekIOServ
+ *
+ * Revision 1.54  2006/09/29 15:15:21  rudolf
  * fixed endianess bug for doubles in structure, Slave-ARM now sends proper data
  *
  * Revision 1.53  2006/09/04 10:49:08  rudolf
@@ -188,10 +191,13 @@
 #include "elekIOServ.h"
 #include "NMEAParser.h"
 #include "serial.h"
+#include "butterfly.h"
 
 #define STATUS_INTERVAL  100
 
 #define DEBUGLEVEL 0
+
+//#define DEBUG_STRUCTUREPASSING
 
 //#undefine DEBUG_NOTIMER 0
 
@@ -1157,6 +1163,51 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
     }
 } /* Init TempCard */
 
+/**********************************************************************************************************/
+/* Init GPS receiver                                                                                   */
+/**********************************************************************************************************/
+
+int InitButterfly(struct elekStatusType *ptrElekStatus, int IsMaster) {
+
+    extern struct MessagePortType MessageInPortList[];
+    extern struct MessagePortType MessageOutPortList[];
+    char debugbuf[GENERIC_BUF_LEN];
+
+    int ret;
+
+    if(IsMaster)
+    {
+        return (INIT_MODULE_FAILED); // master has no butterfly
+    }
+    else // SLAVE
+    {
+        // create butterfly thread
+        ret = ButterflyInit();
+
+        if(ret == 1)
+        {
+            sprintf(debugbuf,"ElekIOServ(S) : Can't create Butterfly Thread!\n\r");
+            SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+            return (INIT_MODULE_FAILED);
+        };
+	
+        // success
+        sprintf(debugbuf,"ElekIOServ(S) : Butterfly Thread running!\n\r");
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	
+        // set data to initial values
+	
+//        ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord = 0; // Motor driver status
+//        ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord = 0;      // CPU status
+        ptrElekStatus->ButterflySlave.PositionValid = 0;                   // valid != 0, invalid=0
+        ptrElekStatus->ButterflySlave.CurrentPosition = 0;                 // position from 0-2499
+        ptrElekStatus->ButterflySlave.TargetPositionSet = 0;               // set point from elekIOServ
+        ptrElekStatus->ButterflySlave.TargetPositionGot = 0;               // set point read back from AVR
+
+        return (INIT_MODULE_SUCCESS);
+    }
+} /* Init Butterfly */
 
 /**********************************************************************************************************/
 /* Init Modules                                                                                        */
@@ -1261,7 +1312,7 @@ void InitModules(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	} else {
             SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init TemperatureCard failed !!");
 	}
-	
+/*	
 	if (INIT_MODULE_SUCCESS == (ret=InitGPSReceiver(ptrElekStatus, IsMaster))) 
 	{
             SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init GPS successfull");
@@ -1270,6 +1321,16 @@ void InitModules(struct elekStatusType *ptrElekStatus, int IsMaster) {
 	{
             SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init GPS failed !!");
         }
+*/
+	if (INIT_MODULE_SUCCESS == (ret=InitButterfly(ptrElekStatus, IsMaster))) 
+	{
+            SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init Butterfly successfull");
+	} 
+	else 
+	{
+            SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init Butterfly failed !!");
+        }
+
     };
 } /* InitModules */
 
@@ -2055,6 +2116,47 @@ void GetGPSData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
 } /* GetGPSData */
 
 /**********************************************************************************************************/
+/* GetButterflyData                                                                                     */
+/**********************************************************************************************************/
+
+void GetButterflyData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
+
+    extern struct MessagePortType MessageInPortList[];
+    extern struct MessagePortType MessageOutPortList[];
+    extern pthread_mutex_t mButterflyMutex;
+    extern struct sButterflyType sButterflyThread;
+	
+    uint16_t       ret;
+    uint16_t       Control;
+    char           buf[GENERIC_BUF_LEN];
+	
+    if(IsMaster)
+    {
+	return;	/* Butterfly only used in slave */
+    }	
+    else
+    {
+	pthread_mutex_lock(&mButterflyMutex);
+	ptrElekStatus->ButterflySlave.PositionValid                   = (uint16_t) sButterflyThread.ucPositionValid;
+	ptrElekStatus->ButterflySlave.CurrentPosition                 = sButterflyThread.sCurrentPosition;
+	ptrElekStatus->ButterflySlave.TargetPositionGot               = sButterflyThread.sTargetPositionRead;
+	ptrElekStatus->ButterflySlave.TargetPositionSet               = sButterflyThread.sTargetPositionSet;
+	ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord = sButterflyThread.sMotorControlWord;
+	ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord      = (uint16_t)sButterflyThread.ucCPUFlags;
+	pthread_mutex_unlock(&mButterflyMutex);
+#ifdef DEBUG_STRUCTUREPASSING
+	printf("ptrElekStatus->ButterflySlave.PositionValid:                  %05d\n\r",ptrElekStatus->ButterflySlave.PositionValid);
+	printf("ptrElekStatus->ButterflySlave.CurrentPosition:                %05d\n\r",ptrElekStatus->ButterflySlave.CurrentPosition);
+	printf("ptrElekStatus->ButterflySlave.TargetPositionGot:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionGot);
+	printf("ptrElekStatus->ButterflySlave.TargetPositionSet:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionSet);
+	printf("ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord:%05d\n\r",ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord);
+	printf("ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord:     %05d\n\r",ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord);
+
+#endif
+    } /* if IsSlave */	
+} /* GetButterflyData */
+
+/**********************************************************************************************************/
 /* GetElekStatus                                                                                          */
 /**********************************************************************************************************/
 
@@ -2101,6 +2203,10 @@ void GetElekStatus ( struct elekStatusType *ptrElekStatus, int IsMaster) {
 	
     // now get the GPS date
     GetGPSData(ptrElekStatus,IsMaster);
+
+    // if slave, get butterfly data
+    if(!IsMaster)
+	GetButterflyData(ptrElekStatus,IsMaster);
 	
 } /* GetElekStatus */
 
@@ -2282,13 +2388,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.54 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2611,6 +2717,26 @@ int main(int argc, char *argv[])
                                     SendUDPData(&MessageOutPortList[ELEK_ELEKIO_SLAVE_MASTER_OUT],
                                                 sizeof(struct elekStatusType), &ElekStatus); // send data packet
                                     break;
+
+                                case MSG_TYPE_MOVE_BUTTERFLY:
+                                    if (MessagePort!=ELEK_ETALON_IN) {
+                                        sprintf(buf,"ElekIOServ: MSG_TYPE_MOVE_BUTTERFLY from %4d Port %04x Value %05d (%04x)",
+                                                MessageInPortList[MessagePort].PortNumber,
+                                                Message.Addr,Message.Value,Message.Value);
+                                        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+                                    } /* if MessagePort */
+                                    
+                                    pthread_mutex_lock(&mButterflyMutex);
+                                    sButterflyThread.sTargetPositionSet = (uint16_t)Message.Value;
+                                    pthread_mutex_unlock(&mButterflyMutex);
+
+                                    Message.Status= Message.Value;
+                                    Message.MsgType=MSG_TYPE_ACK;			    
+                                    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+                                                    inet_ntoa(their_addr.sin_addr),
+                                                    sizeof(struct ElekMessageType), &Message);
+                                    break;
+	      
                                     
                                 case MSG_TYPE_READ_DATA:
 				  // printf("elekIOServ: manual read from Address %04x\n", Message.Addr);
