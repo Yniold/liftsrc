@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-06 11:24:22 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-06 13:57:52 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.55  2006-10-06 11:24:22  rudolf
+ * Revision 1.56  2006-10-06 13:57:52  rudolf
+ * cosmetics, added DEBUG_NOHARDWARE also for sanity checks in GetCounterCardData()
+ *
+ * Revision 1.55  2006/10/06 11:24:22  rudolf
  * added butterfly to elekIOServ
  *
  * Revision 1.54  2006/09/29 15:15:21  rudolf
@@ -196,6 +199,8 @@
 #define STATUS_INTERVAL  100
 
 #define DEBUGLEVEL 0
+
+//#define DEBUG_NOHARDWARE
 
 //#define DEBUG_STRUCTUREPASSING
 
@@ -1164,7 +1169,7 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster) {
 } /* Init TempCard */
 
 /**********************************************************************************************************/
-/* Init GPS receiver                                                                                   */
+/* Init Butterfly                                                                                   */
 /**********************************************************************************************************/
 
 int InitButterfly(struct elekStatusType *ptrElekStatus, int IsMaster) {
@@ -1609,12 +1614,14 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
         // Counter Card ADC Channel
         for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
             ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
+#ifndef DEBUG_NOHARDWARE
             // mask channel in upper 4 bits
             if ((ADCData>>12)!=i) {
                 sprintf(buf,"elekIOServ(M): ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
                 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
                 ADCData=0xffff;
             }      
+#endif
             ptrElekStatus->CounterCardMaster.ADCData[i]=ADCData;   
         } /* for i */
   
@@ -1630,6 +1637,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
             ptrElekStatus->CounterCardMaster.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1));
             ptrElekStatus->CounterCardMaster.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1)+2);	
         }
+#ifndef DEBUG_NOHARDWARE
   
         TimeOut=0;
         do {
@@ -1638,12 +1646,11 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
             //    sprintf(buf,"CCStat: %4x",CounterStatus);
             //    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
         } while ( (TimeOut<0x050) && (CounterStatus & ELK_COUNTER_STATUS_BUSY));
-  
         if (TimeOut>30) { // had to wait too long....	
             sprintf(buf,"CCStat(M): %4x %ld BUSY...WE HAVE A PROBLEM",CounterStatus, TimeOut );
             SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
         }
-  
+#endif  
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
             TimeSlot=0;
             SumCounts=0;
@@ -1690,12 +1697,14 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
         // Counter Card ADC Channel
         for (i=0; i<ADC_CHANNEL_COUNTER_CARD; i++) {
             ADCData=elkReadData(ELK_COUNTER_ADC+i*2);   
-            // mask channel in upper 4 bits
+#ifndef DEBUG_NOHARDWARE 
+           // mask channel in upper 4 bits
             if ((ADCData>>12)!=i) {
                 sprintf(buf,"elekIOServ(S): ccADC tried to read channel %d, got channel %d",i,ADCData>>12 );
                 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
                 ADCData=0xffff;
             }      
+#endif
             ptrElekStatus->CounterCardSlave.ADCData[i]=ADCData;   
         } /* for i */
   
@@ -1711,8 +1720,8 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
             ptrElekStatus->CounterCardSlave.Channel[i].GateDelay=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1));
             ptrElekStatus->CounterCardSlave.Channel[i].GateWidth=elkReadData(ELK_COUNTER_DELAY_GATE+4*(i-1)+2);	
         }
-  
-        TimeOut=0;
+#ifndef DEBUG_NOHARDWARE
+         TimeOut=0;
         do {
             CounterStatus=elkReadData(ELK_COUNTER_STATUS); // lets see if swap was successfull
             TimeOut++;
@@ -1724,7 +1733,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster) {
             sprintf(buf,"CCStat(S): %4x %ld BUSY...WE HAVE A PROBLEM",CounterStatus, TimeOut );
             SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
         }
-  
+#endif 
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++) {
             TimeSlot=0;
             SumCounts=0;
@@ -2388,13 +2397,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.56 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.56 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.56 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.55 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.56 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
