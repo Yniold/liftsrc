@@ -3,19 +3,22 @@
 // Butterfly Valve Control Thread
 // ============================================
 
-// $RCSfile: butterfly.c,v $ last changed on $Date: 2006-10-05 14:34:59 $ by $Author: rudolf $
+// $RCSfile: butterfly.c,v $ last changed on $Date: 2006-10-06 11:23:27 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: butterfly.c,v $
-// Revision 1.1  2006-10-05 14:34:59  rudolf
+// Revision 1.2  2006-10-06 11:23:27  rudolf
+// fixed CPU word not copied
+//
+// Revision 1.1  2006/10/05 14:34:59  rudolf
 // preperations for butterfly integration
 //
 //
 //
 
-#define DEBUG
-#define DEBUG_SETPOS
+//#define DEBUG
+//#define DEBUG_SETPOS
 
 #undef DEBUG
 #undef DEBUG_SETPOS
@@ -37,7 +40,7 @@ uint16_t sOldTargetPosition = MAGIC_POSITION_NUMBER;
 
 
 
-pthread_mutex_t mButterflyMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mButterflyMutex;
 
 // open tty and create the thread
 
@@ -45,11 +48,12 @@ int ButterflyInit(void)
 {
 	int iRetCode;
 	pthread_t ptButterflyThread;
-
 	iButterflyFile = serial_open((char*)ucButterflyDeviceName, lButterflyBaudrate); // will stop with exit()
 	sButterflyThread.iFD = iButterflyFile;
-		// init mutex before creating thread	
-	
+#ifdef DEBUG
+	printf("In ButterflyInit(): FD is %d\n\r", iButterflyFile);
+#endif
+
 	iRetCode = pthread_create(&ptButterflyThread, NULL, (void*)&ButterflyThreadFunc,(void*) &sButterflyThread);
 	if(iRetCode > 0)
 	{
@@ -71,15 +75,23 @@ void ButterflyThreadFunc(void* pArgument)
 	char aBuffer[256];
 	unsigned char *pCurrentChar;
 	int iStatusLineIndex = 0;
+//	extern pthread_mutex_t mButterflyMutex;
 	struct sButterflyType *sStructure = (struct sButterflyType *) pArgument;
 #ifdef DEBUG
 	printf("ButterflyThreadFunc started, argument = %08x\n\r", (unsigned int)pArgument);
 	printf("FD = %08x\n\r",sStructure->iFD);
 #endif
+	// init mutex before creating thread
+ //	mButterflyMutex = PTHREAD_MUTEX_INITIALIZER;	
+	pthread_mutex_init(&mButterflyMutex,NULL);
+
 	// thread will run endless till exit();
 	while(true)
 	{
 		iBytesRead = read(sStructure->iFD, aButterflyRxBuffer, 1024); // read non blocking
+#ifdef DEBUG
+		printf("passed read()\n\r");
+#endif
 		if(iBytesRead > 0)
 		{
 			pCurrentChar = aButterflyRxBuffer;
@@ -114,12 +126,26 @@ void ButterflyThreadFunc(void* pArgument)
 		};
 
 		// lock mutex for reading current set position
+#ifdef DEBUG
+		printf("before mutex_lock()\n\r");
+#endif
 		pthread_mutex_lock(&mButterflyMutex);
+#ifdef DEBUG
+		printf("after mutex_lock()\n\r");
+#endif
 		volatile uint16_t sTempSetPos = sStructure->sTargetPositionSet;
+
 #ifdef DEBUG_SETPOS
 		printf("Set Position %d\n\r",sTempSetPos);
 #endif
+#ifdef DEBUG
+		printf("before mutex_unlock()\n\r");
+#endif
 		pthread_mutex_unlock(&mButterflyMutex);
+
+#ifdef DEBUG
+		printf("after mutex_unlock()\n\r");
+#endif
 		
 		// check if we just bootet and don't have a valid set position up to now
 		if(sTempSetPos != MAGIC_POSITION_NUMBER)
@@ -175,6 +201,7 @@ void ButterflyParseLine(unsigned char* aBuffer, int iLength, struct sButterflyTy
 		sTheStructure->sCurrentPosition  = (uint16_t)iTempArg[1];
 		sTheStructure->sTargetPositionRead   = (uint16_t)iTempArg[2];
 		sTheStructure->sMotorControlWord = (uint16_t)iTempArg[3];
+		sTheStructure->ucCPUFlags = (uint8_t)iTempArg[4];
 		pthread_mutex_unlock(&mButterflyMutex);
 
 #ifdef DEBUG
