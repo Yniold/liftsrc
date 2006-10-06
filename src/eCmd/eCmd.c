@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.25 $
-last change on $Date: 2006-09-04 11:38:16 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.26 $
+last change on $Date: 2006-10-06 11:20:41 $ by $Author: rudolf $
 
 $Log: eCmd.c,v $
-Revision 1.25  2006-09-04 11:38:16  rudolf
+Revision 1.26  2006-10-06 11:20:41  rudolf
+added new function #eCmd @host s butterflyposition data# for butterfly operation
+
+Revision 1.25  2006/09/04 11:38:16  rudolf
 Fixed warnings for GCC 4.03
 
 Revision 1.24  2006/08/07 11:50:15  martinez
@@ -260,6 +263,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s etalonofflineright data\n");
 	printf("eCmd @host s setmask addr data\n");
 	printf("eCmd @host s findonline\n");
+	printf("eCmd @host s butterflyposition data\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -440,6 +444,16 @@ int main(int argc, char *argv[])
 		Value=strtol(argv[ArgCount+1],NULL,0);
 		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
 		Addr=SYS_PARAMETER_ETALON_SCAN_STEP;
+	      } else { // we don't have enough parameter
+		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+	      }
+	    };	    	    
+
+	    if (strcasecmp(argv[ArgCount],"butterflyposition")==0) {
+	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+		Value=strtol(argv[ArgCount+1],NULL,0);
+		MsgType=MSG_TYPE_MOVE_BUTTERFLY;
+		Addr=0;
 	      } else { // we don't have enough parameter
 		printf("Error please supply parameter for %s\n",argv[ArgCount]);
 	      }
