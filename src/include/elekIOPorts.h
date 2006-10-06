@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-09-04 09:33:38 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-10-06 13:40:59 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.10  2006-09-04 09:33:38  rudolf
+* Revision 1.11  2006-10-06 13:40:59  rudolf
+* added new MSG_TYPE for sending new target position to butterfly valve
+*
+* Revision 1.10  2006/09/04 09:33:38  rudolf
 * added ports and IP for Calibrator
 *
 * Revision 1.9  2005/06/25 18:32:58  rudolf
@@ -81,7 +84,7 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER,     // change system parameter
     MSG_TYPE_CHANGE_MASK,                      // change counter mask
     MSG_TYPE_FETCH_DATA,                       // request data from slave elekIOServ
-
+    MSG_TYPE_MOVE_BUTTERFLY,                   // goto a new target position
     MAX_MSG_TYPE }; 
 
 enum SysParameterListEnum {                 // list of System Parameters
