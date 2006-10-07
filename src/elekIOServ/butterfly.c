@@ -3,12 +3,15 @@
 // Butterfly Valve Control Thread
 // ============================================
 
-// $RCSfile: butterfly.c,v $ last changed on $Date: 2006-10-06 11:23:27 $ by $Author: rudolf $
+// $RCSfile: butterfly.c,v $ last changed on $Date: 2006-10-07 18:31:14 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: butterfly.c,v $
-// Revision 1.2  2006-10-06 11:23:27  rudolf
+// Revision 1.3  2006-10-07 18:31:14  rudolf
+// added another DEBUGLEVEL
+//
+// Revision 1.2  2006/10/06 11:23:27  rudolf
 // fixed CPU word not copied
 //
 // Revision 1.1  2006/10/05 14:34:59  rudolf
@@ -17,11 +20,13 @@
 //
 //
 
+//#define DEBUG_MUTEX
 //#define DEBUG
 //#define DEBUG_SETPOS
 
 #undef DEBUG
 #undef DEBUG_SETPOS
+#undef DEBUG_MUTEX
 
 #include "butterfly.h"
 #include "serial.h"
@@ -126,11 +131,11 @@ void ButterflyThreadFunc(void* pArgument)
 		};
 
 		// lock mutex for reading current set position
-#ifdef DEBUG
+#ifdef DEBUG_MUTEX
 		printf("before mutex_lock()\n\r");
 #endif
 		pthread_mutex_lock(&mButterflyMutex);
-#ifdef DEBUG
+#ifdef DEBUG_MUTEX
 		printf("after mutex_lock()\n\r");
 #endif
 		volatile uint16_t sTempSetPos = sStructure->sTargetPositionSet;
@@ -138,12 +143,12 @@ void ButterflyThreadFunc(void* pArgument)
 #ifdef DEBUG_SETPOS
 		printf("Set Position %d\n\r",sTempSetPos);
 #endif
-#ifdef DEBUG
+#ifdef DEBUG_MUTEX
 		printf("before mutex_unlock()\n\r");
 #endif
 		pthread_mutex_unlock(&mButterflyMutex);
 
-#ifdef DEBUG
+#ifdef DEBUG_MUTEX
 		printf("after mutex_unlock()\n\r");
 #endif
 		
