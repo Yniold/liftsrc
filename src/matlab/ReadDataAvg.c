@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.27  2006-08-08 16:15:06  martinez
+ * Revision 1.28  2006-10-07 16:13:46  martinez
+ * implemented new motorized butterfly valve
+ *
+ * Revision 1.27  2006/08/08 16:15:06  martinez
  * corrected on/offline average calculations allowing deviations of 10 for encoder position
  *
  * Revision 1.26  2006/08/07 15:18:54  martinez
@@ -58,7 +61,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.27 $ */
+ /* $Revision: 1.28 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -165,21 +168,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.27 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
@@ -248,6 +251,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + 1;  /* InstrumentAction */
   dims[1]= dims[1] + 2*11;  /* GPS Masterand Slave*/
   dims[1]= dims[1] + 1;  /* ValidSlaveDataFlag */
+  dims[1]= dims[1] + 3*2;  /* Butterfly */
 
 
   dims[1]= dims[1] + 3;  /* extra reserve */
@@ -1350,6 +1354,45 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
   }
   
+/******************* Butterfly ***************************/  
+  #ifdef D_HEADER
+    mexPrintf("Butterfly PositionValid %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.PositionValid;     
+  }
+  #ifdef D_HEADER
+    mexPrintf("Butterfly CurrentPosition %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.CurrentPosition;     
+  }
+  #ifdef D_HEADER
+    mexPrintf("Butterfly TargetPositionGot %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.TargetPositionGot;     
+  }
+  #ifdef D_HEADER
+    mexPrintf("Butterfly TargetPositionSet %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.TargetPositionSet;     
+  }
+  #ifdef D_HEADER
+    mexPrintf("Butterfly MotorStatus %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.MotorStatus.ButterflyStatusWord;     
+  }
+  #ifdef D_HEADER
+    mexPrintf("Butterfly CPUStatus %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].ButterflySlave.CPUStatus.ButterflyCPUWord;     
+  }
+  
+
   return;
 }
 

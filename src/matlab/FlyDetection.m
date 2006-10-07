@@ -593,10 +593,17 @@ else
 end
 
 % check Butterfly
-if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
-    set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
+%if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
+if statusData(lastrow,col.ButterflyPositionValid)==0
+    set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT');
 else
-    set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
+    if statusData(lastrow,col.ButterflyCurrentPosition)==0
+        set(handles.togButterfly,'BackgroundColor','g','String','Butterfly CLOSED');
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==2499
+        set(handles.togButterfly,'BackgroundColor','c','String','Butterfly OPEN');
+    else
+        set(handles.togButterfly,'BackgroundColor','r','String','Butterfly MOVING');
+    end
 end
 
 % check Lamp
@@ -1594,18 +1601,22 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
-if statusData(lastrow,col.ValidSlaveDataFlag)
+if statusData(lastrow,col.ButterflyPositionValid)==0
+    system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
+    set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
+    pause(1);
+    system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close
+    set(hObject,'Value',0);
+else
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,0);  % Butterfly is normally open 
-        set(hObject,'BackgroundColor','g','String','Butterfly OPEN');
+        system('/lift/bin/eCmd @armAxis s butterflyposition 2499'); % open Butterfly 
+        set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2);
-        set(hObject,'BackgroundColor','c','String','Butterfly CLOSED');
+        system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close Butterfly 
+        set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
     end
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+    
 end
-
 
 
 

@@ -367,7 +367,10 @@ statusDataCols=...
 'PhototubeLamp1',951,'x*NaN','';
 'PhototubeLamp2',954,'x*NaN','';
 'PCuvette',957,'x*NaN','mbar';
-'PCuvetteSupply',960,'x*NaN',''};
+'PCuvetteSupply',960,'x*NaN','';
+'ButterflyPositionValid',1129,'x','';
+'ButterflyCurrentPosition',1130,'x','';
+};
 
 % create structure 'col' with field names taken from 1st column of
 % statusDataCols and values from 2nd column
