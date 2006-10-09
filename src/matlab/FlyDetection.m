@@ -156,7 +156,7 @@ set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
 set(handles.txtTPrall,'String',[num2str(TempPrallpl(lastrow),3),' C']);
 set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
-set(handles.txtPCuv,'String',statusData(lastrow,col.PCuvette));
+set(handles.txtPDetector,'String',statusData(lastrow,col.PCuvette));
 set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
 set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
 set(handles.txtLamp1,'String',statusData(lastrow,col.PhototubeLamp1));
@@ -198,6 +198,11 @@ if statusData(lastrow,col.VHV)<12400
     set(handles.txtVHV,'BackgroundColor','r');
 else 
     set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if statusData(lastrow,col.PCuvette)<11000
+    set(handles.txtPDetector,'BackgroundColor','r');
+else 
+    set(handles.txtPDetector,'BackgroundColor',[0.7 0.7 0.7]);
 end
 %if statusData(lastrow,col.PhototubeLamp1)>10010;
 %    set(handles.txtLamp1,'BackgroundColor','r');
@@ -686,15 +691,15 @@ if bitget(statusData(lastrow,col.Valve1armAxis),13)==0
 else 
     set(handles.tglVac,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve2armAxis),12)==0
-    set(handles.tglKuv,'BackgroundColor','c');
-else 
-    set(handles.tglKuv,'BackgroundColor','g');
-end
+%if bitget(statusData(lastrow,col.Valve2armAxis),12)==0
+%    set(handles.tglKuv,'BackgroundColor','c');
+%else 
+%    set(handles.tglKuv,'BackgroundColor','g');
+%end
 if bitget(statusData(lastrow,col.Valve2armAxis),13)==0
-    set(handles.tglVent,'BackgroundColor','c');
-else 
     set(handles.tglVent,'BackgroundColor','r');
+else 
+    set(handles.tglVent,'BackgroundColor','g');
 end
 
 data.lastrow=lastrow;
@@ -887,11 +892,12 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             set(hObject,'BackgroundColor','r','String','switching Blower ON');
-            % switch on Blower only when pump is on and cell pressure P1000 is low enough
+            % switch on Blower only when pump is on and cell pressure P1000
+            % is low enough and Butterfly has been initialized
             if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
-                    | statusData(lastrow,col.P1000)>10300 )
+                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
                 set(handles.txtP1000,'BackgroundColor','r');
-                disp('Pressure too high');
+                disp('Pressure too high or Butterfly not initialized');
                 set(hObject,'BackgroundColor','c','String','Blower OFF');                
             else
                 set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
@@ -1383,30 +1389,30 @@ end
 
 
 % --- Executes on button press in tglKuv.
-function tglKuv_Callback(hObject, eventdata, handles)
+%function tglKuv_Callback(hObject, eventdata, handles)
 % hObject    handle to tglKuv (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of tglKuv
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-col=horusdata.col;
-data = getappdata(handles.output, 'Detdata');
-lastrow=data.lastrow;
+%horusdata = getappdata(handles.parenthandle, 'horusdata');
+%statusData=horusdata.statusData;
+%col=horusdata.col;
+%data = getappdata(handles.output, 'Detdata');
+%lastrow=data.lastrow;
 
-if statusData(lastrow,col.ValidSlaveDataFlag)
-    if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12);
-        set(hObject,'BackgroundColor','g');
-    else
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12,0);
-        set(hObject,'BackgroundColor','c');
-    end
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
-end
+%if statusData(lastrow,col.ValidSlaveDataFlag)
+%    if get(hObject,'Value')
+%        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12);
+%        set(hObject,'BackgroundColor','g');
+%    else
+%        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),12,0);
+%        set(hObject,'BackgroundColor','c');
+%    end
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+%    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+%    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+%end
 
 
 % --- Executes on button press in tglKuvN2.
