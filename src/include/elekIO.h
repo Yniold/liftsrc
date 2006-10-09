@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-06 13:36:44 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-09 12:16:27 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.25  2006-10-06 13:36:44  rudolf
+* Revision 1.26  2006-10-09 12:16:27  rudolf
+* fixed c++ style comments for MEX compiler
+*
+* Revision 1.25  2006/10/06 13:36:44  rudolf
 * added define for switching off timeout when no backplane is physically present
 *
 * Revision 1.24  2006/10/05 15:32:40  rudolf
@@ -78,7 +81,7 @@
 *
 *
 */
-// #define DEBUG_NOHARDWARE
+/* #define DEBUG_NOHARDWARE */
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
