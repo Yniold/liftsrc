@@ -129,7 +129,8 @@ maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
 % display system time
-set(handles.txtTime,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
+disptime=statustime(lastrow)-double(statusData(lastrow,6))/86400000.0;
+set(handles.txtTime,'String',strcat(datestr(disptime,13),'.',num2str(statusData(lastrow,6)/100)));
 
 % show if armAxis is working and switch on LED on armAxis
 if statusData(lastrow,col.ValidSlaveDataFlag) % if armAxis is active
@@ -261,12 +262,12 @@ if isfield(data,'hCounterCards')
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
-data.setTDyelaser=50; % define temperature Dye Laser heating is set to
+data.TDyelaserset=50; % define temperature Dye Laser heating is set to
 if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>setTDyelaser+1 | TDyelaser(lastrow)<setTDyelaser-1 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1 | TDyelaser(lastrow)<data.TDyelaserset-1 |statusData(lastrow,col.IFilament)<10100
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
