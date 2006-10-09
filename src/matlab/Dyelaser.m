@@ -159,7 +159,7 @@ else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>horusdata.TDyelaserset+1 | TDyelaser(lastrow)<horusdata.TDyelaserset-1
+if TDyelaser(lastrow)>horusdata.TDyelaserset+1 | TDyelaser(lastrow)<horusdata.TDyelaserset-1.5
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
