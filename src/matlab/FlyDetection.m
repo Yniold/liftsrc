@@ -199,7 +199,7 @@ if statusData(lastrow,col.VHV)<12400
 else 
     set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if statusData(lastrow,col.PCuvette)<11000
+if statusData(lastrow,col.PCuvette)<10100
     set(handles.txtPDetector,'BackgroundColor','r');
 else 
     set(handles.txtPDetector,'BackgroundColor',[0.7 0.7 0.7]);
@@ -603,11 +603,11 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT');
 else
     if statusData(lastrow,col.ButterflyCurrentPosition)==0
-        set(handles.togButterfly,'BackgroundColor','g','String','Butterfly CLOSED');
-    elseif statusData(lastrow,col.ButterflyCurrentPosition)==2499
-        set(handles.togButterfly,'BackgroundColor','c','String','Butterfly OPEN');
+        set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==625
+        set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
     else
-        set(handles.togButterfly,'BackgroundColor','r','String','Butterfly MOVING');
+        set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
     end
 end
 
@@ -696,7 +696,7 @@ end
 %else 
 %    set(handles.tglKuv,'BackgroundColor','g');
 %end
-if bitget(statusData(lastrow,col.Valve2armAxis),13)==0
+if bitget(statusData(lastrow,col.Valve2armAxis),6)==0
     set(handles.tglVent,'BackgroundColor','r');
 else 
     set(handles.tglVent,'BackgroundColor','g');
@@ -1583,10 +1583,10 @@ lastrow=data.lastrow;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),13);
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),6);
         set(hObject,'BackgroundColor','r');
     else
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),13,0);
+        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),6,0);
         set(hObject,'BackgroundColor','c');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -1609,17 +1609,17 @@ lastrow=data.lastrow;
 col=horusdata.col;
 if statusData(lastrow,col.ButterflyPositionValid)==0
     system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
-    set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
+    set(hObject,'BackgroundColor','r','String','MOVING');
     pause(1);
     system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close
     set(hObject,'Value',0);
 else
     if get(hObject,'Value')
-        system('/lift/bin/eCmd @armAxis s butterflyposition 2499'); % open Butterfly 
-        set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
+        system('/lift/bin/eCmd @armAxis s butterflyposition 625'); % open Butterfly 
+        set(hObject,'BackgroundColor','r','String','MOVING');
     else
         system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close Butterfly 
-        set(hObject,'BackgroundColor','r','String','Butterfly MOVING');
+        set(hObject,'BackgroundColor','r','String','MOVING');
     end
     
 end
@@ -1656,12 +1656,12 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
                 Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
                 Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
-                Valveword=bitset(Valveword,13);  % ventilate Pump
+%                Valveword=bitset(Valveword,13);  % ventilate Pump
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
                 set(hObject,'BackgroundColor','c','String','Pump OFF');
-                set(handles.tglVent,'BackgroundColor','r');
+%                set(handles.tglVent,'BackgroundColor','r');
             end
         end
     end

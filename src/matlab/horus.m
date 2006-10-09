@@ -300,7 +300,7 @@ if isfield(data,'hFlyDetection')
     else
         if P20(lastrow)<1 | P20(lastrow)>5 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.4*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | statusData(lastrow,col.PCuvette)<11000
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | statusData(lastrow,col.PCuvette)<10100
             set(handles.FlyDetection,'BackgroundColor','r');
         else
             set(handles.FlyDetection,'BackgroundColor','c');
