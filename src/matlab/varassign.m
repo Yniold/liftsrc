@@ -194,13 +194,13 @@ statusDataCols=...
 'DiodeWZ1out',933,'(x-10003.0)/(10286-10003)*2.32','mW';
 'DiodeWZ1outSumDat',934,'x*NaN','mW';
 'DiodeWZ1outSumSqr',935,'x*NaN','mW';
-'DiodeWZ2out',936,'1.7905e-6.*x.^2+6.297e-3.*x','mW';
+'DiodeWZ2out',936,'0.0000017905*(x-10000)^2+0.006297*(x-10000)','mW';
 'DiodeWZ2outSumDat',937,'x*NaN','mW';
 'DiodeWZ2outSumSqr',938,'x*NaN','mW';
 'DiodeWZ1in',939,'(x-10000.0)/(10860-10000)*6.2','mW';
 'DiodeWZ1inSumDat',940,'x*NaN','mW';
 'DiodeWZ1inSumSqr',941,'x*NaN','mW';
-'DiodeWZ2in',891,'1e-6.*x.^2+0.0087.*x-0.09','mW';
+'DiodeWZ2in',891,'-0.0000015*(x-10010)^2+0.0087*(x-10010)-0.09','mW';
 'DiodeWZ2inSumDat',892,'x*NaN','mW';
 'DiodeWZ2inSumSqr',893,'x*NaN','mW';
 'PitotAbs',897,'(x-10000-3030/5).*1500./3030','mbar';
