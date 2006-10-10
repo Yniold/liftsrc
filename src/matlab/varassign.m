@@ -179,7 +179,7 @@ statusDataCols=...
 'PVentConfig',695,'x*NaN','';
 'PVentSupplyVConfig',696,'x*NaN','';
 'NumSamplesarmAxisADC2',917,'x*5','s';
-'P1000',918,'0.44588*(x-9996.6)','mbar';
+'P1000',918,'0.44588*(x-9996.6).*1004/994','mbar';
 'P1000SumDat',919,'0.44588*(x-9996.6)','mbar';
 'P1000SumSqr',920,'0.44588*(x-9996.6)*996/965','mbar';
 'P20',921,'0.013345*(x-10012)','mbar';
