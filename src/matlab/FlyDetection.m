@@ -156,7 +156,7 @@ set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
 set(handles.txtTPrall,'String',[num2str(TempPrallpl(lastrow),3),' C']);
 set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
-set(handles.txtPDetector,'String',statusData(lastrow,col.PCuvette));
+set(handles.txtPDetector,'String',[num2str(PCuvette(lastrow),2),' bar']);
 set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
 set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
 set(handles.txtLamp1,'String',statusData(lastrow,col.PhototubeLamp1));
@@ -602,9 +602,9 @@ end
 if statusData(lastrow,col.ButterflyPositionValid)==0
     set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT');
 else
-    if statusData(lastrow,col.ButterflyCurrentPosition)==0
+    if statusData(lastrow,col.ButterflyCurrentPosition)==21
         set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
-    elseif statusData(lastrow,col.ButterflyCurrentPosition)==625
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+21)
         set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
     else
         set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
@@ -913,15 +913,17 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     else
         if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
             set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
+            set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-            Valveword=bitset(Valveword,13); % ventilate Pump
+%            Valveword=bitset(Valveword,13); % ventilate Pump
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
             set(handles.tglVent,'BackgroundColor','r');
             pause(5);
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-            Valveword=bitset(Valveword,13); % ventilate Pump
+%            Valveword=bitset(Valveword,13); % ventilate Pump
             Valveword=bitset(Valveword,9,0); % switch off blower
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -1611,14 +1613,14 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
     set(hObject,'BackgroundColor','r','String','MOVING');
     pause(1);
-    system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close
+    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
     set(hObject,'Value',0);
 else
     if get(hObject,'Value')
-        system('/lift/bin/eCmd @armAxis s butterflyposition 625'); % open Butterfly 
+        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+21)]'); % open Butterfly 
         set(hObject,'BackgroundColor','r','String','MOVING');
     else
-        system('/lift/bin/eCmd @armAxis s butterflyposition 0'); % close Butterfly 
+        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
         set(hObject,'BackgroundColor','r','String','MOVING');
     end
     
@@ -1657,6 +1659,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
                 Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
                 Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
 %                Valveword=bitset(Valveword,13);  % ventilate Pump
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
+                set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
