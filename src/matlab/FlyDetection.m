@@ -1613,7 +1613,7 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
     set(hObject,'BackgroundColor','r','String','MOVING');
     pause(1);
-    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
+    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+21)]); % open Butterfly 
     set(hObject,'Value',0);
 else
     if get(hObject,'Value')
