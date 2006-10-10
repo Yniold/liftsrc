@@ -1614,7 +1614,7 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     set(hObject,'BackgroundColor','r','String','MOVING');
     pause(1);
     system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+21)]); % open Butterfly 
-    set(hObject,'Value',0);
+    set(hObject,'Value',1);
 else
     if get(hObject,'Value')
         system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+21)]'); % open Butterfly 
