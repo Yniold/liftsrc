@@ -894,12 +894,12 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             set(hObject,'BackgroundColor','r','String','switching Blower ON');
             % switch on Blower only when pump is on and cell pressure P1000
             % is low enough and Butterfly has been initialized
-            if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
-                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
-                set(handles.txtP1000,'BackgroundColor','r');
-                disp('Pressure too high or Butterfly not initialized');
-                set(hObject,'BackgroundColor','c','String','Blower OFF');                
-            else
+%            if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
+%                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
+%                set(handles.txtP1000,'BackgroundColor','r');
+%                disp('Pressure too high or Butterfly not initialized');
+%                set(hObject,'BackgroundColor','c','String','Blower OFF');                
+%            else
                 set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure Leybold pump is not switched off
                 Valveword=bitset(Valveword,7);  % make sure Scroll pump is not switched off
@@ -908,7 +908,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
                 set(hObject,'BackgroundColor','g','String','Blower ON');
-            end
+%            end
         end
     else
         if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])

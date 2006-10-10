@@ -54,6 +54,8 @@ for i=0:39
     elseif strcmp('5AC5',Tempid(i+1,:)) colTempWZ2in=colTemp0WP+3*i;
     elseif strcmp('A2EF',Tempid(i+1,:)) colTempSensCard=colTemp0WP+3*i;
     elseif strcmp('63EB',Tempid(i+1,:)) colTempWZ2out=colTemp0WP+3*i;
+    elseif strcmp('157B',Tempid(i+1,:)) colTempScrollMotor=colTemp0WP+3*i;
+    elseif strcmp('28CD',Tempid(i+1,:)) colTempScrollContr=colTemp0WP+3*i;
     else colTempWPUnknown=colTemp0WP+3*i;
     end
 end
@@ -91,6 +93,8 @@ if exist('colTempWZ1in')==0 colTempWZ1in=NaN; end
 if exist('colTempWZ2in')==0 colTempWZ2in=NaN; end
 if exist('colTempSensCard')==0 colTempSensCard=NaN; end
 if exist('colTempWZ2out')==0 colTempWZ2out=NaN; end
+if exist('colTempScrollMotor')==0 colTempScrollMotor=NaN; end
+if exist('colTempScrollContr')==0 colTempScrollContr=NaN; end
 if exist('colTempWPUnknown')==0 colTempLUnknown=NaN; end
 
 statusDataCols=...
@@ -344,6 +348,12 @@ statusDataCols=...
 'TempAxis',colTempAxis,'x/100-273.15','C';
 'TempAxisStatus',colTempAxis+1,'x*NaN','';
 'TempAxisid',colTempAxis+2,'x*NaN','';
+'TempScrollMotor',colTempScrollMotor,'x/100-273.15','C';
+'TempScrollMotorStatus',colTempScrollMotor+1,'x*NaN','';
+'TempScrollMotorid',colTempScrollMotor+2,'x*NaN','';
+'TempScrollContr',colTempScrollContr,'x/100-273.15','C';
+'TempScrollContrStatus',colTempScrollContr+1,'x*NaN','';
+'TempScrollContrid',colTempScrollContr+2,'x*NaN','';
 'TempWPUnknown',colTempWPUnknown,'x/100-273.15','C';
 'TempWPUnknownStatus',colTempWPUnknown+1,'x*NaN','';
 'TempWPUnknownid',colTempWPUnknown+2,'dec2hex(x)','';
