@@ -226,11 +226,19 @@ if statusData(lastrow,col.VHV)<12400
 else 
     set(handles.txtVHV,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if statusData(lastrow,col.PCuvette)<10100
+if PCuvette(lastrow)<0.5
     set(handles.txtPDetector,'BackgroundColor','r');
 else 
     set(handles.txtPDetector,'BackgroundColor',[0.7 0.7 0.7]);
 end
+if PCuvette(lastrow)>2
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
+    Valveword=bitset(Valveword,14,0);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+end
+
 %if statusData(lastrow,col.PhototubeLamp1)>10010;
 %    set(handles.txtLamp1,'BackgroundColor','r');
 %else 
