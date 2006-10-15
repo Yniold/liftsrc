@@ -267,6 +267,7 @@ x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2o
 x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
+x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
@@ -320,7 +321,7 @@ if isfield(data,'hFlyDetection')
     else
         if P20(lastrow)<1 | P20(lastrow)>5 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.4*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | statusData(lastrow,col.PCuvette)<10100
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | PCuvette<0.5 
             set(handles.FlyDetection,'BackgroundColor','r');
         else
             set(handles.FlyDetection,'BackgroundColor','c');
