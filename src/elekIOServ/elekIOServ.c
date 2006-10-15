@@ -1,8 +1,14 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-07 19:10:51 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 08:48:18 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.57  2006-10-07 19:10:51  rudolf
+ * Revision 1.58  2006-10-15 08:48:18  harder
+ * ref channel can be now assigned to any counter channel
+ * eCmd: new command 'refchannel'
+ * elekIOServ : used etalon Status info to store channel info
+ * elekIO.h modified etalon structure in status
+ *
+ * Revision 1.57  2006/10/07 19:10:51  rudolf
  * fixed GPS commented out
  *
  * Revision 1.56  2006/10/06 13:57:52  rudolf
@@ -940,7 +946,11 @@ int InitEtalonCard (struct elekStatusType *ptrElekStatus) {
 
     // set voltages for hold pos and slow moving
     elkWriteData(ELK_STEP_SETVOLT,0x1010);
-
+    // reset status information
+    
+    ptrElekStatus->EtalonData.Status.StatusField.EndswitchRight=0;
+    ptrElekStatus->EtalonData.Status.StatusField.EndswitchLeft=0;
+    ptrElekStatus->EtalonData.Status.StatusField.RefChannel=ETALON_CHANNEL_REF_CELL;
 
     return (INIT_MODULE_SUCCESS);
   
@@ -1415,8 +1425,10 @@ void GetEtalonCardData ( struct elekStatusType *ptrElekStatus ) {
     ptrElekStatus->EtalonData.SetSpeed   =0x0f & value;
     ptrElekStatus->EtalonData.SetAccl    =(0xf0 & value)>>8;
 
- 
-    ptrElekStatus->EtalonData.Status.StatusWord=elkReadData(ELK_STEP_STATUS);
+    
+    value=elkReadData(ELK_STEP_STATUS);
+    ptrElekStatus->EtalonData.Status.StatusField.EndswitchRight=(value>>ETALON_STEP_ESW_RIGHT)&0x0001;
+    ptrElekStatus->EtalonData.Status.StatusField.EndswitchLeft=(value>>ETALON_STEP_ESW_LEFT)&0x0001;
 
     //    sprintf(buf,"ElekIOServ Etalon: %d %d",ptrElekStatus->EtalonData.CurPosition,
     //                   ptrElekStatus->EtalonData.CurSpeed);
@@ -2294,6 +2306,35 @@ int ChangePriority() {
   
 } /* ChangePriority */
 
+
+/**********************************************************************************************************/
+/* swap big 2 little endian Double                                                                        */
+/**********************************************************************************************************/
+
+void EndianSwapDouble (double* pSource)
+
+    unsigned char *aTempIn;
+	unsigned char aTempOutBuffer[8];
+				  
+	aTempInBuffer=(unsigned char*) pSource;			  
+    // swap endianess using quad words
+	aTempOutBuffer[0] = aTempIn[4];
+    aTempOutBuffer[1] = aTempIn[5];
+    aTempOutBuffer[2] = aTempIn[6];
+    aTempOutBuffer[3] = aTempIn[7];
+
+    aTempOutBuffer[4] = aTempIn[0];
+    aTempOutBuffer[5] = aTempIn[1];
+    aTempOutBuffer[6] = aTempIn[2];
+    aTempOutBuffer[7] = aTempIn[3];
+
+    // copy back into struct
+    memcpy((void*)pSource,(void*) aTempOutBuffer, sizeof(double));
+    
+} /* EndianSwapDouble */
+
+
+
 /**********************************************************************************************************/
 /* MAIN                                                                                                   */
 /**********************************************************************************************************/
@@ -2400,13 +2441,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.57 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.57 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.57 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.57 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
@@ -2664,11 +2705,9 @@ int main(int argc, char *argv[])
 				    // should be removed ASAP when softfloat is fixed
 
 				    void* pDest;
-			            void* pSource;				    
+			        void* pSource;				    
 				    unsigned char aTempInBuffer[8];
 				    unsigned char aTempOutBuffer[8];
-      				    int iNumBytes = sizeof(double);
-				    int iCopyLoop = 0;
 				    
 				    // Longitude
 				    pDest = (void*) aTempInBuffer;
@@ -2748,6 +2787,23 @@ int main(int argc, char *argv[])
                                                     inet_ntoa(their_addr.sin_addr),
                                                     sizeof(struct ElekMessageType), &Message);
                                     break;
+
+                                case MSG_TYPE_REF_CHANNEL:
+                                    if (MessagePort!=ELEK_ETALON_IN) {
+                                        sprintf(buf,"ElekIOServ: MSG_TYPE_REF_CHANNEL from %4d Port %04x Value %05d (%04x)",
+                                                MessageInPortList[MessagePort].PortNumber,
+                                                Message.Addr,Message.Value,Message.Value);
+                                        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+                                    } /* if MessagePort */
+                                    
+                                    ElekStatus.EtalonData.Status.StatusField.RefChannel=Message.Value;
+                                    
+                                    Message.Status= Message.Value;
+                                    Message.MsgType=MSG_TYPE_ACK;			    
+                                    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+                                                    inet_ntoa(their_addr.sin_addr),
+                                                    sizeof(struct ElekMessageType), &Message);
+                                    break;
 	      
                                     
                                 case MSG_TYPE_READ_DATA:
@@ -2768,6 +2824,7 @@ int main(int argc, char *argv[])
                                                     inet_ntoa(their_addr.sin_addr),
                                                     sizeof(struct ElekMessageType), &Message);
                                     break;
+                                    
                                 case MSG_TYPE_WRITE_DATA:
                                     if (MessagePort!=ELEK_ETALON_IN) {
                                         sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %d (%04x)",

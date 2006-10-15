@@ -1,10 +1,16 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.26 $
-last change on $Date: 2006-10-06 11:20:41 $ by $Author: rudolf $
+$RCSfile: eCmd.c,v $ $Revision: 1.27 $
+last change on $Date: 2006-10-15 08:48:17 $ by $Author: harder $
 
 $Log: eCmd.c,v $
-Revision 1.26  2006-10-06 11:20:41  rudolf
+Revision 1.27  2006-10-15 08:48:17  harder
+ref channel can be now assigned to any counter channel
+eCmd: new command 'refchannel'
+elekIOServ : used etalon Status info to store channel info
+elekIO.h modified etalon structure in status
+
+Revision 1.26  2006/10/06 11:20:41  rudolf
 added new function #eCmd @host s butterflyposition data# for butterfly operation
 
 Revision 1.25  2006/09/04 11:38:16  rudolf
@@ -264,6 +270,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s setmask addr data\n");
 	printf("eCmd @host s findonline\n");
 	printf("eCmd @host s butterflyposition data\n");
+	printf("eCmd @host s refchannel data\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -449,16 +456,6 @@ int main(int argc, char *argv[])
 	      }
 	    };	    	    
 
-	    if (strcasecmp(argv[ArgCount],"butterflyposition")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_MOVE_BUTTERFLY;
-		Addr=0;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-	    
 	    if (strcasecmp(argv[ArgCount],"etalononline")==0) {
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
 		Value=strtol(argv[ArgCount+1],NULL,0);
@@ -516,6 +513,26 @@ int main(int argc, char *argv[])
 	      Value=ETALON_ACTION_FIND_ONLINE;
             };
 
+	    if (strcasecmp(argv[ArgCount],"butterflyposition")==0) {
+	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+		Value=strtol(argv[ArgCount+1],NULL,0);
+		MsgType=MSG_TYPE_MOVE_BUTTERFLY;
+		Addr=0;
+	      } else { // we don't have enough parameter
+		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+	      }
+	    };	    	    
+	    
+	    if (strcasecmp(argv[ArgCount],"refchannel")==0) {
+	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+		Value=strtol(argv[ArgCount+1],NULL,0);
+		MsgType=MSG_TYPE_REF_CHANNEL;
+		Addr=0;
+	      } else { // we don't have enough parameter
+		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+	      }
+	    };	    	    
+	    
 
 	    // if we got a valid Msg send it
 	    if (MsgType<MAX_MSG_TYPE) {
