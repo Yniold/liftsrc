@@ -69,6 +69,9 @@ handles.Timer = timer('ExecutionMode','fixedDelay',...
 
 data.Timer=handles.Timer;
 
+data.calstatus=0; %needed for in-flight calibration
+data.PitotTime=0; %needed for in-flight calibration
+
 % Update handles structure
 guidata(hObject, handles);
 setappdata(handles.output, 'Detdata', data);
@@ -112,6 +115,36 @@ end
 
 % display system time
 set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
+
+if statusData(lastrow,col.ValidSlaveDataFlag) % only if Arm is on
+    % start pitot zero after lamp was switched on or off
+    if data.calstatus==1 & bitget(statusData(lastrow,col.Valve1armAxis),12)==0 % lamp just switched and pitot zero is not already on
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12); %switch on pitot zero
+        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+        
+        data.PitotTime=statustime;
+        data.calstatus=0;
+    end
+    % stop pitot zero after 10 s
+    if data.PitotTime~=0 %zeroing process active ?
+        if (statustime-data.PitotTime)*86400>10 % for more than 10 s already ?
+            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0); %switch off pitot zero
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+        
+            data.PitotTime=0; 
+        end
+    end
+end            
+            
+        
+
+    
+    
+
 
 % calculate parameters from ADC counts
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
@@ -1003,6 +1036,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+    data.calstatus=1;
+    setappdata(handles.output, 'Detdata', data);
 end
 
 

@@ -153,6 +153,26 @@ if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
     end
 end
 
+% zero pitot every 5 min for 10 s if lamp is off
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if bitget(statusData(lastrow,col.Valve2armAxis),11)==0 % lamp off ?
+        if ( mod(double(statusData(lastrow,4)),5)==0 & double(statusData(lastrow,5))<10 ) %first 10 sec period of every five min
+            if bitget(statusData(lastrow,col.Valve1armAxis),12)==0 % if pitot 0 still off, switch it on
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+            end
+        else % 10 sec are over
+            if bitget(statusData(lastrow,col.Valve1armAxis),12)==1 % if pitot 0 is still on, switch it off
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+            end
+        end
+    end
+end
 
 % check dyelaser pressure and keep it constant on set value
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
