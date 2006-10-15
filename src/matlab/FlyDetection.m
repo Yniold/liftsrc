@@ -140,12 +140,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if Arm is on
     end
 end            
             
-        
-
-    
-    
-
-
 % calculate parameters from ADC counts
 x=double(statusData(:,col.DiodeUV)); eval(['DiodeUV=',fcts2val.DiodeUV,';']);
 x=double(statusData(:,col.TDet)); 
