@@ -1,9 +1,15 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-09 12:16:27 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.26  2006-10-09 12:16:27  rudolf
+* Revision 1.27  2006-10-15 08:55:19  harder
+* ref channel can be now assigned to any counter channel
+* eCmd: new command 'refchannel'
+* elekIOServ : used etalon Status info to store channel info
+* elekIO.h modified etalon structure in status
+*
+* Revision 1.26  2006/10/09 12:16:27  rudolf
 * fixed c++ style comments for MEX compiler
 *
 * Revision 1.25  2006/10/06 13:36:44  rudolf
@@ -210,7 +216,6 @@
 #define MAX_COUNTER_TIMESLOT       (MAX_COUNTER_SLOTS_PER_PAGE*MAX_COUNTER_PAGE)  /* number of timeslots for each channel */
 #define MAX_COUNTER_SLOTS_PER_PAGE 64   /* number of timeslots on each page */
 
-#define CHANNEL_REF_CELL         0     /* Reference Cell Channel Number for etalon etc.. */
 
 #define ADC_CHANNEL_COUNTER_CARD 8
 #define COUNTER_MASK_WIDTH       12     /* number of words for the mask reg. (12x16=192=160+32) */
@@ -265,6 +270,12 @@ enum EtalonActionType { /* update also in etalon.c */
 #define ETALON_STEP_DITHER         16
 #define ETALON_STEP_OFFLINE        64
 
+#define ETALON_STEP_ESW_RIGHT      0x0100      /* Bit position of right end switch in status word of stepper card */
+#define ETALON_STEP_ESW_LEFT       0x0200      /* Bit position of left end switch in status word of stepper card */
+
+#define ETALON_CHANNEL_REF_CELL    0           /* Reference Cell Channel Number for etalon etc.. */
+
+
 #define ETALON_DEFAULT_ACCSPD 0x2020
 
 #define LIFE_REFSIGNAL 300
@@ -281,9 +292,10 @@ union PositionType {
 }; /* union PositionType */
 
 struct StatusFieldType {                                            /* Bit Field */
-  unsigned int  Unused1:8;                                             /* */
-  unsigned int  EndswitchRight:1;                                               /* Endschalter rechts aktiv */
-  unsigned int  EndswitchLeft:1;                                            /* Endschalter links aktiv */
+  unsigned int  RefChannel:2;                                       /* Channel number of Reference Cell */
+  unsigned int  Unused1:6;                                          /* */
+  unsigned int  EndswitchRight:1;                                   /* Endschalter rechts aktiv */
+  unsigned int  EndswitchLeft:1;                                    /* Endschalter links aktiv */
   unsigned int  Unused2:6;                                          /*  */
 };
 

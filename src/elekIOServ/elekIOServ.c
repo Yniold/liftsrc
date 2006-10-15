@@ -1,8 +1,14 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 08:48:18 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.58  2006-10-15 08:48:18  harder
+ * Revision 1.59  2006-10-15 08:55:19  harder
+ * ref channel can be now assigned to any counter channel
+ * eCmd: new command 'refchannel'
+ * elekIOServ : used etalon Status info to store channel info
+ * elekIO.h modified etalon structure in status
+ *
+ * Revision 1.58  2006/10/15 08:48:18  harder
  * ref channel can be now assigned to any counter channel
  * eCmd: new command 'refchannel'
  * elekIOServ : used etalon Status info to store channel info
@@ -2441,13 +2447,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.58 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   

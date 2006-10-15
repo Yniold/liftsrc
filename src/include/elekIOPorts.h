@@ -1,8 +1,14 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-10-06 13:40:59 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.11  2006-10-06 13:40:59  rudolf
+* Revision 1.12  2006-10-15 08:55:19  harder
+* ref channel can be now assigned to any counter channel
+* eCmd: new command 'refchannel'
+* elekIOServ : used etalon Status info to store channel info
+* elekIO.h modified etalon structure in status
+*
+* Revision 1.11  2006/10/06 13:40:59  rudolf
 * added new MSG_TYPE for sending new target position to butterfly valve
 *
 * Revision 1.10  2006/09/04 09:33:38  rudolf
@@ -85,6 +91,7 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_CHANGE_MASK,                      // change counter mask
     MSG_TYPE_FETCH_DATA,                       // request data from slave elekIOServ
     MSG_TYPE_MOVE_BUTTERFLY,                   // goto a new target position
+    MSG_TYPE_REF_CHANNEL,                      // set reference channel
     MAX_MSG_TYPE }; 
 
 enum SysParameterListEnum {                 // list of System Parameters

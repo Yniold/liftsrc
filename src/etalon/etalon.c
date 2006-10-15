@@ -1,8 +1,14 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-08-14 14:15:56 $ by $Author: rudolf $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
 *
 * $Log: etalon.c,v $
-* Revision 1.22  2006-08-14 14:15:56  rudolf
+* Revision 1.23  2006-10-15 08:55:19  harder
+* ref channel can be now assigned to any counter channel
+* eCmd: new command 'refchannel'
+* elekIOServ : used etalon Status info to store channel info
+* elekIO.h modified etalon structure in status
+*
+* Revision 1.22  2006/08/14 14:15:56  rudolf
 * corrected syntax error
 *
 * Revision 1.21  2006/08/14 13:32:06  rudolf
@@ -298,13 +304,13 @@ int SortAndAddCounts(struct AverageDataType *ptrOnlineLeftCounts,
 		 
   if (abs(ptrElekStatus->EtalonData.Encoder.Position-ptrElekStatus->EtalonData.Online.Position)<
   		(ptrElekStatus->EtalonData.DitherStepWidth)/2) // do we dither on left ?
-    AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
+    AddCounts(ptrOnlineLeftCounts,ptrElekStatus->CounterCardMaster.Channel[ptrElekStatus->EtalonData.Status.StatusField.RefChannel].Counts);
 
   if (((ptrElekStatus->EtalonData.Encoder.Position- ptrElekStatus->EtalonData.Online.Position) > 
       (ptrElekStatus->EtalonData.DitherStepWidth/2)) &&  
       ((ptrElekStatus->EtalonData.Encoder.Position- ptrElekStatus->EtalonData.Online.Position) < 
       (ptrElekStatus->EtalonData.DitherStepWidth*3/2))) // do we dither on right ?
-    AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts);
+    AddCounts(ptrOnlineRightCounts,ptrElekStatus->CounterCardMaster.Channel[ptrElekStatus->EtalonData.Status.StatusField.RefChannel].Counts);
 
 } /* SortAndAddCounts */
 
@@ -506,6 +512,12 @@ int main(int argc, char *argv[])
     ElekStatus.EtalonData.OfflineStepRight   =ETALON_STEP_OFFLINE;
 
 
+// greetings
+    printf("This is Etalon Version %3.2f (CVS: $RCSfile: etalon.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
+    sprintf(buf,"Etalon : This is etalon Version %3.2f (CVS: $RCSfile: etalon.c,v $ $Revision: 1.23 $) for i386\n",VERSION);
+    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
+   
+
     EndOfSession=FALSE;
     while (!EndOfSession) {
       //        printf("wait for data ....\n");
@@ -572,7 +584,7 @@ int main(int argc, char *argv[])
 		  //		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		
 		  // record size and position of max. ref. signals as a tool to define online position
-		  RefSignal=ElekStatus.CounterCardMaster.Channel[CHANNEL_REF_CELL].Counts;
+		  RefSignal=ElekStatus.CounterCardMaster.Channel[ElekStatus.EtalonData.Status.StatusField.RefChannel].Counts;
 		  RefSignalPos=ElekStatus.EtalonData.Encoder.Position;
 		  if (RefSignal<10000){ // exclude spike at startup
 			  if (RefSignal>maxRefSignal) { // if the actual ref. signal is greater than previously recorded
