@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 11:30:24 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 11:35:31 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.61  2006-10-15 11:30:24  harder
+ * Revision 1.62  2006-10-15 11:35:31  harder
+ * *** empty log message ***
+ *
+ * Revision 1.61  2006/10/15 11:30:24  harder
  * syntax...
  *
  * Revision 1.60  2006/10/15 11:29:01  harder
@@ -2325,7 +2328,7 @@ int ChangePriority() {
 
 void EndianSwapDouble (double* pSource)
 {
-    unsigned char aTempIn[];
+    unsigned char *aTempIn;
 	unsigned char aTempOutBuffer[8];
 				  
 	aTempIn=(unsigned char*) pSource;			  
@@ -2453,13 +2456,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.61 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.62 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.61 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.62 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.61 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.62 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.61 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.62 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
