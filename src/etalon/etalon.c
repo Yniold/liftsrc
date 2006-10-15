@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 11:41:51 $ by $Author: harder $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 12:02:59 $ by $Author: harder $
 *
 * $Log: etalon.c,v $
-* Revision 1.25  2006-10-15 11:41:51  harder
+* Revision 1.26  2006-10-15 12:02:59  harder
+* minor bugs and disp changes in ref channel
+*
+* Revision 1.25  2006/10/15 11:41:51  harder
 * *** empty log message ***
 *
 * Revision 1.24  2006/10/15 11:35:32  harder
@@ -429,7 +432,8 @@ int main(int argc, char *argv[])
     int State;
     int EndOfSession;
     int endswitchtouchdown;
-    
+    int iLastRefChannel=-1;
+     
     double RefSignal;
     uint64_t RefSignalPos;
     double maxRefSignal=0;
@@ -519,8 +523,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.25 2006-10-15 11:41:51 harder Exp $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.25 2006-10-15 11:41:51 harder Exp $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.26 2006-10-15 12:02:59 harder Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.26 2006-10-15 12:02:59 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
@@ -563,6 +567,13 @@ int main(int argc, char *argv[])
 
 	      //	      sprintf(buf,"Etalon: -----------------------> Status ok... ");
 	      //	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+            // lets see if some things have changed
+            if (iLastRefChannel!=ElekStatus.EtalonData.Status.StatusField.RefChannel) {
+                printf("RefChannel has changed, using now %d before %d\n",
+                    ElekStatus.EtalonData.Status.StatusField.RefChannel,iLastRefChannel); 
+                iLastRefChannel=ElekStatus.EtalonData.Status.StatusField.RefChannel;
+            }
 
 	      break;
 	      

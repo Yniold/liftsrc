@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.27 $
-last change on $Date: 2006-10-15 08:48:17 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.28 $
+last change on $Date: 2006-10-15 12:01:56 $ by $Author: harder $
 
 $Log: eCmd.c,v $
-Revision 1.27  2006-10-15 08:48:17  harder
+Revision 1.28  2006-10-15 12:01:56  harder
+minor bugs and disp changes in ref channel
+
+Revision 1.27  2006/10/15 08:48:17  harder
 ref channel can be now assigned to any counter channel
 eCmd: new command 'refchannel'
 elekIOServ : used etalon Status info to store channel info
@@ -249,6 +252,8 @@ int main(int argc, char *argv[])
     int ArgCount;
 
     if (argc<2) {
+// greetings
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.28 2006-10-15 12:01:56 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
