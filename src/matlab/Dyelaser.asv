@@ -74,23 +74,26 @@ data.ActTimer=handles.ActTimer;
 
 % open communication with picomotors
 
-%handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
-%set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
-%try fopen(handles.serport);
-%catch 
-%    delete(handles.serport);
-%    rmfield(handles,'serport');
-%end;
-picotport=tcpip('PicoController',23);
-set(picotport,'ReadAsyncMode','continuous');
-set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
-try fopen(picotport);
-    handles.picotport=picotport;
+handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+try fopen(handles.serport);
 catch 
-    delete(picotport);
-    clear('picotport');
+    delete(handles.serport);
+    rmfield(handles,'serport');
     set(handles.textPos,'String','FAILED','BackgroundColor','r');
-end
+end;
+
+%picotport=tcpip('PicoController',23);
+%set(picotport,'ReadAsyncMode','continuous');
+%set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
+%try fopen(picotport);
+%    handles.picotport=picotport;
+%    data.picotport=picotport;
+%catch 
+%    delete(picotport);
+%    clear('picotport');
+%    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+%end
 
 data.toggleDyelaser=handles.toggleDyelaser;
 data.toggleVacuum=handles.toggleVacuum;
@@ -115,7 +118,8 @@ fcts2val=horusdata.fcts2val;
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0;
+           double(statusData(:,5))./86400.0+...
+           double(statusData(:,6))./86400000.0;
 
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);
@@ -157,7 +161,7 @@ else
     set(handles.txtPRef,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-if TDyelaser(lastrow)>41 | TDyelaser(lastrow)<39
+if TDyelaser(lastrow)>horusdata.TDyelaserset+1 | TDyelaser(lastrow)<horusdata.TDyelaserset-1.5
     set(handles.txtTDyelaser,'BackgroundColor','r');
 else
     set(handles.txtTDyelaser,'BackgroundColor',[0.7,0.7,0.7]);
@@ -491,6 +495,10 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
+if isvalid(handles.serport)
+    fclose(handles.serport);
+    delete(handles.serport);
+end;
 if isfield(handles,'picotport')
     fclose(handles.picotport);
     delete(handles.picotport);
@@ -593,39 +601,34 @@ function online_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to online_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
-
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
 system(['/lift/bin/eCmd @Lift s findonline']);    
-system(['/lift/bin/eCmd @Lift s etalonditheronline']);
-
-
+%horusdata = getappdata(handles.parenthandle, 'horusdata');
+%statusData=horusdata.statusData;
+%col=horusdata.col;
+%data = getappdata(handles.output, 'Dyelaserdata');
 % read in current online position from gui txt-field
-curonlinepos=str2double(get(handles.txtonline,'String'));
+%curonlinepos=str2double(get(handles.txtonline,'String'));
 % find last data point when etalon was in online position
-i=find(data.CurPos==curonlinepos,1,'last');
+%i=find(data.CurPos==curonlinepos,1,'last');
 % find maximum reference Signal and corresponding data point 
-[calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
+%[calcOnlSign,icalcOnlSign]=max(statusData(:,col.ccCounts0));
 % if the maximum reference signal is bigger than the last online reference signal
 % set new online and go there
-if isempty(i)
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
-elseif calcOnlSign>statusData(i,col.ccCounts0)
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
-    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
-    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
-else % go to old online position
-    system(['/lift/bin/eCmd @Lift s etalonnop']);    
-    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
-end
-system(['/lift/bin/eCmd @Lift s etalonditheronline']);
+%if isempty(i)
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+%    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+%    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));    
+%elseif calcOnlSign>statusData(i,col.ccCounts0)
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(data.CurPos(icalcOnlSign))]);
+%    system(['/lift/bin/eCmd @Lift s etalononline ',num2str(data.CurPos(icalcOnlSign))]);
+%    set(handles.txtonline,'String',num2str(data.CurPos(icalcOnlSign)));
+%else % go to old online position
+%    system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%    system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(curonlinepos)]);
+%end
+%system(['/lift/bin/eCmd @Lift s etalonditheronline']);
 
 
 % --- Executes on button press in offline_pushbutton.
@@ -634,8 +637,8 @@ function offline_pushbutton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=str2double(get(handles.txtonline,'String'));
-currentpos=str2double(get(handles.EtCurPos,'String'));
-encoderpos=str2double(get(handles.EtEncPos,'String'));
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
 setpos=onlinepos+1000+currentpos-encoderpos;
 if isnan(onlinepos)
     error('invalid values');
@@ -684,9 +687,30 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to home_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-system(['/lift/bin/eCmd @Lift s etalonnop']);    
-system('/lift/bin/eCmd @Lift s etalonhome');
-
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
+setpos=currentpos-encoderpos-10000;
+if setpos<0
+    setpos=setpos+2^32/2;
+    negpos=1;
+else
+    negpos=0;
+end
+setposhex=dec2hex(setpos);
+setposhex=[zeros(1,8-length(setposhex)),setposhex];
+setposlow=hex2dec(setposhex(5:8));
+setposhigh=hex2dec(setposhex(1:4));
+if negpos==1
+    setposhigh=bitset(setposhigh,16,1);
+end
+system(['/lift/bin/eCmd @Lift s etalonnop']);
+%set etalon acc and spd to 0
+system(['/lift/bin/eCmd @Lift w 0xa514 0']);
+%set position
+system(['/lift/bin/eCmd @Lift w 0xa512 ',num2str(setposhigh)]);
+system(['/lift/bin/eCmd @Lift w 0xa510 ',num2str(setposlow)]);
+%set etalon acc and spd to 20
+system(['/lift/bin/eCmd @Lift w 0xa514 0x2020']);
 
 
 % --- Executes on button press in toggleFilament.
@@ -892,7 +916,8 @@ function pushgo_Callback(hObject, eventdata, handles)
 set(handles.textPos,'BackgroundColor','r');
 set(handles.pushgo,'BackgroundColor','r');
 
-picotport=handles.picotport;
+serport=handles.serport;
+%picotport=handles.picotport;
 steps=get(handles.editsteps,'String');
 hor=get(handles.radiohor,'Value');
 forw=get(handles.radiofor,'Value');
@@ -918,32 +943,32 @@ switch get(handles.popupmirror,'Value')
         else chl='2';
         end
 end
-fprintf(picotport,['vel ',driver,' ',chl,'=100']);
+fprintf(serport,['vel ',driver,' ',chl,'=100']);
 pause(0.1)
-fprintf(picotport,['chl ',driver,'=',chl]);
+fprintf(serport,['chl ',driver,'=',chl]);
 pause(0.1)
 if forw==1
-    fprintf(picotport,['rel ',driver,' ',steps]);
+    fprintf(serport,['rel ',driver,' ',steps]);
 else
-    fprintf(picotport,['rel ',driver,' -',steps]);
+    fprintf(serport,['rel ',driver,' -',steps]);
 end
 pause(0.1);
-fprintf(picotport,['go ',driver]);
+fprintf(serport,['go ',driver]);
 % check if motor is still moving
 pause(0.1)
-fprintf(picotport,['pos ',driver]);
+fprintf(serport,['pos ',driver]);
 pause(0.1)
-x=find(picotport.UserData=='=');
-pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
-%picotport.UserData
+x=find(serport.UserData=='=');
+pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+%serport.UserData
 pos1=pos2-1;
 while pos2~=pos1
     pos1=pos2;
     pause(1)
-    fprintf(picotport,['pos ',driver]);
+    fprintf(serport,['pos ',driver]);
     pause(0.1)
-    x=find(picotport.UserData=='=');
-    pos2=str2double(picotport.UserData(x+1:length(picotport.UserData)-1));
+    x=find(serport.UserData=='=');
+    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
 end
 % display new motor position after motor has stopped
 newpos=oldpos+pos2;
@@ -958,7 +983,7 @@ function pushStop_Callback(hObject, eventdata, handles)
 % hObject    handle to pushStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fprintf(handles.picotport,'hal');
+fprintf(handles.serport,'hal');
 
 
 % --- Executes on button press in pushgoto.
@@ -967,8 +992,8 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 onlinepos=str2double(get(handles.txtonline,'String'));
-currentpos=str2double(get(handles.EtCurPos,'String'));
-encoderpos=str2double(get(handles.EtEncPos,'String'));
+currentpos=str2double(get(handles.txtEtCurPos,'String'));
+encoderpos=str2double(get(handles.txtEtEncPos,'String'));
 setpos=str2double(get(handles.set_pos,'String'))+currentpos-encoderpos;
 
 if isnan(setpos)
