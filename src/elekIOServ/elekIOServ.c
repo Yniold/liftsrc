@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-15 11:29:01 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.59  2006-10-15 08:55:19  harder
+ * Revision 1.60  2006-10-15 11:29:01  harder
+ * fixed syntax bug
+ *
+ * Revision 1.59  2006/10/15 08:55:19  harder
  * ref channel can be now assigned to any counter channel
  * eCmd: new command 'refchannel'
  * elekIOServ : used etalon Status info to store channel info
@@ -2319,10 +2322,10 @@ int ChangePriority() {
 
 void EndianSwapDouble (double* pSource)
 
-    unsigned char *aTempIn;
+    unsigned char aTempIn[];
 	unsigned char aTempOutBuffer[8];
 				  
-	aTempInBuffer=(unsigned char*) pSource;			  
+	aTempIn=(unsigned char*) pSource;			  
     // swap endianess using quad words
 	aTempOutBuffer[0] = aTempIn[4];
     aTempOutBuffer[1] = aTempIn[5];
@@ -2447,13 +2450,13 @@ int main(int argc, char *argv[])
     // output version info on debugMon and Console
   
 #ifdef RUNONARM
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for ARM\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.60 $) for ARM\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for ARM\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.60 $) for ARM\n",VERSION);
 #else
-    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for i386\n",VERSION);
+    printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.60 $) for i386\n",VERSION);
   
-    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.59 $) for i386\n",VERSION);
+    sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.60 $) for i386\n",VERSION);
 #endif
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
