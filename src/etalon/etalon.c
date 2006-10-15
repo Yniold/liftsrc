@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 11:35:32 $ by $Author: harder $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 11:41:51 $ by $Author: harder $
 *
 * $Log: etalon.c,v $
-* Revision 1.24  2006-10-15 11:35:32  harder
+* Revision 1.25  2006-10-15 11:41:51  harder
+* *** empty log message ***
+*
+* Revision 1.24  2006/10/15 11:35:32  harder
 * *** empty log message ***
 *
 * Revision 1.23  2006/10/15 08:55:19  harder
@@ -516,8 +519,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $RCSfile: etalon.c,v $ $Revision: 1.24 $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $RCSfile: etalon.c,v $ $Revision: 1.24 $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.25 2006-10-15 11:41:51 harder Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.25 2006-10-15 11:41:51 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
