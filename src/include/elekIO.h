@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-15 11:25:43 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
-* Revision 1.27  2006-10-15 08:55:19  harder
+* Revision 1.28  2006-10-15 11:25:43  harder
+* fixed BitPos of R&L end sw.
+*
+* Revision 1.27  2006/10/15 08:55:19  harder
 * ref channel can be now assigned to any counter channel
 * eCmd: new command 'refchannel'
 * elekIOServ : used etalon Status info to store channel info
@@ -270,8 +273,8 @@ enum EtalonActionType { /* update also in etalon.c */
 #define ETALON_STEP_DITHER         16
 #define ETALON_STEP_OFFLINE        64
 
-#define ETALON_STEP_ESW_RIGHT      0x0100      /* Bit position of right end switch in status word of stepper card */
-#define ETALON_STEP_ESW_LEFT       0x0200      /* Bit position of left end switch in status word of stepper card */
+#define ETALON_STEP_ESW_RIGHT      8       /* 0x0100 Bit position of right end switch in status word of stepper card */
+#define ETALON_STEP_ESW_LEFT       9       /* 0x0200 position of left end switch in status word of stepper card */
 
 #define ETALON_CHANNEL_REF_CELL    0           /* Reference Cell Channel Number for etalon etc.. */
 
