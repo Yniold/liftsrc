@@ -1661,7 +1661,7 @@ col=horusdata.col;
 if statusData(lastrow,col.ButterflyPositionValid)==0
     system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
     set(hObject,'BackgroundColor','r','String','MOVING');
-    pause(1);
+    pause(2);
     system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+21)]); % open Butterfly 
     set(hObject,'Value',1);
 else
