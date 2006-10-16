@@ -179,9 +179,9 @@ statusDataCols=...
 'PVentConfig',695,'x*NaN','';
 'PVentSupplyVConfig',696,'x*NaN','';
 'NumSamplesarmAxisADC2',917,'x*5','s';
-'P1000',918,'0.44588*(x-9996.6).*1004/994','mbar';
+'P1000',918,'0.44588*(x-9996.6)','mbar';
 'P1000SumDat',919,'0.44588*(x-9996.6)','mbar';
-'P1000SumSqr',920,'0.44588*(x-9996.6)*996/965','mbar';
+'P1000SumSqr',920,'0.44588*(x-9996.6)','mbar';
 'P20',921,'0.013345*(x-10012)','mbar';
 'P20SumDat',922,'0.013345*(x-10012)','mbar';
 'P20SumSqr',923,'0.013345*(x-10012)','mbar';
@@ -207,7 +207,7 @@ statusDataCols=...
 'DiodeWZ2in',891,'-8.5127e-7.*(x-10007).^2+8.0559e-3.*(x-10007)','mW';
 'DiodeWZ2inSumDat',892,'x*NaN','mW';
 'DiodeWZ2inSumSqr',893,'x*NaN','mW';
-'PitotAbs',897,'(x-10000-3030/5).*1500./3030','mbar';
+'PitotAbs',897,'(x-10000-3030/5).*1500./3030-15.8','mbar';
 'PitotAbsSumDat',898,'(x-10000-3030/5).*1500./3030','mbar';
 'PitotAbsSumSqr',899,'(x-10000-3030/5).*1500./3030','mbar';
 'PitotDiff',900,'(x-10000)*5/3030','mbar';
@@ -233,7 +233,7 @@ statusDataCols=...
 'IFilamentConfig',728,'x*NaN','';
 'OphirConfig',729,'x*NaN','';
 'MFCSetFlow',730,'20*x/255','sccm';
-'MFCFlow',731,'20*(x-9996)/(11447-9996)','sccm';
+'MFCFlow',731,'20*(x-10010)/(11461-10010)','sccm';
 'ValveVoltLift',732,'x/140','V';
 'ValveLift',733,'x*NaN','';
 'Valve1VoltarmAxis',983,'x/140','V';
