@@ -785,6 +785,7 @@ function pshExit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of pshExit
+horusdata = getappdata(handles.parenthandle, 'horusdata');
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
