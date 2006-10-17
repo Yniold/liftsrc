@@ -165,10 +165,22 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             end
         else % 10 sec are over
             if bitget(statusData(lastrow,col.Valve1armAxis),12)==1 % if pitot 0 is still on, switch it off
-                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
-                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
-                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+                if isfield(data,'hFlyDetection') % if zeroing not in progress by FlyDetection
+                    if ishandle(data.hFlyDetection), 
+                        Detdata = getappdata(data.hFlyDetection, 'Detdata');
+                        if (Detdata.PitotTime==0 & get(Detdata.tglPitot,'Value')==0) % zeroing process not in progress in FlyDetection ?
+                            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+                            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+                        end
+                    else
+                        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+                        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+                    end
+                end
             end
         end
     end
@@ -193,10 +205,6 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
-        if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
-            set(Dyelaserdata.toggleVacuum,'BackgroundColor','g','String','Valve Vacuum ON');
-        end
     end
     pause(1);
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
@@ -319,8 +327,8 @@ if isfield(data,'hFlyDetection')
     if ishandle(data.hFlyDetection) 
         set(handles.FlyDetection,'BackgroundColor','g');
     else
-        if P20(lastrow)<1 | P20(lastrow)>5 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.4*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
+        if P20(lastrow)<1 | P20(lastrow)>10 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.7*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.7*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
                 | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | PCuvette<0.5 
             set(handles.FlyDetection,'BackgroundColor','r');
         else
@@ -360,12 +368,6 @@ end
 
 data.lastrow=lastrow;
 setappdata(handles.output, 'horusdata', data);
-
-
-
-
-
-
 
 
 % --- Executes on button press in CounterCards.

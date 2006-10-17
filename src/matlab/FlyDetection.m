@@ -71,6 +71,7 @@ data.Timer=handles.Timer;
 
 data.calstatus=0; %needed for in-flight calibration
 data.PitotTime=0; %needed for in-flight calibration
+data.tglPitot=handles.tglPitot;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -114,7 +115,8 @@ if limTime2==limTime1
 end
 
 % display system time
-set(handles.txtTimer,'String',strcat(datestr(statustime(lastrow),13),'.',num2str(statusData(lastrow,6)/100)));
+disptime=statustime(lastrow)-double(statusData(lastrow,6))/86400000.0;
+set(handles.txtTimer,'String',strcat(datestr(disptime,13),'.',num2str(statusData(lastrow,6)/100)));
 
 if statusData(lastrow,col.ValidSlaveDataFlag) % only if Arm is on
     % start pitot zero after lamp was switched on or off
@@ -191,7 +193,7 @@ set(handles.txtLamp2,'String',statusData(lastrow,col.PhototubeLamp2));
 set(handles.txtMFC,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
 
 % warn for ADC signals out of allowed range for measurements
-if P20(lastrow)<1 | P20(lastrow)>5
+if P20(lastrow)<1 | P20(lastrow)>10
     set(handles.txtP20,'BackgroundColor','r');
 else 
     set(handles.txtP20,'BackgroundColor',[0.7 0.7 0.7]);
@@ -201,7 +203,7 @@ if DiodeWZ1in(lastrow)<2
 else 
     set(handles.txtWZ1in,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if DiodeWZ1out(lastrow)<0.75*DiodeWZ1in
+if DiodeWZ1out(lastrow)<0.7*DiodeWZ1in
     set(handles.txtWZ1out,'BackgroundColor','r');
 else 
     set(handles.txtWZ1out,'BackgroundColor',[0.7 0.7 0.7]);
@@ -211,7 +213,7 @@ if DiodeWZ2in(lastrow)<0.4
 else 
     set(handles.txtWZ2in,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if DiodeWZ2out(lastrow)<0.4*DiodeWZ2in
+if DiodeWZ2out(lastrow)<0.7*DiodeWZ2in
     set(handles.txtWZ2out,'BackgroundColor','r');
 else 
     set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);
