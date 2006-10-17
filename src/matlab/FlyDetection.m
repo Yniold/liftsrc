@@ -792,11 +792,13 @@ lastrow=data.lastrow;
 col=horusdata.col;
 
 %close N2 valves to detection tubes
-Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
-Valveword=bitset(Valveword,14,0);
-system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
+    Valveword=bitset(Valveword,14,0);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+end
 
 stop(handles.Timer);
 delete(handles.Timer);
