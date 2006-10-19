@@ -1,7 +1,7 @@
 mke2fs /dev/ram0
 mount /dev/ram0 /lift/ramdisk
 cd /lift
-xterm +wf -geometry 50x55+0+0 -title 'DebugMon' -e 'nice debugMon 1300' &
+xterm +wf -geometry 50x55+0+0 -title 'DebugMon' -e 'nice debugMon 1300 > /tmp/debug.txt' &
 sleep 2
 xterm +wf -geometry 456x26+316+150 -title 'elekStatus' -e nice elekStatus &
 # start parameter of etalon : <online position> <offline step left&right> <dither step> 
@@ -13,8 +13,8 @@ eCmd @lift s etalononline 20000
 echo set etalon offline step to 1000
 eCmd @Lift s etalonofflineleft 1000
 eCmd @Lift s etalonofflineright 1000
-echo set ditherstep to 32
-eCmd @lift s etalondither 32
+echo set ditherstep to 16
+eCmd @lift s etalondither 16
 eCmd @Lift s etalonhome
 GateSet
 echo done

@@ -1,2 +1,2 @@
-echo switch Blower Off
-./bin/eCmd w 0xa464 0x0000
+echo close Butterfly
+eCmd s butterflyposition 21

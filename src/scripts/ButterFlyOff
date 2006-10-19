@@ -1,2 +1,2 @@
 echo close Butterfly
-eCmd w 0xa462 1800
+eCmd s butterflyposition 20

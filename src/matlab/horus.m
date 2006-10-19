@@ -164,7 +164,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
         end
         if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on
-            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);

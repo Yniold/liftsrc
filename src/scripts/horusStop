@@ -21,8 +21,8 @@ if [ $ArmOn -eq 0 ]; then
      
   echo switch off HV
   HVOff
-#  echo close Butterfly
-#  ButterFlyOff
+  echo close Butterfly
+  ButterFlyOff
   echo turn off Blower
   BlowerOff
 
