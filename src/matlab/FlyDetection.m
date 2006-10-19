@@ -233,13 +233,15 @@ if PCuvette(lastrow)<0.5
 else 
     set(handles.txtPDetector,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if PCuvette(lastrow)>2
-    Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
-    Valveword=bitset(Valveword,14,0);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
-end
+%if PCuvette(lastrow)>2
+%    if (bitget(statusData(lastrow,col.Valve1armAxis),13)==1 | bitget(statusData(lastrow,col.Valve1armAxis),13)==1)
+%        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0);
+%        Valveword=bitset(Valveword,14,0);
+%        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+%        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+%        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
+%    end
+%end
 
 %if statusData(lastrow,col.PhototubeLamp1)>10010;
 %    set(handles.txtLamp1,'BackgroundColor','r');
@@ -972,7 +974,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
             system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
-            set(handles.tglVent,'BackgroundColor','r');
+%            set(handles.tglVent,'BackgroundColor','r');
             pause(5);
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
 %            Valveword=bitset(Valveword,13); % ventilate Pump

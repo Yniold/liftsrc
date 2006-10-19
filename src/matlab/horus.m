@@ -153,8 +153,31 @@ if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
     end
 end
 
-% zero pitot every 5 min for 10 s if lamp is off
+% switch off Blower and solenoids if cell pressure is too high
 if statusData(lastrow,col.ValidSlaveDataFlag)
+    if statusData(lastrow,col.P20)>12000; %if cell pressure > approx. 25 mbar
+        Valveword=statusData(lastrow,col.Valve1armAxis);
+        if any(bitget(Valveword,1:7)) % check solenoids to cell         
+            Valveword=bitand(Valveword,65408,0); %set all solenoids to cell to 0
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+        end
+        if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(21)]); % close Butterfly 
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+            pause(5);
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+            Valveword=bitset(Valveword,9,0); % switch off blower
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        end
+    end
+
+% zero pitot every 5 min for 10 s if lamp is off
     if bitget(statusData(lastrow,col.Valve2armAxis),11)==0 % lamp off ?
         if ( mod(double(statusData(lastrow,4)),5)==0 & double(statusData(lastrow,5))<10 ) %first 10 sec period of every five min
             if bitget(statusData(lastrow,col.Valve1armAxis),12)==0 % if pitot 0 still off, switch it on
