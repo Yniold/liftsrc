@@ -155,10 +155,10 @@ end
 
 % switch off Blower and solenoids if cell pressure is too high
 if statusData(lastrow,col.ValidSlaveDataFlag)
-    if statusData(lastrow,col.P20)>12000; %if cell pressure > approx. 25 mbar
+    if statusData(lastrow,col.P1000)>10300; %if cell pressure too high
         Valveword=statusData(lastrow,col.Valve1armAxis);
         if any(bitget(Valveword,1:7)) % check solenoids to cell         
-            Valveword=bitand(Valveword,65408,0); %set all solenoids to cell to 0
+            Valveword=bitand(Valveword,65408); %set all solenoids to cell to 0
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
@@ -319,7 +319,7 @@ if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');

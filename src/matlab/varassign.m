@@ -367,7 +367,7 @@ statusDataCols=...
 'GPSLongitudeDecimals',869,'x/10000','min';
 'GPSLatitude',870,'x/60-90','deg';
 'GPSLatitudeDecimals',871,'x/10000','min';
-'GPSAltitude',872,'x','m';
+'GPSAltitude',872,'x*3.28084','ft';
 'GPSHDOP',873,'x','';
 'GPSnumSat',874,'x','';
 'GPSLastValidData',875,'x*5','s';
@@ -376,7 +376,7 @@ statusDataCols=...
 'ValidSlaveDataFlag',1122,'x','';
 'PhototubeLamp1',951,'x*NaN','';
 'PhototubeLamp2',954,'x*NaN','';
-'PCuvette',957,'(x-10000)./485.*1','bar';
+'PCuvette',957,'(x-10485).*5.12264e-4+1','bar';
 'PCuvetteSupply',960,'x*NaN','';
 'ButterflyPositionValid',1129,'x','';
 'ButterflyCurrentPosition',1130,'x',''};
