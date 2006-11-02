@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-10-15 11:25:43 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-02 14:04:07 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.28  2006-10-15 11:25:43  harder
+* Revision 1.29  2006-11-02 14:04:07  rudolf
+* extended calib structure to hold also current heater power from SCR card
+*
+* Revision 1.28  2006/10/15 11:25:43  harder
 * fixed BitPos of R&L end sw.
 *
 * Revision 1.27  2006/10/15 08:55:19  harder
@@ -90,7 +93,7 @@
 *
 *
 */
-/* #define DEBUG_NOHARDWARE */
+#define DEBUG_NOHARDWARE 1
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
@@ -710,6 +713,7 @@ struct calibStatusType     /* new structure introduced for the calibrator automa
   struct timeval             TimeOfDayCalib;
   struct ADCCardType         ADCCardCalib[MAX_ADC_CARD_CALIB];
   struct MFCCardType         MFCCardCalib[MAX_ADC_CARD_CALIB];
+  struct SCRCardType         SCRCardCalib[MAX_SCR3XB_CALIB];
   struct TempSensorCardType  TempSensCardCalib[MAX_TEMP_SENSOR_CARD_CALIB];
   struct LicorH2OCO2Type     LicorCalib;
 };
