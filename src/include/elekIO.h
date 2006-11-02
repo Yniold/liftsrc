@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-02 14:04:07 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-02 14:30:51 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.29  2006-11-02 14:04:07  rudolf
+* Revision 1.30  2006-11-02 14:30:51  rudolf
+* added missing define
+*
+* Revision 1.29  2006/11/02 14:04:07  rudolf
 * extended calib structure to hold also current heater power from SCR card
 *
 * Revision 1.28  2006/10/15 11:25:43  harder
@@ -192,7 +195,8 @@
 #define ELK_ADC_24_POWER       (ELK_ADC_24_BASE + 0x0010)       /* Power register for the DCDC */
 #define ELK_ADC_24_DATA        (ELK_ADC_24_BASE + 0x0020)       /* Channel Data registers */
 
-
+/* define for SCR3 in calibrator unit */
+#define ELK_SCR_BASE           (ELK_BACKPLANE_BASE+0x10)        /* SCR Power card */
 
 
 /*#define ELK_VAL2_BASE    (ELK_BACKPLANE_BASE+0x72) */
