@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-02 14:30:51 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-02 16:29:00 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.30  2006-11-02 14:30:51  rudolf
+* Revision 1.31  2006-11-02 16:29:00  rudolf
+* added PID structure
+*
+* Revision 1.30  2006/11/02 14:30:51  rudolf
 * added missing define
 *
 * Revision 1.29  2006/11/02 14:04:07  rudolf
@@ -528,7 +531,17 @@ struct LicorH2OCO2Type
    uint16_t                   H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
    uint16_t                   H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 };
-						 
+
+struct PIDregulatorType
+{
+   uint16_t Setpoint;       /* Kelvin x 100, e.g. 20°C => 27315 + (20 x 100) = 29315 */
+   uint16_t ActualValue;    /* Actual Value converted from thermistor */
+   uint16_t KP;             /* proportional coefficient */
+   uint16_t KI;             /* intergrating coefficient */
+   uint16_t KD;             /* differtial coefficient */
+   uint16_t ControlValue;   /* regulator output */
+};
+
 /*************************************************************************************************************/
 /* BUTTERFLY  */
 /*************************************************************************************************************/
@@ -720,6 +733,7 @@ struct calibStatusType     /* new structure introduced for the calibrator automa
   struct SCRCardType         SCRCardCalib[MAX_SCR3XB_CALIB];
   struct TempSensorCardType  TempSensCardCalib[MAX_TEMP_SENSOR_CARD_CALIB];
   struct LicorH2OCO2Type     LicorCalib;
+  struct PIDregulatorType    PIDRegulator;
 };
 
 
