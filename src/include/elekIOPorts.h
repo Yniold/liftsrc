@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-10-15 08:55:19 $ by $Author: harder $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-11-03 12:56:04 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.12  2006-10-15 08:55:19  harder
+* Revision 1.13  2006-11-03 12:56:04  rudolf
+* added new messagetypes for calibrator
+*
+* Revision 1.12  2006/10/15 08:55:19  harder
 * ref channel can be now assigned to any counter channel
 * eCmd: new command 'refchannel'
 * elekIOServ : used etalon Status info to store channel info
@@ -92,6 +95,12 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_FETCH_DATA,                       // request data from slave elekIOServ
     MSG_TYPE_MOVE_BUTTERFLY,                   // goto a new target position
     MSG_TYPE_REF_CHANNEL,                      // set reference channel
+    
+    // Calibrator
+    MSG_TYPE_CALIB_SETTEMP,                    // set calibrator water temperature
+    MSG_TYPE_CALIB_SETFLOW,                    // set calibrator cumulated flow
+    MSG_TYPE_CALIB_SETHUMID,                   // set calibrator humidity mixing ratio
+     
     MAX_MSG_TYPE }; 
 
 enum SysParameterListEnum {                 // list of System Parameters
