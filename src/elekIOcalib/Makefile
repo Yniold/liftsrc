@@ -12,10 +12,10 @@ INSTDIR?=../bin
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
 CROSS_COMPILE=arm-linux-
-LDFLAGS :=-lrt
+LDFLAGS :=-lrt -lm
 else
 CROSS_COMPILE=
-CPPFLAGS :=-DRUNONPC -Wa,-mfpu=softvfp
+CPPFLAGS :=-DRUNONPC
 LDFLAGS :=-lrt
 endif
 
@@ -33,6 +33,6 @@ headers=elekIOcalib.h ../include/elekIO.h ../include/elekIOPorts.h
 
 $(PROJECT) : $(PROJECT).c $(modules) $(headers)
 	     echo $(PROJECT) $(VERSION)
-	     $(CC) $(CPPFLAGS) $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
+	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
 	     cp $(PROJECT) $(INSTDIR)
 
