@@ -1,8 +1,11 @@
-				     /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-11-02 12:42:01 $ by $Author: rudolf $
+/*
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-11-03 15:43:35 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
- * Revision 1.6  2006-11-02 12:42:01  rudolf
+ * Revision 1.7  2006-11-03 15:43:35  rudolf
+ * made PID regulation work
+ *
+ * Revision 1.6  2006/11/02 12:42:01  rudolf
  * more work on elekIOcalib
  *
  * Revision 1.5  2006/09/04 13:04:21  rudolf
@@ -34,6 +37,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#include <ctype.h> /*for NAN*/
+#include <stdlib.h>
+#include <math.h>
 
 #include <signal.h>
 #include <errno.h>
@@ -113,6 +120,36 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
      {"Script",     ELEK_SCRIPT_OUT,                    -1},
      {      "",                  -1,                    -1}
 };
+/**********************************************************************************************************/
+/* PID algorithm                                                                                          */
+/**********************************************************************************************************/
+
+double ProcessPID(double dSetPoint, double dActualValue, struct calibStatusType *ptrCalibStatus)
+{
+   static double dErrorCurrent;
+   static double dErrorLast;
+   static double dErrorPenultimate;
+
+   static double dControlVariableLast;
+   static double dControlVariable;
+
+   // coefficients for the PID regulator
+   double dKP = (double) ptrCalibStatus->PIDRegulator.KP;
+   double dKD = (double) ptrCalibStatus->PIDRegulator.KD;
+   double dKI = (double) ptrCalibStatus->PIDRegulator.KI;
+
+   // save the last 2 error values
+   //
+   dErrorPenultimate = dErrorLast;
+   dErrorLast = dErrorCurrent;
+   dErrorCurrent = dSetPoint - dActualValue;
+
+   // do PID calcualtions
+   dControlVariableLast = dControlVariable;
+   dControlVariable = dControlVariableLast + (dKP * (dErrorCurrent - dErrorLast)) + (dKI * (dErrorCurrent - dErrorLast) / 2) + (dKD * (dErrorCurrent - (2*dErrorLast) + dErrorPenultimate));
+
+   return dControlVariable;
+}
 
 /**********************************************************************************************************/
 /* Signal Handler                                                                                         */
@@ -124,18 +161,111 @@ static enum TimerSignalStateEnum TimerState=TIMER_SIGNAL_STATE_INITIAL;
 /* Signalhandler */
 void signalstatus(int signo)
 {
-   int iBytesRead = 0;
+   /* locale variables for Timer*/
    extern int StatusFlag;
    extern enum TimerSignalStateEnum TimerState;
+
    char buf[GENERIC_BUF_LEN];
+
+   /* local variables for PID */
+   extern struct calibStatusType CalibStatus;
+   static int iPIDdelay = 0;
+   double dControlValue;
+   double dSetPoint;
+   double dActualValue;
 
    ++StatusFlag;
    TimerState=(TimerState+1) % TIMER_SIGNAL_STATE_MAX;
 
-   //   printf("Timer!!!\n");
+   iPIDdelay++;
+
+   /* PID is done here */
+   if(iPIDdelay >= 10)
+     {
+	iPIDdelay = 0;
+	/* check if setpoint valid, if not, turn heater off for safety reasons */
+	if(CalibStatus.PIDRegulator.Setpoint > 0)
+	  {
+
+	     dSetPoint = ((double)CalibStatus.PIDRegulator.Setpoint)/100;
+	     dActualValue = ((double)CalibStatus.PIDRegulator.ActualValueH2O)/100;
+
+	     dControlValue = ProcessPID(dSetPoint,dActualValue,&CalibStatus);
+
+	     // FIXME: add check for heater overtemp
+	     // water to warm, turn off completely
+	     if(dControlValue < 0)
+	       elkWriteData(ELK_SCR_BASE + 0, 0);
+
+	     // water much too cold, set full power
+	     if(dControlValue > 255)
+	       elkWriteData(ELK_SCR_BASE + 0, 255);
+	     // else set calculated power value
+	     else
+	       elkWriteData(ELK_SCR_BASE + 0, (uint16_t)dControlValue);
+	  }
+	else
+	  {
+	     elkWriteData(ELK_SCR_BASE + 0, (uint16_t)dControlValue);
+	  }
+	  CalibStatus.PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
+     }
 }
-// signalstatus
-//
+
+/**********************************************************************************************************/
+/* Converts a resistance value into kelvin                                                                */
+/* valid for the blue NTCs from RS-Components with 3K @ 25°C                                              */
+/* RS Part Number: 151-215                                                                                */
+/*                                                                                                        */
+/* Constant values taken from datasheet "NTC_EC_95data_2.pdf" on our server                               */
+/**********************************************************************************************************/
+
+double Resistance2Temperature(double dResistance)
+{
+   double dResRatio = dResistance/3000.0f; // resistance at 25 degrees is 3000 Ohm
+   double dA,dB,dC,dD;
+   double dNTCTemp;
+
+   if((dResRatio <= 68.600f) && (dResRatio >= 3.274f))
+     {
+	dA = 3.35386E-03f;
+	dB = 2.5654090E-04f;
+	dC = 1.9243889E-06f;
+	dD = 1.0969244E-07f;
+     }
+   else
+     if((dResRatio < 3.274f) && (dResRatio >= 0.36036f))
+       {
+	  dA = 3.3540154E-03f;
+	  dB = 2.5627725E-04f;
+	  dC = 2.0829210E-06f;
+	  dD = 7.3003206E-08f;
+       }
+   else
+     if((dResRatio < 0.36036f) && (dResRatio >= 0.06831f))
+       {
+	  dA = 3.3539264E-03f;
+	  dB = 2.5609446E-04f;
+	  dC = 1.9621987E-06f;
+	  dD = 4.6045930E-08f;
+       }
+   else
+     if((dResRatio < 0.06831f) && (dResRatio >= 0.01872f))
+       {
+	  dA = 3.3368620E-03f;
+	  dB = 2.4057263E-04f;
+	  dC = -2.6687093E-06f;
+	  dD = -4.0719355E-07f;
+       }
+   else
+     {
+	return NAN;
+     };
+
+   dNTCTemp = 1/(dA + (dB*log(dResRatio)) + (dC * pow((log(dResistance/3000.0f)),2)) + (dD * pow((log(dResistance/3000.0f)),3)));
+   return dNTCTemp;
+};
+
 //
 /**********************************************************************************************************/
 /* Load Module Config                                                                                     */
@@ -174,36 +304,6 @@ void LoadModulesConfig(struct calibStatusType *ptrCalibStatus)
 	/* for Channel */
      }
    /* for Card */
-
-   // for bridge pressure sensors we need two adc channels, one for the signal, the other for the bridge power
-   // those pairs are set here
-   Card=0; Channel=0;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-
-   Card=0; Channel=1;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-
-   Card=0; Channel=6;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
-
-   Card=0; Channel=7;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Unused    =0x00;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Offset    =0x01;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Gain      =0x2;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.Bridge    =0x1;
-   ptrCalibStatus->ADCCardCalib[Card].ADCChannelConfig[Channel].ADCChannelConfigBit.MuxChannel=Channel;
 
    // MFC Channels
    for (Card=0; Card<MAX_MFC_CARD_CALIB; Card ++)
@@ -344,6 +444,47 @@ int InitTempCard (struct calibStatusType *ptrCalibStatus)
 /* Init TempCard */
 
 /**********************************************************************************************************/
+/* Init SCRCard                                                                                        */
+/**********************************************************************************************************/
+
+int InitSCRCard (struct calibStatusType *ptrCalibStatus)
+{
+   int iChannel = 0;
+
+   // turn all 230VAC outputs off
+   for(iChannel=0;iChannel < MAX_SCR3XB_CHANNEL_PER_CARD;iChannel++)
+     {
+	elkWriteData(ELK_SCR_BASE + (2*iChannel), 0);
+	ptrCalibStatus->SCRCardCalib[0].SCRPowerValue[iChannel] = 0x0000;
+     };
+
+   return (INIT_MODULE_SUCCESS);
+}
+/* Init SCRCard */
+
+/**********************************************************************************************************/
+/* Init PIDregulator                                                                                      */
+/**********************************************************************************************************/
+
+int InitPIDregulator (struct calibStatusType *ptrCalibStatus)
+{
+   ptrCalibStatus->PIDRegulator.Setpoint = 0;
+   ptrCalibStatus->PIDRegulator.ActualValueH2O = 0;
+   ptrCalibStatus->PIDRegulator.ActualValueHeater = 0;
+
+   /* change here if regulation is not stable, might be changed at runtime also */
+   ptrCalibStatus->PIDRegulator.KP = 100;
+   ptrCalibStatus->PIDRegulator.KI = 80;
+   ptrCalibStatus->PIDRegulator.KD = 20;
+
+   /* heater off */
+   ptrCalibStatus->PIDRegulator.ControlValue = 0;
+
+   return (INIT_MODULE_SUCCESS);
+}
+/* Init SCRCard */
+
+/**********************************************************************************************************/
 /* Init Modules                                                                                        */
 /**********************************************************************************************************/
 
@@ -385,6 +526,24 @@ void InitModules(struct calibStatusType *ptrCalibStatus)
    else
      {
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init TemperatureCard failed !!");
+     }
+
+   if (INIT_MODULE_SUCCESS == (ret=InitSCRCard(ptrCalibStatus)))
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init SCRCard successfull");
+     }
+   else
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init SCRCard failed !!");
+     }
+
+   if (INIT_MODULE_SUCCESS == (ret=InitPIDregulator(ptrCalibStatus)))
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init PID regulator successfull");
+     }
+   else
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init PID regulator failed !!");
      }
 }
 /* InitModules */
@@ -555,6 +714,78 @@ void GetTemperatureCardData ( struct calibStatusType *ptrCalibStatus)
 /* GetTemperatureCardData */
 
 /**********************************************************************************************************/
+/* GetSCRCardData                                                                                             */
+/**********************************************************************************************************/
+
+/* function to retrieve Statusinformation */
+void GetSCRCardData ( struct calibStatusType *ptrCalibStatus)
+{
+   int iChannel = 0;
+
+   // turn all 230VAC outputs off
+   for(iChannel=0;iChannel < MAX_SCR3XB_CHANNEL_PER_CARD;iChannel++)
+     {
+	ptrCalibStatus->SCRCardCalib[0].SCRPowerValue[iChannel] = elkReadData(ELK_SCR_BASE + (2*iChannel));
+     };
+}
+/* GetSCRCardData */
+
+/**********************************************************************************************************/
+/* Get PIDregulator Data                                                                                  */
+/**********************************************************************************************************/
+
+void GetPIDregulatorData (struct calibStatusType *ptrCalibStatus)
+{
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   char           buf[GENERIC_BUF_LEN];
+
+#define HEATERCHANNEL (2)
+#define WATERCHANNEL (0)
+
+   uint16_t ADCData = 0;
+   ADCData=elkReadData(ELK_ADC_BASE+2*HEATERCHANNEL);
+   /* if no card is present, don't allow heater to be on */
+   if(ADCData == 19999)
+     {
+	sprintf(buf,"GetPIDregulatorData: temp probe HEATER failed (no ADC card ?)");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+	ptrCalibStatus->PIDRegulator.Setpoint = 0;
+	ptrCalibStatus->PIDRegulator.ControlValue = 0;
+	return;
+     };
+
+   double dUdiff = ((double)(ADCData-10000)/1515)+2.5f;
+   double dIres = (3.3f-dUdiff)/3900;
+   double dRPTC = (dUdiff/dIres);
+   double dTemperature = Resistance2Temperature(dRPTC)*100;
+
+   ptrCalibStatus->PIDRegulator.ActualValueHeater = (uint16_t) dTemperature;
+
+
+   ADCData=elkReadData(ELK_ADC_BASE+2*WATERCHANNEL);
+   /* if no card is present, don't allow heater to be on */
+   if(ADCData == 19999)
+     {
+	sprintf(buf,"GetPIDregulatorData: temp probe WATER failed (no ADC card ?)");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+	ptrCalibStatus->PIDRegulator.Setpoint = 0;
+	ptrCalibStatus->PIDRegulator.ControlValue = 0;
+	return;
+     };
+
+   dUdiff = ((double)(ADCData-10000)/1515)+2.5f;
+   dIres = (3.3f-dUdiff)/3900;
+   dRPTC = (dUdiff/dIres);
+   dTemperature = Resistance2Temperature(dRPTC)*100;
+   ptrCalibStatus->PIDRegulator.ActualValueH2O = (uint16_t) dTemperature;
+
+}
+/* GetPIDregulatorData*/
+
+/**********************************************************************************************************/
 /* GetCalibStatus                                                                                          */
 /**********************************************************************************************************/
 
@@ -573,6 +804,11 @@ void GetCalibStatus ( struct calibStatusType *ptrCalibStatus, int IsMaster)
    // now get the temperature data
    GetTemperatureCardData(ptrCalibStatus);
 
+   // get power state from SCR card
+   GetSCRCardData(ptrCalibStatus);
+
+   // get actual value for PID
+   GetPIDregulatorData(ptrCalibStatus);
 }
 /* GetCalibStatus */
 
@@ -591,26 +827,26 @@ int InitUDPPorts(fd_set *pFDsMaster, int *fdMax)
    for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++)
      {
 
-        printf("opening IN Port %s on Port %d Socket:",
-               MessageInPortList[MessagePort].PortName,
-               MessageInPortList[MessagePort].PortNumber);
+	printf("opening IN Port %s on Port %d Socket:",
+	       MessageInPortList[MessagePort].PortName,
+	       MessageInPortList[MessagePort].PortNumber);
 
-        MessageInPortList[MessagePort].fdSocket=InitUDPInSocket(MessageInPortList[MessagePort].PortNumber);
+	MessageInPortList[MessagePort].fdSocket=InitUDPInSocket(MessageInPortList[MessagePort].PortNumber);
 
-        FD_SET(MessageInPortList[MessagePort].fdSocket, pFDsMaster);     // add the manual port to the master set
-        printf("%08x\n",MessageInPortList[MessagePort].fdSocket);
-        (*fdMax)=MessageInPortList[MessagePort].fdSocket;                   // the last one will give the max number
+	FD_SET(MessageInPortList[MessagePort].fdSocket, pFDsMaster);     // add the manual port to the master set
+	printf("%08x\n",MessageInPortList[MessagePort].fdSocket);
+	(*fdMax)=MessageInPortList[MessagePort].fdSocket;                   // the last one will give the max number
      }
    /* for MessageInPort */
 
    // init outports
    for (MessagePort=0; MessagePort<MAX_MESSAGE_OUTPORTS;MessagePort++)
      {
-        printf("opening OUT Port %s on Port %d, Destination IP: %s\n",
-               MessageOutPortList[MessagePort].PortName,
-               MessageOutPortList[MessagePort].PortNumber,
-               MessageOutPortList[MessagePort].IPAddr);
-        MessageOutPortList[MessagePort].fdSocket=InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);
+	printf("opening OUT Port %s on Port %d, Destination IP: %s\n",
+	       MessageOutPortList[MessagePort].PortName,
+	       MessageOutPortList[MessagePort].PortNumber,
+	       MessageOutPortList[MessagePort].IPAddr);
+	MessageOutPortList[MessagePort].fdSocket=InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);
 
      }
    /* for MessageOutPort */
@@ -646,7 +882,7 @@ int ChangePriority()
    param.sched_priority= (int)((max-min)/2);
    if (-1==(ret=sched_setscheduler(0,SCHED_RR, &param)))
      {
-        perror("kann scheduler nicht wechseln");
+	perror("kann scheduler nicht wechseln");
      }
 
    return (ret);
@@ -668,9 +904,6 @@ int main(int argc, char *argv[])
 
    extern struct MessagePortType MessageInPortList[];
    extern struct MessagePortType MessageOutPortList[];
-
-   struct calibStatusType CalibStatus;
-   struct calibStatusType CalibStatusFromSlave;
 
    uint64_t ulCpuClock = CPUCLOCK;
 
@@ -727,8 +960,8 @@ int main(int argc, char *argv[])
    if (elkInit())
      {
 	// grant IO access
-        printf("Error: failed to grant IO access rights\n");
-        exit(EXIT_FAILURE);
+	printf("Error: failed to grant IO access rights\n");
+	exit(EXIT_FAILURE);
      }
 
    // setup master fd
@@ -740,8 +973,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.6 2006-11-02 12:42:01 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.6 2006-11-02 12:42:01 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.7 2006-11-03 15:43:35 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.7 2006-11-03 15:43:35 rudolf Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -763,8 +996,8 @@ int main(int argc, char *argv[])
    ret= timer_create(clock, &SignalEvent, &StatusTimer_id);
    if (ret < 0)
      {
-        perror("timer_create");
-        return EXIT_FAILURE;
+	perror("timer_create");
+	return EXIT_FAILURE;
      }
 
     /* Start timer: */
@@ -774,14 +1007,14 @@ int main(int argc, char *argv[])
    ret = timer_settime(StatusTimer_id, 0, &StatusTimer, NULL);
    if (ret < 0)
      {
-        perror("timer_settime");
-        return EXIT_FAILURE;
+	perror("timer_settime");
+	return EXIT_FAILURE;
      }
 
    // change scheduler and set priority
    if (-1==(ret=ChangePriority()))
      {
-        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : cannot set Priority");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : cannot set Priority");
      }
 
    sigemptyset(&SignalMask);
@@ -793,16 +1026,16 @@ int main(int argc, char *argv[])
 
    while (!EndOfSession)
      {
-        write(2,"Wait for data..\r",16);
+	write(2,"Wait for data..\r",16);
 
-        fdsSelect=fdsMaster;
+	fdsSelect=fdsMaster;
 
-        pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
-        pselect_timeout.tv_nsec=0;
+	pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
+	pselect_timeout.tv_nsec=0;
 
-        ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
+	ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
 
-        gettimeofday(&StartAction, NULL);
+	gettimeofday(&StartAction, NULL);
 
 #ifdef DEBUG_TIMER
 	printf("Time:");
@@ -810,10 +1043,10 @@ int main(int argc, char *argv[])
 
 	printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
 	       tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
-        printf("ret %d StatusFlag %d\n",ret,StatusFlag);
+	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
 #endif
 
-        if (ret ==-1 )
+	if (ret ==-1 )
 	  {
 	     // select error
 	     //
@@ -878,7 +1111,7 @@ int main(int argc, char *argv[])
 	  }
 	else if (ret>0)
 	  {
-//	     printf("woke up...");
+	     //	     printf("woke up...");
 	     write(2,"incoming Call..\r",16);
 
 	     for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++)
@@ -916,7 +1149,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG_SLAVECOM
 				 printf("elekIOcalib: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
 #endif
-				 
+
 #ifdef DEBUG_SLAVECOM
 				 printf("elekIOcalib: gathering Data...\n\r");
 #endif
@@ -954,7 +1187,7 @@ int main(int argc, char *argv[])
 				      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
 				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 				   }
-			    /* if MessagePort */
+		
 				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 						 inet_ntoa(their_addr.sin_addr),
 						 sizeof(struct ElekMessageType), &Message);
@@ -967,12 +1200,25 @@ int main(int argc, char *argv[])
 					      Message.Addr,Message.Value,Message.Value);
 				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 				   }
-			    /* if MessagePort */
 
-				 // printf("elekIOcalib: manual write to Address %04x Value is: %04x\n", Message.Addr, Message.Value);
-				 //
 				 Message.Status=elkWriteData(Message.Addr,Message.Value);
 				 Message.MsgType=MSG_TYPE_ACK;
+				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+						 inet_ntoa(their_addr.sin_addr),
+						 sizeof(struct ElekMessageType), &Message);
+				 break;
+				 
+			       case MSG_TYPE_CALIB_SETTEMP:
+				 if (MessagePort!=ELEK_ETALON_IN)
+				   {
+				      sprintf(buf,"elekIOcalib : SET_TEMP from %05d Port %04x Value %d (%04x)",
+					      MessageInPortList[MessagePort].PortNumber,
+					      Message.Addr,Message.Value,Message.Value);
+				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				   }
+				 CalibStatus.PIDRegulator.Setpoint = Message.Value;
+				 Message.Status = Message.Value;
+				 Message.MsgType = MSG_TYPE_ACK;
 				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 						 inet_ntoa(their_addr.sin_addr),
 						 sizeof(struct ElekMessageType), &Message);

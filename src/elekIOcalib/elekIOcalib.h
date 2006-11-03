@@ -3,12 +3,15 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-09-01 15:49:08 $ by $Author: rudolf $
+// $RCSfile: elekIOcalib.h,v $ last changed on $Date: 2006-11-03 15:43:40 $ by $Author: rudolf $
 
 // History:
 //
 // $Log: elekIOcalib.h,v $
-// Revision 1.3  2006-09-01 15:49:08  rudolf
+// Revision 1.4  2006-11-03 15:43:40  rudolf
+// made PID regulation work
+//
+// Revision 1.3  2006/09/01 15:49:08  rudolf
 // more work on calibrator UDP handling
 //
 // Revision 1.2  2006/08/31 17:13:51  rudolf
@@ -86,6 +89,7 @@ struct SlaveListType {
   char *SlaveIP;                  /* IP Address */
 };
 
+struct calibStatusType CalibStatus;
 
 
 // ========================
