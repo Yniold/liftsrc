@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-11-03 15:43:35 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2006-11-10 17:28:08 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
- * Revision 1.7  2006-11-03 15:43:35  rudolf
+ * Revision 1.8  2006-11-10 17:28:08  rudolf
+ * more work on LICOR integration
+ *
+ * Revision 1.7  2006/11/03 15:43:35  rudolf
  * made PID regulation work
  *
  * Revision 1.6  2006/11/02 12:42:01  rudolf
@@ -34,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -51,6 +55,7 @@
 #include "../include/elekIOPorts.h"
 #include "elekIOcalib.h"
 #include "serial.h"
+#include "licor.h"
 
 #define STATUS_INTERVAL  100
 
@@ -208,7 +213,7 @@ void signalstatus(int signo)
 	  {
 	     elkWriteData(ELK_SCR_BASE + 0, (uint16_t)dControlValue);
 	  }
-	  CalibStatus.PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
+	CalibStatus.PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
      }
 }
 
@@ -485,6 +490,38 @@ int InitPIDregulator (struct calibStatusType *ptrCalibStatus)
 /* Init SCRCard */
 
 /**********************************************************************************************************/
+/* Init LICOR                                                                                             */
+/**********************************************************************************************************/
+
+int InitLICOR(struct elekStatusType *ptrCalibStatus)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   char debugbuf[GENERIC_BUF_LEN];
+
+   int ret;
+
+   // create butterfly thread
+   ret = LicorInit();
+
+   if(ret == 1)
+     {
+	sprintf(debugbuf,"elekIOcalib : Can't create LICOR Thread!\n\r");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+	return (INIT_MODULE_FAILED);
+     };
+
+   // success
+   sprintf(debugbuf,"elekIOcalib: LICOR Thread running!\n\r");
+   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+   return (INIT_MODULE_SUCCESS);
+}
+/* Init Butterfly */
+
+/**********************************************************************************************************/
 /* Init Modules                                                                                        */
 /**********************************************************************************************************/
 
@@ -544,6 +581,15 @@ void InitModules(struct calibStatusType *ptrCalibStatus)
    else
      {
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init PID regulator failed !!");
+     }
+
+   if (INIT_MODULE_SUCCESS == (ret=InitLICOR(ptrCalibStatus)))
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init LICOR successfull");
+     }
+   else
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOcalib : init LICOR regulator failed !!");
      }
 }
 /* InitModules */
@@ -763,7 +809,6 @@ void GetPIDregulatorData (struct calibStatusType *ptrCalibStatus)
 
    ptrCalibStatus->PIDRegulator.ActualValueHeater = (uint16_t) dTemperature;
 
-
    ADCData=elkReadData(ELK_ADC_BASE+2*WATERCHANNEL);
    /* if no card is present, don't allow heater to be on */
    if(ADCData == 19999)
@@ -973,8 +1018,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.7 2006-11-03 15:43:35 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.7 2006-11-03 15:43:35 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.8 2006-11-10 17:28:08 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.8 2006-11-10 17:28:08 rudolf Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1187,7 +1232,7 @@ int main(int argc, char *argv[])
 				      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
 				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 				   }
-		
+
 				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 						 inet_ntoa(their_addr.sin_addr),
 						 sizeof(struct ElekMessageType), &Message);
@@ -1207,7 +1252,7 @@ int main(int argc, char *argv[])
 						 inet_ntoa(their_addr.sin_addr),
 						 sizeof(struct ElekMessageType), &Message);
 				 break;
-				 
+
 			       case MSG_TYPE_CALIB_SETTEMP:
 				 if (MessagePort!=ELEK_ETALON_IN)
 				   {

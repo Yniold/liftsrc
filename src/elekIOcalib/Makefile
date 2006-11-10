@@ -16,7 +16,7 @@ LDFLAGS :=-lrt -lm
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC
-LDFLAGS :=-lrt
+LDFLAGS :=-lrt -lm
 endif
 
 CC := $(CROSS_COMPILE)gcc
@@ -24,7 +24,7 @@ export CC
 
 LDFLAGS+=-ggdb
 
-modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o serial.c
+modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o serial.c licor.c
 
 headers=elekIOcalib.h ../include/elekIO.h ../include/elekIOPorts.h
 

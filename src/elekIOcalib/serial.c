@@ -9,12 +9,15 @@
 // set int verboselevel to control debug messages
 // ===================================================================
 //
-// $RCSfile: serial.c,v $ last changed on $Date: 2006-08-30 15:56:30 $ by $Author: rudolf $
+// $RCSfile: serial.c,v $ last changed on $Date: 2006-11-10 17:28:08 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: serial.c,v $
-// Revision 1.1  2006-08-30 15:56:30  rudolf
+// Revision 1.2  2006-11-10 17:28:08  rudolf
+// more work on LICOR integration
+//
+// Revision 1.1  2006/08/30 15:56:30  rudolf
 // started writing new elekIOcalib based on elekIOserv
 //
 // Revision 1.1  2005/01/27 14:59:36  rudolf
@@ -119,9 +122,11 @@ int serial_open(char * port, int baud)
   int rc;
   int fd;
 
-  // open the serial port
+  // open the serial port (blocking, we are using a seperate thread)
 
-  fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
+//  fd = open(port, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  fd = open(port, O_RDWR | O_NOCTTY);
+   
   if (fd < 0) {
     fprintf(stderr, "%s: serial_open(): can't open device \"%s\": %s\n",
             progname, port, strerror(errno));
