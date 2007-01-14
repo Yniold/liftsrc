@@ -1,6 +1,7 @@
 #
 # Makefile for ELectronic Konverter test tool
 #
+#
 
 VERSION=0.1
 PROJECT=elekIOcalib
