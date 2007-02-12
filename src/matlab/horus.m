@@ -125,7 +125,7 @@ try fopen(tcpBlower);
 catch 
     delete(tcpBlower);
     clear('tcpBlower');
-    set(handles.txtBlower,'String','Blower not connected','BackgroundColor','r');
+    set(handles.txtBlower,'String','Blower not connected','BackgroundColor','c');
 end
 
 data.txtBlower=handles.txtBlower;

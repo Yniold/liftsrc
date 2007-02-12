@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 19-Sep-2005 23:08:20
+% Last Modified by GUIDE v2.5 12-Feb-2007 17:35:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,6 +73,62 @@ data.ActTimer=handles.ActTimer;
 % and conversion functions for the parameters in the data files
 [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
 [data.col,data.fcts2val]=varassign(data.statusData);
+
+% open tcpip port for communication with Blower
+tcpBlower=tcpip('xpBlower',10001);
+set(tcpBlower,'ReadAsyncMode','continuous');
+set(tcpBlower,'BytesAvailableFcn',{'tcpipdatacallback'});
+set(tcpBlower,'Terminator','CR');
+
+try fopen(tcpBlower);
+    handles.tcpBlower=tcpBlower;
+    data.tcpBlower=handles.tcpBlower;
+    set(handles.txtBlower,'BackgroundColor','g');
+    
+    % check if Blower and/or pump are on or off
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+    
+    if PumpSwitch==0
+        set(handles.txtBlower,'String','Pump OFF');
+    elseif (RampSwitch==0 | InverterSwitch==0)
+        set(handles.txtBlower,'String','Pump ON');
+    else
+        set(handles.txtBlower,'String','Blower ON');
+    end
+    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+        set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
+    end                
+
+
+% if communication with blower did not work
+catch 
+    delete(tcpBlower);
+    clear('tcpBlower');
+    set(handles.txtBlower,'String','Blower not connected','BackgroundColor','c');
+end
+
+data.txtBlower=handles.txtBlower;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -153,22 +209,100 @@ if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
     end
 end
 
-% zero pitot every 5 min for 10 s if lamp is off
-        Valveword=bitset(statusData(lastrow,col.Valve2armAxis),11);
+% switch off Blower and solenoids if cell pressure is too high
+if statusData(lastrow,col.ValidSlaveDataFlag)
+    if statusData(lastrow,col.P1000)>10300; %if cell pressure too high
+        Valveword=statusData(lastrow,col.Valve1armAxis);
+        if any(bitget(Valveword,1:7)) % check solenoids to cell         
+            Valveword=bitand(Valveword,65408); %set all solenoids to cell to 0
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+        end
+        if strcmp(handles.txtBlower,'Blower ON') %check if blower in on (ground configuration)
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+            %switch off Blower
+            fprintf(handles.tcpBlower,'ramp off'); 
+            tcpBlower.UserData=[];
+            fprintf(handles.tcpBlower,'inverter off'); 
+            % check and display Blower status
+            pause(0.5);
+            BlowerStatus=tcpBlower.UserData;
+            tcpBlower.UserData=[];
 
-if ( mod(double(statusData(lastrow,4)),5)==0 & double(statusData(lastrow,5))<10 ) %first 10 sec period of every five min
-    if bitget(statusData(lastrow,col.Valve1armAxis),12)==0
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12);
-        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+            if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+                PumpSwitch=0;
+            elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+                PumpSwitch=1;
+            else PumpSwitch=-1;
+            end
+            if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+                InverterSwitch=0;
+            elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+                InverterSwitch=1;
+            else InverterSwitch=-1;
+            end
+            if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+                RampSwitch=0;
+            elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+                RampSwitch=1;
+            else RampSwitch=-1;
+            end
+    
+            if PumpSwitch==0
+                set(handles.txtBlower,'String','Pump OFF');
+            elseif (RampSwitch==0 | InverterSwitch==0)
+                set(handles.txtBlower,'String','Pump ON');
+            else
+                set(handles.txtBlower,'String','Blower ON');
+            end
+            if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+                set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
+            end                
+        end
+        if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+            pause(5);
+            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+            Valveword=bitset(Valveword,9,0); % switch off blower
+            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        end
     end
-else
-    if bitget(statusData(lastrow,col.Valve1armAxis),12)==1
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
-        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
-        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+
+% zero pitot every 5 min for 10 s if lamp is off
+    if bitget(statusData(lastrow,col.Valve2armAxis),11)==0 % lamp off ?
+        if ( mod(double(statusData(lastrow,4)),5)==0 & double(statusData(lastrow,5))<10 ) %first 10 sec period of every five min
+            if bitget(statusData(lastrow,col.Valve1armAxis),12)==0 % if pitot 0 still off, switch it on
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+            end
+        else % 10 sec are over
+            if bitget(statusData(lastrow,col.Valve1armAxis),12)==1 % if pitot 0 is still on, switch it off
+                if isfield(data,'hFlyDetection') % if zeroing not in progress by FlyDetection
+                    if ishandle(data.hFlyDetection), 
+                        Detdata = getappdata(data.hFlyDetection, 'Detdata');
+                        if (Detdata.PitotTime==0 & get(Detdata.tglPitot,'Value')==0) % zeroing process not in progress in FlyDetection ?
+                            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+                            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+                        end
+                    else
+                        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
+                        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
+                        system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                        system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -191,10 +325,6 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     if isfield(data,'hDyelaser')
-        if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
-            set(Dyelaserdata.toggleVacuum,'BackgroundColor','g','String','Valve Vacuum ON');
-        end
     end
     pause(1);
     Valveword=bitset(Valveword,8); % switch Dyelaser valve on
@@ -265,6 +395,7 @@ x=double(statusData(:,col.DiodeWZ2out)); eval(['DiodeWZ2out=',fcts2val.DiodeWZ2o
 x=double(statusData(:,col.DiodeWZ1in)); eval(['DiodeWZ1in=',fcts2val.DiodeWZ1in,';']);
 x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,';']);
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
+x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
@@ -285,7 +416,7 @@ if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
@@ -316,9 +447,9 @@ if isfield(data,'hFlyDetection')
     if ishandle(data.hFlyDetection) 
         set(handles.FlyDetection,'BackgroundColor','g');
     else
-        if P20(lastrow)<1 | P20(lastrow)>5 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.75*DiodeWZ1in ...
-                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.4*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | statusData(lastrow,col.PCuvette)<10100
+        if P20(lastrow)<1 | P20(lastrow)>10 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.7*DiodeWZ1in ...
+                | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.7*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
+                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | PCuvette<0.5 
             set(handles.FlyDetection,'BackgroundColor','r');
         else
             set(handles.FlyDetection,'BackgroundColor','c');
@@ -357,12 +488,6 @@ end
 
 data.lastrow=lastrow;
 setappdata(handles.output, 'horusdata', data);
-
-
-
-
-
-
 
 
 % --- Executes on button press in CounterCards.
@@ -528,6 +653,13 @@ if isfield(data,'hCalibration')
         close(hCalibration); 
     end
 end
+
+if isfield(handles,'tcpBlower')
+    fclose(handles.tcpBlower);
+    delete(handles.tcpBlower);
+end
+
+%close(handles.figure1);
 
 delete(handles.ActTimer);
 close(gcbf);

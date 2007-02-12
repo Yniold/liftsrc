@@ -88,7 +88,7 @@ AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
 horustxtBlower=horusdata.txtBlower;
-if get(horustxtBlower,'BackgroundColor')~=[1 0 0]
+if get(horustxtBlower,'BackgroundColor')~=[0 1 1]
     tcpBlower=horusdata.tcpBlower;
 end
 
@@ -626,19 +626,36 @@ else
 end
 
 % check Pump, Bit 10 is Leybold, Bit 7 is Scroll Pump
-if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
-    set(handles.togPump,'BackgroundColor','g','String','Pump ON');
-else
-    set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+    BlowerStatus=get(horustxtBlower,'String');
+    if (strcmp(BlowerStatus,'Pump ON') | strcmp(BlowerStatus,'Blower ON'))
+        set(handles.togBlower,'BackgroundColor','g','String','Pump ON');
+    else 
+        set(handles.togBlower,'BackgroundColor','g','String','Pump OFF');
+    end
+else % Blower connected directly to ARMaxis (air configuration)
+    if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
+        set(handles.togPump,'BackgroundColor','g','String','Pump ON');
+    else
+        set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+    end
 end
 
 % check Blower
-BlowerStatus=get(horustxtBlower,'String');
-if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
-    bitget(statusData(lastrow,col.Valve2armAxis),1)) | strcmp(BlowerStatus,'Blower ON'))
-    set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
-else
-    set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+    BlowerStatus=get(horustxtBlower,'String');
+    if strcmp(BlowerStatus,'Blower ON')
+        set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+    else
+        set(handles.togBlower,'BackgroundColor','g','String','Blower OFF');
+    end
+else % Blower connected directly to ARMaxis (air configuration)
+    if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
+        bitget(statusData(lastrow,col.Valve2armAxis),1)))
+        set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+    else
+        set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+    end
 end
 
 % check Butterfly
@@ -946,50 +963,110 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
-tcpBlower=horusdata.tcpBlower;
-BlowerStatus=horusdata.BlowerStatus;
-PumpStatus=horusdata.PumpStatus;
+horustxtBlower=horusdata.txtBlower;
+if get(horustxtBlower,'BackgroundColor')~=[0 1 1]
+    tcpBlower=horusdata.tcpBlower;
+    % check Blower and Pump status 
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+end
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
-            set(hObject,'BackgroundColor','r','String','switching Blower ON');
-            % switch on Blower only when pump is on and cell pressure P1000
-            % is low enough and Butterfly has been initialized
-            if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
-                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0 | strcmp(PumpStatus,'OFF'))
-                set(handles.txtP1000,'BackgroundColor','r');
-                disp('Pressure too high or Butterfly not initialized');
-                set(hObject,'BackgroundColor','c','String','Blower OFF');                
-            else
-                set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
-                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure Leybold pump is not switched off
-                Valveword=bitset(Valveword,7);  % make sure Scroll pump is not switched off
-                Valveword=bitset(Valveword,9); % switch on blower
-                Valveword=bitset(Valveword,1); % ramp blower up 
-                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-                set(hObject,'BackgroundColor','g','String','Blower ON');
+        if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+                set(hObject,'BackgroundColor','r','String','switching Blower ON');
+                % switch on Blower only when pump is on and cell pressure P1000
+                % is low enough and Butterfly has been initialized
+                if (PumpSwitch==0 | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
+                    set(handles.txtP1000,'BackgroundColor','r');
+                    disp('Pressure too high or Butterfly not initialized');
+                    set(hObject,'BackgroundColor','c','String','Blower OFF');                
+                else
+                    set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
+                    fprintf(handles.tcpBlower,'inverter on');
+                    tcpBlower.UserData=[];
+                    fprintf(handles.tcpBlower,'ramp on');
+                    tcpBlower.UserData=[];
+                    set(hObject,'BackgroundColor','g','String','Blower ON');
+                end
+            end
+
+        else % Blower connected directly to armaxis (air configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+                set(hObject,'BackgroundColor','r','String','switching Blower ON');
+                % switch on Blower only when pump is on and cell pressure P1000
+                % is low enough and Butterfly has been initialized
+                if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
+                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0))
+                    set(handles.txtP1000,'BackgroundColor','r');
+                    disp('Pressure too high or Butterfly not initialized');
+                    set(hObject,'BackgroundColor','c','String','Blower OFF');                
+                else
+                    set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
+                    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % make sure Leybold pump is not switched off
+                    Valveword=bitset(Valveword,7);  % make sure Scroll pump is not switched off
+                    Valveword=bitset(Valveword,9); % switch on blower
+                    Valveword=bitset(Valveword,1); % ramp blower up 
+                    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+                    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                    set(hObject,'BackgroundColor','g','String','Blower ON');
+                end
             end
         end
     else
-        if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
-            set(hObject,'BackgroundColor','r','String','switching Blower OFF');
-            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
-            set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-%            Valveword=bitset(Valveword,13); % ventilate Pump
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
-%            set(handles.tglVent,'BackgroundColor','r');
-            pause(5);
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-%            Valveword=bitset(Valveword,13); % ventilate Pump
-            Valveword=bitset(Valveword,9,0); % switch off blower
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            set(hObject,'BackgroundColor','c','String','Blower OFF');
+        if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+                set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
+                fprintf(handles.tcpBlower,'ramp off');  % ramp blower down
+                tcpBlower.UserData=[];
+                pause(10);
+                fprintf(handles.tcpBlower,'inverter off');  % switch off blower
+                tcpBlower.UserData=[];
+                set(hObject,'BackgroundColor','c','String','Blower OFF');
+            end
+
+        else % Blower connected directly to armaxis (air configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+                set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+    %            Valveword=bitset(Valveword,13); % ventilate Pump
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+    %            set(handles.tglVent,'BackgroundColor','r');
+                pause(5);
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+    %            Valveword=bitset(Valveword,13); % ventilate Pump
+                Valveword=bitset(Valveword,9,0); % switch off blower
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                set(hObject,'BackgroundColor','c','String','Blower OFF');
+            end
         end
     end
 end
@@ -1705,33 +1782,79 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
+horustxtBlower=horusdata.txtBlower;
+if get(horustxtBlower,'BackgroundColor')~=[0 1 1]
+    tcpBlower=horusdata.tcpBlower;
+    % check Blower and Pump status 
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+end
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch Leybold pump on
-            Valveword=bitset(Valveword,7);  % switch Scroll pump on
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            set(hObject,'BackgroundColor','g','String','Pump ON');
-        end
-    else
-        if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
-            set(handles.tglVent,'BackgroundColor','r');
-            if bitget(statusData(lastrow,col.Valve2armAxis),1)==0 % make sure blower is ramped down
-                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
-                Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
-                Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
-%                Valveword=bitset(Valveword,13);  % ventilate Pump
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
-                set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
-                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+        if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+                fprintf(handles.tcpBlower,'pump on'); % switch pump on
+                tcpBlower.UserData=[];
+                set(hObject,'BackgroundColor','g','String','Pump ON');
+            end
+        else % Blower connected directly to armaxis (air configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 1])
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),10);  % switch Leybold pump on
+                Valveword=bitset(Valveword,7);  % switch Scroll pump on
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
-                set(hObject,'BackgroundColor','c','String','Pump OFF');
-%                set(handles.tglVent,'BackgroundColor','r');
+                set(hObject,'BackgroundColor','g','String','Pump ON');
+            end
+
+    else
+        if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+                if InverterSwitch==0 % make sure blower is ramped down
+                    fprintf(handles.tcpBlower,'pump off'); % switch pump off
+                    tcpBlower.UserData=[];
+                    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                    set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
+                    set(hObject,'BackgroundColor','c','String','Pump OFF');
+                end
+            end
+        else % Blower connected directly to armaxis (air configuration)
+            if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
+                set(handles.tglVent,'BackgroundColor','r');
+                if bitget(statusData(lastrow,col.Valve2armAxis),1)==0 % make sure blower is ramped down
+                    Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
+                    Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
+                    Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
+    %                Valveword=bitset(Valveword,13);  % ventilate Pump
+                    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                    set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
+                    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+                    system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                    system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+                    set(hObject,'BackgroundColor','c','String','Pump OFF');
+    %                set(handles.tglVent,'BackgroundColor','r');
+                end
             end
         end
     end
 end
-
