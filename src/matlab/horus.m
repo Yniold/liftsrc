@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 19-Sep-2005 23:08:20
+% Last Modified by GUIDE v2.5 12-Feb-2007 17:35:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
