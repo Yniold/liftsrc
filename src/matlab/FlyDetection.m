@@ -88,6 +88,9 @@ statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
+tcpBlower=horusdata.tcpBlower;
+horustxtBlower=horusdata.txtBlower;
+
 
 % Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,2))./1.0+ ...
@@ -629,8 +632,9 @@ else
 end
 
 % check Blower
-if bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
-    bitget(statusData(lastrow,col.Valve2armAxis),1)
+BlowerStatus=get(horustxtBlower,'String');
+if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
+    bitget(statusData(lastrow,col.Valve2armAxis),1)) | (BlowerStatus,'Blower ON'))
     set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
 else
     set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
@@ -941,6 +945,9 @@ statusData=horusdata.statusData;
 data = getappdata(handles.output, 'Detdata');
 lastrow=data.lastrow;
 col=horusdata.col;
+tcpBlower=horusdata.tcpBlower;
+BlowerStatus=horusdata.BlowerStatus;
+PumpStatus=horusdata.PumpStatus;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
@@ -949,7 +956,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             % switch on Blower only when pump is on and cell pressure P1000
             % is low enough and Butterfly has been initialized
             if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
-                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
+                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0 | strcmp(PumpStatus,'OFF'))
                 set(handles.txtP1000,'BackgroundColor','r');
                 disp('Pressure too high or Butterfly not initialized');
                 set(hObject,'BackgroundColor','c','String','Blower OFF');                
