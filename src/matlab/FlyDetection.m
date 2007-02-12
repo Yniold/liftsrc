@@ -1,4 +1,3 @@
-
 function varargout = FlyDetection(varargin)
 % DETECTION M-file for FlyDetection.fig
 %      DETECTION, by itself, creates a new DETECTION or raises the existing
@@ -88,8 +87,10 @@ statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
-tcpBlower=horusdata.tcpBlower;
 horustxtBlower=horusdata.txtBlower;
+if get(horustxtBlower,'BackgroundColor')~=[1 0 0]
+    tcpBlower=horusdata.tcpBlower;
+end
 
 
 % Calculate time as sum of day, hour, min, etc.
@@ -634,7 +635,7 @@ end
 % check Blower
 BlowerStatus=get(horustxtBlower,'String');
 if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
-    bitget(statusData(lastrow,col.Valve2armAxis),1)) | (BlowerStatus,'Blower ON'))
+    bitget(statusData(lastrow,col.Valve2armAxis),1)) | strcmp(BlowerStatus,'Blower ON'))
     set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
 else
     set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
