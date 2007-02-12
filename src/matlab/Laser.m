@@ -79,9 +79,11 @@ try fopen(tport);
     fprintf(tport,'?PSSN'); 
     pause(0.5);
     PSSN=tport.UserData;
+    tport.UserData=[];
     fprintf(tport,'?HEADSN'); 
     pause(0.5);
     HEADSN=tport.UserData;
+    tport.UserData=[];
 
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
 % diode temperature should be 26.1?C for PSSN 120865, HEADSN 2363/710
@@ -169,6 +171,7 @@ pause(3)
 fprintf(tport,'?D'); 
 pause(0.5);
 DiodeStatus=tport.UserData;
+tport.UserData=[];
 % check if switching was successfull and update laser toggle
 if strcmp(DiodeStatus(1:2),'ON')
     set(hObject,'Value',1)
@@ -186,15 +189,18 @@ end
 fprintf(tport,'?C1');
 pause(0.5);
 DiodeCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 % check diode current setting and update power toggle 
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
+tport.UserData=[];
 % current depends on power supply
 fprintf(tport,'?PSSN'); 
 pause(0.5);
 PSSN=tport.UserData;
+tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
@@ -217,24 +223,28 @@ end
 fprintf(tport,'?P');
 pause(0.5);
 IRPower=tport.UserData;
+tport.UserData=[];
 set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 % diode temperature
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
 % tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
 TowerTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
 % heat sink temperature
 fprintf(tport,'?HS1');
 pause(0.5);
 HSTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
@@ -263,6 +273,7 @@ end
 fprintf(tport,'?SHT'); 
 pause(3);
 ShutterStatus=tport.UserData;
+tport.UserData=[];
 if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
     set(hObject,'Value',1)
     set(hObject,'BackgroundColor','g')
@@ -314,6 +325,7 @@ end
 fprintf(tport,LaserCmd);
 pause(4);
 LaserAns=tport.UserData;
+tport.UserData=[];
 % if command is a query, display answer 
 if LaserCmd(1)=='?'
     set(handles.txtCommandAnswer,'String',LaserAns);
@@ -321,10 +333,12 @@ else %if command is not a query, send query to check effect and display answer
     fprintf(tport,['?',LaserCmd(isletter(LaserCmd))]);
     pause(0.5);
     LaserAns=tport.UserData;
+    tport.UserData=[];
     if isempty(deblank(LaserAns)) % some queries require specifying #
         fprintf(tport,['?',LaserCmd(isletter(LaserCmd)),'1']); % # is always 1 for our system 
         pause(0.5);
         LaserAns=tport.UserData;
+        tport.UserData=[];
     end
     set(handles.txtCommandAnswer,'String',LaserAns);
 end
@@ -337,6 +351,7 @@ set(handles.txtZeit,'String',datestr(Zeit,13));
 fprintf(tport,'?D');
 pause(0.5);
 DiodeStatus=tport.UserData;
+tport.UserData=[];
 if strcmp(DiodeStatus(1:2),'ON')
     set(handles.toggleLaser,'Value',1)
     set(handles.toggleLaser,'BackgroundColor','g');
@@ -351,6 +366,7 @@ end
 fprintf(tport,'?SHT');
 pause(0.5);
 ShutterStatus=tport.UserData;
+tport.UserData=[];
 if strcmp(ShutterStatus(1:6),'CLOSED')
     set(handles.toggleShutter,'Value',0)
     set(handles.toggleShutter,'BackgroundColor','c')
@@ -365,15 +381,18 @@ end
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 %check diode current setting and update power toggle
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
+tport.UserData=[];
 % current depends on power supply
 fprintf(tport,'?PSSN'); 
 pause(0.5);
 PSSN=tport.UserData;
+tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
@@ -396,42 +415,49 @@ end
 fprintf(tport,'?Q'); 
 pause(0.5);
 RepRate=tport.UserData;
+tport.UserData=[];
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
 % check crystal temp.
 fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
+tport.UserData=[];
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
 % check heat sink temperature
 fprintf(tport,'?HS1');
 pause(0.5);
 HSTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
 
 % check tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
 TowerTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
 % check max. allowed diode current
 fprintf(tport,'?DCL1');
 pause(0.5);
 DiodeMaxCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent,'ForegroundColor','k');
     
 % check diode temp.
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
 % check IR power
 fprintf(tport,'?P');
 pause(0.5);
 IRPower=tport.UserData;
+tport.UserData=[];
 set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
@@ -480,6 +506,7 @@ set(handles.txtHSTemp,'ForegroundColor','r');
 fprintf(tport,'?D');
 pause(0.5);
 DiodeStatus=tport.UserData;
+tport.UserData=[];
 if strcmp(DiodeStatus(1:2),'ON')
     set(handles.toggleLaser,'Value',1)
     set(handles.toggleLaser,'BackgroundColor','g');
@@ -494,6 +521,7 @@ end
 fprintf(tport,'?SHT');
 pause(0.5);
 ShutterStatus=tport.UserData;
+tport.UserData=[];
 if strcmp(ShutterStatus(1:6),'CLOSED')
     set(handles.toggleShutter,'Value',0)
     set(handles.toggleShutter,'BackgroundColor','c')
@@ -508,15 +536,18 @@ end
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 %check diode current setting and update power toggle
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
+tport.UserData=[];
 % current depends on power supply
 fprintf(tport,'?PSSN'); 
 pause(0.5);
 PSSN=tport.UserData;
+tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
@@ -539,42 +570,49 @@ end
 fprintf(tport,'?Q'); 
 pause(0.5);
 RepRate=tport.UserData;
+tport.UserData=[];
 set(handles.txtReprate,'String',RepRate,'ForegroundColor','k');
 
 % check crystal temperature
 fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
+tport.UserData=[];
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
 % check heat sink temperature
 fprintf(tport,'?HS1');
 pause(0.5);
 HSTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
 
 % check tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
 TowerTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
 % check max. allowed diode current
 fprintf(tport,'?DCL1');
 pause(0.5);
 DiodeMaxCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeMaxCurrent,'String',DiodeMaxCurrent,'ForegroundColor','k');
     
 % check diode temperature
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
 % check IR power
 fprintf(tport,'?P');
 pause(0.5);
 IRPower=tport.UserData;
+tport.UserData=[];
 set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');
@@ -604,6 +642,7 @@ set(handles.txtHSTemp,'ForegroundColor','r');
 fprintf(tport,'?PSSN'); 
 pause(0.5);
 PSSN=tport.UserData;
+tport.UserData=[];
 if PSSN(1:6)=='120865'
     if get(hObject,'Value')
         fprintf(tport,'C1:35.4'); % full power
@@ -623,6 +662,7 @@ pause(0.5)
 fprintf(tport,'?CS1'); 
 pause(0.5);
 DiodeCurrentSet=tport.UserData;
+tport.UserData=[];
 % current depends on power supply
 if (PSSN(1:6)=='120865' & str2double(DiodeCurrentSet)==35.4)...
     | (PSSN(1:6)=='120881' & str2double(DiodeCurrentSet)==36.0)
@@ -642,36 +682,42 @@ end
 fprintf(tport,'?SHGD'); 
 pause(0.5);
 CrystalTmp=tport.UserData;
+tport.UserData=[];
 set(handles.txtCrtemp,'String',CrystalTmp,'ForegroundColor','k');
 
 % check heat sink temperature
 fprintf(tport,'?HS1');
 pause(0.5);
 HSTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtHSTemp,'String',HSTemp,'ForegroundColor','k');
 
 % check tower temperature
 fprintf(tport,'?TT');
 pause(0.5);
 TowerTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtTowerTemp,'String',TowerTemp,'ForegroundColor','k');
 
 % check diode temp.
 fprintf(tport,'?T1');
 pause(0.5);
 DiodeTemp=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeTemp,'String',DiodeTemp,'ForegroundColor','k');
 
 % check diode current
 fprintf(tport,'?C1'); 
 pause(0.5);
 DiodeCurrent=tport.UserData;
+tport.UserData=[];
 set(handles.txtDiodeCurrent,'String',DiodeCurrent,'ForegroundColor','k');
 
 % check IR power
 fprintf(tport,'?P');
 pause(0.5);
 IRPower=tport.UserData;
+tport.UserData=[];
 set(handles.txtIRPower,'String',IRPower,'ForegroundColor','k');
 
 set(handles.txtStatus,'String','Idle','ForegroundColor','k');

@@ -78,16 +78,54 @@ data.ActTimer=handles.ActTimer;
 tcpBlower=tcpip('xpBlower',10001);
 set(tcpBlower,'ReadAsyncMode','continuous');
 set(tcpBlower,'BytesAvailableFcn',{'tcpipdatacallback'});
+set(tcpBlower,'Terminator','CR');
+
 try fopen(tcpBlower);
     handles.tcpBlower=tcpBlower;
-    set(handles.txtBlower,'String','Blower connected','BackgroundColor','g');
+    data.tcpBlower=handles.tcpBlower;
+    set(handles.txtBlower,'BackgroundColor','g');
+    
+    % check if Blower and/or pump are on or off
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+    
+    if PumpSwitch==0
+        set(handles.txtBlower,'String','Pump OFF');
+    elseif (RampSwitch==0 | InverterSwitch==0)
+        set(handles.txtBlower,'String','Pump ON');
+    else
+        set(handles.txtBlower,'String','Blower ON');
+    end
+        
+        
+
+
 % if communication with blower did not work
 catch 
     delete(tcpBlower);
     clear('tcpBlower');
     set(handles.txtBlower,'String','Blower not connected','BackgroundColor','r');
 end
-data.tcpBlower=handles.tcpBlower;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -178,10 +216,9 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
         end
-        if strcmp(data.BlowerStatus,'ON') %check if blower in on (ground configuration)
+        if strcmp(handles.txtBlower,'Blower ON') %check if blower in on (ground configuration)
             system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
             fprintf(handles.tcpBlower,'inverter off'); 
-            data.BlowerStatus=='OFF'
             set(handles.txtBlower,'String','Blower OFF','BackgroundColor','g');            
         end
         if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
@@ -577,6 +614,13 @@ if isfield(data,'hCalibration')
         close(hCalibration); 
     end
 end
+
+if isfield(handles,'tcpBlower')
+    fclose(handles.tcpBlower);
+    delete(handles.tcpBlower);
+end
+
+%close(handles.figure1);
 
 delete(handles.ActTimer);
 close(gcbf);
