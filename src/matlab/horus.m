@@ -74,6 +74,21 @@ data.ActTimer=handles.ActTimer;
 [data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
 [data.col,data.fcts2val]=varassign(data.statusData);
 
+% open tcpip port for communication with Blower
+tcpBlower=tcpip('xpBlower',10001);
+set(tcpBlower,'ReadAsyncMode','continuous');
+set(tcpBlower,'BytesAvailableFcn',{'tcpipdatacallback'});
+try fopen(tcpBlower);
+    handles.tcpBlower=tcpBlower;
+    set(handles.txtBlower,'String','Blower connected','BackgroundColor','g');
+% if communication with blower did not work
+catch 
+    delete(tcpBlower);
+    clear('tcpBlower');
+    set(handles.txtBlower,'String','Blower not connected','BackgroundColor','r');
+end
+data.tcpblower=handles.tcpBlower;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -163,7 +178,13 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
         end
-        if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on
+        if data.BlowerStatus=='ON' %check if blower in on (ground configuration)
+            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+            fprintf(handles.tcpBlower,'inverter off'); 
+            data.BlowerStatus=='OFF'
+            set(handles.txtBlower,'String','Blower OFF','BackgroundColor','g');            
+        end
+        if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
             system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
             Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
             system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
