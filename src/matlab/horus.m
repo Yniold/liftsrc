@@ -87,7 +87,7 @@ catch
     clear('tcpBlower');
     set(handles.txtBlower,'String','Blower not connected','BackgroundColor','r');
 end
-data.tcpblower=handles.tcpBlower;
+data.tcpBlower=handles.tcpBlower;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -178,7 +178,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
         end
-        if data.BlowerStatus=='ON' %check if blower in on (ground configuration)
+        if strcmp(data.BlowerStatus,'ON') %check if blower in on (ground configuration)
             system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
             fprintf(handles.tcpBlower,'inverter off'); 
             data.BlowerStatus=='OFF'
