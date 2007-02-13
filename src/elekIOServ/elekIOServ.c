@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2006-10-16 11:02:46 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-02-13 20:42:29 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.64  2007-02-13 20:42:29  harder
+ * added warning message if DEBUG_NOHARDWARE is set
+ *
  * Revision 1.63  2006-10-16 11:02:46  rudolf
  * fixed GPS endianess swapping only when writing to structure
  *
@@ -1882,6 +1885,10 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	  }
 #endif
+#ifdef DEBUG_NOHARDWARE
+	sprintf(buf,"elekIOServ(M) WARNING: DEBUG_NOHARDWARE defined, not querying actual hardware");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif	
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++)
 	  {
 	     TimeSlot=0;
@@ -1982,6 +1989,10 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 	  }
 #endif
+#ifdef DEBUG_NOHARDWARE
+	sprintf(buf,"elekIOServ(S) WARNING: DEBUG_NOHARDWARE defined, not querying actual hardware");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif	
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++)
 	  {
 	     TimeSlot=0;
@@ -2766,13 +2777,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.63 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.63 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.63 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.63 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -2846,7 +2857,9 @@ int main(int argc, char *argv[])
      }
 
 #endif
-
+   #ifdef DEBUG_NOHARDWARE
+   printf("WARNING: DEBUG_NOHARDWARE defined, not querying hardware!\n\r");
+   #endif
    sigemptyset(&SignalMask);
    //    sigsuspend(&SignalMask);
    //
