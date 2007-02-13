@@ -1018,7 +1018,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
                 % switch on Blower only when pump is on and cell pressure P1000
                 % is low enough and Butterfly has been initialized
                 if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
-                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0))
+                    | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
                     set(handles.txtP1000,'BackgroundColor','r');
                     disp('Pressure too high or Butterfly not initialized');
                     set(hObject,'BackgroundColor','c','String','Blower OFF');                
@@ -1826,6 +1826,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
                 set(hObject,'BackgroundColor','g','String','Pump ON');
             end
+        end
 
     else
         if get(horustxtBlower,'BackgroundColor')~=[0 1 1] % Blower connected via tcp (ground configuration)
