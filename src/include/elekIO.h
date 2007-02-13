@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2006-11-03 15:40:52 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-13 20:40:50 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
+* Revision 1.33  2007-02-13 20:40:50  harder
+* disabled DEBUG_NOHARDWARE
+*
 * Revision 1.32  2006-11-03 15:40:52  rudolf
 * added Heater Temp to struct
 *
@@ -102,7 +105,7 @@
 *
 *
 */
-#define DEBUG_NOHARDWARE 1
+/* #define DEBUG_NOHARDWARE 0 */
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
