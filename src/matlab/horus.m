@@ -209,6 +209,7 @@ if bitget(statusData(lastrow,col.ValveLift),14)==1; %if filament is on
     end
 end
 
+
 % switch off Blower and solenoids if cell pressure is too high
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if statusData(lastrow,col.P1000)>10300; %if cell pressure too high
@@ -304,6 +305,45 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             end
         end
     end
+end
+
+
+% in ground configuration (blower connected via tcpip), check if Blower
+% status whenever action has been taken turning blower tag yellow
+if isequal(get(handles.txtBlower,'BackgroundColor'),[1 1 0])
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+    
+    if PumpSwitch==0
+        set(handles.txtBlower,'String','Pump OFF','BackgroundColor','g');
+    elseif (RampSwitch==0 | InverterSwitch==0)
+        set(handles.txtBlower,'String','Pump ON','BackgroundColor','g');
+    else
+        set(handles.txtBlower,'String','Blower ON','BackgroundColor','g');
+    end
+    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+        set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
+    end                
 end
 
 % check dyelaser pressure and keep it constant on set value
