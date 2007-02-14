@@ -663,6 +663,7 @@ end
 
 % check Pump, Bit 10 is Leybold, Bit 7 is Scroll Pump
 if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
+    % no actual check is done, to recheck push button in horus has to be used
     BlowerStatus=get(horustxtBlower,'String');
     if (strcmp(BlowerStatus,'Pump ON') | strcmp(BlowerStatus,'Blower ON'))
         set(handles.togBlower,'BackgroundColor','g','String','Pump ON');
@@ -679,6 +680,7 @@ end
 
 % check Blower
 if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
+    % no actual check is done, to recheck push button in horus has to be used
     BlowerStatus=get(horustxtBlower,'String');
     if strcmp(BlowerStatus,'Blower ON')
         set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
@@ -1044,8 +1046,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
                     tcpBlower.UserData=[];
                     fprintf(tcpBlower,'ramp on');
                     tcpBlower.UserData=[];
-                    set(hObject,'BackgroundColor','g','String','Blower ON');
-                    set(horustxtBlower,'String','Blower ON');
                 end
             end
 
@@ -1082,8 +1082,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
                 pause(10);
                 fprintf(tcpBlower,'inverter off');  % switch off blower
                 tcpBlower.UserData=[];
-                set(hObject,'BackgroundColor','c','String','Blower OFF');
-                set(horustxtBlower,'String','Blower OFF');
             end
 
         else % Blower connected directly to armaxis (air configuration)
@@ -1108,6 +1106,49 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
         end
     end
 end
+
+%for ground configuration, recheck pump status
+if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+   
+    if PumpSwitch==0
+        set(horustxtBlower,'String','Pump OFF'); 
+    else
+        set(horustxtBlower,'String','Pump ON'); 
+    end
+    if (RampSwitch==0 | InverterSwitch==0)
+        set(hObject,'BackgroundColor','c','String','Blower OFF');
+    else
+        set(horustxtBlower,'String','Blower ON','BackgroundColor','g');
+        set(hObject,'BackgroundColor','g','String','Blower ON');
+    end
+    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+        set(hObject,'BackgroundColor','r','String','Blower ERR');
+        set(horustxtBlower,'String','Blower ERROR','BackgroundColor','r');
+    end
+end
+
 
 
 % --- Executes on button press in togHV.
@@ -1846,7 +1887,6 @@ if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
         RampSwitch=1;
     else RampSwitch=-1;
     end
-    
 end
 
 if get(hObject,'Value') % switch on
@@ -1854,8 +1894,6 @@ if get(hObject,'Value') % switch on
         if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             fprintf(tcpBlower,'pump on'); % switch pump on
             tcpBlower.UserData=[];
-            set(hObject,'BackgroundColor','g','String','Pump ON');
-            set(horustxtBlower,'String','Pump ON'); 
         end
     else % Blower connected directly to armaxis (air configuration)
         if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
@@ -1876,8 +1914,6 @@ else % switch off
                 tcpBlower.UserData=[];
                 system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
-                set(hObject,'BackgroundColor','c','String','Pump OFF');
-                set(horustxtBlower,'String','Pump OFF'); 
             end
         end
     else % Blower connected directly to armaxis (air configuration)
@@ -1899,5 +1935,45 @@ else % switch off
                 end
             end
         end
+    end
+end
+
+%for ground configuration, recheck pump status 
+if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+   
+    if PumpSwitch==0
+        set(hObject,'BackgroundColor','c','String','Pump OFF');
+        set(horustxtBlower,'String','Pump OFF'); 
+    elseif (RampSwitch==0 | InverterSwitch==0)
+        set(hObject,'BackgroundColor','g','String','Pump ON');
+        set(horustxtBlower,'String','Pump ON'); 
+    else
+        set(handles.txtBlower,'String','Blower ON','BackgroundColor','g');
+    end
+    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+        set(hObject,'BackgroundColor','r','String','Pump ERR');
+        set(horustxtBlower,'String','Blower ERROR','BackgroundColor','r');
     end
 end
