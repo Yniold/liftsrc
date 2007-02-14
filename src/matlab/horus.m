@@ -184,6 +184,8 @@ statustime=double(statusData(:,2))./1.0+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
+tcpBlower=handles.tcpBlower;
+
 % display system time
 disptime=statustime(lastrow)-double(statusData(lastrow,6))/86400000.0;
 set(handles.txtTime,'String',strcat(datestr(disptime,13),'.',num2str(statusData(lastrow,6)/100)));
@@ -307,44 +309,6 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
 end
 
-
-% in ground configuration (blower connected via tcpip), check Blower
-% status whenever action has been taken turning blower tag yellow
-%if isequal(get(handles.txtBlower,'BackgroundColor'),[1 1 0])
-%    fprintf(tcpBlower,'status'); 
-%    pause(0.5);
-%    BlowerStatus=tcpBlower.UserData;
-%    tcpBlower.UserData=[];
-%    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
-%        PumpSwitch=0;
-%    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
-%        PumpSwitch=1;
-%    else PumpSwitch=-1;
-%    end
-%    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
-%        InverterSwitch=0;
-%    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
-%        InverterSwitch=1;
-%    else InverterSwitch=-1;
-%    end
-%    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
-%        RampSwitch=0;
-%    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
-%        RampSwitch=1;
-%    else RampSwitch=-1;
-%    end
-    
-%    if PumpSwitch==0
-%        set(handles.txtBlower,'String','Pump OFF','BackgroundColor','g');
-%    elseif (RampSwitch==0 | InverterSwitch==0)
-%        set(handles.txtBlower,'String','Pump ON','BackgroundColor','g');
-%    else
-%        set(handles.txtBlower,'String','Blower ON','BackgroundColor','g');
-%    end
-%    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
-%        set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
-%    end                
-%end
 
 % check dyelaser pressure and keep it constant on set value
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
@@ -845,16 +809,42 @@ setappdata(gcbf, 'horusdata', data);
 
 
 
-
-% --- Executes on button press in FlyOp.
-%function FlyOp_Callback(hObject, eventdata, handles)
-%data = getappdata(gcbf, 'horusdata');
-% open FlyDetection only if it is not already open
-%if ~isfield(data,'hFlyOp')
-%    data.hFlyOp=FlyOp('handle',num2str(gcbf,16));
-%elseif ~ishandle(str2double(data.hFlyOp)) 
-%    data.hFlyOp=FlyOp('handle',num2str(gcbf,16));
-%end
-%setappdata(gcbf, 'horusdata', data);
-
-
+% --- Executes on button press in Calibration.
+function Blower_Callback(hObject, eventdata, handles)
+% in ground configuration (blower connected via tcpip), check Blower status
+tcpBlower=handles.tcpBlower;
+if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+    fprintf(tcpBlower,'status'); 
+    pause(0.5);
+    BlowerStatus=tcpBlower.UserData;
+    tcpBlower.UserData=[];
+    if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+        PumpSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+        PumpSwitch=1;
+    else PumpSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+        InverterSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+        InverterSwitch=1;
+    else InverterSwitch=-1;
+    end
+    if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+        RampSwitch=0;
+    elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+        RampSwitch=1;
+    else RampSwitch=-1;
+    end
+   
+    if PumpSwitch==0
+        set(handles.txtBlower,'String','Pump OFF','BackgroundColor','g');
+    elseif (RampSwitch==0 | InverterSwitch==0)
+        set(handles.txtBlower,'String','Pump ON','BackgroundColor','g');
+    else
+        set(handles.txtBlower,'String','Blower ON','BackgroundColor','g');
+    end
+    if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+        set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
+    end                
+end
