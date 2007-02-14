@@ -73,10 +73,26 @@ data.PitotTime=0; %needed for in-flight calibration
 data.tglPitot=handles.tglPitot;
 
 horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+AvgData=horusdata.AvgData;
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
+
+% Calculate time as sum of day, hour, min, etc.
+statustime=double(statusData(:,2))./1.0+ ...
+           double(statusData(:,3))./24.0+...
+           double(statusData(:,4))./1440.0+...
+           double(statusData(:,5))./86400.0+...
+           double(statusData(:,6))./86400000.0;
+
+       
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+
 horustxtBlower=horusdata.txtBlower;
-if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
+if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
     tcpBlower=horusdata.tcpBlower;
-end
     % check if Blower and/or pump are on or off
     fprintf(tcpBlower,'status'); 
     pause(0.5);
@@ -100,13 +116,149 @@ end
         RampSwitch=1;
     else RampSwitch=-1;
     end
-if PumpSwitch==0 set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
-else set(handles.togPump,'BackgroundColor','g','String','Pump ON');
+    if PumpSwitch==0 set(handles.togPump,'BackgroundColor','c','String','Pump OFF','Value',0);
+    else set(handles.togPump,'BackgroundColor','g','String','Pump ON','Value',1);
+    end
+    if (InverterSwitch==1 & RampSwitch==1) set(handles.togBlower,'BackgroundColor','g','String','Blower ON','Value',1);
+    elseif (InverterSwitch==1 | RampSwitch==1) set(handles.togBlower,'BackgroundColor','c','String','Blower OFF','Value',1);
+    else set(handles.togBlower,'BackgroundColor','c','String','Blower OFF','Value',0);
+    end
+else % blower connected to armaxis (air configuration)
+    % check Pump, Bit 10 is Leybold, Bit 7 is Scroll Pump
+    if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
+        set(handles.togPump,'BackgroundColor','g','String','Pump ON','Value',1);
+    else
+        set(handles.togPump,'BackgroundColor','c','String','Pump OFF','Value',0);
+    end
+    % check Blower
+    if ~isequal(get(horustxtBlower,'BackgroundColor'),[1 0 0]) % if Blower is not just being switched
+        if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
+            bitget(statusData(lastrow,col.Valve2armAxis),1)))
+            set(handles.togBlower,'BackgroundColor','g','String','Blower ON','Value',1);
+        else
+            set(handles.togBlower,'BackgroundColor','c','String','Blower OFF','Value',0);
+        end
+    end
 end
-if (InverterSwitch==1 & RampSwitch==1) set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
-else set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+
+% check HV
+if bitget(statusData(lastrow,col.Valve2armAxis),8)==0
+    %    set(handles.togHV,'Value',0)
+    set(handles.togHV,'BackgroundColor','c','String','HV OFF','Value',0);
+else
+    if bitget(statusData(lastrow,col.ccGateDelay1),16)==0 ...
+            | bitget(statusData(lastrow,col.ccGateDelay2),16)==0
+        set(handles.togHV,'BackgroundColor','y','String','HV ON','Value',1);
+    else
+    %    set(handles.togHV,'Value',1)
+        set(handles.togHV,'BackgroundColor','g','String','HV ON','Value',1);
+    end
 end
-    
+
+% check Butterfly
+%if bitget(statusData(lastrow,col.Valve2armAxis),2)==0
+if statusData(lastrow,col.ButterflyPositionValid)==0
+    set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT','Value',0);
+else
+    if statusData(lastrow,col.ButterflyCurrentPosition)==20
+        set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED','Value',1);
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+20)
+        set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN','Value',0);
+    else
+        set(handles.togButterfly,'BackgroundColor','r','String','MOVING','Value',1);
+    end
+end
+
+% check Lamp
+if bitget(statusData(lastrow,col.Valve2armAxis),11)
+    set(handles.tglLamp,'BackgroundColor','r','String','Lamp ON','Value',1);
+else
+    set(handles.tglLamp,'BackgroundColor','c','String','Lamp OFF','Value',0);
+end
+
+% check Pitot Zeroing Valve
+if bitget(statusData(lastrow,col.Valve1armAxis),12)
+    set(handles.tglPitot,'BackgroundColor','r','String','Pitot 0 ON','Value',1);
+else
+    set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF','Value',0);
+end
+
+% check Heaters
+% Heater Lamp
+if bitget(statusData(lastrow,col.Valve2armAxis),3)
+    set(handles.tglHeatLamp,'BackgroundColor','g','Value',1);
+else
+    set(handles.tglHeatLamp,'BackgroundColor','c','Value',0);
+end
+% Heater Prallplatte
+if bitget(statusData(lastrow,col.Valve2armAxis),4)
+    set(handles.tglHeatPrall,'BackgroundColor','g','Value',1);
+else
+    set(handles.tglHeatPrall,'BackgroundColor','c','Value',0);
+end
+% Heater Phototube 2
+if bitget(statusData(lastrow,col.Valve2armAxis),5)
+    set(handles.tglHeatPhoto2,'BackgroundColor','g','Value',1);
+else
+    set(handles.tglHeatPhoto2,'BackgroundColor','c','Value',0);
+end
+
+% check solenoids
+if bitget(statusData(lastrow,col.Valve1armAxis),4)==0
+    set(handles.toggleC3F6,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleC3F6,'BackgroundColor','r','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),3)==0
+    set(handles.toggleN2,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleN2,'BackgroundColor','r','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),2)==0
+    set(handles.toggleHO2Inj,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleHO2Inj,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),1)==0
+    set(handles.toggleOHInj,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleOHInj,'BackgroundColor','r','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),7)==0
+    set(handles.toggleNO1,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleNO1,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),6)==0
+    set(handles.toggleNO2,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleNO2,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
+    set(handles.toggleNOPurge,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleNOPurge,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),14)==0
+    set(handles.tglN2O,'BackgroundColor','c','Value',0);
+else 
+    set(handles.tglN2O,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.Valve1armAxis),13)==0
+    set(handles.tglVac,'BackgroundColor','c','Value',0);
+else 
+    set(handles.tglVac,'BackgroundColor','g','Value',1);
+end
+%if bitget(statusData(lastrow,col.Valve2armAxis),12)==0
+%    set(handles.tglKuv,'BackgroundColor','c','Value',0);
+%else 
+%    set(handles.tglKuv,'BackgroundColor','g','Value',1);
+%end
+if bitget(statusData(lastrow,col.Valve2armAxis),6)==0
+    set(handles.tglVent,'BackgroundColor','r','Value',0);
+else 
+    set(handles.tglVent,'BackgroundColor','g','Value',1);
+end
 
 % Update handles structure
 guidata(hObject, handles);
@@ -662,37 +814,41 @@ else
 end
 
 % check Pump, Bit 10 is Leybold, Bit 7 is Scroll Pump
-if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-    % no actual check is done, to recheck push button in horus has to be used
-    BlowerStatus=get(horustxtBlower,'String');
-    if (strcmp(BlowerStatus,'Pump ON') | strcmp(BlowerStatus,'Blower ON'))
-        set(handles.togBlower,'BackgroundColor','g','String','Pump ON');
-    else 
-        set(handles.togBlower,'BackgroundColor','c','String','Pump OFF');
-    end
-else % Blower connected directly to ARMaxis (air configuration)
-    if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
-        set(handles.togPump,'BackgroundColor','g','String','Pump ON');
-    else
-        set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+if ~isequal(get(handles.togPump,'BackgroundColor'),[1 1 0])  % if Pump is not just being switched
+    if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
+        % no actual check is done, to recheck push button in horus has to be used
+        BlowerStatus=get(horustxtBlower,'String');
+        if (strcmp(BlowerStatus,'Pump ON') | strcmp(BlowerStatus,'Blower ON'))
+            set(handles.togPump,'BackgroundColor','g','String','Pump ON');
+        else 
+            set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+        end
+    else % Blower connected directly to ARMaxis (air configuration)
+        if (bitget(statusData(lastrow,col.Valve2armAxis),10) & bitget(statusData(lastrow,col.Valve2armAxis),7))
+            set(handles.togPump,'BackgroundColor','g','String','Pump ON');
+        else
+            set(handles.togPump,'BackgroundColor','c','String','Pump OFF');
+        end
     end
 end
 
 % check Blower
-if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-    % no actual check is done, to recheck push button in horus has to be used
-    BlowerStatus=get(horustxtBlower,'String');
-    if strcmp(BlowerStatus,'Blower ON')
-        set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
-    else
-        set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
-    end
-else % Blower connected directly to ARMaxis (air configuration)
-    if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
-        bitget(statusData(lastrow,col.Valve2armAxis),1)))
-        set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
-    else
-        set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+if ~isequal(get(handles.togBlower,'BackgroundColor'),[1 1 0])  % if Blower is not just being switched
+    if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
+        % no actual check is done, to recheck push button in horus has to be used
+        BlowerStatus=get(horustxtBlower,'String');
+        if strcmp(BlowerStatus,'Blower ON')
+            set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+        else
+            set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+        end
+    else % Blower connected directly to ARMaxis (air configuration)
+        if ((bitget(statusData(lastrow,col.Valve2armAxis),9) & ...
+            bitget(statusData(lastrow,col.Valve2armAxis),1)))
+            set(handles.togBlower,'BackgroundColor','g','String','Blower ON');
+        else
+            set(handles.togBlower,'BackgroundColor','c','String','Blower OFF');
+        end
     end
 end
 
@@ -1003,6 +1159,7 @@ lastrow=data.lastrow;
 col=horusdata.col;
 horustxtBlower=horusdata.txtBlower;
 if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
+    set(hObject,'BackgroundColor','y');
     tcpBlower=horusdata.tcpBlower;
     % check Blower and Pump status 
     fprintf(tcpBlower,'status'); 
@@ -1032,26 +1189,26 @@ end
 if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
     if get(hObject,'Value') % switch on
         if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-            if isequal(get(hObject,'BackgroundColor'),[0 1 1])
-                set(hObject,'BackgroundColor','r','String','switching Blower ON');
+                set(hObject,'BackgroundColor','y','String','switching Blower ON');
                 % switch on Blower only when pump is on and cell pressure P1000
                 % is low enough and Butterfly has been initialized
-                if (PumpSwitch==0 | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
-                    set(handles.txtP1000,'BackgroundColor','r');
-                    disp('Pressure too high or Butterfly not initialized');
-                    set(hObject,'BackgroundColor','c','String','Blower OFF');                
-                else
+   %             if (PumpSwitch==0 | statusData(lastrow,col.P1000)>10300 | statusData(lastrow,col.ButterflyPositionValid)==0)
+%                    set(handles.txtP1000,'BackgroundColor','r');
+%                    disp('Pressure too high or Butterfly not initialized');
+%                    set(hObject,'BackgroundColor','c','String','Blower OFF');                
+    %            else
                     set(handles.txtP1000,'BackgroundColor',[0.7 0.7 0.7]);
                     fprintf(tcpBlower,'inverter on');
+                    pause(0.5)
                     tcpBlower.UserData=[];
                     fprintf(tcpBlower,'ramp on');
+                    pause(0.5)
                     tcpBlower.UserData=[];
-                end
-            end
+     %           end
 
         else % Blower connected directly to armaxis (air configuration)
             if isequal(get(hObject,'BackgroundColor'),[0 1 1])
-                set(hObject,'BackgroundColor','r','String','switching Blower ON');
+                set(hObject,'BackgroundColor','y','String','switching Blower ON');
                 % switch on Blower only when pump is on and cell pressure P1000
                 % is low enough and Butterfly has been initialized
                 if ( (bitget(statusData(lastrow,col.Valve2armAxis),10)==0 | bitget(statusData(lastrow,col.Valve2armAxis),7)==0) ...
@@ -1073,20 +1230,19 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
         end
     else % switch off
         if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-            if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
-                set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+                set(hObject,'BackgroundColor','y','String','switching Blower OFF');
                 system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                 fprintf(tcpBlower,'ramp off');  % ramp blower down
+                pause(0.5);
                 tcpBlower.UserData=[];
                 pause(10);
                 fprintf(tcpBlower,'inverter off');  % switch off blower
                 tcpBlower.UserData=[];
-            end
 
         else % Blower connected directly to armaxis (air configuration)
             if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
-                set(hObject,'BackgroundColor','r','String','switching Blower OFF');
+                set(hObject,'BackgroundColor','y','String','switching Blower OFF');
                 system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
@@ -1108,7 +1264,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
 end
 
 %for ground configuration, recheck pump status
-if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
     fprintf(tcpBlower,'status'); 
     pause(0.5);
     BlowerStatus=tcpBlower.UserData;
@@ -1863,6 +2019,7 @@ lastrow=data.lastrow;
 col=horusdata.col;
 horustxtBlower=horusdata.txtBlower;
 if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
+    set(hObject,'BackgroundColor','y');
     tcpBlower=horusdata.tcpBlower;
     % check if Blower and/or pump are on or off
     fprintf(tcpBlower,'status'); 
@@ -1891,10 +2048,9 @@ end
 
 if get(hObject,'Value') % switch on
     if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-        if isequal(get(hObject,'BackgroundColor'),[0 1 1])
             fprintf(tcpBlower,'pump on'); % switch pump on
+            pause(0.5);
             tcpBlower.UserData=[];
-        end
     else % Blower connected directly to armaxis (air configuration)
         if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
             if isequal(get(hObject,'BackgroundColor'),[0 1 1])
@@ -1908,18 +2064,17 @@ if get(hObject,'Value') % switch on
     end
 else % switch off
     if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
-        if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
             if InverterSwitch==0 % make sure blower is ramped down
                 fprintf(tcpBlower,'pump off'); % switch pump off
+                pause(0.5);
                 tcpBlower.UserData=[];
                 system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
             end
-        end
     else % Blower connected directly to armaxis (air configuration)
         if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
             if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
-                set(handles.tglVent,'BackgroundColor','r');
+   %             set(handles.tglVent,'BackgroundColor','r');
                 if bitget(statusData(lastrow,col.Valve2armAxis),1)==0 % make sure blower is ramped down
                     Valveword=bitset(statusData(lastrow,col.Valve2armAxis),9,0); % switch off blower
                     Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
@@ -1939,7 +2094,7 @@ else % switch off
 end
 
 %for ground configuration, recheck pump status 
-if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
     fprintf(tcpBlower,'status'); 
     pause(0.5);
     BlowerStatus=tcpBlower.UserData;
@@ -1970,7 +2125,7 @@ if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
         set(hObject,'BackgroundColor','g','String','Pump ON');
         set(horustxtBlower,'String','Pump ON'); 
     else
-        set(handles.txtBlower,'String','Blower ON','BackgroundColor','g');
+        set(horustxtBlower,'String','Blower ON','BackgroundColor','g');
     end
     if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
         set(hObject,'BackgroundColor','r','String','Pump ERR');

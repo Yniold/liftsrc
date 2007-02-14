@@ -73,7 +73,6 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-
 handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
 set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
 try fopen(handles.serport);
@@ -98,6 +97,63 @@ end;
 data.toggleDyelaser=handles.toggleDyelaser;
 data.toggleVacuum=handles.toggleVacuum;
 data.toggleN2=handles.toggleN2;
+
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+AvgData=horusdata.AvgData;
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
+
+statustime=double(statusData(:,2))./1.0+ ...
+           double(statusData(:,3))./24.0+...
+           double(statusData(:,4))./1440.0+...
+           double(statusData(:,5))./86400.0+...
+           double(statusData(:,6))./86400000.0;
+
+[SortZeit,indexZeit]=sort(statustime);
+maxLen=size(statustime,1);
+lastrow=indexZeit(maxLen);
+
+% check filament status (e.g. if it was swiched off by horus)
+if bitget(statusData(lastrow,col.ValveLift),14)==0;
+    set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
+    set(handles.toggleFilament,'BackgroundColor','c');
+else 
+    set(handles.toggleFilament,'Value',1,'string','Filament is ON');
+    set(handles.toggleFilament,'BackgroundColor','g');
+end
+
+% check shutter status
+if bitget(statusData(lastrow,col.ValveLift),13)==0;
+    set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
+    set(handles.toggleShutter,'BackgroundColor','g');
+else 
+    set(handles.toggleShutter,'Value',1,'string','Shutter is CLOSED');
+    set(handles.toggleShutter,'BackgroundColor','c');
+end
+
+% check solenoids
+if bitget(statusData(lastrow,col.ValveLift),11)==0
+    set(handles.toggleVacuum,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleVacuum,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.ValveLift),8)==0
+    set(handles.toggleDyelaser,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleDyelaser,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.ValveLift),9)==0
+    set(handles.toggleN2,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleN2,'BackgroundColor','g','Value',1);
+end
+if bitget(statusData(lastrow,col.ValveLift),10)==0
+    set(handles.toggleAmbient,'BackgroundColor','c','Value',0);
+else 
+    set(handles.toggleAmbient,'BackgroundColor','g','Value',1);
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -282,19 +338,19 @@ grid(handles.axes2);
 
 % check filament status (e.g. if it was swiched off by horus)
 if bitget(statusData(lastrow,col.ValveLift),14)==0;
-    set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
+    set(handles.toggleFilament,'string','Filament is OFF');
     set(handles.toggleFilament,'BackgroundColor','c');
 else 
-    set(handles.toggleFilament,'Value',1,'string','Filament is ON');
+    set(handles.toggleFilament,'string','Filament is ON');
     set(handles.toggleFilament,'BackgroundColor','g');
 end
 
 % check shutter status
 if bitget(statusData(lastrow,col.ValveLift),13)==0;
-    set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
+    set(handles.toggleShutter,'string','Shutter is OPEN');
     set(handles.toggleShutter,'BackgroundColor','g');
 else 
-    set(handles.toggleShutter,'Value',1,'string','Shutter is CLOSED');
+    set(handles.toggleShutter,'string','Shutter is CLOSED');
     set(handles.toggleShutter,'BackgroundColor','c');
 end
 

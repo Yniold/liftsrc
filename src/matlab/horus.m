@@ -184,7 +184,9 @@ statustime=double(statusData(:,2))./1.0+ ...
 maxLen=size(statustime,1);
 lastrow=indexZeit(maxLen);
 
-tcpBlower=handles.tcpBlower;
+if isfield(handles,'tcpBlower')
+    tcpBlower=handles.tcpBlower;
+end
 
 % display system time
 disptime=statustime(lastrow)-double(statusData(lastrow,6))/86400000.0;
@@ -213,7 +215,7 @@ end
 
 
 % switch off Blower and solenoids if cell pressure is too high
-if statusData(lastrow,col.ValidSlaveDataFlag)
+if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
     if statusData(lastrow,col.P1000)>10300; %if cell pressure too high
         Valveword=statusData(lastrow,col.Valve1armAxis);
         if any(bitget(Valveword,1:7)) % check solenoids to cell         
@@ -222,58 +224,61 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to hold solenoids
         end
-        if strcmp(handles.txtBlower,'Blower ON') %check if blower is on (ground configuration)
-            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
-            %switch off Blower
-            fprintf(handles.tcpBlower,'ramp off'); 
-            tcpBlower.UserData=[];
-            fprintf(handles.tcpBlower,'inverter off'); 
-            % check and display Blower status
-            pause(0.5);
-            BlowerStatus=tcpBlower.UserData;
-            tcpBlower.UserData=[];
+        if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
+            if strcmp(handles.txtBlower,'Blower ON') %check if blower is on (ground configuration)
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                %switch off Blower
+                fprintf(handles.tcpBlower,'ramp off'); 
+                tcpBlower.UserData=[];
+                fprintf(handles.tcpBlower,'inverter off'); 
+                % check and display Blower status
+                pause(0.5);
+                BlowerStatus=tcpBlower.UserData;
+                tcpBlower.UserData=[];
 
-            if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
-                PumpSwitch=0;
-            elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
-                PumpSwitch=1;
-            else PumpSwitch=-1;
-            end
-            if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
-                InverterSwitch=0;
-            elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
-                InverterSwitch=1;
-            else InverterSwitch=-1;
-            end
-            if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
-                RampSwitch=0;
-            elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
-                RampSwitch=1;
-            else RampSwitch=-1;
-            end
+                if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
+                    PumpSwitch=0;
+                elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
+                    PumpSwitch=1;
+                else PumpSwitch=-1;
+                end
+                if BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='f'
+                    InverterSwitch=0;
+                elseif BlowerStatus(strfind(BlowerStatus,'Inverter')+11)=='n'
+                    InverterSwitch=1;
+                else InverterSwitch=-1;
+                end
+                if BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='f'
+                    RampSwitch=0;
+                elseif BlowerStatus(strfind(BlowerStatus,'Ramp')+7)=='n'
+                    RampSwitch=1;
+                else RampSwitch=-1;
+                end
     
-            if PumpSwitch==0
-                set(handles.txtBlower,'String','Pump OFF');
-            elseif (RampSwitch==0 | InverterSwitch==0)
-                set(handles.txtBlower,'String','Pump ON');
-            else
-                set(handles.txtBlower,'String','Blower ON');
+                if PumpSwitch==0
+                    set(handles.txtBlower,'String','Pump OFF');
+                elseif (RampSwitch==0 | InverterSwitch==0)
+                    set(handles.txtBlower,'String','Pump ON');
+                else
+                    set(handles.txtBlower,'String','Blower ON');
+                end
+                if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
+                    set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
+                end                
             end
-            if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
-                set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
-            end                
-        end
-        if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
-            system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
-            pause(5);
-            Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
-            Valveword=bitset(Valveword,9,0); % switch off blower
-            system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
-            system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+        else % blower connected directly to armaxis (air configuration)
+            if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to other valves working
+                pause(5);
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % make sure ramp down switch is set
+                Valveword=bitset(Valveword,9,0); % switch off blower
+                system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+            end
         end
     end
 
@@ -309,6 +314,10 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
 end
 
+% reset TempCard if needed
+if double(statusData(:,col.TempDyelaser))<27000
+    system('resetTemp');
+end
 
 % check dyelaser pressure and keep it constant on set value
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
@@ -415,7 +424,8 @@ if isfield(data,'hCounterCards')
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
-data.TDyelaserset=50; % define temperature Dye Laser heating is set to
+%data.TDyelaserset=50; % define temperature Dye Laser heating is set to
+data.TDyelaserset=35; % define temperature Dye Laser heating is set to
 if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
