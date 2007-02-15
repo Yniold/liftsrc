@@ -823,6 +823,7 @@ setappdata(gcbf, 'horusdata', data);
 function Blower_Callback(hObject, eventdata, handles)
 % in ground configuration (blower connected via tcpip), check Blower status
 % if connection was not establish yet, try now
+data = getappdata(gcbf, 'horusdata');
 if ~isfield(handles,'tcpBlower')
 tcpBlower=tcpip('xpBlower',10001);
 set(tcpBlower,'ReadAsyncMode','continuous');
@@ -833,6 +834,9 @@ try fopen(tcpBlower);
     handles.tcpBlower=tcpBlower;
     data.tcpBlower=tcpBlower;
     setappdata(handles.output, 'horusdata', data);
+    % Update handles structure
+    guidata(hObject, handles);
+
 catch 
     delete(tcpBlower);
     clear('tcpBlower');
