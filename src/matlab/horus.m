@@ -822,8 +822,28 @@ setappdata(gcbf, 'horusdata', data);
 % --- Executes on button press in Calibration.
 function Blower_Callback(hObject, eventdata, handles)
 % in ground configuration (blower connected via tcpip), check Blower status
-tcpBlower=handles.tcpBlower;
-if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1])
+% if connection was not establish yet, try now
+if ~isfield(handles,'tcpBlower')
+tcpBlower=tcpip('xpBlower',10001);
+set(tcpBlower,'ReadAsyncMode','continuous');
+set(tcpBlower,'BytesAvailableFcn',{'tcpipdatacallback'});
+set(tcpBlower,'Terminator','CR');
+
+try fopen(tcpBlower);
+    handles.tcpBlower=tcpBlower;
+    data.tcpBlower=tcpBlower;
+    setappdata(handles.output, 'horusdata', data);
+catch 
+    delete(tcpBlower);
+    clear('tcpBlower');
+    set(handles.txtBlower,'String','Blower not connected','BackgroundColor','c');
+end
+end 
+
+%if blower is now connected, check status, otherwise do nothing
+if isfield(handles,'tcpBlower')
+  
+    tcpBlower=handles.tcpBlower;
     fprintf(tcpBlower,'status'); 
     pause(0.5);
     BlowerStatus=tcpBlower.UserData;
