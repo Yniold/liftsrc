@@ -1,8 +1,10 @@
 /*
 *
-* $RCSfile: spectrometerServer.h,v $ last changed on $Date: 2007-02-16 22:54:27 $ by $Author: rudolf $
+* $RCSfile: spectrometerServer.h,v $ last changed on $Date: 2007-02-16 22:57:49 $ by $Author: rudolf $
 *
-*
+* $Log: spectrometerServer.h,v $
+* Revision 1.2  2007-02-16 22:57:49  rudolf
+* added missing LOG keyword
 *
 *
 */
