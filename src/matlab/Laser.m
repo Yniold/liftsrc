@@ -522,7 +522,7 @@ fprintf(tport,'?SHT');
 pause(0.5);
 ShutterStatus=tport.UserData;
 tport.UserData=[];
-if strcmp(ShutterStatus(1:6),'CLOSED')
+if strcmp(ShutterStatus(1:4),'CLOS')
     set(handles.toggleShutter,'Value',0)
     set(handles.toggleShutter,'BackgroundColor','c')
     set(handles.toggleShutter,'String','Shutter is CLOSED')
