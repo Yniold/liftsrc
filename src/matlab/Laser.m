@@ -278,7 +278,7 @@ if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
     set(hObject,'Value',1)
     set(hObject,'BackgroundColor','g')
     set(hObject,'String','Shutter is OPEN')
-elseif strcmp(ShutterStatus(1:6),'CLOSED')
+elseif strcmp(ShutterStatus(1:4),'CLOS')
     set(hObject,'Value',0)
     set(hObject,'BackgroundColor','c')
     set(hObject,'String','Shutter is CLOSED')
@@ -367,7 +367,7 @@ fprintf(tport,'?SHT');
 pause(0.5);
 ShutterStatus=tport.UserData;
 tport.UserData=[];
-if strcmp(ShutterStatus(1:6),'CLOSED')
+if strcmp(ShutterStatus(1:4),'CLOS')
     set(handles.toggleShutter,'Value',0)
     set(handles.toggleShutter,'BackgroundColor','c')
     set(handles.toggleShutter,'String','Shutter is CLOSED')
