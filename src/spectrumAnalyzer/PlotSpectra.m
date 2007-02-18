@@ -1,8 +1,11 @@
 %{ 
-$RCSfile: PlotSpectra.m,v $ last changed on $Date: 2007-02-18 20:59:05 $ by $Author: rudolf $ 
+$RCSfile: PlotSpectra.m,v $ last changed on $Date: 2007-02-18 21:04:47 $ by $Author: rudolf $ 
 Standalone Application for displaying of spectrometer UDP data
 
 $Log: PlotSpectra.m,v $
+Revision 1.2  2007-02-18 21:04:47  rudolf
+corrected function names to avoid warning
+
 Revision 1.1  2007-02-18 20:59:05  rudolf
 initial revision
  
@@ -22,7 +25,7 @@ MySocket.ByteOrder = 'littleEndian';
 fopen(MySocket);
 set(MySocket,'Timeout',1000);
 figure;
-YLIM([0 16384]);
+ylim([0 16384]);
 
 % init packet sequencing logic %
 StartNewPlot = 1;
@@ -73,8 +76,8 @@ while(1)
 
             % plot data %
             plot(WaveLen,PixelVal);
-            XLIM([min(WaveLen) max(WaveLen)]);
-            YLIM([0 MaximumYValue]);
+            xlim([min(WaveLen) max(WaveLen)]);
+            ylim([0 MaximumYValue]);
             StartNewPlot = 1;
             pause(0.1);
         end;
