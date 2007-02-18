@@ -1,8 +1,11 @@
 /*
 *
-* $RCSfile: spectrometerServer.c,v $ last changed on $Date: 2007-02-16 22:57:49 $ by $Author: rudolf $
+* $RCSfile: spectrometerServer.c,v $ last changed on $Date: 2007-02-18 20:36:39 $ by $Author: rudolf $
 *
 * $Log: spectrometerServer.c,v $
+* Revision 1.3  2007-02-18 20:36:39  rudolf
+* changed UDP packet format, fixed wrong wavelength calculation
+*
 * Revision 1.2  2007-02-16 22:57:49  rudolf
 * added missing LOG keyword
 *
@@ -51,8 +54,8 @@ char HR2000_CONFIG_EEPROM[18][16];
 
 // HR4000 stuff
 double dWaveLenCoeffsHR4000[4];
-double dDiscreteLinesHR4000[3840];
-unsigned short usWaveLenHR4000[3840];
+double dDiscreteLinesHR4000[3648];
+unsigned short usWaveLenHR4000[3648];
 char HR4000_CONFIG_EEPROM[18][16];
 
 // UDP stuff
@@ -63,7 +66,7 @@ int iStatus;
 // main()
 int main()
 {
-   printf("Spectrometer Server $Id: spectrometerServer.c,v 1.2 2007-02-16 22:57:49 rudolf Exp $ for i386\n\r");
+   printf("Spectrometer Server $Id: spectrometerServer.c,v 1.3 2007-02-18 20:36:39 rudolf Exp $ for i386\n\r");
    printf("Initialising UDP socket for sending to port %05d locally:", UDPPORTNUMBER);
    // open debug udp socket
    if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
@@ -138,7 +141,7 @@ void HR2000_Run(void)
    interface = device->config->interface->altsetting->bInterfaceNumber;
    if(usb_claim_interface(hdev, interface) != 0)
      {
-	perror("usb_claim_interface failed");
+	perror("usb_claim_interface() failed! Are you root ?");
 	return;
      }
    sleep(1);
@@ -168,12 +171,14 @@ void HR2000_Run(void)
    // Wavelength is a polynomal of 4th order
    // calculate the wavelength for each pixel value
    //
-   printf("HR2000: Calculating wavelengths...\n\r");
+   printf("HR2000: Calculating wavelengths...");
    for(i=0;i<2048;i++)
      {
-	dDiscreteLinesHR2000[i] = pow(dWaveLenCoeffsHR2000[3]*(double)(i),3.0f) + pow(dWaveLenCoeffsHR2000[2]*(double)(i),2.0f) + dWaveLenCoeffsHR2000[1]*(double)(i) + dWaveLenCoeffsHR2000[0];
-	usWaveLenHR2000[i] = (unsigned short)(dDiscreteLinesHR2000[i]*10.0f);
+	dDiscreteLinesHR2000[i] = dWaveLenCoeffsHR2000[3]*pow((double)(i),3.0f) + dWaveLenCoeffsHR2000[2]*pow((double)(i),2.0f) + dWaveLenCoeffsHR2000[1]*(double)(i) + dWaveLenCoeffsHR2000[0];
+	usWaveLenHR2000[i] = (unsigned short)(dDiscreteLinesHR2000[i]*50.0f);
      };
+
+   printf("Range %04.2f - %04.2f nm\n\r",dDiscreteLinesHR2000[0],dDiscreteLinesHR2000[2047]);
 
    // set integration time to 100ms
    printf("HR2000: Set integration time to 100ms\n\r");
@@ -225,7 +230,7 @@ void HR4000_Run(void)
    interface = device->config->interface->altsetting->bInterfaceNumber;
    if(usb_claim_interface(hdev, interface) != 0)
      {
-	perror("usb_claim_interface failed");
+	perror("usb_claim_interface() failed! Are you root ?");
 	return;
      }
    sleep(1);
@@ -258,7 +263,7 @@ void HR4000_Run(void)
 	     usb_close(hdev);
 	     return;
 	  };
-	
+
 	if(bytes_read < 0)
 	  {
 	     printf("Read EEPROM failed at EEPROM row: %05d\n\r",i);
@@ -268,18 +273,20 @@ void HR4000_Run(void)
 	memcpy(&HR4000_CONFIG_EEPROM[i][0],input_buffer+2,16);
 	if((i>0) && (i<5))
 	  sscanf(HR4000_CONFIG_EEPROM[i],"%lf",&dWaveLenCoeffsHR4000[i-1]);
+//	printf("Coeff: %d -> %e\n\r",i, dWaveLenCoeffsHR4000[i-1]);
      }
 
    // Wavelength is a polynomal of 4th order
    // calculate the wavelength for each pixel value
    //
-   printf("HR4000: Calculating wavelengths...\n\r");
-   for(i=0;i<3840;i++)
+   printf("HR4000: Calculating wavelengths...");
+   for(i=0;i<3648;i++)
      {
-	dDiscreteLinesHR4000[i] = pow(dWaveLenCoeffsHR4000[3]*(double)(i),3.0f) + pow(dWaveLenCoeffsHR4000[2]*(double)(i),2.0f) + dWaveLenCoeffsHR4000[1]*(double)(i) + dWaveLenCoeffsHR4000[0];
-	usWaveLenHR4000[i] = (unsigned short)(dDiscreteLinesHR4000[i]*10.0f);
+	dDiscreteLinesHR4000[i] = dWaveLenCoeffsHR4000[3]*pow((double)(i),3.0f) + dWaveLenCoeffsHR4000[2]*pow((double)(i),2.0f) + dWaveLenCoeffsHR4000[1]*(double)(i) + dWaveLenCoeffsHR4000[0];
+	usWaveLenHR4000[i] = (unsigned short)(dDiscreteLinesHR4000[i]*50.0f);
 	//	printf("Line %05d is at %d nm\n\r",i,(int)usWaveLenHR4000[i]);
      };
+   printf("Range %04.4f - %04.4f nm\n\r",dDiscreteLinesHR4000[0],dDiscreteLinesHR4000[3647]);
 
    sleep(1);
    // set integration time to 100ms
@@ -356,12 +363,28 @@ int HR2000_GetSpectrum(struct usb_dev_handle *hdev)
 	printf("Did not get sync byte.  Giving up.\n");
 	return (-2);
      }
+   // =========================
+   // HR 2000: first UDP packet
+   // =========================
+
+   // first short of buffer contains packet number and maxpackets
+   usUDPBuffer[0] = ((unsigned short)(1)) | ((unsigned short)(2 << 8));
+   // scaling for y axis
+   usUDPBuffer[1] = (unsigned short)4096;
+   // Packet Offset
+   usUDPBuffer[2] = 0;
+   // Max Payload length
+   usUDPBuffer[3] = sizeof(usWaveLenHR2000) + (2048*2); // Wavelengths plus two bytes for each sample
+
+   unsigned short *pXValue = &usUDPBuffer[4];
+   unsigned short *pYValue = &usUDPBuffer[5];
+
+   unsigned short *pBuffer = (unsigned short *)&input_buffer;
 
    int iIndex = 0;
-   unsigned short *pXValue = &usUDPBuffer[0];
-   unsigned short *pYValue = &usUDPBuffer[1];
-
-   for(i = 0; i < 2048; i++)
+   int i = 0;
+   int size = 0;
+   for(i=0; i<2046; i++)
      {
 	pixel_value = ((unsigned short)(input_buffer[iIndex] & 0x00FF) | ((unsigned short)((input_buffer[iIndex+64]) <<8) & 0xFF00));
 
@@ -377,15 +400,63 @@ int HR2000_GetSpectrum(struct usb_dev_handle *hdev)
 	pXValue += 2;
 	*pYValue = pixel_value;
 	pYValue += 2;
+	size +=4;
      }
-#ifdef PRINT_UDPBUF
-   for(i=0;i<4096;i=i+2)
+   printf("HR2000: Sent Spectral Data from offset %05d (Packet %02d of %02d, size %05d of %05d bytes total) to %s on port %05d\n\r",\
+   (int)usUDPBuffer[2],\
+   (int)(usUDPBuffer[0] & 0x00FF),\
+   (int)((usUDPBuffer[0] >> 8) & 0x00FF),\
+   (int)(size+8),\
+   (int)usUDPBuffer[3],\
+   RECEIVERIP,\
+   UDPPORTNUMBER);
+
+   // ==========================
+   // HR 2000: second UDP packet
+   // ==========================
+ 
+   SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
+   // first short of buffer contains packet number and maxpackets
+   usUDPBuffer[0] = ((unsigned short)(2)) | ((unsigned short)(2 << 8));
+   // scaling for y axis
+   usUDPBuffer[1] = (unsigned short)4096;
+   // Packet Offset
+   usUDPBuffer[2] = 4*2046;
+   // Max Payload length
+   usUDPBuffer[3] = sizeof(usWaveLenHR2000) + (2048*2); // Wavelengths plus two bytes for each sample
+
+   pXValue = &usUDPBuffer[4];
+   pYValue = &usUDPBuffer[5];
+   size = 0;
+   
+   for(i = 2046; i < 2048; i++)
      {
-	printf("WL: %05d -> Counts: %05d\n\r",(int)usUDPBuffer[i],(int)usUDPBuffer[i+1]);
-     }
+	pixel_value = ((unsigned short)(input_buffer[iIndex] & 0x00FF) | ((unsigned short)((input_buffer[iIndex+64]) <<8) & 0xFF00));
+
+#ifdef PRINT_PIXEL
+	printf("Pixel %d value is %d\n", i, (int)pixel_value);
 #endif
-   printf("HR2000: Sent Spectral Data to %s on port %05d\n\r", RECEIVERIP,UDPPORTNUMBER);
-   SendUDPDataToIP(RECEIVERIP,8192, usUDPBuffer);
+	iIndex++;
+	if(iIndex%64 == 0)
+	  iIndex += 64;
+
+	// copy interleaved to UDP Buffer
+	*pXValue = usWaveLenHR2000[i];
+	pXValue += 2;
+	*pYValue = pixel_value;
+	pYValue += 2;
+	size += 4;
+     }
+   printf("HR2000: Sent Spectral Data from offset %05d (Packet %02d of %02d, size %05d of %05d bytes total) to %s on port %05d\n\r",\
+   (int)usUDPBuffer[2],\
+   (int)(usUDPBuffer[0] & 0x00FF),\
+   (int)((usUDPBuffer[0] >> 8) & 0x00FF),\
+   (int)(size+8),\
+   (int)usUDPBuffer[3],\
+   RECEIVERIP,\
+   UDPPORTNUMBER);
+
+   SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
    return 0;
 }
 
@@ -459,24 +530,104 @@ int HR4000_GetSpectrum(struct usb_dev_handle *hdev)
 
      }
 
-   unsigned short *pXValue = &usUDPBuffer[0];
-   unsigned short *pYValue = &usUDPBuffer[1];
+   // first short of buffer contains packet number and maxpackets
+   usUDPBuffer[0] = ((unsigned short)(1)) | ((unsigned short)(2 << 8));
+   // scaling for y axis
+   usUDPBuffer[1] = (unsigned short)16384;
+   // Packet Offset
+   usUDPBuffer[2] = 0;
+   // Max Payload length
+   usUDPBuffer[3] = sizeof(usWaveLenHR4000) + (3648*2); // Wavelengths plus two bytes for each sample
+
+   unsigned short *pXValue = &usUDPBuffer[4];
+   unsigned short *pYValue = &usUDPBuffer[5];
 
    unsigned short *pBuffer = (unsigned short *)&input_buffer;
    int i = 0;
-
-   for(i=0; i<2048; i++)
+   int size = 0;
+   for(i=0; i<2046; i++)
      {
-	pixel_value = (*pBuffer) - 8192;
+	pixel_value = (*pBuffer);
+
+	if(pixel_value > 8192)
+	  pixel_value = pixel_value -8192;
+	  else
+	  if(pixel_value < 8192)
+	    pixel_value = pixel_value + 8192;
+
 	pBuffer++;
 
 	*pXValue = usWaveLenHR4000[i];
 	pXValue += 2;
 	*pYValue = pixel_value;
 	pYValue += 2;
+	size +=4;
      }
-   printf("HR4000: Sent Spectral Data to %s on port %05d\n\r", RECEIVERIP,UDPPORTNUMBER);
-   SendUDPDataToIP(RECEIVERIP,8192, usUDPBuffer);
+   printf("HR4000: Sent Spectral Data from offset %05d (Packet %02d of %02d, size %05d of %05d bytes total) to %s on port %05d\n\r",\
+   (int)usUDPBuffer[2],\
+   (int)(usUDPBuffer[0] & 0x00FF),\
+   (int)((usUDPBuffer[0] >> 8) & 0x00FF),\
+   (int)(size+8),\
+   (int)usUDPBuffer[3],\
+   RECEIVERIP,\
+   UDPPORTNUMBER);
+
+   SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
+
+   // ======================
+   // assemble second buffer
+   // ======================
+   //
+   // first short of buffer contains packet number and maxpackets
+   usUDPBuffer[0] = ((unsigned short)(2)) | ((unsigned short)(2 << 8));
+   // scaling for y axis
+   usUDPBuffer[1] = (unsigned short)16384;
+   // Packet Offset
+   usUDPBuffer[2] = (4*2046);
+   // Max Payload length
+   usUDPBuffer[3] = sizeof(usWaveLenHR4000) + (3648*2); // Wavelengths plus two bytes for each sample
+
+   // first short of buffer contains packet number and maxpackets
+   usUDPBuffer[0] = ((unsigned short)(2)) | ((unsigned short)(2 << 8));
+   // scaling for y axis
+   usUDPBuffer[1] = (unsigned short)16384;
+
+   pXValue = (unsigned short*)&usUDPBuffer[4];
+   pYValue = (unsigned short*)&usUDPBuffer[5];
+   pBuffer = (unsigned short *)&input_buffer;
+   pBuffer += 2044;
+
+   i = 0;
+   size = 0;
+   for(i=2044; i<3648; i++)
+     {
+	pixel_value = (*pBuffer);
+
+	if(pixel_value > 8192)
+	  pixel_value = pixel_value -8192;
+	  else
+	  if(pixel_value < 8192)
+	    pixel_value = pixel_value + 8192;
+
+	pBuffer++;
+
+	*pXValue = usWaveLenHR4000[i];
+	pXValue += 2;
+	*pYValue = pixel_value;
+	pYValue += 2;
+	size +=4;
+     }
+
+   printf("HR4000: Sent Spectral Data from offset %05d (Packet %02d of %02d, size %05d of %05d bytes total) to %s on port %05d\n\r",\
+   (int)usUDPBuffer[2],\
+   (int)(usUDPBuffer[0] & 0x00FF),\
+   (int)((usUDPBuffer[0] >> 8) & 0x00FF),\
+   (int)(size+8),\
+   (int)usUDPBuffer[3],\
+   RECEIVERIP,\
+   UDPPORTNUMBER);
+
+   SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
    return 0;
 }
 //***********************************
