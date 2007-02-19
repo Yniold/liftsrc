@@ -226,7 +226,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
         end
         if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
             if strcmp(handles.txtBlower,'Blower ON') %check if blower is on (ground configuration)
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
                 %switch off Blower
                 fprintf(handles.tcpBlower,'ramp off'); 
                 tcpBlower.UserData=[];
@@ -268,7 +268,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
             end
         else % blower connected directly to armaxis (air configuration)
             if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(20)]); % close Butterfly 
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);

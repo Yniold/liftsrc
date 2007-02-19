@@ -316,10 +316,10 @@ grid(handles.axes1);
 
 % plot ref. signal in graph 2
 
-[SortEtpos,indexEtpos]=sort(EtalonCurPos);
+[SortEtpos,indexEtpos]=sort(EtalonEncPos);
 iEtpos=indexEtpos(startPlot:stopPlot);
-minEtpos=EtalonCurPos(iEtpos(1));
-maxEtpos=EtalonCurPos(iEtpos(size(iEtpos,1)));
+minEtpos=EtalonEncPos(iEtpos(1));
+maxEtpos=EtalonEncPos(iEtpos(size(iEtpos,1)));
 maxEtpos=max(maxEtpos,minEtpos+1);
 
 if get(handles.radioTime,'Value');
@@ -329,7 +329,7 @@ if get(handles.radioTime,'Value');
     xlim(handles.axes2,[minTime maxTime]);
 else
     hold(handles.axes2,'off');
-    plot(handles.axes2,EtalonCurPos(iEtpos),statusData(iEtpos,col.ccCounts0),'.'); 
+    plot(handles.axes2,EtalonEncPos(iEtpos),statusData(iEtpos,col.ccCounts0),'.'); 
     hold(handles.axes2,'on');
     xlim(handles.axes2,[minEtpos maxEtpos]);
 end
