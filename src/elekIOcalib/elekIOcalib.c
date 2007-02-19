@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-19 21:44:04 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-19 22:14:43 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.10  2007-02-19 22:14:43  rudolf
+ * fixed compiler error
+ *
  * Revision 1.9  2007-02-19 21:44:04  harder
  * included SetMFC
  *
@@ -191,7 +194,8 @@ void signalstatus(int signo)
    double dControlValue;
    double dSetPoint;
    double dActualValue;
-
+   double dActualValueHeater;
+   
    ++StatusFlag;
    TimerState=(TimerState+1) % TIMER_SIGNAL_STATE_MAX;
 
@@ -201,13 +205,16 @@ void signalstatus(int signo)
    if(iPIDdelay >= 10)
      {
 	iPIDdelay = 0;
-	/* check if setpoint valid, if not, turn heater off for safety reasons */
-	if(CalibStatus.PIDRegulator.Setpoint > 0)
+	
+	/* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
+      	dActualValueHeater = ((double)CalibStatus.PIDRegulator.ActualValueHeater)/100;
+	printf("Heater is at %04.2f °C\n\r", (dActualValueHeater - 273.15f));
+	if((CalibStatus.PIDRegulator.Setpoint > 0) || (dActualValueHeater < (273.15f+70.0f)))
 	  {
 
 	     dSetPoint = ((double)CalibStatus.PIDRegulator.Setpoint)/100;
 	     dActualValue = ((double)CalibStatus.PIDRegulator.ActualValueH2O)/100;
-
+	     
 	     dControlValue = ProcessPID(dSetPoint,dActualValue,&CalibStatus);
 
 	     // FIXME: add check for heater overtemp
@@ -224,6 +231,7 @@ void signalstatus(int signo)
 	  }
 	else
 	  {
+	     printf("Heater off now\n\r");
 	     elkWriteData(ELK_SCR_BASE + 0, (uint16_t)dControlValue);
 	  }
 	CalibStatus.PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
@@ -1077,8 +1085,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.9 2007-02-19 21:44:04 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.9 2007-02-19 21:44:04 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.10 2007-02-19 22:14:43 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.10 2007-02-19 22:14:43 rudolf Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1352,8 +1360,6 @@ int main(int argc, char *argv[])
 			    
 			  }
 			
-			SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint64_t SetFlow)
-			  
 			  /* switch MsgType */
 			  break;
 			// port to receive status data from slaves
