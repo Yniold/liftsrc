@@ -160,9 +160,9 @@ end
 if statusData(lastrow,col.ButterflyPositionValid)==0
     set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT','Value',0);
 else
-    if statusData(lastrow,col.ButterflyCurrentPosition)==28
+    if statusData(lastrow,col.ButterflyCurrentPosition)==27
         set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED','Value',1);
-    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+28)
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+27)
         set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN','Value',0);
     else
         set(handles.togButterfly,'BackgroundColor','r','String','MOVING','Value',1);
@@ -857,9 +857,9 @@ end
 if statusData(lastrow,col.ButterflyPositionValid)==0
     set(handles.togButterfly,'BackgroundColor','r','String','Butterfly INIT');
 else
-    if statusData(lastrow,col.ButterflyCurrentPosition)==28
+    if statusData(lastrow,col.ButterflyCurrentPosition)==27
         set(handles.togButterfly,'BackgroundColor','c','String','Butterfly CLOSED');
-    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+28)
+    elseif statusData(lastrow,col.ButterflyCurrentPosition)==(625+27)
         set(handles.togButterfly,'BackgroundColor','g','String','Butterfly OPEN');
     else
         set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
@@ -1231,7 +1231,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
     else % switch off
         if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1]) % Blower connected via tcp (ground configuration)
                 set(hObject,'BackgroundColor','y','String','switching Blower OFF');
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                 fprintf(tcpBlower,'ramp off');  % ramp blower down
                 pause(0.5);
@@ -1243,7 +1243,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is active
         else % Blower connected directly to armaxis (air configuration)
             if isequal(get(hObject,'BackgroundColor'),[0 1 0]) | isequal(get(hObject,'BackgroundColor'),[1 0 0])
                 set(hObject,'BackgroundColor','y','String','switching Blower OFF');
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
     %            Valveword=bitset(Valveword,13); % ventilate Pump
@@ -1663,7 +1663,7 @@ function editMFC_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editMFC as text
 %        str2double(get(hObject,'String')) returns contents of editMFC as a double
-MaxFlow=28;
+MaxFlow=27;
 setMFC=str2double(get(hObject,'String'));
 if setMFC<0 | isnan(setMFC) setMFC=0; end
 if setMFC>MaxFlow setMFC=MaxFlow; end
@@ -1989,14 +1989,14 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
     set(hObject,'BackgroundColor','r','String','MOVING');
     pause(2);
-    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+28)]); % open Butterfly 
+    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+27)]); % open Butterfly 
     set(hObject,'Value',1);
 else
     if get(hObject,'Value')
-        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+28)]'); % open Butterfly 
+        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+27)]'); % open Butterfly 
         set(hObject,'BackgroundColor','r','String','MOVING');
     else
-        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
+        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
         set(hObject,'BackgroundColor','r','String','MOVING');
     end
     
@@ -2068,7 +2068,7 @@ else % switch off
                 fprintf(tcpBlower,'pump off'); % switch pump off
                 pause(0.5);
                 tcpBlower.UserData=[];
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
                 set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
             end
     else % Blower connected directly to armaxis (air configuration)
@@ -2080,7 +2080,7 @@ else % switch off
                     Valveword=bitset(Valveword,10,0);  % switch off Leybold Pump
                     Valveword=bitset(Valveword,7,0);  % switch off Scroll Pump
     %                Valveword=bitset(Valveword,13);  % ventilate Pump
-                    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(28)]); % close Butterfly 
+                    system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
                     set(handles.togButterfly,'BackgroundColor','r','String','MOVING');
                     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
