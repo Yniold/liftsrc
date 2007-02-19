@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.31 $
-last change on $Date: 2007-02-19 19:32:04 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.32 $
+last change on $Date: 2007-02-19 19:38:09 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.32  2007-02-19 19:38:09  harder
+fixed bugs for CalibFlow
+
 Revision 1.31  2007-02-19 19:32:04  harder
 fixed bugs for CalibFlow
 
@@ -261,7 +264,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.31 2007-02-19 19:32:04 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.32 2007-02-19 19:38:09 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -350,7 +353,7 @@ int main(int argc, char *argv[])
 	pptr=ptrHostAddr->h_addr_list;
 	
 	ptr=(char*)inet_ntop(ptrHostAddr->h_addrtype,*pptr,DestAddress,LEN_IP_ADDR); // copy default address
-	printf("sending command to %s\n",DestAddress);
+	printf("will send command to %s\n",DestAddress);
 
 	ArgCount++; // next argument
     }
@@ -559,8 +562,8 @@ int main(int argc, char *argv[])
 	                Addr=Value;
 		            Value=strtol(argv[ArgCount+2],NULL,0);
 		        } else {
-        		    printf("Error : %d is too high, max number of MFC for Calib is %d\n",
-        		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB));
+        		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
+        		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
         		    exit(EXIT_FAILURE);
 		        }            
 		    } 
