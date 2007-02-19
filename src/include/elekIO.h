@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-13 20:40:50 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-19 21:52:27 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
+* Revision 1.34  2007-02-19 21:52:27  harder
+* included MFCConfig struct
+*
 * Revision 1.33  2007-02-13 20:40:50  harder
 * disabled DEBUG_NOHARDWARE
 *
@@ -168,6 +171,7 @@
 #define ELK_VALVE_BASE       (ELK_BACKPLANE_BASE+0x08)
 #define ELK_DAC_BASE         (ELK_BACKPLANE_BASE+0x40)
 #define ELK_DAC_BASE_WP      (ELK_BACKPLANE_BASE+0x40)
+#define ELK_DAC_BASE_CALIB   (ELK_BACKPLANE_BASE+0x40)
 #define ELK_PWM_BASE         (ELK_BACKPLANE_BASE+0x60)
 #define ELK_PWM_DCDC4_BASE   (ELK_PWM_BASE)
 #define ELK_PWM_VALVE_BASE   (ELK_PWM_BASE+0x08)
@@ -404,7 +408,7 @@ struct MFCChannelConfigBitType {
 union MFCChannelConfigType {
     struct MFCChannelConfigBitType MFCChannelConfigBit;
     uint16_t MFCChannelConfig;
-}; /* MFCConfigType */
+}; /* MFCChannelConfigType */
     
 struct MFCChannelDataType {
     uint16_t SetFlow;
@@ -422,6 +426,14 @@ struct MFCCardType {
 struct SCRCardType {
   uint16_t SCRPowerValue[MAX_SCR3XB_CHANNEL_PER_CARD];
 }; /* SCRCardType */
+
+struct MFCConfigType {             /* this configuration data is supposed to be in a nice XML file, it is not stored in Status */
+    uint64_t MaxFlow;              /* manufacturer stated max flow in SCCM */
+    double   SetSlope;             /* Set point slope Flow/counts */
+    double   SetOffset;            /* Set point offset in SCCM */
+    double   MeasSlope;            /* Measured flow slope SCCM/counts */
+    double   MeasOffset;           /* Measured flow offset in SCCM */   
+} ; /* MFCConfigType */
 
 /*************************************************************************************************************/
 
@@ -749,4 +761,3 @@ extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
-
