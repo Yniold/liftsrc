@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.30 $
-last change on $Date: 2007-02-19 19:07:59 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.31 $
+last change on $Date: 2007-02-19 19:32:04 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.31  2007-02-19 19:32:04  harder
+fixed bugs for CalibFlow
+
 Revision 1.30  2007-02-19 19:07:59  harder
 added MFC channel number to calibflow
 
@@ -95,7 +98,6 @@ update file description
 
 
 #define DEFAULT_SPEED 30
-
 
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
     ELEK_ELEKIO_IN,
@@ -259,7 +261,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.30 2007-02-19 19:07:59 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.31 2007-02-19 19:32:04 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -282,7 +284,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s findonline\n");
 	printf("eCmd @host s butterflyposition data\n");
 	printf("eCmd @host s calibwatertemp data\n");
-	printf("eCmd @host s calibflow [MFC#] Flowrate\n");
+	printf("eCmd @host s calibflow [MFC#] Flowrate in sccm\n");
 	printf("eCmd @host s calibhumidity data\n");
 	printf("eCmd @host s refchannel data\n");
 		
@@ -553,11 +555,18 @@ int main(int argc, char *argv[])
 		    MsgType=MSG_TYPE_CALIB_SETFLOW;
 		    Addr=0;
 	        if (argc>ArgCount+2) { // do we have an additional parameter for mfc number ?
-	            Addr=Value;
-		        Value=strtol(argv[ArgCount+2],NULL,0);
+	            if (Value<(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)) {
+	                Addr=Value;
+		            Value=strtol(argv[ArgCount+2],NULL,0);
+		        } else {
+        		    printf("Error : %d is too high, max number of MFC for Calib is %d\n",
+        		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB));
+        		    exit(EXIT_FAILURE);
+		        }            
 		    } 
 	      } else { // we don't have enough parameter
 		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
+		    exit(EXIT_FAILURE);
 	      }
 	    };	    	    
 
