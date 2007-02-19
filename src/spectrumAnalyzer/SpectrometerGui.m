@@ -81,13 +81,8 @@ MySocket.LocalPort = 4711;
 MySocket.InputBufferSize = 8192;
 MySocket.ByteOrder = 'littleEndian';
 MySocket.DatagramTerminateMode = 'on';
-MySocket.DatagramReceivedFcn={'SpectrumDatagrammCallback'};
+MySocket.DatagramReceivedFcn={'SpectrumDatagramCallback'};
 fopen(MySocket);
-%set(MySocket,'Timeout',1000);
-%figure;
-%ylim([0 16384]);
-
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = SpectrometerGui_OutputFcn(hObject, eventdata, handles) 
