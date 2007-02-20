@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 22:51:48 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 22:57:52 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.21  2007-02-20 22:57:52  harder
+ * fix overheating II
+ *
  * Revision 1.20  2007-02-20 22:51:48  harder
  * fix overheating
  *
@@ -215,13 +218,13 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
   iPIDdelay++;
   
   /* PID is done here */
-  if(iPIDdelay >= 10)
+  if(iPIDdelay >= 2)
     {
       iPIDdelay = 0;
       
       /* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
       dActualValueHeater = ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100;
-      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) || (dActualValueHeater < (273.15f+70.0f)))
+      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f)))
 	{
 	  
 	  dSetPoint = ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100;
@@ -1188,8 +1191,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.20 2007-02-20 22:51:48 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.20 2007-02-20 22:51:48 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.21 2007-02-20 22:57:52 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.21 2007-02-20 22:57:52 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
