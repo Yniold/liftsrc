@@ -1,9 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.32 $
-last change on $Date: 2007-02-19 19:38:09 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.33 $
+last change on $Date: 2007-02-20 18:51:14 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.33  2007-02-20 18:51:14  harder
+can set flow rate in counts instead sccm
+fixed small bugs
+
 Revision 1.32  2007-02-19 19:38:09  harder
 fixed bugs for CalibFlow
 
@@ -264,7 +268,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.32 2007-02-19 19:38:09 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.33 2007-02-20 18:51:14 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -287,7 +291,7 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s findonline\n");
 	printf("eCmd @host s butterflyposition data\n");
 	printf("eCmd @host s calibwatertemp data\n");
-	printf("eCmd @host s calibflow [MFC#] Flowrate in sccm\n");
+	printf("eCmd @host s calibflow [MFC# [+]]Flowrate in sccm, + indicates flow in counts instead of sccm\n");
 	printf("eCmd @host s calibhumidity data\n");
 	printf("eCmd @host s refchannel data\n");
 		
@@ -556,11 +560,13 @@ int main(int argc, char *argv[])
 	      if (argc>ArgCount+1) { // do we still have a given parameter ?
 		    Value=strtol(argv[ArgCount+1],NULL,0);
 		    MsgType=MSG_TYPE_CALIB_SETFLOW;
-		    Addr=0;
+		    Addr=CALIB_VMFC_TOTAL;                           // 10000
 	        if (argc>ArgCount+2) { // do we have an additional parameter for mfc number ?
 	            if (Value<(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)) {
 	                Addr=Value;
+        	        ptr=strchr(argv[ArgCount+2],'+');           // use counts ?
 		            Value=strtol(argv[ArgCount+2],NULL,0);
+		            if (ptr) Value=Value+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
 		        } else {
         		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
         		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
