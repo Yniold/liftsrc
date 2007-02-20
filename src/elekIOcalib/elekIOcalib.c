@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:33:20 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:59:29 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.18  2007-02-20 19:59:29  harder
+ * incresead output freq of flow rate
+ *
  * Revision 1.17  2007-02-20 19:33:20  harder
  * Bug Fix
  *
@@ -993,7 +996,7 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
     int Card;
     int Channel;
 
-	if ((StatusFlag % 50)==0) {			
+	if ((StatusFlag % 5)==0) {			
 	    Card=0;
 	    Channel=0;
         printf("Humid Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
@@ -1180,8 +1183,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.17 2007-02-20 19:33:20 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.17 2007-02-20 19:33:20 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.18 2007-02-20 19:59:29 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.18 2007-02-20 19:59:29 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
