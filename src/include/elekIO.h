@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-19 21:52:27 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 18:51:43 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
+* Revision 1.35  2007-02-20 18:51:43  harder
+* update calib constants
+*
 * Revision 1.34  2007-02-19 21:52:27  harder
 * included MFCConfig struct
 *
@@ -217,7 +220,6 @@
 
 #define ELK_STAT_TIMEOUT 0
 #define ELK_STAT_OK      1
-
 
 /*************************************************************************************************************/
 
@@ -705,7 +707,12 @@ struct GPSDataType {					/* data type for GPS data*/
 
 };
 /*************************************************************************************************************/
-
+/* defines for Calibrator */
+#define CALIB_VMFC_TOTAL        10000        /* virtual MFC address for total (Dry+Humid Flow) calibrator flow */
+#define CALIB_VMFC_ABS          1000         /* MFC ADR OFFSET to specify flow in counts instead of sccm */
+#define CALIB_SETFLOW_SUCCESS   1            /* success to set flow */
+#define CALIB_SETFLOW_FAIL      0            /* fail to set flow */
+/*************************************************************************************************************/
 
 struct elekStatusType {                                             /* combined status information of instrument */
 
@@ -761,3 +768,4 @@ extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
+`                                                                                                                                                                                                                                                                                                                                                               A                                                                                                                                                         
