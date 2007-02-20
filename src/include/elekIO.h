@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 18:51:43 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 19:23:14 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
+* Revision 1.36  2007-02-20 19:23:14  harder
+* bug fix
+*
 * Revision 1.35  2007-02-20 18:51:43  harder
 * update calib constants
 *
@@ -768,4 +771,4 @@ extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
-`                                                                                                                                                                                                                                                                                                                                                               A                                                                                                                                                         
+                                                                                                                                                                                                                                                                                                                                                               A                                                                                                                                                         
