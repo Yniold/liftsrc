@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 13:00:44 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 13:14:33 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.12  2007-02-20 13:14:33  harder
+ * fixed minor bugs
+ *
  * Revision 1.11  2007-02-20 13:00:44  harder
  * moved PID from intr to main
  *
@@ -523,7 +526,7 @@ int InitPIDregulator (struct calibStatusType *ptrCalibStatus)
 /* Init LICOR                                                                                             */
 /**********************************************************************************************************/
 
-int InitLICOR(struct elekStatusType *ptrCalibStatus)
+int InitLICOR(struct calibStatusType *ptrCalibStatus)
 {
 
    extern struct MessagePortType MessageInPortList[];
@@ -1094,8 +1097,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.11 2007-02-20 13:00:44 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.11 2007-02-20 13:00:44 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.12 2007-02-20 13:14:33 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.12 2007-02-20 13:14:33 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1145,298 +1148,255 @@ int main(int argc, char *argv[])
    EndOfSession=FALSE;
    RequestDataFlag=FALSE;
    
-   while (!EndOfSession)
-     {
-       write(2,"Wait for data..\r",16);
-       
-       fdsSelect=fdsMaster;
-       
-       pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
-       pselect_timeout.tv_nsec=0;
-       
-       ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
-       
-       gettimeofday(&StartAction, NULL);
-       
+   while (!EndOfSession) {
+     write(2,"Wait for data..\r",16);
+     
+     fdsSelect=fdsMaster;
+     
+     pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
+     pselect_timeout.tv_nsec=0;
+     
+     ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
+     
+     gettimeofday(&StartAction, NULL);
+     
 #ifdef DEBUG_TIMER
-       printf("Time:");
-       localtime_r(&StartAction.tv_sec,&tmZeit);
-       
-       printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
-	      tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
-       printf("ret %d StatusFlag %d\n",ret,StatusFlag);
+     printf("Time:");
+     localtime_r(&StartAction.tv_sec,&tmZeit);
+     
+     printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
+	    tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
+     printf("ret %d StatusFlag %d\n",ret,StatusFlag);
 #endif
+     
+     if (ret ==-1 ) {
+       // select error
+       //
+       if (errno==EINTR) {
+	 // got interrupted by timer
+	 if ((StatusFlag % 50)==0) {			
+	   // printf("get Status %6d..\r",StatusFlag);
+	   write(2,"get Status.....\r",16);
+	 }			
+	 gettimeofday(&GetStatusStartTime, NULL);
+	 GetCalibStatus(&CalibStatus,IsMaster);
+	 gettimeofday(&GetStatusStopTime, NULL);
+	 PIDAction(&CalibStatus);  
+	 
+       } else { 
+	 //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
+	 perror("select");
+	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: Problem with select");
+       } // if errno
+     } else if (ret>0) {
        
-       if (ret ==-1 )
-	 {
-	   // select error
-	   //
-	   if (errno==EINTR)
-	     {
-	       // got interrupted by timer
-	       if ((StatusFlag % 50)==0)
-		 {			
-		   // printf("get Status %6d..\r",StatusFlag);
-		   write(2,"get Status.....\r",16);
-		 }			
-	       gettimeofday(&GetStatusStartTime, NULL);
-	       GetCalibStatus(&CalibStatus,IsMaster);
-	       gettimeofday(&GetStatusStopTime, NULL);
-	       PIDAction(&CalibStatus);  
-	       
-	       // let the other tasks know that we are done with retrieving the status
-	       // not needed if we are running as slave, as there is no Etalon nor Script
-	       //
-	       Task=0;
-	       Message.MsgType=MSG_TYPE_SIGNAL;
-	       Message.MsgID=-1;
-	       while (TasktoWakeList[Task].TaskConn>-1)
-		 {
-		   if (TasktoWakeList[Task].TaskWantStatusOnPort>-1)
-		     { // but only if he wants to
-		       SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],
-				   sizeof(struct calibStatusType), &CalibStatus);
-		     }
-		   SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],
-			       sizeof(struct ElekMessageType), &Message);
-		   Task++;
-		 } // WHile Wakeup
-	       
-	       // lets see whether there is still an open data request
-	       if (RequestDataFlag)
-		 {
-		   sprintf(buf,"[ElekIOcalib] still missing %d data set BUT send flagged data",
-			   RequestDataFlag);
-		   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		   // Send Status to Status process
-		   SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
-			       sizeof(struct calibStatusType), &CalibStatus);
+       //	     printf("woke up...");
+       write(2,"incoming Call..\r",16);
+       
+       for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) {
+	 
+	 if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect)) {
+	   // new msg on fdNum. socket ...
+	   // printf("fdsSelect: %016lx\n\r",fdsSelect);
+	   //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
+	   //		    fdElekManual=MessagePortList[0].fdSocket;
+	   switch (MessagePort) {
+	   case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
+	     //			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
+	   case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
+	     
+	     if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
+				    &Message,sizeof(struct ElekMessageType)  , 0,
+				    (struct sockaddr *)&their_addr, &addr_len)) == -1)
+	       {
+		 perror("recvfrom");
+		 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: Problem with receive");
+	       }
+#ifdef DEBUG_SLAVECOM
+	     sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
+		     ntohs(their_addr.sin_port));
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif
+	     
+	     switch (Message.MsgType)
+	       {
+		 
+	       case MSG_TYPE_FETCH_DATA:  // Master want data
+#ifdef DEBUG_SLAVECOM
+		 printf("elekIOcalib: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
+#endif
+		 
+#ifdef DEBUG_SLAVECOM
+		 printf("elekIOcalib: gathering Data...\n\r");
+#endif
+		 gettimeofday(&GetStatusStartTime, NULL);
+		 GetCalibStatus(&CalibStatus,IsMaster);
+		 gettimeofday(&GetStatusStopTime, NULL);
+#ifdef DEBUG_SLAVECOM
+		 printf("elekIOcalib: Data aquisition took: %02d.%03ds\n\r",
+			GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
+			(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
+#endif
+		 // send this debugmessage message to debugmon
+		 sprintf(buf,"elekIOcalib : FETCH_DATA from Port: %05d",
+			 MessageInPortList[MessagePort].PortNumber,
+			 Message.Addr,Message.Value,Message.Value);
+		 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		 
+		 // send requested data, don't send any acknowledges
+		 SendUDPData(&MessageOutPortList[ELEK_ELEKIO_CALIB_MASTER_OUT],
+			     sizeof(struct calibStatusType), &CalibStatus); // send data packet
+		 break;
+		 
+	       case MSG_TYPE_READ_DATA:
+		 // printf("elekIOcalib: manual read from Address %04x\n", Message.Addr);
+		 Message.Value=elkReadData(Message.Addr);
+		 Message.MsgType=MSG_TYPE_ACK;
+		 
+		 if (MessagePort!=ELEK_ETALON_IN)
+		   {
+		     sprintf(buf,"elekIOcalib : ReadCmd from %05d Port %04x Value %d (%04x)",
+			     MessageInPortList[MessagePort].PortNumber,
+			     Message.Addr,Message.Value,Message.Value);
+		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		     
+		     sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		   }
+		 
+		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+				 inet_ntoa(their_addr.sin_addr),
+				 sizeof(struct ElekMessageType), &Message);
+		 break;
+	       case MSG_TYPE_WRITE_DATA:
+		 if (MessagePort!=ELEK_ETALON_IN)
+		   {
+		     sprintf(buf,"elekIOcalib : WriteCmd from %05d Port %04x Value %d (%04x)",
+			     MessageInPortList[MessagePort].PortNumber,
+			     Message.Addr,Message.Value,Message.Value);
+		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		   }
+		 
+		 Message.Status=elkWriteData(Message.Addr,Message.Value);
+		 Message.MsgType=MSG_TYPE_ACK;
+		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+				 inet_ntoa(their_addr.sin_addr),
+				 sizeof(struct ElekMessageType), &Message);
+		 break;
+		 
+	       case MSG_TYPE_CALIB_SETTEMP:
+		 if (MessagePort!=ELEK_ETALON_IN)
+		   {
+		     sprintf(buf,"elekIOcalib : SET_TEMP from %05d Port %04x Value %d (%04x)",
+			     MessageInPortList[MessagePort].PortNumber,
+			     Message.Addr,Message.Value,Message.Value);
+		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		   }
+		 CalibStatus.PIDRegulator.Setpoint = Message.Value;
+		 Message.Status = Message.Value;
+		 Message.MsgType = MSG_TYPE_ACK;
+		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+				 inet_ntoa(their_addr.sin_addr),
+				 sizeof(struct ElekMessageType), &Message);
+		 break;
+		 
+	       case MSG_TYPE_CALIB_SETFLOW:
+		 if (MessagePort!=ELEK_ETALON_IN)
+		   {
+		     sprintf(buf,"elekIOcalib : SET_FLOW from %05d Port %04x Value %d (%04x)",
+			     MessageInPortList[MessagePort].PortNumber,
+			     Message.Addr,Message.Value,Message.Value);
+		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+		   }
+		 
+		 if (Message.Addr != 0) {
+		   SetMFCCardData ( &CalibStatus, Message.Addr, Message.Value);
 		   
-		 } // RequestDataFlag
+		 } // If Message.Addr
+		 
+		 Message.Status = Message.Value;
+		 Message.MsgType = MSG_TYPE_ACK;
+		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+				 inet_ntoa(their_addr.sin_addr),
+				 sizeof(struct ElekMessageType), &Message);
+		 break;
+		 
+	       }
+	     
+	     /* switch MsgType */
+	     break;
+	     // port to receive status data from slaves
+	     //
+	     /*case ELEK_STATUS_IN:
+	       {
+	       // Slave Mode
 	       //
-	     }
-	   else
-	     {
-	       //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
-	       perror("select");
-	       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: Problem with select");
-	     }
-	   // if errno
-	 }
-       else if (ret>0)
-	 {
-	   //	     printf("woke up...");
-	   write(2,"incoming Call..\r",16);
+	       if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
+	       &CalibStatusFromSlave,sizeof(CalibStatusFromSlave) , 0,
+	       (struct sockaddr *)&their_addr, &addr_len)) == -1)
+	       // Something went wrong
+	       {
+	       perror("elekIOcalib: recvfrom ELEK_STATUS_IN");
+	       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : ELEK_STATUS_IN: problem with receive");
+	       }
+	       else
+	       // we should have received some data at this point, so give a lifesign
+	       {
+	       //printf("elekIOcalib(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
+	       };
+	       };
+	       
+	       break;
+	     */
+	   default:
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: unknown Port Type");
+	     break;
+	     
+	   }
+	   // switch MessagePort
+	   //		    printf("%lld got Message on Port %d from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
+	   //		    printf("packet is %d bytes long\n",numbytes);
+	   TSCin=Message.MsgTime;
+	   MaxTimeDiff= MaxTimeDiff<TSC-TSCin ? TSC-TSCin : MaxTimeDiff;
+	   MinTimeDiff= MinTimeDiff>TSC-TSCin ? TSC-TSCin : MinTimeDiff;
 	   
-	   for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++)
-	     {
-	       
-	       if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect))
-		 {
-		   // new msg on fdNum. socket ...
-		   // printf("fdsSelect: %016lx\n\r",fdsSelect);
-		   //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
-		   //		    fdElekManual=MessagePortList[0].fdSocket;
-		   switch (MessagePort)
-		     {
-		     case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
-		       //			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
-		     case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
-		       
-		       if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
-					      &Message,sizeof(struct ElekMessageType)  , 0,
-					      (struct sockaddr *)&their_addr, &addr_len)) == -1)
-			 {
-			   perror("recvfrom");
-			   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: Problem with receive");
-			 }
-#ifdef DEBUG_SLAVECOM
-		       sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
-			       ntohs(their_addr.sin_port));
-		       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif
-		       
-		       switch (Message.MsgType)
-			 {
-			   
-			 case MSG_TYPE_FETCH_DATA:  // Master want data
-#ifdef DEBUG_SLAVECOM
-			   printf("elekIOcalib: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
-#endif
-			   
-#ifdef DEBUG_SLAVECOM
-			   printf("elekIOcalib: gathering Data...\n\r");
-#endif
-			   gettimeofday(&GetStatusStartTime, NULL);
-			   GetCalibStatus(&CalibStatus,IsMaster);
-			   gettimeofday(&GetStatusStopTime, NULL);
-#ifdef DEBUG_SLAVECOM
-			   printf("elekIOcalib: Data aquisition took: %02d.%03ds\n\r",
-				  GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
-				  (GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
-#endif
-			   // send this debugmessage message to debugmon
-			   sprintf(buf,"elekIOcalib : FETCH_DATA from Port: %05d",
-				   MessageInPortList[MessagePort].PortNumber,
-				   Message.Addr,Message.Value,Message.Value);
-			   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			   
-			   // send requested data, don't send any acknowledges
-			   SendUDPData(&MessageOutPortList[ELEK_ELEKIO_CALIB_MASTER_OUT],
-				       sizeof(struct calibStatusType), &CalibStatus); // send data packet
-			   break;
-			   
-			 case MSG_TYPE_READ_DATA:
-			   // printf("elekIOcalib: manual read from Address %04x\n", Message.Addr);
-			   Message.Value=elkReadData(Message.Addr);
-			   Message.MsgType=MSG_TYPE_ACK;
-			   
-			   if (MessagePort!=ELEK_ETALON_IN)
-			     {
-			       sprintf(buf,"elekIOcalib : ReadCmd from %05d Port %04x Value %d (%04x)",
-				       MessageInPortList[MessagePort].PortNumber,
-				       Message.Addr,Message.Value,Message.Value);
-			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			       
-			       sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			     }
-			   
-			   SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-					   inet_ntoa(their_addr.sin_addr),
-					   sizeof(struct ElekMessageType), &Message);
-			   break;
-			 case MSG_TYPE_WRITE_DATA:
-			   if (MessagePort!=ELEK_ETALON_IN)
-			     {
-			       sprintf(buf,"elekIOcalib : WriteCmd from %05d Port %04x Value %d (%04x)",
-				       MessageInPortList[MessagePort].PortNumber,
-				       Message.Addr,Message.Value,Message.Value);
-			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			     }
-			   
-			   Message.Status=elkWriteData(Message.Addr,Message.Value);
-			   Message.MsgType=MSG_TYPE_ACK;
-			   SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-					   inet_ntoa(their_addr.sin_addr),
-					   sizeof(struct ElekMessageType), &Message);
-			   break;
-			   
-			 case MSG_TYPE_CALIB_SETTEMP:
-			   if (MessagePort!=ELEK_ETALON_IN)
-			     {
-			       sprintf(buf,"elekIOcalib : SET_TEMP from %05d Port %04x Value %d (%04x)",
-				       MessageInPortList[MessagePort].PortNumber,
-				       Message.Addr,Message.Value,Message.Value);
-			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			     }
-			   CalibStatus.PIDRegulator.Setpoint = Message.Value;
-			   Message.Status = Message.Value;
-			   Message.MsgType = MSG_TYPE_ACK;
-			   SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-					   inet_ntoa(their_addr.sin_addr),
-					   sizeof(struct ElekMessageType), &Message);
-			   break;
-			   
-			 case MSG_TYPE_CALIB_SETFLOW:
-			   if (MessagePort!=ELEK_ETALON_IN)
-			     {
-			       sprintf(buf,"elekIOcalib : SET_FLOW from %05d Port %04x Value %d (%04x)",
-				       MessageInPortList[MessagePort].PortNumber,
-				       Message.Addr,Message.Value,Message.Value);
-			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			     }
-			   
-			   if (Message.Addr != 0) {
-			     SetMFCCardData ( &CalibStatus, Message.Addr, Message.Value);
-			     
-			   } // If Message.Addr
-			   
-			   Message.Status = Message.Value;
-			   Message.MsgType = MSG_TYPE_ACK;
-			   SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-					   inet_ntoa(their_addr.sin_addr),
-					   sizeof(struct ElekMessageType), &Message);
-			   
-			   
-			   break;
-			   
-			 }
-		       
-		       /* switch MsgType */
-		       break;
-		       // port to receive status data from slaves
-		       //
-		       /*case ELEK_STATUS_IN:
-			 {
-			 // Slave Mode
-			 //
-			 if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
-			 &CalibStatusFromSlave,sizeof(CalibStatusFromSlave) , 0,
-			 (struct sockaddr *)&their_addr, &addr_len)) == -1)
-			 // Something went wrong
-			 {
-			 perror("elekIOcalib: recvfrom ELEK_STATUS_IN");
-			 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : ELEK_STATUS_IN: problem with receive");
-			 }
-			 else
-			 // we should have received some data at this point, so give a lifesign
-			 {
-			 //printf("elekIOcalib(S) :ELEK_STATUS_IN: got %d bytes from Master!\n\r",numbytes);
-			 };
-			 };
-			 
-			 break;
-		       */
-		     default:
-		       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib: unknown Port Type");
-		       break;
-		       
-		     }
-		   // switch MessagePort
-		   //		    printf("%lld got Message on Port %d from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
-		   //		    printf("packet is %d bytes long\n",numbytes);
-		   TSCin=Message.MsgTime;
-		   MaxTimeDiff= MaxTimeDiff<TSC-TSCin ? TSC-TSCin : MaxTimeDiff;
-		   MinTimeDiff= MinTimeDiff>TSC-TSCin ? TSC-TSCin : MinTimeDiff;
-		   
-		   //		    printf("diff : %9lld Max: %9lld Min: %9lld\n",TSC-TSCin,MaxTimeDiff,MinTimeDiff);
-		   //		    printf("%9lld\n",TSC-TSCin);
-		   // check for end signature
-		   EndOfSession=(bool)(strstr(buf,"ende")!=NULL);
-		   //		    printf("found %u\n",EndOfSession);
-		 }
-	       /* if fd_isset */
-	     }
-	   /* for MessagePort */
+	   //		    printf("diff : %9lld Max: %9lld Min: %9lld\n",TSC-TSCin,MaxTimeDiff,MinTimeDiff);
+	   //		    printf("%9lld\n",TSC-TSCin);
+	   // check for end signature
+	   EndOfSession=(bool)(strstr(buf,"ende")!=NULL);
+	   //		    printf("found %u\n",EndOfSession);
 	 }
-       else
-	 {
-	   /* ret==0*/
-	   //	    printf("timeout...\n");
-	   write(2,"timeout........\r",16);
-	   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : TimeOut");
-	 }
-       
-#ifdef RUNONPC
-       if (timer_getoverrun(StatusTimer_id)>0)
-	 {
-	   printf("OVERRUN\n\r");
-	   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : Overrun");
-	 }
-       /* if overrun */
-#endif
-       
-       gettimeofday(&StopAction, NULL);
-       
-#ifdef DEBUG_TIME_TASK
-       sprintf(buf,"elekIOcalib: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
-	       StopAction.tv_usec-StartAction.tv_usec, (StartAction.tv_usec-LastAction.tv_usec)/1000);
-       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif
-       
-       LastAction=StartAction;
+	 /* if fd_isset */
+       }
+       /* for MessagePort */
      }
+     else
+       {
+	 /* ret==0*/
+	 //	    printf("timeout...\n");
+	 write(2,"timeout........\r",16);
+	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : TimeOut");
+       }
+     
+#ifdef RUNONPC
+     if (timer_getoverrun(StatusTimer_id)>0)
+       {
+	 printf("OVERRUN\n\r");
+	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOcalib : Overrun");
+       }
+     /* if overrun */
+#endif
+     
+     gettimeofday(&StopAction, NULL);
+     
+#ifdef DEBUG_TIME_TASK
+     sprintf(buf,"elekIOcalib: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
+	     StopAction.tv_usec-StartAction.tv_usec, (StartAction.tv_usec-LastAction.tv_usec)/1000);
+     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif
+     
+     LastAction=StartAction;
+   }
    /* while */
    
 #ifdef RUNONPC
@@ -1467,5 +1427,3 @@ int main(int argc, char *argv[])
    
    exit(EXIT_SUCCESS);
 }
-
-          e
