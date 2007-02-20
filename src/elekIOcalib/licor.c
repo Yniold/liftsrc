@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-20 13:10:05 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-20 19:59:09 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.3  2007-02-20 19:59:09  rudolf
+// removed debug
+//
 // Revision 1.2  2007-02-20 13:10:05  rudolf
 // fixed warning
 //
@@ -22,7 +25,7 @@
 //#define DEBUG
 //#define DEBUG_SETPOS
 
-#define DEBUG
+#undef DEBUG
 #undef DEBUG_SETPOS
 #undef DEBUG_MUTEX
 
@@ -144,9 +147,9 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 
 #ifdef DEBUG
    int iLoopCount;
+   HexDump(aBuffer,iLength);
 #endif
 
-   HexDump(aBuffer,iLength);
    if(iLength > 6)
      {
 	if(strncmp("DATAD",aBuffer,5) == 0)
