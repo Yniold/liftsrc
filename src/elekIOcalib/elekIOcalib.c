@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 18:52:31 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:20:23 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.14  2007-02-20 19:20:23  harder
+ * implemented status print of flow data
+ *
  * Revision 1.13  2007-02-20 18:52:31  harder
  * work on flow rate
  *
@@ -970,7 +973,41 @@ int SetCalibFlow ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint6
     
 } // SetCalibFlow    
 
+/**********************************************************************************************************/
+/* Print Calib Flow */
+/**********************************************************************************************************/
 
+PrintCalibData(struct calibStatusType *ptrCalibStatus)
+{
+    extern int StatusFlag;
+    extern uint64_t MFCMaxFlow[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD];
+
+	if ((StatusFlag % 50)==0) {			
+	    Card=0;
+	    Channel=0;
+        printf("Humid Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
+                                                         ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
+                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset);
+        Channel=1;
+        printf("Dry   Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
+                                                         ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
+                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset);
+        Channel=2;
+        printf("Licor Dry Set   %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
+                                                         ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
+                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset);
+        Channel=3;
+        printf("Licor Humid Set %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
+                                                         ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
+                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset);
+        
+        
+	}
+}
 /**********************************************************************************************************/
 /* Init UDP Ports                                                                                         */
 /**********************************************************************************************************/
@@ -1132,8 +1169,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.13 2007-02-20 18:52:31 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.13 2007-02-20 18:52:31 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.14 2007-02-20 19:20:23 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.14 2007-02-20 19:20:23 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1217,7 +1254,8 @@ int main(int argc, char *argv[])
 	 GetCalibStatus(&CalibStatus,IsMaster);
 	 gettimeofday(&GetStatusStopTime, NULL);
 	 PIDAction(&CalibStatus);  
-	 
+	 // as long as we don't have a status output we print the flow rates here
+	   PrintCalibData(&CalibStatus);
        } else { 
 	 //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
 	 perror("select");
