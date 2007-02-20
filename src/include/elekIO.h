@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 19:26:37 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 19:28:35 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.38  2007-02-20 19:28:35  rudolf
+* removed mysterious A
+*
 * Revision 1.37  2007-02-20 19:26:37  harder
 * *** empty log message ***
 *
@@ -774,4 +777,3 @@ extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
-                                                                                                                                                                                                                                                                                                                       A                                                                                                                                                          
