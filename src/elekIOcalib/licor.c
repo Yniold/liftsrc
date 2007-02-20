@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-12 18:32:18 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-20 13:10:05 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.2  2007-02-20 13:10:05  rudolf
+// fixed warning
+//
 // Revision 1.1  2007-02-12 18:32:18  rudolf
 // added missing files for calibrator
 //
@@ -105,7 +108,7 @@ void LicorThreadFunc(void* pArgument)
 		       aLicorRxBuffer[iBytesInBuffer++] = cTheChar;
 		       aLicorRxBuffer[iBytesInBuffer] = 0;
 		       
-		       LicorParseLine(aLicorRxBuffer,iBytesInBuffer,&sStructure);
+		       LicorParseLine(aLicorRxBuffer,iBytesInBuffer,(struct sLicorType*)&sStructure);
 		       
 		       iBytesInBuffer = 0;
 		    }
