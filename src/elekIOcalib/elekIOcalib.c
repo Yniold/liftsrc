@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:23:30 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:30:23 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.16  2007-02-20 19:30:23  harder
+ * bug fix
+ *
  * Revision 1.15  2007-02-20 19:23:30  harder
  * bug fix
  *
@@ -980,10 +983,12 @@ int SetCalibFlow ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint6
 /* Print Calib Flow */
 /**********************************************************************************************************/
 
-PrintCalibData(struct calibStatusType *ptrCalibStatus)
+void PrintCalibData(struct calibStatusType *ptrCalibStatus)
 {
     extern int StatusFlag;
     extern uint64_t MFCMaxFlow[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD];
+    int Card;
+    int Channel;
 
 	if ((StatusFlag % 50)==0) {			
 	    Card=0;
@@ -1172,8 +1177,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.15 2007-02-20 19:23:30 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.15 2007-02-20 19:23:30 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.16 2007-02-20 19:30:23 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.16 2007-02-20 19:30:23 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
