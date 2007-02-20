@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 22:38:13 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 22:51:48 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.20  2007-02-20 22:51:48  harder
+ * fix overheating
+ *
  * Revision 1.19  2007-02-20 22:38:13  harder
  * more debug output for PID
  *
@@ -228,19 +231,17 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
 	  
 	  // FIXME: add check for heater overtemp
 	  // water to warm, turn off completely
-	  if(uiControlValue < 0)
-	    elkWriteData(ELK_SCR_BASE + 0, 0);
-	  
+	  if(uiControlValue < 0) uiControlValue=0;
+	    	  
 	  // water much too cold, set full power
-	  if(uiControlValue > 255)
-	    elkWriteData(ELK_SCR_BASE + 0, 255);
-	  // else set calculated power value
-	  else
-	    elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
+	  if(uiControlValue > 255) uiControlValue=255;
+	  
+	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
 	}
       else
 	{
 	  printf("Heater off now\n\r");
+	  uiControlValue=0;
 	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
 	}
       ptrCalibStatus->PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
@@ -1187,8 +1188,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.19 2007-02-20 22:38:13 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.19 2007-02-20 22:38:13 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.20 2007-02-20 22:51:48 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.20 2007-02-20 22:51:48 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
