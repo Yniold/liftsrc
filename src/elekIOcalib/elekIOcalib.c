@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:30:23 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 19:33:20 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.17  2007-02-20 19:33:20  harder
+ * Bug Fix
+ *
  * Revision 1.16  2007-02-20 19:30:23  harder
  * bug fix
  *
@@ -146,7 +149,7 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
    // order defines sequence of wake up after timer
     /* TaskName TaskConn TaskWantStatusOnPort */
      {"Etalon",     ELEK_ETALON_OUT,ELEK_ETALON_STATUS_OUT},    // Etalon Task needs Status info
-     {"Script",     ELEK_SCRIPT_q   waS<yOUT,                    -1},
+     {"Script",     ELEK_SCRIPT_OUT,                    -1},
      {      "",                  -1,                    -1}
 };
 
@@ -1177,8 +1180,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.16 2007-02-20 19:30:23 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.16 2007-02-20 19:30:23 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.17 2007-02-20 19:33:20 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.17 2007-02-20 19:33:20 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
