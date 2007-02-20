@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 13:14:33 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 18:52:31 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.13  2007-02-20 18:52:31  harder
+ * work on flow rate
+ *
  * Revision 1.12  2007-02-20 13:14:33  harder
  * fixed minor bugs
  *
@@ -895,7 +898,7 @@ void GetCalibStatus ( struct calibStatusType *ptrCalibStatus, int IsMaster)
 /**********************************************************************************************************/
 
 /* function to set MFC Flow values */
-void SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint64_t SetFlow)
+int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint64_t SetFlow)
 {
   extern uint64_t MFCMaxFlow[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD];
   int Card;
@@ -907,22 +910,33 @@ void SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, ui
   char      buf[GENERIC_BUF_LEN];
   
   
-  Card=0; // Calibrator has only one Card
-  MFC_Address=ELK_MFC_BASE_CALIB+Card*ELK_MFC_NUM_ADR;
-  DAC_Address=ELK_DAC_BASE_CALIB+Card*ELK_DAC_NUM_ADR;   
-  
-  if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
-    sprintf(buf,"SetMFCFlow : channel number %d out of range\n",SetChannel);
-    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-    return;
-  } 
-  if (SetFlow>MFCConfig[SetChannel].MaxFlow) {
-    sprintf(buf,"SetMFCFlow : flow rate %ul for channel number %d out of range\n",SetFlow, SetChannel);
-    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-    return;
-  } 
-  
-  MFCFlow=(uint16_t)(255.0*MFCConfig[SetChannel].SetSlope*SetFlow/MFCConfig[SetChannel].MaxFlow-MFCConfig[SetChannel].SetOffset);
+    Card=0; // Calibrator has only one Card
+    MFC_Address=ELK_MFC_BASE_CALIB+Card*ELK_MFC_NUM_ADR;
+    DAC_Address=ELK_DAC_BASE_CALIB+Card*ELK_DAC_NUM_ADR;   
+    
+    if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
+        sprintf(buf,"SetMFCFlow : channel number %d out of range\n",SetChannel);
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+        return(CALIB_SETFLOW_FAIL);
+    } 
+    
+    if (SetFlow>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
+        MFCFlow=SetFlow-CALIB_VMFC_ABS;
+    } else { // flow is given in SCCM
+      if (SetFlow>MFCConfig[SetChannel].MaxFlow) {
+        sprintf(buf,"SetMFCFlow : flow rate %ul for channel number %d out of range\n",SetFlow, SetChannel);
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+        return(CALIB_SETFLOW_FAIL);
+      }   
+      MFCFlow=(uint16_t)(255.0*MFCConfig[SetChannel].SetSlope*SetFlow/MFCConfig[SetChannel].MaxFlow-MFCConfig[SetChannel].SetOffset);
+    } // if Setflow
+    if (MFCFlow>255) {
+        sprintf(buf,"SetMFCFlow : Count flow rate %ul for channel number %d out of range\n",MFCFlow, SetChannel);
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+        return(CALIB_SETFLOW_FAIL);
+    } // if MFCFLow           
+
+
   ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[SetChannel].SetFlow    = MFCFlow;   
   ret=elkWriteData(DAC_Address+2*SetChannel,
 		   ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[SetChannel].SetFlow);
@@ -931,9 +945,30 @@ void SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, ui
   sprintf(buf,"SetMFCFlow : set flow rate %d for channel %d\n",MFCFlow, SetChannel);
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
   
+    return(CALIB_SETFLOW_SUCCESS);
   
 } /* SetMFCCardData */
 
+
+/**********************************************************************************************************/
+/* Set Flows for Calibrator*/
+/**********************************************************************************************************/
+
+int SetCalibFlow ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint64_t SetFlow)
+{
+   static double RatioDryHumid=0.0;      /* Ratio of Dry to Humid Flow rate */
+   static double SumDryHumid=0.0;        /*  Sum of Dry and Humid Flow rate */
+
+    int ret;
+    
+    if (SetChannel==CALIB_VMFC_TOTAL) // we want to set the total flow rate accordingly to the set ratio  
+       SumDryHumid=SetFlow;
+       
+    ret=SetMFCCardData (ptrCalibStatus, SetChannel, SetFlow);
+    
+    return(ret);
+    
+} // SetCalibFlow    
 
 
 /**********************************************************************************************************/
@@ -1097,8 +1132,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.12 2007-02-20 13:14:33 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.12 2007-02-20 13:14:33 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.13 2007-02-20 18:52:31 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.13 2007-02-20 18:52:31 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1308,13 +1343,7 @@ int main(int argc, char *argv[])
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 		   }
-		 
-		 if (Message.Addr != 0) {
-		   SetMFCCardData ( &CalibStatus, Message.Addr, Message.Value);
-		   
-		 } // If Message.Addr
-		 
-		 Message.Status = Message.Value;
+		 Message.Status = SetCalibFlow( &CalibStatus, Message.Addr, Message.Value);
 		 Message.MsgType = MSG_TYPE_ACK;
 		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 				 inet_ntoa(their_addr.sin_addr),
@@ -1427,3 +1456,4 @@ int main(int argc, char *argv[])
    
    exit(EXIT_SUCCESS);
 }
+ 
