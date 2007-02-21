@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 21:55:30 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 22:46:51 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.40  2007-02-21 22:46:51  harder
+ * reduced intervall from 100ms to 200ms
+ *
  * Revision 1.39  2007-02-21 21:55:30  harder
  * send status to lift
  *
@@ -145,7 +148,7 @@
 #include "serial.h"
 #include "licor.h"
 
-#define STATUS_INTERVAL  100
+#define STATUS_INTERVAL  200
 
 // define below to print out the copied data from licor
 // #define DEBUG_STRUCTUREPASSING
@@ -279,7 +282,7 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
   dActualValue = ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100;
   
   /* PID is done here */
-  if(iPIDdelay >= 10 || (dActualValueHeater > (273.15f+70.0f)) )
+  if(iPIDdelay >= 5 || (dActualValueHeater > (273.15f+70.0f)) )
     {
       iPIDdelay = 0;
       if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f))) {
@@ -1311,8 +1314,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.39 2007-02-21 21:55:30 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.39 2007-02-21 21:55:30 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.40 2007-02-21 22:46:51 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.40 2007-02-21 22:46:51 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
