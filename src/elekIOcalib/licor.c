@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 17:12:13 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 17:24:56 $ by $Author: harder $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.9  2007-02-21 17:24:56  harder
+// disabled debug output
+//
 // Revision 1.8  2007-02-21 17:12:13  rudolf
 // removed test assigment
 //
@@ -226,7 +229,7 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 
      }
 
-//#ifdef DEBUG
+#ifdef DEBUG
    printf("String1: %s\n\r", aTempBuffer);
    printf("String2: %s\n\r", aTempBuffer2);
    int iLoopCount;
@@ -235,7 +238,7 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
      {
 	printf("value number#%d:%05.4f\n\r",iLoopCount,dFloatArg[iLoopCount]);
      };
-//#endif
+#endif
 };
 
 void HexDump(unsigned char *aBuffer, int iBytes)
