@@ -1663,7 +1663,7 @@ function editMFC_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editMFC as text
 %        str2double(get(hObject,'String')) returns contents of editMFC as a double
-MaxFlow=27;
+MaxFlow=20;
 setMFC=str2double(get(hObject,'String'));
 if setMFC<0 | isnan(setMFC) setMFC=0; end
 if setMFC>MaxFlow setMFC=MaxFlow; end
