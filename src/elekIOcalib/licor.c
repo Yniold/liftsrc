@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-20 19:59:09 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 13:17:28 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.4  2007-02-21 13:17:28  rudolf
+// more work on structure for licor
+//
 // Revision 1.3  2007-02-20 19:59:09  rudolf
 // removed debug
 //
@@ -40,7 +43,24 @@ unsigned char ucLicorDeviceName[256] = "/dev/ttyS0";
 unsigned char ucLicorDeviceOpened = false;
 unsigned char aLicorRxBuffer[1024];
 unsigned char aLicorTxBuffer[1024];
-struct sLicorType sLicorThread = {-1,-1,0,0,9999,0,0,0};
+
+// the thread works on this structure
+//
+struct sLicorType sLicorThread =
+{
+   .iFD = -1,
+     .iCommand = -1,
+     .LicorTemperature = 0, /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
+     .AmbientPressure = 0,  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+
+     .CO2A = 0,             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+     .C02B = 0,             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+     .C02D = 0,             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+
+     .H2OA = 0,             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+     .H2OB = 0,             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+     .H2OD = 0              /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+};
 
 pthread_mutex_t mLicorMutex;
 
@@ -110,9 +130,9 @@ void LicorThreadFunc(void* pArgument)
 		    {
 		       aLicorRxBuffer[iBytesInBuffer++] = cTheChar;
 		       aLicorRxBuffer[iBytesInBuffer] = 0;
-		       
+
 		       LicorParseLine(aLicorRxBuffer,iBytesInBuffer,(struct sLicorType*)&sStructure);
-		       
+
 		       iBytesInBuffer = 0;
 		    }
 		  else
@@ -146,7 +166,6 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
    double dFloatArg[9];
 
 #ifdef DEBUG
-   int iLoopCount;
    HexDump(aBuffer,iLength);
 #endif
 
@@ -170,6 +189,22 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 		    &dFloatArg[8]
 		    );
 
+	     // copy data into shared structure, so make shure the main thread
+	     // is not reading meanwhile
+	     //
+	     pthread_mutex_lock(&mLicorMutex);
+	     sTheStructure->LicorTemperature = 0; /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
+	     sTheStructure->AmbientPressure = 0;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+
+	     sTheStructure->CO2A = 0;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->C02B = 0;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->C02D = 0;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+
+	     sTheStructure->H2OA = 0;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+	     sTheStructure->H2OB = 0;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+	     sTheStructure->H2OD = 0;              /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+	     pthread_mutex_unlock(&mLicorMutex);
+
 	  }
 	if(strncmp("DATAH",aBuffer,5) == 0)
 	  {
@@ -179,27 +214,16 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 
      }
 
-/*
-	// copy data into shared structure, so make shure the main thread
-	// is not reading meanwhile
-	//
-	pthread_mutex_lock(&mLicorMutex);
-	sTheStructure->ucPositionValid   = (unsigned char)iTempArg[0];
-	sTheStructure->sCurrentPosition  = (uint16_t)iTempArg[1];
-	sTheStructure->sTargetPositionRead   = (uint16_t)iTempArg[2];
-	sTheStructure->sMotorControlWord = (uint16_t)iTempArg[3];
-	sTheStructure->ucCPUFlags = (uint8_t)iTempArg[4];
-	pthread_mutex_unlock(&mLicorMutex);
-*/
-#ifdef DEBUG
+//#ifdef DEBUG
    printf("String1: %s\n\r", aTempBuffer);
    printf("String2: %s\n\r", aTempBuffer2);
-   
+   int iLoopCount;
+
    for(iLoopCount=0; iLoopCount < 9; iLoopCount++)
      {
 	printf("value number#%d:%05.4f\n\r",iLoopCount,dFloatArg[iLoopCount]);
      };
-#endif
+//#endif
 };
 
 void HexDump(unsigned char *aBuffer, int iBytes)
@@ -214,11 +238,11 @@ void HexDump(unsigned char *aBuffer, int iBytes)
 	     printf("%02x ",aBuffer[iLoop]);
 	  }
 	else
-	if((iLoop % 8) == 7)
-	  {
+	  if((iLoop % 8) == 7)
+	    {
 
-	     printf("%02x\n\r",aBuffer[iLoop]);
-	  }
+	       printf("%02x\n\r",aBuffer[iLoop]);
+	    }
 	else
 	  {
 	     printf("%02x ",aBuffer[iLoop]);
