@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-02-21 19:30:06 $ by $Author: harder $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-02-21 19:33:24 $ by $Author: harder $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.15  2007-02-21 19:33:24  harder
+* changed IP address of status client to avsolut LIFT address, 10.111.111.196
+*
 * Revision 1.14  2007-02-21 19:30:06  harder
 * added status port for calib, calib->statusIO
 *
@@ -48,7 +51,7 @@
 #define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
 #define IP_ELEKIO_MASTER            "10.111.111.196" // ELEKIO which is Master server (LIFT)
 #define IP_DEBUG_CLIENT             "127.0.0.1"
-#define IP_STATUS_CLIENT            "127.0.0.1"
+#define IP_STATUS_CLIENT            "10.111.111.196"
 #define IP_ETALON_CLIENT            "127.0.0.1"
 #define IP_SCRIPT_CLIENT            "127.0.0.1"
 #define IP_LOCALHOST                "127.0.0.1"
