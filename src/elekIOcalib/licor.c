@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 17:03:37 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 17:12:13 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.8  2007-02-21 17:12:13  rudolf
+// removed test assigment
+//
 // Revision 1.7  2007-02-21 17:03:37  rudolf
 // fixed using wrong pointer to struct
 //
@@ -203,11 +206,11 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 	     //
 	     pthread_mutex_lock(&mLicorMutex);
 	     sTheStructure->LicorTemperature = (uint16_t)((273.15f + dFloatArg[7])*100.0f); /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
-	     sTheStructure->AmbientPressure = 12345;//(uint16_t)(100.0f * dFloatArg[6]);            /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+	     sTheStructure->AmbientPressure = (uint16_t)(100.0f * dFloatArg[6]);            /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
-	     sTheStructure->CO2A = (uint16_t)(1000.0f * dFloatArg[3]); /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->CO2B = (uint16_t)(1000.0f * dFloatArg[4]); /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->CO2D = (int16_t) (1000.0f * dFloatArg[5]); /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2A = (uint16_t)(dFloatArg[3]); /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2B = (uint16_t)(dFloatArg[4]); /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2D = (int16_t) (dFloatArg[5]); /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
 	     sTheStructure->H2OA = (uint16_t)(1000.0f * dFloatArg[0]); /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
 	     sTheStructure->H2OB = (uint16_t)(1000.0f * dFloatArg[1]); /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
