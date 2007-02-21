@@ -76,6 +76,7 @@ data.ActTimer=handles.ActTimer;
 handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
 set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
 try fopen(handles.serport);
+    data.serport=handles.serport;
 catch 
     delete(handles.serport);
     rmfield(handles,'serport');

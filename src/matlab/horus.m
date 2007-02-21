@@ -659,7 +659,7 @@ end
 if isfield(data,'hCalibration')
     hCalibration=data.hCalibration;
     if ishandle(hCalibration), 
-        Sensdata = getappdata(hCalibration, 'Sensdata');
+        Caldata = getappdata(hCalibration, 'Caldata');
         if isfield(Caldata,'Timer')
             stop(Caldata.Timer);
             delete(Caldata.Timer);
