@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2006-11-03 12:56:04 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-02-21 19:30:06 $ by $Author: harder $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.14  2007-02-21 19:30:06  harder
+* added status port for calib, calib->statusIO
+*
 * Revision 1.13  2006-11-03 12:56:04  rudolf
 * added new messagetypes for calibrator
 *
@@ -70,6 +73,7 @@
 #define UDP_ELEK_ETALON_STATUS_OUTPORT 1210    // port for status (elekIO->etalon)
 #define UDP_ELEK_ELEKIO_STATUS_OUTPORT 1220    // port for status (elekIOSlave->elekIOMaster)
 #define UDP_ELEK_DEBUG_OUTPORT         1300    // port for debug messages
+#define UDP_CALIB_STATUS_STATUS_OUTPORT 1400    // port for status (Calib->Status)
 
 
 #define UDP_SERVER_TIMEOUT               5     // timeout until elek server makes its round 
