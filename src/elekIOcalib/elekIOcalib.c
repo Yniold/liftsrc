@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:42:49 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 21:55:30 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.39  2007-02-21 21:55:30  harder
+ * send status to lift
+ *
  * Revision 1.38  2007-02-21 20:42:49  harder
  * some debug messages
  *
@@ -193,8 +196,8 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
 {
    // order in list defines sequence of polling
     /* Name           ,PortNo                        , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
-     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
-//     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
+//     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
+     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"ElekIOStatus"  ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
      {"ElekIOServer"  ,UDP_ELEK_MANUAL_INPORT        , ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER  , -1, 0,  UDP_OUT_PORT},
      {"Manual"        ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN        , IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT},
@@ -1308,8 +1311,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.38 2007-02-21 20:42:49 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.38 2007-02-21 20:42:49 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.39 2007-02-21 21:55:30 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.39 2007-02-21 21:55:30 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1395,10 +1398,10 @@ int main(int argc, char *argv[])
 	 PIDAction(&CalibStatus);  
     // Send Status to Status process
      SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct calibStatusType), &CalibStatus);
-     sprintf(buf,"elekIOcalib: Send Status Data to IP %s:%d",
-          MessageOutPortList[CALIB_STATUS_OUT].IPAddr, 
-          MessageOutPortList[CALIB_STATUS_OUT].PortNumber);
-	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);    
+//     sprintf(buf,"elekIOcalib: Send Status Data to IP %s:%d",
+//          MessageOutPortList[CALIB_STATUS_OUT].IPAddr, 
+//          MessageOutPortList[CALIB_STATUS_OUT].PortNumber);
+//	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);    
 	 // as long as we don't have a status output we print the flow rates here
 	   PrintCalibData(&CalibStatus);
        } else { 
