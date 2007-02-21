@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2006-10-06 10:19:45 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 20:21:27 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.27  2007-02-21 20:21:27  rudolf
+ * added seperate file for calib data
+ *
  * Revision 1.26  2006-10-06 10:19:45  rudolf
  * added butterfly structure as new group
  *
@@ -115,6 +118,7 @@
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
   ELEK_STATUS_REQ_IN,
   ELEK_ELEKIO_IN,
+  CALIB_IN,
   MAX_MESSAGE_INPORTS }; 
 
 enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
@@ -127,7 +131,8 @@ enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling 
   /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
   {"StatusReq",    UDP_ELEK_STATUS_REQ_INPORT,    UDP_ELEK_STATUS_REQ_OUTPORT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
-  { "ElekIOIn",UDP_ELEK_STATUS_STATUS_OUTPORT,                             -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
+  { "ElekIOIn",UDP_ELEK_STATUS_STATUS_OUTPORT,                             -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ
+  { "CalibIn ",UDP_CALIB_STATUS_STATUS_OUTPORT,                             -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT}  // status inport from elekIOcalib
 };
 
 static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={                                    // order in list defines sequence of polling 
@@ -594,7 +599,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
 } /*WriteElekStatus*/
 
 
-void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime) {
+void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime, char *Extension) {
   struct tm DateNow;
   time_t SecondsNow;
 
@@ -605,12 +610,13 @@ void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime) {
     ReqTime=&DateNow;
   }
     
-  sprintf(FileName,"%s/%1d%03d%02d%02d.bin",
+  sprintf(FileName,"%s/%1d%03d%02d%02d.%s",
 	  Path,
 	  ReqTime->tm_year-100,
 	  ReqTime->tm_yday+1,
 	  ReqTime->tm_hour,
-	  10*(int)(ReqTime->tm_min/10));
+	  10*(int)(ReqTime->tm_min/10),
+	  Extension);
 
 } /* Generate Filename */
 
@@ -807,6 +813,7 @@ int main()
   extern struct MessagePortType MessageInPortList[];
               
   struct elekStatusType ElekStatus;
+  struct calibStatusType CalibStatus;
   int MessagePort;
   int fdMax;                      // max fd for select
   int i;                          // loop counter
@@ -814,18 +821,18 @@ int main()
   fd_set fdsMaster;               // master file descriptor list
   fd_set fdsSelect;               // temp file descriptor list for select()
   int ret;
-
   struct timeval timeout;         // timeout 
   struct timespec RealTime;         // Real time clock 
   struct sockaddr_in my_addr;     // my address information
   struct sockaddr_in their_addr;  // connector's address information
-  int    ElekStatus_len, numbytes;
+  int    ElekStatus_len, CalibStatus_len,numbytes;
   socklen_t addr_len;
   bool   EndOfSession;  
 
   char buf[GENERIC_BUF_LEN];
 
   char StatusFileName[MAX_FILENAME_LEN]; 
+  char CalibStatusFileName[MAX_FILENAME_LEN]; 
     
   if(cbreak(STDIN_FILENO) == -1) 
     {
@@ -863,12 +870,13 @@ int main()
 
   addr_len = sizeof(struct sockaddr);
   ElekStatus_len=sizeof(struct elekStatusType);
+  CalibStatus_len=sizeof(struct calibStatusType);
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.26 2006-10-06 10:19:45 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.27 2007-02-21 20:21:27 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.26 2006-10-06 10:19:45 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.27 2007-02-21 20:21:27 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -914,10 +922,41 @@ int main()
 	      PrintElekStatus(&ElekStatus, numbytes); 
 	    }
 
-	    GenerateFileName(DATAPATH,StatusFileName,NULL);
+	    GenerateFileName(DATAPATH,StatusFileName,NULL,"bin");
 
 	    if (ElekStatus.InstrumentFlags.StatusSave)
 	      WriteElekStatus(RAMDISKPATH, StatusFileName,&ElekStatus);
+	    else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
+
+	    // Send Statusdata to other interested clients
+			    
+	    // SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"141.5.1.178",ElekStatus_len,&ElekStatus);
+	    // SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"10.111.111.10",ElekStatus_len,&ElekStatus);
+	    //			    SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"172.31.178.24",ElekStatus_len,&ElekStatus);
+	    //			    SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"172.31.178.25",ElekStatus_len,&ElekStatus);
+			    
+	    break;
+
+	   case CALIB_IN:
+	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				   &CalibStatus,CalibStatus_len , MSG_WAITALL,
+				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+	      perror("recvfrom");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
+	    }
+/*	    StatusCount++;
+	    EvaluateKeyboard();
+	    if ((StatusCount % 5)==0) { 
+	      PrintElekStatus(&ElekStatus, numbytes); 
+	    }
+*/
+	     // update timestamp in calib structure
+	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
+	    
+	    GenerateFileName(DATAPATH,StatusFileName,NULL,"cal");
+
+	    if (ElekStatus.InstrumentFlags.StatusSave)
+	      WriteElekStatus(RAMDISKPATH, CalibStatusFileName,&CalibStatus);
 	    else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
 
 	    // Send Statusdata to other interested clients
