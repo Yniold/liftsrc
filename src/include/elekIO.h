@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-20 19:28:35 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-21 16:05:35 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.39  2007-02-21 16:05:35  rudolf
+* fixed typo, delta H2O and CO2 for licor is signed now
+*
 * Revision 1.38  2007-02-20 19:28:35  rudolf
 * removed mysterious A
 *
@@ -553,12 +556,12 @@ struct LicorH2OCO2Type
    uint16_t                   AmbientPressure;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
    uint16_t                   CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-   uint16_t                   C02B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-   uint16_t                   C02D;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+   uint16_t                   CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+   int16_t                    CO2D;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
    uint16_t                   H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
    uint16_t                   H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
-   uint16_t                   H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+   int16_t                    H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 };
 
 struct PIDregulatorType
