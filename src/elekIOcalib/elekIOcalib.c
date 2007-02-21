@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 16:38:59 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 17:03:38 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.31  2007-02-21 17:03:38  harder
+ * compacted output
+ *
  * Revision 1.30  2007-02-21 16:38:59  rudolf
  * fixed typo
  *
@@ -192,10 +195,10 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 
 
 static struct MFCConfigType MFCConfig[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD] =  // Maximal flows for Calibrator MFC
-    { {.MaxFlow=100000UL,.SetSlope=1.0, .SetOffset=0, .MeasSlope=1, .MeasOffset=0},   // Dry Flow
-      {.MaxFlow=50000UL, .SetSlope=1.0, .SetOffset=0, .MeasSlope=1, .MeasOffset=0},   // Humid Flow
-      {.MaxFlow=5000UL,  .SetSlope=1.0, .SetOffset=0, .MeasSlope=1, .MeasOffset=0},   // Licor Ref
-      {.MaxFlow=5000UL,  .SetSlope=1.0, .SetOffset=0, .MeasSlope=1, .MeasOffset=0},   // Licor measure
+    { {.MaxFlow=100000UL,.SetSlope=4.7306e-3, .SetOffset=-2.107, .MeasSlope=1, .MeasOffset=0},   // Dry Flow
+      {.MaxFlow=50000UL, .SetSlope=4.8982e-3, .SetOffset=3.378, .MeasSlope=1, .MeasOffset=0},   // Humid Flow
+      {.MaxFlow=5000UL,  .SetSlope=4.8307e-2, .SetOffset=-1.281, .MeasSlope=1, .MeasOffset=0},   // Licor Ref
+      {.MaxFlow=5000UL,  .SetSlope=4.8305e-2, .SetOffset=1.0291, .MeasSlope=1, .MeasOffset=0},   // Licor measure
     };
 
 
@@ -260,13 +263,13 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
     	  // water much too cold, set full power
     	  if(uiControlValue > 255) uiControlValue=255;    	  
       } else {
-	  printf("Heater off now\n\r");
+//	  printf("Heater off now\n\r");
 	  uiControlValue=0;
 	}
 	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
       ptrCalibStatus->PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
-      printf("Heater is at %04.2f °C Water %04.2f °C dContr %d\n\r", 
-              (dActualValueHeater - 273.15f), (dActualValue - 273.15f), uiControlValue);
+//      printf("Heater is at %04.2f °C Water %04.2f °C dContr %d\n\r", 
+//              (dActualValueHeater - 273.15f), (dActualValue - 273.15f), uiControlValue);
     }
 
 } // PIDAction
@@ -1030,7 +1033,7 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
         return(CALIB_SETFLOW_FAIL);
       }   
-      MFCFlow=(uint16_t)(255.0*MFCConfig[SetChannel].SetSlope*SetFlow/MFCConfig[SetChannel].MaxFlow-MFCConfig[SetChannel].SetOffset);
+      MFCFlow=(uint16_t)(MFCConfig[SetChannel].SetSlope*(double)SetFlow+MFCConfig[SetChannel].SetOffset);
     } // if Setflow
     if (MFCFlow>255) {
         sprintf(buf,"SetMFCFlow : Count flow rate %ul for channel number %d out of range\n",MFCFlow, SetChannel);
@@ -1105,8 +1108,12 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
                                                          MFCConfig[Channel].MeasOffset);
-        
-        
+
+      printf("Heater is at %04.2f °C Water Set %04.2f °C Is %04.2f °CdContr %d\n\r", 
+              ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100.0 - 273.15f,
+              ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100.0-273.15f, 
+              ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100.0 - 273.15f, 
+              ptrCalibStatus->PIDRegulator.ControlValue);
 	}
 }
 /**********************************************************************************************************/
@@ -1270,8 +1277,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.30 2007-02-21 16:38:59 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.30 2007-02-21 16:38:59 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.31 2007-02-21 17:03:38 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.31 2007-02-21 17:03:38 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
