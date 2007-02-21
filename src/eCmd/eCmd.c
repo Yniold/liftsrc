@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.33 $
-last change on $Date: 2007-02-20 18:51:14 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.34 $
+last change on $Date: 2007-02-21 13:42:08 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.34  2007-02-21 13:42:08  harder
+fixed bug in set raw mfc counts
+
 Revision 1.33  2007-02-20 18:51:14  harder
 can set flow rate in counts instead sccm
 fixed small bugs
@@ -268,7 +271,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.33 2007-02-20 18:51:14 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.34 2007-02-21 13:42:08 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -566,7 +569,7 @@ int main(int argc, char *argv[])
 	                Addr=Value;
         	        ptr=strchr(argv[ArgCount+2],'+');           // use counts ?
 		            Value=strtol(argv[ArgCount+2],NULL,0);
-		            if (ptr) Value=Value+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
+		            if (ptr) Addr=Addr+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
 		        } else {
         		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
         		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);

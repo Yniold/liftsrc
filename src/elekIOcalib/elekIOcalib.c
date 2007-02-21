@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:23:54 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:41:36 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.27  2007-02-21 13:41:36  harder
+ * fixed bug in set raw mfc counts
+ *
  * Revision 1.26  2007-02-21 13:23:54  harder
  * redo the overwritten updates....
  *
@@ -944,8 +947,9 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
         return(CALIB_SETFLOW_FAIL);
     } 
     
-    if (SetFlow>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
-        MFCFlow=SetFlow-CALIB_VMFC_ABS;
+    if (SetChannel>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
+        MFCFlow=SetFlow;
+        SetChannel=SetChannel-CALIB_VMFC_ABS;
         printf(buf,"SetMFCFlow  : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);		      
         sprintf(buf,"SetMFCFlow : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1195,8 +1199,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.26 2007-02-21 13:23:54 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.26 2007-02-21 13:23:54 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.27 2007-02-21 13:41:36 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.27 2007-02-21 13:41:36 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
