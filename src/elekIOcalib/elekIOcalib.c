@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 18:05:32 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 18:07:07 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.35  2007-02-21 18:07:07  harder
+ * fix syntax
+ *
  * Revision 1.34  2007-02-21 18:05:32  harder
  * more updates on output
  *
@@ -1099,22 +1102,22 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
 	if ((StatusFlag % 5)==0) {			
 	    Card=0;
 	    Channel=0;
-	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset)
+	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset);
         printf("Humid Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          FlowRate[Channel]);
         Channel=1;
-	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset)
+	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset);
         printf("Dry   Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          FlowRate[Channel]);
         Channel=2;
-	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset)
+	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset);
         printf("Licor Dry Set   %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          FlowRate[Channel]);
         Channel=3;
-	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset)
+	    FlowRate[Channel]=MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+MFCConfig[Channel].MeasOffset);
         printf("Licor Humid Set %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          FlowRate[Channel]);
@@ -1291,8 +1294,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.34 2007-02-21 18:05:32 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.34 2007-02-21 18:05:32 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.35 2007-02-21 18:07:07 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.35 2007-02-21 18:07:07 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
