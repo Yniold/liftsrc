@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 13:17:28 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 13:44:45 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.5  2007-02-21 13:44:45  rudolf
+// transfer LICOR data into inter-thread structure
+//
 // Revision 1.4  2007-02-21 13:17:28  rudolf
 // more work on structure for licor
 //
@@ -193,16 +196,16 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 	     // is not reading meanwhile
 	     //
 	     pthread_mutex_lock(&mLicorMutex);
-	     sTheStructure->LicorTemperature = 0; /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
-	     sTheStructure->AmbientPressure = 0;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+	     sTheStructure->LicorTemperature = (uint16_t)((273.15f + dFloatArg[7])*100); /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
+	     sTheStructure->AmbientPressure = (uint16_t)(100 * dFloatArg[6]);            /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
-	     sTheStructure->CO2A = 0;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->C02B = 0;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->C02D = 0;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2A = (uint16_t)(1000 * dFloatArg[3]); /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->C02B = (uint16_t)(1000 * dFloatArg[4]); /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->C02D = (int16_t) (1000 * dFloatArg[5]); /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
-	     sTheStructure->H2OA = 0;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
-	     sTheStructure->H2OB = 0;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
-	     sTheStructure->H2OD = 0;              /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+	     sTheStructure->H2OA = (uint16_t)(1000 * dFloatArg[0]); /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+	     sTheStructure->H2OB = (uint16_t)(1000 * dFloatArg[1]); /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+	     sTheStructure->H2OD = (int16_t) (1000 * dFloatArg[2]); /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 	     pthread_mutex_unlock(&mLicorMutex);
 
 	  }
