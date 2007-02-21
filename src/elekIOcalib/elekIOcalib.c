@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:21:07 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:23:05 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.37  2007-02-21 20:23:05  harder
+ * mist am ende
+ *
  * Revision 1.36  2007-02-21 20:21:07  harder
  * send status to markus laptop
  *
@@ -1302,8 +1305,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.36 2007-02-21 20:21:07 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.36 2007-02-21 20:21:07 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.37 2007-02-21 20:23:05 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.37 2007-02-21 20:23:05 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1646,4 +1649,4 @@ int main(int argc, char *argv[])
    
    exit(EXIT_SUCCESS);
 }
-i   
+
