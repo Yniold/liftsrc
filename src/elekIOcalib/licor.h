@@ -3,11 +3,14 @@
 // Headerfile
 // ============================================
 //
-// $RCSfile: licor.h,v $ last changed on $Date: 2007-02-21 13:17:28 $ by $Author: rudolf $
+// $RCSfile: licor.h,v $ last changed on $Date: 2007-02-21 16:06:30 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.h,v $
+// Revision 1.3  2007-02-21 16:06:30  rudolf
+// licor struct now read from parsing thread and copied to status struct
+//
 // Revision 1.2  2007-02-21 13:17:28  rudolf
 // more work on structure for licor
 //
@@ -60,8 +63,8 @@ struct  sLicorType
    uint16_t AmbientPressure;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
    uint16_t CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-   uint16_t C02B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-   int16_t C02D;              /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+   uint16_t CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+   int16_t CO2D;              /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
    uint16_t H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
    uint16_t H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */

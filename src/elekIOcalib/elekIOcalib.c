@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:50:47 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 16:06:30 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.29  2007-02-21 16:06:30  rudolf
+ * licor struct now read from parsing thread and copied to status struct
+ *
  * Revision 1.28  2007-02-21 13:50:47  harder
  * fixed bug in setmfc
  *
@@ -103,6 +106,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <sched.h>
+#include <pthread.h>
 
 #include "../include/elekGeneral.h"
 #include "../include/elekIO.h"
@@ -897,6 +901,50 @@ void GetPIDregulatorData (struct calibStatusType *ptrCalibStatus)
 /* GetPIDregulatorData*/
 
 /**********************************************************************************************************/
+/* GetLicorData                                                                                           */
+/**********************************************************************************************************/
+
+void GetLicorData ( struct calibStatusType *ptrCalibStatus)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   extern pthread_mutex_t mLicorMutex;
+   extern struct sLicorType sLicorThread;
+
+   uint16_t       ret;
+   uint16_t       Control;
+   char           buf[GENERIC_BUF_LEN];
+
+     {
+	pthread_mutex_lock(&mLicorMutex);
+	ptrCalibStatus->LicorCalib.LicorTemperature = sLicorThread.LicorTemperature;
+	
+	ptrCalibStatus->LicorCalib.AmbientPressure = sLicorThread.AmbientPressure;
+
+	ptrCalibStatus->LicorCalib.CO2A = sLicorThread.CO2A;
+	ptrCalibStatus->LicorCalib.CO2B = sLicorThread.CO2B; /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	ptrCalibStatus->LicorCalib.CO2D = sLicorThread.CO2D; /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+
+	ptrCalibStatus->LicorCalib.H2OA = sLicorThread.H2OA; /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+	ptrCalibStatus->LicorCalib.H2OB = sLicorThread.H2OB; /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+	ptrCalibStatus->LicorCalib.H2OD = sLicorThread.H2OD; /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+	pthread_mutex_unlock(&mLicorMutex);
+
+#ifdef DEBUG_STRUCTUREPASSING
+	printf("ptrElekStatus->ButterflySlave.PositionValid:                  %05d\n\r",ptrElekStatus->ButterflySlave.PositionValid);
+	printf("ptrElekStatus->ButterflySlave.CurrentPosition:                %05d\n\r",ptrElekStatus->ButterflySlave.CurrentPosition);
+	printf("ptrElekStatus->ButterflySlave.TargetPositionGot:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionGot);
+	printf("ptrElekStatus->ButterflySlave.TargetPositionSet:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionSet);
+	printf("ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord:%05d\n\r",ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord);
+	printf("ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord:     %05d\n\r",ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord);
+
+#endif
+     }
+}
+/* GetLicorData */
+
+/**********************************************************************************************************/
 /* GetCalibStatus                                                                                          */
 /**********************************************************************************************************/
 
@@ -920,6 +968,10 @@ void GetCalibStatus ( struct calibStatusType *ptrCalibStatus, int IsMaster)
 
    // get actual value for PID
    GetPIDregulatorData(ptrCalibStatus);
+   
+   // get values from Licor
+   GetLicorData (ptrCalibStatus);
+
 }
 /* GetCalibStatus */
 
@@ -1208,8 +1260,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.28 2007-02-21 13:50:47 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.28 2007-02-21 13:50:47 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.29 2007-02-21 16:06:30 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.29 2007-02-21 16:06:30 rudolf Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1533,4 +1585,3 @@ int main(int argc, char *argv[])
    
    exit(EXIT_SUCCESS);
 }
- 

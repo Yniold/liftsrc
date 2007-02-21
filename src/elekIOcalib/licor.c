@@ -3,11 +3,14 @@
 // Licor Control Thread
 // ============================================
 //
-// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 13:44:45 $ by $Author: rudolf $
+// $RCSfile: licor.c,v $ last changed on $Date: 2007-02-21 16:06:30 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.c,v $
+// Revision 1.6  2007-02-21 16:06:30  rudolf
+// licor struct now read from parsing thread and copied to status struct
+//
 // Revision 1.5  2007-02-21 13:44:45  rudolf
 // transfer LICOR data into inter-thread structure
 //
@@ -57,8 +60,8 @@ struct sLicorType sLicorThread =
      .AmbientPressure = 0,  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
      .CO2A = 0,             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-     .C02B = 0,             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-     .C02D = 0,             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+     .CO2B = 0,             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+     .CO2D = 0,             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
      .H2OA = 0,             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
      .H2OB = 0,             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
@@ -200,8 +203,8 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 	     sTheStructure->AmbientPressure = (uint16_t)(100 * dFloatArg[6]);            /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
 	     sTheStructure->CO2A = (uint16_t)(1000 * dFloatArg[3]); /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->C02B = (uint16_t)(1000 * dFloatArg[4]); /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-	     sTheStructure->C02D = (int16_t) (1000 * dFloatArg[5]); /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2B = (uint16_t)(1000 * dFloatArg[4]); /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	     sTheStructure->CO2D = (int16_t) (1000 * dFloatArg[5]); /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
 	     sTheStructure->H2OA = (uint16_t)(1000 * dFloatArg[0]); /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
 	     sTheStructure->H2OB = (uint16_t)(1000 * dFloatArg[1]); /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
