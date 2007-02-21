@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 20:21:27 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 21:49:52 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.28  2007-02-21 21:49:52  rudolf
+ * added saving of calibration data when available in seperate .CAL file
+ *
  * Revision 1.27  2007-02-21 20:21:27  rudolf
  * added seperate file for calib data
  *
@@ -494,7 +497,6 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
   //	refresh();    
 } /*PrintElekStatus*/
 
-
 int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *ptrElekStatus) 
 {
 	
@@ -598,6 +600,51 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
     } // if fopen
 } /*WriteElekStatus*/
 
+int WriteCalibStatus(char *PathToRamDisk, char *FileName, struct calibStatusType *ptrCalibStatus) 
+{
+	
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+	
+  extern long LastStatusNumber;
+	
+  FILE *fp;
+  int i;
+  int ret;
+  long len;
+  int nelements;
+  char buf[GENERIC_BUF_LEN];
+		
+  if ((fp=fopen(FileName,"a"))==NULL)
+    {
+      sprintf(buf,"ElekStatus: can't open %s",FileName);
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+    }
+  else
+    {
+      // write data. may return with 1 even if disk is full.
+      ret=fwrite(ptrCalibStatus,sizeof (struct calibStatusType),1,fp);
+      if (ret!=1)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: CALIBDATA NOT WRITTEN, fwrite() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+		
+      // flush buffer to check if disk is full an to prevent data loss
+      ret=fflush(fp);
+      if (ret == EOF)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: CALIBDATA NOT WRITTEN, fflush() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+      fclose(fp);
+    } // if fopen
+	
+} /*WriteCalibStatus*/
 
 void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime, char *Extension) {
   struct tm DateNow;
@@ -874,9 +921,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.27 2007-02-21 20:21:27 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.28 2007-02-21 21:49:52 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.27 2007-02-21 20:21:27 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.28 2007-02-21 21:49:52 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -944,20 +991,14 @@ int main()
 	      perror("recvfrom");
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
 	    }
-/*	    StatusCount++;
-	    EvaluateKeyboard();
-	    if ((StatusCount % 5)==0) { 
-	      PrintElekStatus(&ElekStatus, numbytes); 
-	    }
-*/
 	     // update timestamp in calib structure
 	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
 	    
-	    GenerateFileName(DATAPATH,StatusFileName,NULL,"cal");
+	    GenerateFileName(DATAPATH,CalibStatusFileName,NULL,"cal");
 
-	    if (ElekStatus.InstrumentFlags.StatusSave)
-	      WriteElekStatus(RAMDISKPATH, CalibStatusFileName,&CalibStatus);
-	    else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
+	  //  if (ElekStatus.InstrumentFlags.StatusSave)
+	      WriteCalibStatus(RAMDISKPATH, CalibStatusFileName,&CalibStatus);
+	  //  else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
 
 	    // Send Statusdata to other interested clients
 			    
