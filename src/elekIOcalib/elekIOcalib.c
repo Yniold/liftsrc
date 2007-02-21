@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 17:03:38 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 17:19:47 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.32  2007-02-21 17:19:47  harder
+ * compacted output
+ *
  * Revision 1.31  2007-02-21 17:03:38  harder
  * compacted output
  *
@@ -124,7 +127,7 @@
 #define STATUS_INTERVAL  100
 
 // define below to print out the copied data from licor
-#define DEBUG_STRUCTUREPASSING
+// #define DEBUG_STRUCTUREPASSING
 
 #define DEBUGLEVEL 0
 // #define DEBUG_SLAVECOM
@@ -1109,11 +1112,15 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
                                                          MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
                                                          MFCConfig[Channel].MeasOffset);
 
-      printf("Heater is at %04.2f Â°C Water Set %04.2f Â°C Is %04.2f Â°CdContr %d\n\r", 
+      printf("Heater is at %04.2f °C Water Set %04.2f °C Is %04.2f °CdContr %d\n\r", 
               ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100.0 - 273.15f,
               ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100.0-273.15f, 
               ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100.0 - 273.15f, 
               ptrCalibStatus->PIDRegulator.ControlValue);
+              
+     printf("Wasser %6.4f Temp %6.4f Druck %6.4f \n",(double)ptrCalibStatus->LicorCalib.H2OD/1000.0,
+         (double)ptrCalibStatus->LicorCalib.LicorTemperature/100.0,
+         (double)ptrCalibStatus->LicorCalib.AmbientPressure/10.0);          
 	}
 }
 /**********************************************************************************************************/
@@ -1277,8 +1284,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.31 2007-02-21 17:03:38 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.31 2007-02-21 17:03:38 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.32 2007-02-21 17:19:47 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.32 2007-02-21 17:19:47 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
