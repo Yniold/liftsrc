@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:23:05 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:42:49 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.38  2007-02-21 20:42:49  harder
+ * some debug messages
+ *
  * Revision 1.37  2007-02-21 20:23:05  harder
  * mist am ende
  *
@@ -153,7 +156,7 @@
 enum InPortListEnum
 {
    // this list has to be coherent with MessageInPortList
-   ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
+     ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
      ELEK_ETALON_IN,       // port for incoming commands from  etalon
      ELEK_SCRIPT_IN,       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
      //     ELEK_STATUS_IN,       // port to receive status data from slaves
@@ -997,7 +1000,7 @@ void GetCalibStatus ( struct calibStatusType *ptrCalibStatus, int IsMaster)
    GetMFCCardData(ptrCalibStatus);
 
    // now get the temperature data
-   GetTemperatureCardData(ptrCalibStatus);
+   //   GetTemperatureCardData(ptrCalibStatus);
 
    // get power state from SCR card
    GetSCRCardData(ptrCalibStatus);
@@ -1305,8 +1308,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.37 2007-02-21 20:23:05 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.37 2007-02-21 20:23:05 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.38 2007-02-21 20:42:49 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.38 2007-02-21 20:42:49 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1391,8 +1394,11 @@ int main(int argc, char *argv[])
 	 gettimeofday(&GetStatusStopTime, NULL);
 	 PIDAction(&CalibStatus);  
     // Send Status to Status process
-    SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct calibStatusType), &CalibStatus);
-
+     SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct calibStatusType), &CalibStatus);
+     sprintf(buf,"elekIOcalib: Send Status Data to IP %s:%d",
+          MessageOutPortList[CALIB_STATUS_OUT].IPAddr, 
+          MessageOutPortList[CALIB_STATUS_OUT].PortNumber);
+	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);    
 	 // as long as we don't have a status output we print the flow rates here
 	   PrintCalibData(&CalibStatus);
        } else { 
