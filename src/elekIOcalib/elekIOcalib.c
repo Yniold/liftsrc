@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-20 23:04:36 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 12:48:44 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.23  2007-02-21 12:48:44  harder
+ * optimized PID code
+ *
  * Revision 1.22  2007-02-20 23:04:36  harder
  * fix overheating III
  *
@@ -219,37 +222,29 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
   double dActualValueHeater;
   
   iPIDdelay++;
+  /* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
+  dActualValueHeater = ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100;
+  dSetPoint = ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100;
+  dActualValue = ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100;
   
   /* PID is done here */
-  if(iPIDdelay >= 2)
+  if(iPIDdelay >= 10 || (dActualValueHeater > (273.15f+70.0f)) )
     {
       iPIDdelay = 0;
-      
-      /* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
-      dActualValueHeater = ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100;
-	  dSetPoint = ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100;
-	  dActualValue = ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100;
-
-      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f)))
-	{
-	  	  
-	  uiControlValue = (uint16_t)ProcessPID(dSetPoint,dActualValue,ptrCalibStatus);
-	  
-	  // FIXME: add check for heater overtemp
-	  // water to warm, turn off completely
-	  if(uiControlValue < 0) uiControlValue=0;
-	    	  
-	  // water much too cold, set full power
-	  if(uiControlValue > 255) uiControlValue=255;
-	  
-	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
-	}
-      else
-	{
+      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f))) {
+     	  uiControlValue = (uint16_t)ProcessPID(dSetPoint,dActualValue,ptrCalibStatus);
+    	  
+    	  // FIXME: add check for heater overtemp
+    	  // water to warm, turn off completely
+    	  if(uiControlValue < 0) uiControlValue=0;
+    	    	  
+    	  // water much too cold, set full power
+    	  if(uiControlValue > 255) uiControlValue=255;    	  
+      } else {
 	  printf("Heater off now\n\r");
 	  uiControlValue=0;
-	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
 	}
+	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
       ptrCalibStatus->PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
       printf("Heater is at %04.2f °C Water %04.2f °C dContr %d\n\r", 
               (dActualValueHeater - 273.15f), (dActualValue - 273.15f), uiControlValue);
@@ -1194,8 +1189,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.22 2007-02-20 23:04:36 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.22 2007-02-20 23:04:36 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.23 2007-02-21 12:48:44 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.23 2007-02-21 12:48:44 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
