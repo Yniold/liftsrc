@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 17:19:47 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 17:35:03 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.33  2007-02-21 17:35:03  harder
+ * added cal values
+ *
  * Revision 1.32  2007-02-21 17:19:47  harder
  * compacted output
  *
@@ -198,10 +201,10 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 
 
 static struct MFCConfigType MFCConfig[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD] =  // Maximal flows for Calibrator MFC
-    { {.MaxFlow=100000UL,.SetSlope=4.7306e-3, .SetOffset=-2.107, .MeasSlope=1, .MeasOffset=0},   // Dry Flow
-      {.MaxFlow=50000UL, .SetSlope=4.8982e-3, .SetOffset=3.378, .MeasSlope=1, .MeasOffset=0},   // Humid Flow
-      {.MaxFlow=5000UL,  .SetSlope=4.8307e-2, .SetOffset=-1.281, .MeasSlope=1, .MeasOffset=0},   // Licor Ref
-      {.MaxFlow=5000UL,  .SetSlope=4.8305e-2, .SetOffset=1.0291, .MeasSlope=1, .MeasOffset=0},   // Licor measure
+    { {.MaxFlow=100000UL,.SetSlope=4.7306e-3, .SetOffset=-2.107, .MeasSlope=36.034, .MeasOffset=-9985.01},   // Dry Flow
+      {.MaxFlow=50000UL, .SetSlope=4.8982e-3, .SetOffset=3.378, .MeasSlope=34.874, .MeasOffset=-10014.68},   // Humid Flow
+      {.MaxFlow=5000UL,  .SetSlope=4.8307e-2, .SetOffset=-1.281, .MeasSlope=3.5217, .MeasOffset=-9992.05},   // Licor Ref
+      {.MaxFlow=5000UL,  .SetSlope=4.8305e-2, .SetOffset=1.0291, .MeasSlope=3.5215, .MeasOffset=-10000.85},   // Licor measure
     };
 
 
@@ -1094,23 +1097,23 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
 	    Channel=0;
         printf("Humid Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
-                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
-                                                         MFCConfig[Channel].MeasOffset);
+                                                         MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset));
         Channel=1;
         printf("Dry   Set       %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
-                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
-                                                         MFCConfig[Channel].MeasOffset);
+                                                         MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset));
         Channel=2;
         printf("Licor Dry Set   %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
-                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
-                                                         MFCConfig[Channel].MeasOffset);
+                                                         MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset));
         Channel=3;
         printf("Licor Humid Set %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
-                                                         MFCConfig[Channel].MeasSlope*ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
-                                                         MFCConfig[Channel].MeasOffset);
+                                                         MFCConfig[Channel].MeasSlope*(ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow+
+                                                         MFCConfig[Channel].MeasOffset));
 
       printf("Heater is at %04.2f °C Water Set %04.2f °C Is %04.2f °CdContr %d\n\r", 
               ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100.0 - 273.15f,
@@ -1119,7 +1122,7 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
               ptrCalibStatus->PIDRegulator.ControlValue);
               
      printf("Wasser %6.4f Temp %6.4f Druck %6.4f \n",(double)ptrCalibStatus->LicorCalib.H2OD/1000.0,
-         (double)ptrCalibStatus->LicorCalib.LicorTemperature/100.0,
+         (double)ptrCalibStatus->LicorCalib.LicorTemperature/100.0-273.15f,
          (double)ptrCalibStatus->LicorCalib.AmbientPressure/10.0);          
 	}
 }
@@ -1284,8 +1287,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.32 2007-02-21 17:19:47 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.32 2007-02-21 17:19:47 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.33 2007-02-21 17:35:03 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.33 2007-02-21 17:35:03 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
