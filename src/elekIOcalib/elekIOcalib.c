@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:15:48 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:23:54 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.26  2007-02-21 13:23:54  harder
+ * redo the overwritten updates....
+ *
  * Revision 1.25  2007-02-21 13:15:48  rudolf
  * more work on structure for licor
  *
@@ -221,43 +224,35 @@ void PIDAction(struct calibStatusType *ptrCalibStatus)
   double dActualValue;
   double dActualValueHeater;
   
-  iPIDdelay++;
+    iPIDdelay++;
+  /* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
+  dActualValueHeater = ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100;
+  dSetPoint = ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100;
+  dActualValue = ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100;
   
   /* PID is done here */
-  if(iPIDdelay >= 2)
+  if(iPIDdelay >= 10 || (dActualValueHeater > (273.15f+70.0f)) )
     {
       iPIDdelay = 0;
-      
-      /* check if setpoint valid and heater < 70°C, if not, turn heater off for safety reasons */
-      dActualValueHeater = ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100;
-	  dSetPoint = ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100;
-	  dActualValue = ((double)ptrCalibStatus->PIDRegulator.ActualValueH2O)/100;
-
-      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f)))
-	{
-	  	  
-	  uiControlValue = (uint16_t)ProcessPID(dSetPoint,dActualValue,ptrCalibStatus);
-	  
-	  // FIXME: add check for heater overtemp
-	  // water to warm, turn off completely
-	  if(uiControlValue < 0) uiControlValue=0;
-	    	  
-	  // water much too cold, set full power
-	  if(uiControlValue > 255) uiControlValue=255;
-	  
-	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
-	}
-      else
-	{
+      if((ptrCalibStatus->PIDRegulator.Setpoint > 0) && (dActualValueHeater < (273.15f+70.0f))) {
+     	  uiControlValue = (uint16_t)ProcessPID(dSetPoint,dActualValue,ptrCalibStatus);
+    	  
+    	  // FIXME: add check for heater overtemp
+    	  // water to warm, turn off completely
+    	  if(uiControlValue < 0) uiControlValue=0;
+    	    	  
+    	  // water much too cold, set full power
+    	  if(uiControlValue > 255) uiControlValue=255;    	  
+      } else {
 	  printf("Heater off now\n\r");
 	  uiControlValue=0;
-	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
 	}
+	  elkWriteData(ELK_SCR_BASE + 0, uiControlValue);
       ptrCalibStatus->PIDRegulator.ControlValue = elkReadData(ELK_SCR_BASE + 0);
       printf("Heater is at %04.2f °C Water %04.2f °C dContr %d\n\r", 
               (dActualValueHeater - 273.15f), (dActualValue - 273.15f), uiControlValue);
     }
-  
+
 } // PIDAction
 
 /**********************************************************************************************************/
@@ -951,6 +946,9 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
     
     if (SetFlow>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
         MFCFlow=SetFlow-CALIB_VMFC_ABS;
+        printf(buf,"SetMFCFlow  : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);		      
+        sprintf(buf,"SetMFCFlow : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
     } else { // flow is given in SCCM
       if (SetFlow>MFCConfig[SetChannel].MaxFlow) {
         sprintf(buf,"SetMFCFlow : flow rate %ul for channel number %d out of range\n",SetFlow, SetChannel);
@@ -1197,8 +1195,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.25 2007-02-21 13:15:48 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.25 2007-02-21 13:15:48 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.26 2007-02-21 13:23:54 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.26 2007-02-21 13:23:54 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
