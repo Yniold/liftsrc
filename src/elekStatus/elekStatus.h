@@ -1,6 +1,9 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2006-10-06 10:19:45 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2007-02-21 22:57:57 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
+* Revision 1.9  2007-02-21 22:57:57  rudolf
+* added new group for LICOR in status printing
+*
 * Revision 1.8  2006-10-06 10:19:45  rudolf
 * added butterfly structure as new group
 *
@@ -33,13 +36,8 @@
 #define GROUP_VALVEDATA	        (1<< 8)
 #define GROUP_BUTTERFLYDATA	(1<< 9)
 
+#define GROUP_CALIBDATA         (1<<10)
 // GLOBALS
-
-// define which groups are shown on startup of elekStatus
-unsigned int uiGroupFlags = GROUP_DATASETDATA | GROUP_ADCDATA | GROUP_TIMEDATA;
-
-// number of status counts total
-long StatusCount=0;     
 
 // our keyboard scan routine
 void EvaluateKeyboard(void);

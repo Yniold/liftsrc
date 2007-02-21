@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 21:49:52 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 22:57:57 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.29  2007-02-21 22:57:57  rudolf
+ * added new group for LICOR in status printing
+ *
  * Revision 1.28  2007-02-21 21:49:52  rudolf
  * added saving of calibration data when available in seperate .CAL file
  *
@@ -118,6 +121,12 @@
 
 #define DEBUGLEVEL 1
 
+// define which groups are shown on startup of elekStatus
+unsigned int uiGroupFlags = GROUP_DATASETDATA | GROUP_ADCDATA | GROUP_TIMEDATA;
+
+// number of status counts total
+long StatusCount;     
+
 enum InPortListEnum {  // this list has to be coherent with MessageInPortList
   ELEK_STATUS_REQ_IN,
   ELEK_ELEKIO_IN,
@@ -147,6 +156,31 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={        
 
 static long LastStatusNumber;
 
+void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize) 
+{
+
+  int i;
+  struct tm tmZeit;
+  time_t    Seconds;
+	
+  // ***************** DATASET DATA (number of dataset etc. **************
+  if(uiGroupFlags & GROUP_CALIBDATA)
+    {
+      printf("Time(cal),faked:");
+      Seconds=ptrCalibStatus->TimeOfDayCalib.tv_sec;
+      gmtime_r(&Seconds,&tmZeit);
+		
+      printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
+	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrCalibStatus->TimeOfDayCalib.tv_usec/1000);
+
+       printf("H2O_A: %06.4f H2O_B: %06.4f H2O_DELTA: %06.4f",\
+       (double)(ptrCalibStatus->LicorCalib.H2OA)/1000.0f,\
+       (double)(ptrCalibStatus->LicorCalib.H2OB)/1000.0f,\
+       (double)(ptrCalibStatus->LicorCalib.H2OD)/1000.0f);
+       printf("\n\r");	      
+    };
+   
+};
 
 void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize) 
 {
@@ -818,6 +852,13 @@ void EvaluateKeyboard(void)
 	    printf("\n\rDisplay of BUTTERFLY DATA is now off.\n\r");
 	  break;
 				
+	case 'L':					// Butterfly
+	  uiGroupFlags ^= GROUP_CALIBDATA;
+	  if (uiGroupFlags & GROUP_CALIBDATA)
+	    printf("\n\rDisplay of LICOR DATA is now on.\n\r");
+	  else
+	    printf("\n\rDisplay of LICOR DATA is now off.\n\r");
+	  break;
 				
 	case 'S':					// Show all
 	  uiGroupFlags = 0xFFFFFFFF;
@@ -828,7 +869,7 @@ void EvaluateKeyboard(void)
 	  uiGroupFlags = GROUP_TIMEDATA;
 	  printf("\n\rDisplaying NONE but TIME data now.\n\r");
 	  break;
-			
+	   
 	case 'H':
 	  ShowHelp();
 	  break;
@@ -854,7 +895,8 @@ void ShowHelp(void)
 
 int main() 
 {
-
+  long CalibStatusCount;
+  
   extern int errno;
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
@@ -921,9 +963,9 @@ int main()
     
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.28 2007-02-21 21:49:52 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.29 2007-02-21 22:57:57 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.28 2007-02-21 21:49:52 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.29 2007-02-21 22:57:57 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -993,6 +1035,11 @@ int main()
 	    }
 	     // update timestamp in calib structure
 	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
+	    CalibStatusCount++;
+	    EvaluateKeyboard();
+	    if ((CalibStatusCount % 5)==0) { 
+	      PrintCalibStatus(&CalibStatus, numbytes); 
+	    }
 	    
 	    GenerateFileName(DATAPATH,CalibStatusFileName,NULL,"cal");
 
