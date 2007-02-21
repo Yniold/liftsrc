@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:41:36 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 13:50:47 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.28  2007-02-21 13:50:47  harder
+ * fixed bug in setmfc
+ *
  * Revision 1.27  2007-02-21 13:41:36  harder
  * fixed bug in set raw mfc counts
  *
@@ -941,19 +944,25 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
     MFC_Address=ELK_MFC_BASE_CALIB+Card*ELK_MFC_NUM_ADR;
     DAC_Address=ELK_DAC_BASE_CALIB+Card*ELK_DAC_NUM_ADR;   
     
-    if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
-        sprintf(buf,"SetMFCFlow : channel number %d out of range\n",SetChannel);
-        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-        return(CALIB_SETFLOW_FAIL);
-    } 
     
     if (SetChannel>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
         MFCFlow=SetFlow;
         SetChannel=SetChannel-CALIB_VMFC_ABS;
+        if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
+            sprintf(buf,"SetMFCFlow : channel number %d out of range\n",SetChannel);
+            SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+            return(CALIB_SETFLOW_FAIL);
+        } 
+
         printf(buf,"SetMFCFlow  : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);		      
         sprintf(buf,"SetMFCFlow : set count flow rate %d for channel %d\n",MFCFlow, SetChannel);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
     } else { // flow is given in SCCM
+        if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
+            sprintf(buf,"SetMFCFlow : channel number %d out of range\n",SetChannel);
+            SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+            return(CALIB_SETFLOW_FAIL);
+        } 
       if (SetFlow>MFCConfig[SetChannel].MaxFlow) {
         sprintf(buf,"SetMFCFlow : flow rate %ul for channel number %d out of range\n",SetFlow, SetChannel);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1199,8 +1208,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.27 2007-02-21 13:41:36 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.27 2007-02-21 13:41:36 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.28 2007-02-21 13:50:47 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.28 2007-02-21 13:50:47 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
