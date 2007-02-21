@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 16:06:30 $ by $Author: rudolf $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 16:38:59 $ by $Author: rudolf $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.30  2007-02-21 16:38:59  rudolf
+ * fixed typo
+ *
  * Revision 1.29  2007-02-21 16:06:30  rudolf
  * licor struct now read from parsing thread and copied to status struct
  *
@@ -116,6 +119,9 @@
 #include "licor.h"
 
 #define STATUS_INTERVAL  100
+
+// define below to print out the copied data from licor
+#define DEBUG_STRUCTUREPASSING
 
 #define DEBUGLEVEL 0
 // #define DEBUG_SLAVECOM
@@ -932,12 +938,16 @@ void GetLicorData ( struct calibStatusType *ptrCalibStatus)
 	pthread_mutex_unlock(&mLicorMutex);
 
 #ifdef DEBUG_STRUCTUREPASSING
-	printf("ptrElekStatus->ButterflySlave.PositionValid:                  %05d\n\r",ptrElekStatus->ButterflySlave.PositionValid);
-	printf("ptrElekStatus->ButterflySlave.CurrentPosition:                %05d\n\r",ptrElekStatus->ButterflySlave.CurrentPosition);
-	printf("ptrElekStatus->ButterflySlave.TargetPositionGot:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionGot);
-	printf("ptrElekStatus->ButterflySlave.TargetPositionSet:              %05d\n\r",ptrElekStatus->ButterflySlave.TargetPositionSet);
-	printf("ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord:%05d\n\r",ptrElekStatus->ButterflySlave.MotorStatus.ButterflyStatusWord);
-	printf("ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord:     %05d\n\r",ptrElekStatus->ButterflySlave.CPUStatus.ButterflyCPUWord);
+	printf("ptrCalibStatus->LicorCalib.LicorTemperature: %05d\n\r",ptrCalibStatus->LicorCalib.LicorTemperature);
+	printf("ptrCalibStatus->LicorCalib.AmbientPressure:  %05d\n\r",ptrCalibStatus->LicorCalib.AmbientPressure);
+
+	printf("ptrCalibStatus->LicorCalib.CO2A:             %05d\n\r",ptrCalibStatus->LicorCalib.CO2A);
+	printf("ptrCalibStatus->LicorCalib.CO2B:             %05d\n\r",ptrCalibStatus->LicorCalib.CO2B);
+	printf("ptrCalibStatus->LicorCalib.CO2D:             %05d\n\r\n\r",ptrCalibStatus->LicorCalib.CO2D);
+
+	printf("ptrCalibStatus->LicorCalib.H2OA:             %05d\n\r",ptrCalibStatus->LicorCalib.H2OA);
+	printf("ptrCalibStatus->LicorCalib.H2OB:             %05d\n\r",ptrCalibStatus->LicorCalib.H2OB);
+	printf("ptrCalibStatus->LicorCalib.H2OD:             %05d\n\r\n\r",ptrCalibStatus->LicorCalib.H2OD);
 
 #endif
      }
@@ -997,7 +1007,7 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
     DAC_Address=ELK_DAC_BASE_CALIB+Card*ELK_DAC_NUM_ADR;   
     
     
-    if (SetChannel>CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
+   if (SetChannel>=CALIB_VMFC_ABS) {  // do we want to give the flow in counts instead of 
         MFCFlow=SetFlow;
         SetChannel=SetChannel-CALIB_VMFC_ABS;
         if (SetChannel>=MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CARD) {
@@ -1260,8 +1270,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.29 2007-02-21 16:06:30 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.29 2007-02-21 16:06:30 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.30 2007-02-21 16:38:59 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.30 2007-02-21 16:38:59 rudolf Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
