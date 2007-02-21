@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 18:07:07 $ by $Author: harder $
+ * $RCSfile: elekIOcalib.c,v $ last changed on $Date: 2007-02-21 20:21:07 $ by $Author: harder $
  *
  * $Log: elekIOcalib.c,v $
+ * Revision 1.36  2007-02-21 20:21:07  harder
+ * send status to markus laptop
+ *
  * Revision 1.35  2007-02-21 18:07:07  harder
  * fix syntax
  *
@@ -157,7 +160,7 @@ enum InPortListEnum
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-   ELEK_STATUS_OUT,                // port for outgoing messages to status
+     CALIB_STATUS_OUT,                // port for outgoing messages to status
      ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
      ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
      ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
@@ -184,7 +187,8 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
 {
    // order in list defines sequence of polling
     /* Name           ,PortNo                        , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
-     {"Status"        ,UDP_ELEK_STATUS_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
+     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
+//     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"ElekIOStatus"  ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
      {"ElekIOServer"  ,UDP_ELEK_MANUAL_INPORT        , ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER  , -1, 0,  UDP_OUT_PORT},
      {"Manual"        ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN        , IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT},
@@ -212,6 +216,10 @@ static struct MFCConfigType MFCConfig[MAX_MFC_CARD_CALIB*MAX_MFC_CHANNEL_PER_CAR
       {.MaxFlow=5000UL,  .SetSlope=4.8307e-2, .SetOffset=-1.281, .MeasSlope=3.5217, .MeasOffset=-9992.05},   // Licor Ref
       {.MaxFlow=5000UL,  .SetSlope=4.8305e-2, .SetOffset=1.0291, .MeasSlope=3.5215, .MeasOffset=-10000.85},   // Licor measure
     };
+
+
+static double RatioDryHumid=0.0;      /* Ratio of Dry to Humid Flow rate */
+static double SumDryHumid=0.0;        /*  Sum of Dry and Humid Flow rate */
 
 
 /**********************************************************************************************************/
@@ -1073,8 +1081,8 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
 
 int SetCalibFlow ( struct calibStatusType *ptrCalibStatus, int SetChannel, uint64_t SetFlow)
 {
-   static double RatioDryHumid=0.0;      /* Ratio of Dry to Humid Flow rate */
-   static double SumDryHumid=0.0;        /*  Sum of Dry and Humid Flow rate */
+   extern double RatioDryHumid;      /* Ratio of Dry to Humid Flow rate */
+   extern double SumDryHumid;        /*  Sum of Dry and Humid Flow rate */
 
     int ret;
     
@@ -1121,7 +1129,7 @@ void PrintCalibData(struct calibStatusType *ptrCalibStatus)
         printf("Licor Humid Set %5d is %5d Calc %6.3f\n",ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].SetFlow,
                                                          ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[Channel].Flow,
                                                          FlowRate[Channel]);
-      printf(" Dry+Hum FlowRate %6.3f Dry/Hum Ratio %6.3f\n",FlowRate[0]+FlowRate[1],FlowRate[1]/FlowRate[0]);
+      printf("Dry+Hum FlowRate %6.3f Dry/Hum Ratio %6.3f\n",FlowRate[0]+FlowRate[1],FlowRate[1]/FlowRate[0]);
       printf("Heater is at %04.2f °C Water Set %04.2f °C Is %04.2f °CdContr %d\n\r", 
               ((double)ptrCalibStatus->PIDRegulator.ActualValueHeater)/100.0 - 273.15f,
               ((double)ptrCalibStatus->PIDRegulator.Setpoint)/100.0-273.15f, 
@@ -1294,8 +1302,8 @@ int main(int argc, char *argv[])
 
    // output version info on debugMon and Console
    //
-   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.35 2007-02-21 18:07:07 harder Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.35 2007-02-21 18:07:07 harder Exp $) for ARM\n",VERSION);
+   printf("This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.36 2007-02-21 20:21:07 harder Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOcalib Version %3.2f (CVS: $Id: elekIOcalib.c,v 1.36 2007-02-21 20:21:07 harder Exp $) for ARM\n",VERSION);
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
     /* init all modules */
@@ -1379,6 +1387,9 @@ int main(int argc, char *argv[])
 	 GetCalibStatus(&CalibStatus,IsMaster);
 	 gettimeofday(&GetStatusStopTime, NULL);
 	 PIDAction(&CalibStatus);  
+    // Send Status to Status process
+    SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct calibStatusType), &CalibStatus);
+
 	 // as long as we don't have a status output we print the flow rates here
 	   PrintCalibData(&CalibStatus);
        } else { 
@@ -1635,3 +1646,4 @@ int main(int argc, char *argv[])
    
    exit(EXIT_SUCCESS);
 }
+i   
