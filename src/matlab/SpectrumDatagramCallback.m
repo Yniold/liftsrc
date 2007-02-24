@@ -34,6 +34,10 @@ if(Bytes > 0)
     MyCallbackData.ThePlotBuffer(DataOffset+1:EndOfTarget,1) = TheDataMatrix(1:end,1);
 
     if(sum(MyCallbackData.PacketsSeen) == size(MyCallbackData.PacketsSeen,1))
+        % make sure we empty object buffer
+        if Object.BytesAvailable > 0
+            fread(Object,Object.BytesAvailable);
+        end
         % processing %    
         WaveLen = zeros(size(MyCallbackData.ThePlotBuffer,1),1);
         PixelVal = zeros(size(MyCallbackData.ThePlotBuffer,1),1);
