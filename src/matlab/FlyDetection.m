@@ -178,7 +178,7 @@ end
 
 % check Pitot Zeroing Valve
 if bitget(statusData(lastrow,col.Valve1armAxis),12)
-    set(handles.tglPitot,'BackgroundColor','r','String','Pitot 0 ON','Value',1);
+    set(handles.tglPitot,'BackgroundColor','y','String','Pitot 0 ON','Value',1);
 else
     set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF','Value',0);
 end
@@ -875,7 +875,7 @@ end
 
 % check Pitot Zeroing Valve
 if bitget(statusData(lastrow,col.Valve1armAxis),12)
-    set(handles.tglPitot,'BackgroundColor','r','String','Pitot 0 ON');
+    set(handles.tglPitot,'BackgroundColor','y','String','Pitot 0 ON');
 else
     set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF');
 end
@@ -1848,7 +1848,7 @@ col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12);
-        set(hObject,'BackgroundColor','r','String','Pitot 0 ON');
+        set(hObject,'BackgroundColor','y','String','Pitot 0 ON');
     else
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
         set(hObject,'BackgroundColor','c','String','Pitot 0 OFF');
