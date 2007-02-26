@@ -24,7 +24,7 @@ function varargout = horus(varargin)
 
 % Edit the above text to modify the response to help horus
 
-% Last Modified by GUIDE v2.5 12-Feb-2007 17:35:47
+% Last Modified by GUIDE v2.5 26-Feb-2007 12:21:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -882,3 +882,12 @@ if isfield(handles,'tcpBlower')
         set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
     end                
 end
+
+
+% --- Executes on button press in Spectrometer.
+function Spectrometer_Callback(hObject, eventdata, handles)
+% hObject    handle to Spectrometer (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
