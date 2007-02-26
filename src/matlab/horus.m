@@ -430,7 +430,7 @@ if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+2 | TDyelaser(lastrow)<data.TDyelaserset-2 |statusData(lastrow,col.IFilament)<10100
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
