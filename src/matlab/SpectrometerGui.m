@@ -79,11 +79,17 @@ MySocket.InputBufferSize = 8192;
 MySocket.ByteOrder = 'littleEndian';
 MySocket.DatagramTerminateMode = 'on';
 MySocket.DatagramReceivedFcn={'SpectrumDatagramCallback'};
-fopen(MySocket);
-handles.MySocket=MySocket;
+try fopen(MySocket);
+    handles.MySocket=MySocket;
+    data.MySocket=MySocket;
+catch 
+    delete(MySocket);
+%    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+end;
 
 % Update handles structure
 guidata(hObject, handles);
+setappdata(handles.output, 'Specdata', data);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -102,7 +108,9 @@ function pshExit_Callback(hObject, eventdata, handles)
 % hObject    handle to pshExit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fclose(handles.MySocket);
-delete(handles.MySocket);
+if isfield(handles,'MySocket')
+    fclose(handles.MySocket);
+    delete(handles.MySocket);
+end
 close(gcbf);
 
