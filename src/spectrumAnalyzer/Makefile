@@ -3,7 +3,7 @@
 #
 
 VERSION=0.1
-PROJECT=spectrumAnalyzer
+PROJECT=spectrometerServer
 
 SHELL=/bin/sh
 
@@ -16,6 +16,7 @@ CPPFLAGS :=-DRUNONPC
 LDFLAGS :=-lrt
 endif
 
+ifneq ($(ARMBUILD),1)
 CC := $(CROSS_COMPILE)gcc
 export CC
 
@@ -38,8 +39,11 @@ $(PROJECT) : $(PROJECT).c $(modules) $(headers)
 	     $(CC) $(CPPFLAGS) $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
 	     cp $(PROJECT) $(INSTDIR)
 
+all: $(PROJECT)
+
+endif
+
 clean: 
 	rm -f *.o
-	rm -f spectrumAnalyzer
+	rm -f spectrometerServer
 	
-all: $(PROJECT)

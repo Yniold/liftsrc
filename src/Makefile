@@ -52,7 +52,7 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
-#	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) DESTDIR=$(DESTDIR) $(flags) -C spectrumAnalyzer
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
 
 install:
@@ -82,6 +82,7 @@ else
 	cp $(DESTDIR)/statView ../bin
 	cp $(DESTDIR)/etalon ../bin
 	cp $(DESTDIR)/debugMon ../bin
+	cp $(DESTDIR)/spectrometerServer ../bin
 	chmod +x $(DESTDIR)*
 	chmod +x ./scripts/*
 endif
@@ -106,7 +107,7 @@ clean:
 	rm -f ./bin/etalon
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
-	rm -f ./spectrumAnalyzer/spectrumAnalyzer
+	rm -f ./spectrumAnalyzer/spectrometerServer
 	rm -f ./spectrumAnalyzer/*.o
 # test if there is a directory called 'bin' in '../' before trying to delete its contents
 	if [ -d ../bin ]; then rm -f ../bin/debugMon; fi
@@ -116,6 +117,7 @@ clean:
 	if [ -d ../bin ]; then rm -f ../bin/elekStatus; fi
 	if [ -d ../bin ]; then rm -f ../bin/statView; fi
 	if [ -d ../bin ]; then rm -f ../bin/etalon; fi
+	if [ -d ../bin ]; then rm -f ../bin/spectrometerServer; fi
 	
 #	$(MAKE) DESTDIR=$(DESTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o
