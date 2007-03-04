@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-04 13:41:59 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-04 19:28:41 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.2  2007-03-04 19:28:41  rudolf
+ * added parsing for data into the right structure elements
+ *
  * Revision 1.1  2007-03-04 13:41:59  rudolf
  * created new server for auxilliary data like weather data, ships GPS etc
  *
@@ -73,7 +76,7 @@ enum OutPortListEnum
      MAX_MESSAGE_OUTPORTS
 };
 
-static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
+struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
 {
    // order in list defines sequence of polling
     /* Name   , PortNo                    , ReversePort  , IPAddr, fdSocket, MaxMsg, Direction */
@@ -83,7 +86,7 @@ static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
    //     {"ElekIOCalibIn" , UDP_ELEK_CALIB_DATA_INPORT    , -1             , IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
 };
 
-static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
+struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
 {
    // order in list defines sequence of polling
     /* Name           ,PortNo                        , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
@@ -100,7 +103,7 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
      {"ElekIOcalibOut",UDP_ELEK_CALIB_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT}
 };
 
-static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
+struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 {
    // order defines sequence of wake up after timer
     /* TaskName TaskConn TaskWantStatusOnPort */
@@ -173,7 +176,7 @@ int InitMeteoBox(struct auxStatusType *ptrAuxStatus)
 
    if(ret == 1)
      {
-	sprintf(debugbuf,"elekIOaux : Can't create LICOR Thread!\n\r");
+	sprintf(debugbuf,"elekIOaux : Can't create MeteoBox Thread!\n\r");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
 	return (INIT_MODULE_FAILED);
@@ -352,7 +355,7 @@ int ChangePriority()
    if (-1==(ret=sched_setscheduler(0,SCHED_RR, &param)))
      {
 	char aBuffer[1024];
-	printf("kann scheduler nicht wechseln: %s",strerror(errno));
+	printf("kann scheduler nicht wechseln: %s\r\n",strerror(errno));
      }
 
    return (ret);
@@ -445,11 +448,11 @@ int main(int argc, char *argv[])
    //
 
 #ifdef RUNONPC
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.1 2007-03-04 13:41:59 rudolf Exp $) for I386\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.1 2007-03-04 13:41:59 rudolf Exp $) for I386\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for I386\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for I386\n",VERSION);
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.1 2007-03-04 13:41:59 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.1 2007-03-04 13:41:59 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 

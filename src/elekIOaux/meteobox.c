@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-04 13:41:59 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-04 19:28:41 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.2  2007-03-04 19:28:41  rudolf
+// added parsing for data into the right structure elements
+//
 // Revision 1.1  2007-03-04 13:41:59  rudolf
 // created new server for auxilliary data like weather data, ships GPS etc
 //
@@ -42,7 +45,7 @@ extern struct MessagePortType MessageOutPortList[];
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-     CALIB_STATUS_OUT,                // port for outgoing messages to status
+   CALIB_STATUS_OUT,                // port for outgoing messages to status
      ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
      ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
      ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
@@ -56,16 +59,39 @@ enum OutPortListEnum
 };
 
 // Variables
-
+//
 typedef void Sigfunc (int);
-char aUDPMessage[1024];
+volatile int iTryCounts = 0;
+char aUDPBuffer[1024];
+bool bGiveUp = false;
 
 // empty handler for connect() with timeout
 static void connect_timeout_handler(int signo)
 {
    extern struct MessagePortType MessageOutPortList[];
-   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : can't connect to MeteoBox for 2000ms, still trying...");
+   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : can't connect to MeteoBox for 2 seconds, still trying...");
    printf("elekIOaux : can't connect to MeteoBox for 2000ms, still trying...\n\r");
+   return;
+};
+
+// empty handler for readl() with timeout
+static void read_timeout_handler(int signo)
+{
+   extern struct MessagePortType MessageOutPortList[];
+
+   if(++iTryCounts < 11)
+     {
+
+	sprintf(aUDPBuffer,"elekIOaux : did not get any data from MeteoBox for %02d seconds, try # %02d...",iTryCounts*2, iTryCounts);
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],aUDPBuffer);
+
+	printf("elekIOaux : did not get any data from MeteoBox for %02d seconds, try # %02d...\n\r",iTryCounts*2, iTryCounts);
+     }
+   else
+     {
+	bGiveUp = true;
+     };
+
    return;
 };
 
@@ -73,8 +99,14 @@ static void connect_timeout_handler(int signo)
 //
 struct sMeteoBoxType sMeteoBoxThread =
 {
-   .iFD = -1,
-     .iCommand = -1,
+   .iFD = -1,                      /* socket FD */
+     .iValidFlag = 0,                /* signal if data is valid or not to main thread */
+
+     .dWindSpeed = 0,                /* Windspeed in m/s */
+     .uiWindDirection = 0,           /* 45° resolution */
+     .dRelHum = 0.0f,                /* 000.0 - 100.0 % */
+     .dAirTemp = 0.0f,               /* Temperature in degree celsius */
+     .dGasSensorVoltage = 0.0f       /* dirt sensor */
 };
 
 pthread_mutex_t mMeteoBoxMutex;
@@ -103,11 +135,16 @@ int MeteoBoxInit(void)
 //
 void MeteoBoxThreadFunc(void* pArgument)
 {
+   // buffer for one line
+   char aTCPBuffer[1024];
+
    extern struct MessagePortType MessageOutPortList[];
    int iRetVal;
    Sigfunc *sigfunc;
 
    char cTheChar;
+   char *pTheBuffer = aTCPBuffer;
+   int iNumChars;
 
    // socket structure
    struct sockaddr_in ServerAddress;
@@ -118,65 +155,160 @@ void MeteoBoxThreadFunc(void* pArgument)
    // init mutex before creating thread
    pthread_mutex_init(&mMeteoBoxMutex,NULL);
 
-   // try to connect till success
    while(1)
      {
-
-	// create SocketFD
-	sStructure->iFD = socket(AF_INET, SOCK_STREAM, 0);
-	memset(&ServerAddress,0, sizeof(ServerAddress));
-
-	// fill out structure for connection to XPORT
-	ServerAddress.sin_family = AF_INET;
-	ServerAddress.sin_port = htons(XPORT_PORTNUMBER);
-	ServerAddress.sin_addr.s_addr = inet_addr(XPORT_IP_ADDRESS);
-
-	// save old handler and set new one
-	sigfunc = signal(SIGALRM, connect_timeout_handler);
-
-	// set timeout to 2 seconds
-	if(alarm(2) != 0)
+	// try to connect till success
+	while(1)
 	  {
-	     printf("Alarm handler already set!\r\n");
-	     exit(1);
+
+	     // create SocketFD
+	     sStructure->iFD = socket(AF_INET, SOCK_STREAM, 0);
+	     memset(&ServerAddress,0, sizeof(ServerAddress));
+
+	     // fill out structure for connection to XPORT
+	     ServerAddress.sin_family = AF_INET;
+	     ServerAddress.sin_port = htons(XPORT_PORTNUMBER);
+	     ServerAddress.sin_addr.s_addr = inet_addr(XPORT_IP_ADDRESS);
+
+	     // save old handler and set new one
+	     sigfunc = signal(SIGALRM, connect_timeout_handler);
+
+	     // set timeout to 2 seconds
+	     if(alarm(2) != 0)
+	       {
+		  printf("Alarm handler already set!\r\n");
+		  exit(1);
+	       };
+
+	     // try connection to XPORT using a timeout
+	     if((iRetVal = connect(sStructure->iFD, (const struct sockaddr*)&ServerAddress, sizeof(ServerAddress))) < 0)
+	       {
+		  close(sStructure->iFD);
+		  if(errno == EINTR)
+		    errno = ETIMEDOUT;
+	       }
+	     else
+	       {
+		  break;
+	       };
 	  };
+	// we are connected now
+	// Turn off alarm
+	alarm(0);
 
-	// try connection to XPORT using a timeout
-	if((iRetVal = connect(sStructure->iFD, (const struct sockaddr*)&ServerAddress, sizeof(ServerAddress))) < 0)
-	  {
-	     close(sStructure->iFD);
-	     if(errno == EINTR)
-	       errno = ETIMEDOUT;
-	  }
-	else
-	  {
-	     break;
-	  };
-     };
-   // we are connected now
-   // Turn off alarm
-   //   alarm(0);
-   //
-   // restore old handler if any
-   //   signal(SIGALRM, sigfunc);
-   //
-   if(iRetVal < 0)
-     printf("%s\r\n",strerror(errno));
-   else
-     {
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : Connected to XPORT on MeteoBox");
-	printf("Connected to XPORT on MeteoBox\r\n");
-     }
-   ;
-   // thread will run endless till exit();
-   while(true)
-     {
-	iRetVal = read(sStructure->iFD,&cTheChar,1);
-	if(iRetVal>0)
-	  printf("%c",cTheChar);
-	else
+	// set handler for read timeout
+	sigfunc = signal(SIGALRM, read_timeout_handler);
+
+	if(iRetVal < 0)
 	  printf("%s\r\n",strerror(errno));
-     }
+	else
+	  {
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : Connected to XPORT on MeteoBox");
+	     printf("elekIOaux : Connected to XPORT on MeteoBox\r\n");
+	  }
+	;
+
+	// read with timeout
+	while(bGiveUp == false)
+	  {
+	     sigfunc = signal(SIGALRM, read_timeout_handler);
+	     alarm(2);
+	     //	     printf("entering read()\r\n");
+
+	     if( (iRetVal = read(sStructure->iFD,&cTheChar,1)) < 0)
+	       {
+
+		  if(errno == EINTR)
+		    printf("elekIOaux : socket timeout\r\n");
+		  else
+		    printf("read() error\r\n");
+	       }
+	     // we got data in time
+	     else
+	       {
+		  alarm(0);
+
+		  //		  printf("Got a Byte\r\n");
+
+		  // check for start of buffer
+		  if(cTheChar == '\n')
+		    {
+		       pTheBuffer = aTCPBuffer;
+		       iNumChars = 0;
+		    }
+		  else
+		    // check for end of buffer
+		    if((cTheChar == '\r') && (iNumChars > 0))
+		      {
+			 aTCPBuffer[iNumChars] = 0;
+			 MeteoBoxParseBuffer(aTCPBuffer,iNumChars,sStructure);
+			 pTheBuffer = aTCPBuffer;
+			 iNumChars = 0;
+		      }
+		  else
+		    // store char
+		    if(iNumChars < 1024)
+		      {
+			 (*pTheBuffer) = cTheChar;
+			 pTheBuffer++;
+			 iNumChars++;
+		      }
+		  else
+		    {
+		       printf("Buffer overflow\n\r");
+		       pTheBuffer = aTCPBuffer;
+		       iNumChars = 0;
+		    };
+	       };
+	  };
+	printf("Trying to reconnect!\r\n");
+	close(sStructure->iFD);
+     };
 
 }
 
+void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDataStructure)
+{
+   char* pRetVal;
+   int iTokenNumber;
+
+   pRetVal = strtok(pBuffer,";");
+
+   while(true)
+     {
+	if(pRetVal != NULL)
+	  {
+	     iTokenNumber++;
+//	     printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
+	     switch(iTokenNumber)
+	       {
+		case 3:
+		  sDataStructure->dWindSpeed = strtod(pRetVal,NULL);
+		
+		case 9:
+		  sDataStructure->dAirTemp = strtod(pRetVal,NULL);
+
+		case 12:
+		  sDataStructure->dRelHum = strtod(pRetVal,NULL);
+
+		case 15:
+		  sDataStructure->uiWindDirection= atoi(pRetVal);
+
+		case 18:
+		  sDataStructure->dGasSensorVoltage = strtod(pRetVal,NULL);
+
+		default:
+		  break;
+	       };
+	     pRetVal=strtok(NULL,";");
+	  }
+	else
+	  break;
+
+     };
+     printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
+     printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
+     printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
+     printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
+     printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
+};
