@@ -315,7 +315,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
 end
 
 % reset TempCard if needed
-if double(statusData(:,col.TempDyelaser))<27000
+if ( double(statusData(:,col.TempDyelaser))<27000 |  | double(statusData(:,col.TempMCP1))<20000 )
     system('resetTemp');
 end
 
