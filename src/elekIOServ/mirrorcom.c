@@ -26,8 +26,6 @@ unsigned char ucMirrorDeviceOpened = false;
 char aMirrorRxBuffer[1024];
 struct sMirrorType sMirrorThread = {-1,0,0,0,0,0,0,0,0,0};
 
-
-
 pthread_mutex_t mMirrorMutex;
 
 // open tty and create the thread

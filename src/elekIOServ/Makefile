@@ -24,7 +24,7 @@ export CC
 
 LDFLAGS+=-ggdb
 
-modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o NMEAParser.o serial.o butterfly.o
+modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o NMEAParser.o serial.o butterfly.o mirrorcom.o
 
 headers=elekIOServ.h ../include/elekIO.h ../include/elekIOPorts.h
 
