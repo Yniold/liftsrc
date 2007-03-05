@@ -1046,6 +1046,7 @@ function pushStop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 fprintf(handles.serport,'hal');
+%system(['/lift/bin/eCmd @Lift s mirrorstop']);
 
 
 % --- Executes on button press in pushgoto.
