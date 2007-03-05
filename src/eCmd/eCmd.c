@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.35 $
-last change on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.36 $
+last change on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.36  2007-03-05 20:51:32  martinez
+debugging mirrors
+
 Revision 1.35  2007-03-05 16:06:58  martinez
 mirror moving implemented
 
@@ -193,7 +196,7 @@ int WriteCommand(uint16_t Addr, uint16_t Value) {
 	
 } /* WriteCommand */
 
-int SetStatusCommand(uint16_t MsgType, uint16_t Addr, uint16_t Value) {
+int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value) {
 
     extern uint64_t MessageNumber;
     extern struct MessagePortType MessageOutPortList[];
@@ -256,7 +259,7 @@ int main(int argc, char *argv[])
     int MessagePort;
 
     uint16_t Addr;
-    uint16_t Value;
+    int64_t Value;
     uint16_t MsgType;
 
     int ret;
@@ -273,7 +276,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.35 2007-03-05 16:06:58 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.36 2007-03-05 20:51:32 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -623,14 +626,18 @@ int main(int argc, char *argv[])
 	    };	    	    
 	    
 	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
+	      printf("ArgCount %d\n",ArgCount);
 	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
 	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR_AXIS))	{
 			MsgType=MSG_TYPE_MIRROR_MOVE;
 		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
+      	      printf("ArgCount %d\n",ArgCount);
 		} else {
 			printf("Error please supply valid numbers for mirror and axis: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
 		}
-		Value=strtol(argv[ArgCount+3],NULL,0);
+		printf("Value : %d\n",ArgCount);
+		Value=(int64_t)strtol(argv[ArgCount+3],NULL,0);
+		printf("Value : %lld from #%s#\n",Value,argv[ArgCount+3]);
 	      } else { // we don't have enough parameter
 		printf("Error please supply all parameters for %s\n",argv[ArgCount]);
 	      }

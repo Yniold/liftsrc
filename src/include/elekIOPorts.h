@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.17  2007-03-05 20:51:32  martinez
+* debugging mirrors
+*
 * Revision 1.16  2007-03-05 16:06:58  martinez
 * mirror moving implemented
 *
@@ -149,9 +152,12 @@ struct ElekMessageType {
     uint64_t MsgTime;                   // Time of Message
     uint16_t MsgType;                   // Message Type
     uint16_t Addr;                      // address of elektronik port
-    uint64_t Value;                     // value to transmit or recieve depending on MsgType
+    int64_t Value;                     // value to transmit or recieve depending on MsgType
     uint16_t Status;                    // status of message (error, success...)
 }; /* ElekMessageType */
 
-
+union Unsigned2SignedType {
+int64_t i_signed;
+uint64_t i_unsigned;
+}; /* to treat unsigned variables as signed */
 

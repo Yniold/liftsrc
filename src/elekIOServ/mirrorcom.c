@@ -7,10 +7,10 @@
 //
 
 //#define DEBUG_MUTEX
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_SETPOS
 
-#undef DEBUG
+//#undef DEBUG
 #undef DEBUG_SETPOS
 #undef DEBUG_MUTEX
 
@@ -40,7 +40,7 @@ int MirrorInit(void)
 	printf("In MirrorInit(): FD is %d\n\r", iMirrorFile);
 #endif
 
-	iRetCode = pthread_create(&ptMirrorThread, NULL, (void*)&MirrorThreadFunc,(void*) &sMirrorThread);
+       	iRetCode = pthread_create(&ptMirrorThread, NULL, (void*)&MirrorThreadFunc,(void*) &sMirrorThread);
 	if(iRetCode > 0)
 	{
 		printf("In MirrorInit: pthread_create failed!\n\r");
@@ -73,23 +73,31 @@ void MirrorThreadFunc(void* pArgument)
 	// init mutex before creating thread
  //	mMirrorMutex = PTHREAD_MUTEX_INITIALIZER;	
 	pthread_mutex_init(&mMirrorMutex,NULL);
+	memset(aStatusLine,0,250);
 
+	
 	// thread will run endless till exit();
 	while(true)
 	{
+#ifdef DEBUG
+		printf("CommandStatus : %d \n\r",pStructure->CommandSent);
+#endif
+	
 		//read only if command has been sent and response is therefore expected
 		if (pStructure->CommandSent == 1) 
 		{
+			memset(aMirrorRxBuffer,0,1000);
 			iBytesRead = read(pStructure->iFD, aMirrorRxBuffer, 1024); // read non blocking
 #ifdef DEBUG
-			printf("passed read()\n\r");
+			printf("passed read() %d #%s#\n\r",iBytesRead,aMirrorRxBuffer);
 #endif
 			if(iBytesRead > 0)
 			{
+			pCurrentChar = aMirrorRxBuffer;
 #ifdef DEBUG
-				printf("Index = %d, bytesread = %d, seen = %d, char = %c, Index = %d\n\r",iIndex, iBytesRead, ucEndOfResponseSeen,*pCurrentChar, iStatusLineIndex);
+				printf("bytesread = %d, char = %c, Index = %d\n\r", iBytesRead, *pCurrentChar, iStatusLineIndex);
 #endif
-				pCurrentChar = aMirrorRxBuffer;
+				
 				for(iIndex = 0; iIndex < iBytesRead; iIndex++)
 				{
 					if(iStatusLineIndex < 256)
@@ -102,6 +110,7 @@ void MirrorThreadFunc(void* pArgument)
 					{
 						MirrorParseLine(aStatusLine, iStatusLineIndex, pStructure);
 						iStatusLineIndex = 0;
+						memset(aStatusLine,0,250);
 					};
 					
 					pCurrentChar++;
@@ -112,6 +121,9 @@ void MirrorThreadFunc(void* pArgument)
 		pthread_mutex_lock(&mMirrorMutex);
 		SetPos = pStructure->RelPositionSet;
 		pthread_mutex_unlock(&mMirrorMutex);
+#ifdef DEBUG
+		printf("SetPos = %d\n\r",SetPos);
+#endif
 
 		// check for emergency stop command
 		if (pStructure->StopFlag ==1)
@@ -137,6 +149,10 @@ void MirrorThreadFunc(void* pArgument)
 		// move motor giving all necessary commands and reading out the buffer sequentially
 		if(SetPos != 0)
 		{
+#ifdef DEBUG
+		  printf("MirrorCom: Setpos %d CommandStatus %d\n", 
+			 SetPos, pStructure->PosCommandStatus);
+#endif
 			if (pStructure->CommandSent ==0)
 			{
 				switch (pStructure->PosCommandStatus) {
@@ -152,7 +168,10 @@ void MirrorThreadFunc(void* pArgument)
 					channel = mirrorbitnumber%3;
 
 					// write vel command and set flag to read buffer
-					iSize = sprintf(aBuffer,"vel a%d %d=100\r", driver, channel);			
+					iSize = sprintf(aBuffer,"vel a%d %d=100\r", driver, channel);		
+#ifdef DEBUG
+		  			printf("MirrorCom: send Command :#%s# \n", aBuffer); 
+#endif	
 					if(write(pStructure->iFD, aBuffer, iSize) < 0)
 					{
 						printf("Write failed!\n\r");
@@ -273,6 +292,6 @@ void MirrorParseLine(char* aBuffer, int iLength, struct sMirrorType* pStructure)
 	}		
 
 #ifdef DEBUG
-	printf("position read: %d\n\r",Position);
+	printf("position read: %ld\n\r",Position);
 #endif
 };

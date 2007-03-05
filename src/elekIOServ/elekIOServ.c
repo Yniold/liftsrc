@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-05 16:36:40 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.67  2007-03-05 20:51:32  martinez
+ * debugging mirrors
+ *
  * Revision 1.66  2007-03-05 16:36:40  martinez
  * corrected errors
  *
@@ -236,6 +239,7 @@
 #define STATUS_INTERVAL  100
 
 #define DEBUGLEVEL 0
+// #define DEBUG_MIRROR
 
 //#define DEBUG_NOHARDWARE
 
@@ -1417,14 +1421,14 @@ int InitMirror(struct elekStatusType *ptrElekStatus, int IsMaster)
 
         if(ret == 1)
 	  {
-	     sprintf(debugbuf,"ElekIOServ(S) : Can't create MirrorThread!\n\r");
+	     sprintf(debugbuf,"ElekIOServ(M) : Can't create MirrorThread!\n\r");
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
 	     return (INIT_MODULE_FAILED);
 	  };
 
         // success
-        sprintf(debugbuf,"ElekIOServ(S) : Mirror Thread running!\n\r");
+        sprintf(debugbuf,"ElekIOServ(M) : Mirror Thread running!\n\r");
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
         return (INIT_MODULE_SUCCESS);
@@ -2601,25 +2605,33 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
    uint16_t       Control;
    char           buf[GENERIC_BUF_LEN];
    uint16_t       MirrorNumber, AxisNumber, mirrorbitnumber;
-   
-   
+   uint16_t       PosCommandStatus;
+   uint32_t       CurrentAbsPos;
 
    if(IsMaster)
      {
 	pthread_mutex_lock(&mMirrorMutex);
+
      	MirrorNumber=sMirrorThread.Mirror;
      	AxisNumber=sMirrorThread.Axis;
-	ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = sMirrorThread.CurrentAbsPos;
-	mirrorbitnumber = 2*MirrorNumber+AxisNumber;
-	if (sMirrorThread.PosCommandStatus==POS_MOVING)
-	{
-		bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
-	} else {
-		bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
-	}	
+	PosCommandStatus=sMirrorThread.PosCommandStatus;
+        CurrentAbsPos=sMirrorThread.CurrentAbsPos;
 	pthread_mutex_unlock(&mMirrorMutex);
+
+	if (MirrorNumber<MAX_MIRROR && AxisNumber<MAX_MIRROR_AXIS) { 
+	  
+	  ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
+	  mirrorbitnumber = 2*MirrorNumber+AxisNumber;
+	  if (PosCommandStatus==POS_MOVING)
+	    {
+	      bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
+	    } else {
+	      bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
+	    }
+	}
+	  
 	
-#ifdef DEBUG_STRUCTUREPASSING
+#ifdef DEBUG_MIRROR
 	printf("ptrElekStatus->Mirror[%d].Axis[%d].CurrentPosition:	         %05d\n\r",MirrorNumber,AxisNumber,ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position);
 #endif
      } else {
@@ -2866,7 +2878,7 @@ int main(int argc, char *argv[])
    int    MessagePort;
    int    MessageNumber;
    struct ElekMessageType Message;
-
+   union Unsigned2SignedType *u2s;
    int SlaveNum;
    int Task;
    int Channel;
@@ -2907,13 +2919,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.66 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.66 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.66 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.66 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3268,7 +3280,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MIRROR_MOVE:
 			    if (MessagePort!=ELEK_MIRROR_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_MOVE from %4d Port %04x Value %05d (%04x)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_MOVE from %4d Port %04x Value %05lld (%04x)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3277,7 +3289,8 @@ int main(int argc, char *argv[])
 			    
 			    Mirror=(Message.Addr >> 8) & 0x00FF;
 			    Axis=(Message.Addr & 0x00FF);
-			    
+//			    u2s=(union Unsigned2SignedType*) &(Message.Value);
+//			    printf("Value : %d \n\r",(*u2s).i_signed);
 			    if ((Mirror < MAX_MIRROR) && (Axis < MAX_MIRROR_AXIS))	
 			    {
 				    pthread_mutex_lock(&mMirrorMutex);
@@ -3285,12 +3298,15 @@ int main(int argc, char *argv[])
 				    sMirrorThread.Mirror=Mirror;
 				    sMirrorThread.Axis=Axis;
 
-				    sMirrorThread.RelPositionSet = (uint32_t)Message.Value;
+				    sMirrorThread.RelPositionSet = (int32_t)Message.Value;
 			    
 				    pthread_mutex_unlock(&mMirrorMutex);
 				    
 				    Message.Status=1;
 			    } else {
+			      sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
+			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
 				    Message.Status=0;
 			    }
 
