@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-02-13 20:42:29 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.65  2007-03-05 16:06:58  martinez
+ * mirror moving implemented
+ *
  * Revision 1.64  2007-02-13 20:42:29  harder
  * added warning message if DEBUG_NOHARDWARE is set
  *
@@ -225,6 +228,7 @@
 #include "NMEAParser.h"
 #include "serial.h"
 #include "butterfly.h"
+#include "mirrorcom.h"
 
 #define STATUS_INTERVAL  100
 
@@ -248,6 +252,7 @@ enum InPortListEnum
    // this list has to be coherent with MessageInPortList
    ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
      ELEK_ETALON_IN,       // port for incoming commands from  etalon
+     ELEK_MIRROR_IN,       // port for incoming commands from  mirror
      ELEK_SCRIPT_IN,       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
      ELEK_STATUS_IN,       // port to receive status data from slaves
      MAX_MESSAGE_INPORTS
@@ -262,6 +267,8 @@ enum OutPortListEnum
      ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
      ELEK_ETALON_OUT,                // port for outgoing messages to etalon
      ELEK_ETALON_STATUS_OUT,         // port for outgoing messages to etalon status, so etalon is directly informed of the status
+     ELEK_MIRROR_OUT,                // port for outgoing messages to mirror
+     ELEK_MIRROR_STATUS_OUT,         // port for outgoing messages to mirror status, so mirror is directly informed of the status
      ELEK_SCRIPT_OUT,                // port for outgoing messages to script
      ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
      ELEK_ELEKIO_SLAVE_MASTER_OUT,   // port for outgoing data packets from slave to master
@@ -274,6 +281,7 @@ static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
     /* Name   , PortNo                    , ReversePort  , IPAddr, fdSocket, MaxMsg, Direction */
      {"Manual"  , UDP_ELEK_MANUAL_INPORT        , ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
      {"Etalon"  , UDP_ELEK_ETALON_INPORT        , ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
+     {"Mirror"  , UDP_ELEK_MIRROR_INPORT        , ELEK_MIRROR_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
      {"Script"  , UDP_ELEK_SCRIPT_INPORT        , ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT},
      {"ElekIOIn", UDP_ELEK_SLAVE_DATA_INPORT    , -1             , IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
 };
@@ -288,6 +296,8 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
      {"Manual"      ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN        , IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT},
      {"Etalon"      ,UDP_ELEK_ETALON_OUTPORT       , ELEK_ETALON_IN        , IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"EtalonStatus",UDP_ELEK_ETALON_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
+     {"Mirror"      ,UDP_ELEK_MIRROR_OUTPORT       , ELEK_MIRROR_IN        , IP_MIRROR_CLIENT, -1, 0,  UDP_OUT_PORT},
+     {"MirrorStatus",UDP_ELEK_MIRROR_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"Script"      ,UDP_ELEK_SCRIPT_OUTPORT       , ELEK_SCRIPT_IN        , IP_SCRIPT_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"DebugPort"   ,UDP_ELEK_DEBUG_OUTPORT        , -1                    , IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT},
      {"ElekIOOut"   ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT}
@@ -298,6 +308,7 @@ static struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
    // order defines sequence of wake up after timer
     /* TaskName TaskConn TaskWantStatusOnPort */
      {"Etalon",     ELEK_ETALON_OUT,ELEK_ETALON_STATUS_OUT},    // Etalon Task needs Status info
+     {"Mirror",     ELEK_MIRROR_OUT,ELEK_MIRROR_STATUS_OUT},    // Etalon Task needs Status info
      {"Script",     ELEK_SCRIPT_OUT,                    -1},
      {      "",                  -1,                    -1}
 };
@@ -1367,6 +1378,62 @@ int InitButterfly(struct elekStatusType *ptrElekStatus, int IsMaster)
 }
 /* Init Butterfly */
 
+
+/**********************************************************************************************************/
+/* Init Mirrors
+/**********************************************************************************************************/
+
+int InitMirror(struct elekStatusType *ptrElekStatus, int IsMaster)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   char debugbuf[GENERIC_BUF_LEN];
+
+   int ret;
+   int i,j;
+
+   if(IsMaster)
+     {
+        // set data to initial values
+	//
+
+   	for (i=0;i<MAX_MIRROR; i++)
+   	{
+   		for (j=0;j<MAX_MIRROR_AXIS; j++)
+		{	
+        		ptrElekStatus->MirrorData.Mirror[i].Axis[j].Position = 0;
+		}
+	}
+        ptrElekStatus->MirrorData.MovingFlag.Word = 0;
+        ptrElekStatus->MirrorData.MinUVDiffCts = MIN_UV_DIFF_CTS;
+        ptrElekStatus->MirrorData.RealignMinutes = REALIGN_MINUTES;
+
+        // create mirror thread
+        ret = MirrorInit();
+
+        if(ret == 1)
+	  {
+	     sprintf(debugbuf,"ElekIOServ(S) : Can't create MirrorThread!\n\r");
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+	     return (INIT_MODULE_FAILED);
+	  };
+
+        // success
+        sprintf(debugbuf,"ElekIOServ(S) : Mirror Thread running!\n\r");
+        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+        return (INIT_MODULE_SUCCESS);
+     }
+   else // SLAVE
+     {
+        return (INIT_MODULE_FAILED); // slave has no motorized mirrors
+     }
+}
+/* Init Mirror */
+
+
 /**********************************************************************************************************/
 /* Init Modules                                                                                        */
 /**********************************************************************************************************/
@@ -1459,6 +1526,15 @@ void InitModules(struct elekStatusType *ptrElekStatus, int IsMaster)
 	else
 	  {
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(M) : init GPS failed !!");
+	  }
+
+	if (INIT_MODULE_SUCCESS == (ret=InitMirror(ptrElekStatus, IsMaster)))
+	  {
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init Mirror successfull");
+	  }
+	else
+	  {
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekIOServ(S) : init Mirror failed !!");
 	  }
      }
    else // SLAVE
@@ -2507,6 +2583,48 @@ void GetButterflyData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 /* GetButterflyData */
 
 /**********************************************************************************************************/
+/* GetMirrorData                                                                                     */
+/**********************************************************************************************************/
+
+void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   extern pthread_mutex_t mMirrorMutex;
+   extern struct sMirrorType sMirrorThread;
+
+   uint16_t       ret;
+   uint16_t       Control;
+   char           buf[GENERIC_BUF_LEN];
+   uint16_t       MirrorNumber, AxisNumber, mirrorbitnumber;
+   
+   
+
+   if(IsMaster)
+     {
+	pthread_mutex_lock(&mMirrorMutex);
+     	MirrorNumber=sMirrorThread.Mirror;
+     	AxisNumber=sMirrorThread.Axis;
+	ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = sMirrorThread.CurrentAbsPos;
+	mirrorbitnumber = 2*MirrorNumber+AxisNumber;
+	if (sMirrorThread.PosCommandStatus==POS_MOVING)
+	{
+		bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
+	} else {
+		bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
+	}	
+	
+#ifdef DEBUG_STRUCTUREPASSING
+	printf("ptrElekStatus->Mirror[%d].Axis[%d].CurrentPosition:	         %05d\n\r",MirrorNumber,AxisNumber,ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position);
+#endif
+     } else {
+	return;	/* Mirror only used in master */
+     } /* if IsMaster */
+}
+/* GetMirrorData */
+
+/**********************************************************************************************************/
 /* GetElekStatus                                                                                          */
 /**********************************************************************************************************/
 
@@ -2561,6 +2679,10 @@ void GetElekStatus ( struct elekStatusType *ptrElekStatus, int IsMaster)
    // if slave, get butterfly data
    if(!IsMaster)
      GetButterflyData(ptrElekStatus,IsMaster);
+
+   // if master, get Mirror data
+   if(IsMaster)
+     GetMirrorData(ptrElekStatus,IsMaster);
 
 }
 /* GetElekStatus */
@@ -2747,6 +2869,10 @@ int main(int argc, char *argv[])
    int MaskAddr;
    struct SyncFlagType SyncFlag;
    int RequestDataFlag;
+   
+   uint16_t Mirror;
+   uint16_t Axis;
+
 
    if (argc<2)
      {
@@ -2777,13 +2903,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.65 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.65 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.65 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.64 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.65 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3048,6 +3174,7 @@ int main(int argc, char *argv[])
 			 {
 			  case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
 			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
+			  case ELEK_MIRROR_IN:       // port for incoming commands from  etalon
 			  case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
 
                             if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
@@ -3097,7 +3224,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MOVE_BUTTERFLY:
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_MOVE_BUTTERFLY from %4d Port %04x Value %05d (%04x)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MOVE_BUTTERFLY from %4d Port %04x Value %05ld (%04lx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3128,6 +3255,78 @@ int main(int argc, char *argv[])
 			    ElekStatus.EtalonData.Status.StatusField.RefChannel=Message.Value;
 
 			    Message.Status= Message.Value;
+			    Message.MsgType=MSG_TYPE_ACK;
+			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+					    inet_ntoa(their_addr.sin_addr),
+					    sizeof(struct ElekMessageType), &Message);
+			    break;
+
+			  case MSG_TYPE_MIRROR_MOVE:
+			    if (MessagePort!=ELEK_MIRROR_IN)
+			      {
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_MOVE from %4d Port %04x Value %05d (%04x)",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			      }
+			    /* if MessagePort */
+			    
+			    Mirror=(Message.Addr >> 8) & 0x00FF;
+			    Axis=(Message.Addr & 0x00FF);
+			    
+			    if ((Mirror < MAX_MIRROR) && (Axis < MAX_MIRROR_AXIS))	
+			    {
+				    pthread_mutex_lock(&mMirrorMutex);
+
+				    sMirrorThread.Mirror=Mirror;
+				    sMirrorThread.Axis=Axis;
+
+				    sMirrorThread.RelPositionSet = (uint32_t)Message.Value;
+			    
+				    pthread_mutex_unlock(&mMirrorMutex);
+				    
+				    Message.Status=1;
+			    } else {
+				    Message.Status=0;
+			    }
+
+			    Message.MsgType=MSG_TYPE_ACK;
+			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+					    inet_ntoa(their_addr.sin_addr),
+					    sizeof(struct ElekMessageType), &Message);
+			    break;
+
+			  case MSG_TYPE_MIRROR_REALIGN:
+			    if (MessagePort!=ELEK_MIRROR_IN)
+			    {
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_REALIGN from %4d Port %04x Value %05d (%04x)",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			    } /* if MessagePort */
+			    
+			    SendUDPData(&MessageOutPortList[ELEK_MIRROR_OUT], sizeof(struct ElekMessageType), &Message);
+					     			    
+			    Message.MsgType=MSG_TYPE_ACK;
+			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+					    inet_ntoa(their_addr.sin_addr),
+					    sizeof(struct ElekMessageType), &Message);
+			    break;
+
+			  case MSG_TYPE_MIRROR_STOP:
+
+			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_REALIGN from %4d Port %04x Value %05d (%04x)",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+	    		    ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
+
+			    pthread_mutex_lock(&mMirrorMutex);
+			    sMirrorThread.StopFlag=1;
+			    pthread_mutex_unlock(&mMirrorMutex);
+
+			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 					    inet_ntoa(their_addr.sin_addr),

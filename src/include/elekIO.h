@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-02-21 16:05:35 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
+* Revision 1.40  2007-03-05 16:06:58  martinez
+* mirror moving implemented
+*
 * Revision 1.39  2007-02-21 16:05:35  rudolf
 * fixed typo, delta H2O and CO2 for licor is signed now
 *
@@ -321,7 +324,7 @@ struct LongWordType {
   uint16_t Low;
   uint16_t High;
 }; /* struct LongWordType */
-  
+ 
 
 union PositionType {
   struct LongWordType PositionWord;
@@ -400,6 +403,13 @@ struct ADCCardType {
   union  ADCChannelConfigType ADCChannelConfig[MAX_ADC_CHANNEL_PER_CARD];
 }; /* ADCCardType */
 
+
+#define DIODE_UV_ADCCARDMASTER_NUMBER 0
+#define DIODE_UV_ADCCARDMASTER_CHANNEL 2
+#define DIODE_WZ1IN_ADCCARDSLAVE_NUMBER 1
+#define DIODE_WZ1IN_ADCCARDSLAVE_CHANNEL 7
+#define DIODE_WZ2IN_ADCCARDSLAVE_NUMBER 0
+#define DIODE_WZ2IN_ADCCARDSLAVE_CHANNEL 2
 /*************************************************************************************************************/
 
 struct ADC24CardType {                                               
@@ -655,7 +665,6 @@ enum InstrumentActionType { /* update also in instrument.c */
     INSTRUMENT_ACTION_DIAG,  
     INSTRUMENT_ACTION_POWERUP, 
     INSTRUMENT_ACTION_POWERDOWN, 
-    INSTRUMENT_ACTION_LASERMIRRORTUNE,
 
     INSTRUMENT_ACTION_MAX
 };
@@ -667,7 +676,7 @@ struct InstrumentFlagsType {                      /* set of flags for the instru
   uint16_t  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
   enum EtalonActionType EtalonAction;           /* indicates what the etalon is doing */
   enum InstrumentActionType InstrumentAction;		/* indicates what the instrument is doing (measuring, calibrating, etc.) */	
-  /*  enum DebugType        Debug;                    /* indicates */ 
+  /*  enum DebugType        Debug;                     */ 
 }; /* ServerFlagsType */
 
 /* structure for TSC for time differenre measurements Master <-> Slave */
@@ -726,6 +735,60 @@ struct GPSDataType {					/* data type for GPS data*/
 #define CALIB_SETFLOW_FAIL      0            /* fail to set flow */
 /*************************************************************************************************************/
 
+enum WhichMirror {
+    MIRROR_GREEN_1,
+    MIRROR_GREEN_2, 
+    MIRROR_UV_1, 
+    MIRROR_UV_2,
+    
+    MAX_MIRROR
+}; 
+
+enum MirrorAxis {
+    XAXIS,
+    YAXIS,
+    
+    MAX_MIRROR_AXIS 
+}; 
+
+#define REALIGN_MINUTES -1 /* mirror.c starts realignment every REALIGN_MINUTES, or never for negative numbers */
+#define MIN_UV_DIFF_CTS 8 /* eq. 0.1 mW UV Diode Power */
+#define DELTA_XPOSITION 50
+#define DELTA_YPOSITION 100
+
+struct AxisType {
+  int32_t Position;
+}; /* union AxisType */
+
+struct MirrorType {
+  struct AxisType Axis[MAX_MIRROR_AXIS];
+}; /* MirrorType */
+
+struct MovingFlagFieldType
+{
+  unsigned MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
+  unsigned Realigning:1;      /* moving due to realignment routine */
+  unsigned unused:7;	/* not used (probably 0) */
+};
+
+
+union MovingFlagType {
+  struct MovingFlagFieldType Field;
+  uint16_t Word;
+}; 
+  
+  
+struct MirrorDataType {
+
+  struct MirrorType Mirror[MAX_MIRROR];
+  union MovingFlagType MovingFlag;
+  uint16_t MinUVDiffCts;
+  uint16_t RealignMinutes;
+	
+}; /* MirrorDataType */
+
+/*************************************************************************************************************/
+
 struct elekStatusType {                                             /* combined status information of instrument */
 
   /* data structures for the Master Box (lift / pentium 3) */
@@ -740,6 +803,7 @@ struct elekStatusType {                                             /* combined 
   struct TempSensorCardType  TempSensCardMaster[MAX_TEMP_SENSOR_CARD_LIFT];    /* Temperature Sensor Card */
   struct InstrumentFlagsType InstrumentFlags;                       /* Instrument flags */
   struct GPSDataType         GPSDataMaster; 
+  struct MirrorDataType	     MirrorData;			    /* all Mirror Stepper data */
 
   /* data structures for the Slave Box (Wingpod / ARM9) */
  
@@ -780,3 +844,4 @@ extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
+

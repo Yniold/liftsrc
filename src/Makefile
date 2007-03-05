@@ -51,6 +51,7 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekStatus
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C mirrors
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
@@ -67,13 +68,14 @@ ifeq ($(ARMBUILD),1)
 	cp $(SOURCEDIR)/elekStatus/elekStatus $(DESTDIR)
 	cp $(SOURCEDIR)/statView/statView $(DESTDIR)
 	cp $(SOURCEDIR)/etalon/etalon $(DESTDIR)
+	cp $(SOURCEDIR)/mirrors/mirrors $(DESTDIR)
 	cp $(SOURCEDIR)/debugMon/debugMon $(DESTDIR)
 else
 	@echo LIFT-Install
-	# test if ../bin is a file (left in CVS due to wrong makefile ages ago....)
-	# if so, remove this file
+        # test if ../bin is a file (left in CVS due to wrong makefile ages ago....)
+        # if so, remove this file
 	if [ -f ../bin ]; then rm -f ../bin; fi
-	# test if ../bin is a directory, if not create a new one
+        # test if ../bin is a directory, if not create a new one
 	if [ ! -d ../bin ]; then mkdir ../bin; fi
 	cp $(DESTDIR)/eCmd ../bin
 	cp $(DESTDIR)/elekIOServ ../bin
@@ -81,6 +83,7 @@ else
 	cp $(DESTDIR)/elekStatus ../bin
 	cp $(DESTDIR)/statView ../bin
 	cp $(DESTDIR)/etalon ../bin
+	cp $(DESTDIR)/mirrors ../bin
 	cp $(DESTDIR)/debugMon ../bin
 	cp $(DESTDIR)/spectrometerServer ../bin
 	chmod +x $(DESTDIR)*
@@ -105,6 +108,8 @@ clean:
 	rm -f ./bin/statView
 	rm -f ./etalon/etalon
 	rm -f ./bin/etalon
+	rm -f ./mirrors/mirrors
+	rm -f ./bin/mirrors
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
 	rm -f ./spectrumAnalyzer/spectrometerServer
@@ -117,6 +122,7 @@ clean:
 	if [ -d ../bin ]; then rm -f ../bin/elekStatus; fi
 	if [ -d ../bin ]; then rm -f ../bin/statView; fi
 	if [ -d ../bin ]; then rm -f ../bin/etalon; fi
+	if [ -d ../bin ]; then rm -f ../bin/mirrors; fi
 	if [ -d ../bin ]; then rm -f ../bin/spectrometerServer; fi
 	
 #	$(MAKE) DESTDIR=$(DESTDIR) $(flags) -C instServer

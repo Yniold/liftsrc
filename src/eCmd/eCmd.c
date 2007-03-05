@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.34 $
-last change on $Date: 2007-02-21 13:42:08 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.35 $
+last change on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.35  2007-03-05 16:06:58  martinez
+mirror moving implemented
+
 Revision 1.34  2007-02-21 13:42:08  harder
 fixed bug in set raw mfc counts
 
@@ -234,7 +237,6 @@ int FindInstrumentAction ( char *InstrumentAction)
     if (strcasecmp(InstrumentAction,"diag")==0) return (INSTRUMENT_ACTION_DIAG);
     if (strcasecmp(InstrumentAction,"powerup")==0) return (INSTRUMENT_ACTION_POWERUP);
     if (strcasecmp(InstrumentAction,"powerdown")==0) return (INSTRUMENT_ACTION_POWERDOWN);
-    if (strcasecmp(InstrumentAction,"lasermirrortune")==0) return (INSTRUMENT_ACTION_LASERMIRRORTUNE);
     return(-1);
 
 } /* FindInstrumentAction */
@@ -271,7 +273,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.34 2007-02-21 13:42:08 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.35 2007-03-05 16:06:58 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -297,6 +299,9 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s calibflow [MFC# [+]]Flowrate in sccm, + indicates flow in counts instead of sccm\n");
 	printf("eCmd @host s calibhumidity data\n");
 	printf("eCmd @host s refchannel data\n");
+	printf("eCmd @host s mirrorrealign data\n");
+	printf("eCmd @host s mirrorgoto data (mirror axis position)\n");
+	printf("eCmd @host s mirrorstop\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -601,7 +606,39 @@ int main(int argc, char *argv[])
 		printf("Error please supply parameter for %s\n",argv[ArgCount]);
 	      }
 	    };	    	    
+
+	    if (strcasecmp(argv[ArgCount],"mirrorrealign")==0) {
+	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+		Value=strtol(argv[ArgCount+1],NULL,0);
+		if ((uint16_t)Value<MAX_MIRROR)
+		{
+			MsgType=MSG_TYPE_MIRROR_REALIGN;
+			Addr=((uint16_t) Value) << 8;
+		} else {
+			printf("Error please supply valid number for mirror: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
+		}
+	      } else { // we don't have enough parameter
+		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+	      }
+	    };	    	    
 	    
+	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
+	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
+	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR_AXIS))	{
+			MsgType=MSG_TYPE_MIRROR_MOVE;
+		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
+		} else {
+			printf("Error please supply valid numbers for mirror and axis: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
+		}
+		Value=strtol(argv[ArgCount+3],NULL,0);
+	      } else { // we don't have enough parameter
+		printf("Error please supply all parameters for %s\n",argv[ArgCount]);
+	      }
+	    };	    	    
+
+	    if (strcasecmp(argv[ArgCount],"mirrorstop")==0) {
+			MsgType=MSG_TYPE_MIRROR_STOP;
+	    };	    	    
 
 	    // if we got a valid Msg send it
 	    if (MsgType<MAX_MSG_TYPE) {

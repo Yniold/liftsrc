@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-02-21 19:33:24 $ by $Author: harder $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.16  2007-03-05 16:06:58  martinez
+* mirror moving implemented
+*
 * Revision 1.15  2007-02-21 19:33:24  harder
 * changed IP address of status client to avsolut LIFT address, 10.111.111.196
 *
@@ -53,6 +56,7 @@
 #define IP_DEBUG_CLIENT             "127.0.0.1"
 #define IP_STATUS_CLIENT            "10.111.111.196"
 #define IP_ETALON_CLIENT            "127.0.0.1"
+#define IP_MIRROR_CLIENT            "127.0.0.1"
 #define IP_SCRIPT_CLIENT            "127.0.0.1"
 #define IP_LOCALHOST                "127.0.0.1"
 #define IP_ARMAXIS                  "10.111.111.10" // wingpod IP 
@@ -66,17 +70,20 @@
 #define UDP_ELEK_SCRIPT_INPORT         1140    // port for Script Task
 #define UDP_ELEK_SLAVE_DATA_INPORT     1150    // port for reception of slave data in MasterMode
 #define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
+#define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
 #define UDP_ELEK_ETALON_OUTPORT        1131    // port for answer to Etalon Task
 #define UDP_ELEK_SCRIPT_OUTPORT        1141    // port for answer to Script Task
+#define UDP_ELEK_MIRROR_OUTPORT        1171    // port for answer to Etalon Task
 
 #define UDP_ELEK_STATUS_STATUS_OUTPORT 1200    // port for status (elekIO->Status)
 #define UDP_ELEK_ETALON_STATUS_OUTPORT 1210    // port for status (elekIO->etalon)
 #define UDP_ELEK_ELEKIO_STATUS_OUTPORT 1220    // port for status (elekIOSlave->elekIOMaster)
 #define UDP_ELEK_DEBUG_OUTPORT         1300    // port for debug messages
 #define UDP_CALIB_STATUS_STATUS_OUTPORT 1400    // port for status (Calib->Status)
+#define UDP_ELEK_MIRROR_STATUS_OUTPORT 1270    // port for status (elekIO->etalon)
 
 
 #define UDP_SERVER_TIMEOUT               5     // timeout until elek server makes its round 
@@ -102,6 +109,9 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_FETCH_DATA,                       // request data from slave elekIOServ
     MSG_TYPE_MOVE_BUTTERFLY,                   // goto a new target position
     MSG_TYPE_REF_CHANNEL,                      // set reference channel
+    MSG_TYPE_MIRROR_MOVE,		       // move motorized mirror axis to new target position
+    MSG_TYPE_MIRROR_REALIGN,		       // realign a motorized mirror to optimize signal
+    MSG_TYPE_MIRROR_STOP,		       // stop all mirror movements
     
     // Calibrator
     MSG_TYPE_CALIB_SETTEMP,                    // set calibrator water temperature

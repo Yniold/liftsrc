@@ -978,6 +978,11 @@ serport=handles.serport;
 steps=get(handles.editsteps,'String');
 hor=get(handles.radiohor,'Value');
 forw=get(handles.radiofor,'Value');
+
+%ver=get(handles.radiover,'Value');
+%if forw==0 steps=-steps;
+%system(['/lift/bin/eCmd @Lift s mirrormove ',num2str(get(handles.popupmirror,'Value')),' ',num2str(ver),' ',num2str(steps)]);
+
 oldpos=str2double(get(handles.textPos,'String'));
 
 switch get(handles.popupmirror,'Value')
