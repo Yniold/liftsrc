@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-04 19:28:41 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.3  2007-03-05 20:48:09  rudolf
+// added thread for collecting ship's data, more work on parser
+//
 // Revision 1.2  2007-03-04 19:28:41  rudolf
 // added parsing for data into the right structure elements
 //
@@ -174,12 +177,8 @@ void MeteoBoxThreadFunc(void* pArgument)
 	     sigfunc = signal(SIGALRM, connect_timeout_handler);
 
 	     // set timeout to 2 seconds
-	     if(alarm(2) != 0)
-	       {
-		  printf("Alarm handler already set!\r\n");
-		  exit(1);
-	       };
-
+	     alarm(2);
+	     
 	     // try connection to XPORT using a timeout
 	     if((iRetVal = connect(sStructure->iFD, (const struct sockaddr*)&ServerAddress, sizeof(ServerAddress))) < 0)
 	       {
@@ -227,7 +226,7 @@ void MeteoBoxThreadFunc(void* pArgument)
 	     else
 	       {
 		  alarm(0);
-
+		  iTryCounts = 0;
 		  //		  printf("Got a Byte\r\n");
 
 		  // check for start of buffer
@@ -306,9 +305,10 @@ void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDat
 	  break;
 
      };
-     printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
-     printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
-     printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
-     printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
-     printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
-};
+
+//     printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
+//     printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
+//     printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
+//     printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
+//     printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
+ };

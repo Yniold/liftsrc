@@ -34,6 +34,6 @@ headers=elekIOaux.h ../include/elekIO.h ../include/elekIOPorts.h
 
 $(PROJECT) : $(PROJECT).c $(modules) $(headers)
 	     echo $(PROJECT) $(VERSION)
-	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) $(PROJECT).c meteobox.c $(modules) -o $(PROJECT) $(LDFLAGS)
+	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) $(PROJECT).c meteobox.c shipdata.c $(modules) -o $(PROJECT) $(LDFLAGS)
 	     cp $(PROJECT) $(INSTDIR)
 

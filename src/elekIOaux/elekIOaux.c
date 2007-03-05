@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-04 19:28:41 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.3  2007-03-05 20:48:09  rudolf
+ * added thread for collecting ship's data, more work on parser
+ *
  * Revision 1.2  2007-03-04 19:28:41  rudolf
  * added parsing for data into the right structure elements
  *
@@ -42,6 +45,7 @@
 #include "../include/elekIOPorts.h"
 #include "elekIOaux.h"
 #include "meteobox.h"
+#include "shipdata.h"
 
 #define STATUS_INTERVAL  200
 
@@ -50,10 +54,12 @@
 
 #define CPUCLOCK 500000000UL 	// CPU clock of Markus' Athlon XP
 
+char gPlotData = 1;    // this is not a define, it's meant to be replaced by a commandline arg in the future
+
 enum InPortListEnum
 {
    // this list has to be coherent with MessageInPortList
-     ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
+   ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
      ELEK_ETALON_IN,       // port for incoming commands from  etalon
      ELEK_SCRIPT_IN,       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
      //     ELEK_STATUS_IN,       // port to receive status data from slaves
@@ -63,7 +69,7 @@ enum InPortListEnum
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-     CALIB_STATUS_OUT,                // port for outgoing messages to status
+   CALIB_STATUS_OUT,                // port for outgoing messages to status
      ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
      ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
      ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
@@ -90,7 +96,7 @@ struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
 {
    // order in list defines sequence of polling
     /* Name           ,PortNo                        , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
-//     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
+   //     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
      {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
      {"ElekIOStatus"  ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
      {"ElekIOServer"  ,UDP_ELEK_MANUAL_INPORT        , ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER  , -1, 0,  UDP_OUT_PORT},
@@ -112,7 +118,6 @@ struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
      {      "",                  -1,                    -1}
 };
 
-
 /**********************************************************************************************************/
 /* Signal Handler                                                                                         */
 /**********************************************************************************************************/
@@ -124,15 +129,14 @@ static enum TimerSignalStateEnum TimerState=TIMER_SIGNAL_STATE_INITIAL;
 void signalstatus(int signo)
 {
   /* locale variables for Timer*/
-  extern int StatusFlag;
+   extern int StatusFlag;
    extern enum TimerSignalStateEnum TimerState;
-   
+
    char buf[GENERIC_BUF_LEN];
-   
-   
+
    ++StatusFlag;
    TimerState=(TimerState+1) % TIMER_SIGNAL_STATE_MAX;
-   
+
 }
 
 //
@@ -156,7 +160,6 @@ void LoadModulesConfig(struct auxStatusType *ptrAuxStatus)
    // set all data to invalid
    ptrAuxStatus->Status.Status.Word = 0;
 };
-
 
 /**********************************************************************************************************/
 /* Init METEOBOX                                                                                          */
@@ -188,7 +191,39 @@ int InitMeteoBox(struct auxStatusType *ptrAuxStatus)
 
    return (INIT_MODULE_SUCCESS);
 }
-/* Init Butterfly */
+/* Init MeteoBox */
+
+/**********************************************************************************************************/
+/* Init ShipData                                                                                         */
+/**********************************************************************************************************/
+
+int InitShipData(struct auxStatusType *ptrAuxStatus)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   char debugbuf[GENERIC_BUF_LEN];
+
+   int ret;
+
+   // create ShipData thread
+   ret = ShipDataInit();
+
+   if(ret == 1)
+     {
+	sprintf(debugbuf,"elekIOaux : Can't create ShipData Thread!\n\r");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+	return (INIT_MODULE_FAILED);
+     };
+
+   // success
+   sprintf(debugbuf,"elekIOaux : ShipData Thread running!\n\r");
+   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+
+   return (INIT_MODULE_SUCCESS);
+}
+/* InitShipData */
 
 /**********************************************************************************************************/
 /* Init Modules                                                                                        */
@@ -215,9 +250,18 @@ void InitModules(struct auxStatusType *ptrAuxStatus)
      {
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : init MeteoBox failed !!");
      }
+
+   if (INIT_MODULE_SUCCESS == (ret=InitShipData(ptrAuxStatus)))
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : init ShipData successfull");
+     }
+   else
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : init ShipData failed !!");
+     }
+
 }
 /* InitModules */
-
 
 /**********************************************************************************************************/
 /* GetMeteoBoxData                                                                                        */
@@ -237,18 +281,18 @@ void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 
      {
 	pthread_mutex_lock(&mMeteoBoxMutex);
-//	ptrAuxStatus->MeteoBox.LicorTemperature = sMeteoThread.LicorTemperature;
-	
-//	ptrAuxStatus->LicorCalib.AmbientPressure = sMeteoThread.AmbientPressure;
+	//	ptrAuxStatus->MeteoBox.LicorTemperature = sMeteoThread.LicorTemperature;
 
-//	ptrAuxStatus->LicorCalib.CO2A = sLicorThread.CO2A;
-//	ptrAuxStatus->LicorCalib.CO2B = sLicorThread.CO2B; /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-//	ptrAuxStatus->LicorCalib.CO2D = sLicorThread.CO2D; /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+	//	ptrAuxStatus->LicorCalib.AmbientPressure = sMeteoThread.AmbientPressure;
 
-//	ptrAuxStatus->LicorCalib.H2OA = sLicorThread.H2OA; /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
-//	ptrAuxStatus->LicorCalib.H2OB = sLicorThread.H2OB; /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
-//	ptrAuxStatus->LicorCalib.H2OD = sLicorThread.H2OD; /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
-//
+	//	ptrAuxStatus->LicorCalib.CO2A = sLicorThread.CO2A;
+	//	ptrAuxStatus->LicorCalib.CO2B = sLicorThread.CO2B; /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+	//	ptrAuxStatus->LicorCalib.CO2D = sLicorThread.CO2D; /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
+
+	//	ptrAuxStatus->LicorCalib.H2OA = sLicorThread.H2OA; /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+	//	ptrAuxStatus->LicorCalib.H2OB = sLicorThread.H2OB; /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+	//	ptrAuxStatus->LicorCalib.H2OD = sLicorThread.H2OD; /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
+	//
 	pthread_mutex_unlock(&mMeteoBoxMutex);
 
 #ifdef DEBUG_STRUCTUREPASSING
@@ -448,11 +492,11 @@ int main(int argc, char *argv[])
    //
 
 #ifdef RUNONPC
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for I386\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for I386\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for I386\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for I386\n",VERSION);
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.2 2007-03-04 19:28:41 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -471,14 +515,14 @@ int main(int argc, char *argv[])
    SignalEvent.sigev_notify = SIGEV_SIGNAL;
    SignalEvent.sigev_signo = SIGNAL_STATUS;
    SignalEvent.sigev_value.sival_int = 0;
-   
+
    ret= timer_create(clock, &SignalEvent, &StatusTimer_id);
    if (ret < 0)
      {
-       perror("timer_create");
-       return EXIT_FAILURE;
+	perror("timer_create");
+	return EXIT_FAILURE;
      }
-   
+
    /* Start timer: */
    StatusTimer.it_interval.tv_sec =   StatusInterval / 1000;
    StatusTimer.it_interval.tv_nsec = (StatusInterval % 1000) * 1000000;
@@ -486,242 +530,253 @@ int main(int argc, char *argv[])
    ret = timer_settime(StatusTimer_id, 0, &StatusTimer, NULL);
    if (ret < 0)
      {
-       perror("timer_settime");
-       return EXIT_FAILURE;
+	perror("timer_settime");
+	return EXIT_FAILURE;
      }
-   
+
    // change scheduler and set priority
    if (-1==(ret=ChangePriority()))
      {
-       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : cannot set Priority");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : cannot set Priority");
      }
-   
+
    sigemptyset(&SignalMask);
    //    sigsuspend(&SignalMask);
    //
    gettimeofday(&LastAction, NULL);
    EndOfSession=FALSE;
    RequestDataFlag=FALSE;
-   
-   while (!EndOfSession) {
-     write(2,"Wait for data..\r",16);
-     
-     fdsSelect=fdsMaster;
-     
-     pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
-     pselect_timeout.tv_nsec=0;
-     
-     ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
-     
-     gettimeofday(&StartAction, NULL);
-     
-#ifdef DEBUG_TIMER
-     printf("Time:");
-     localtime_r(&StartAction.tv_sec,&tmZeit);
-     
-     printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
-	    tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
-     printf("ret %d StatusFlag %d\n",ret,StatusFlag);
-#endif
-     
-     if (ret ==-1 ) {
-       // select error
-       //
-       if (errno==EINTR) {
-	 // got interrupted by timer
-	 if ((StatusFlag % 50)==0) {			
-	   // printf("get Status %6d..\r",StatusFlag);
-	   write(2,"get Status.....\r",16);
-	 }			
-	 gettimeofday(&GetStatusStartTime, NULL);
-	 GetAuxStatus(&AuxStatus,IsMaster);
-	 gettimeofday(&GetStatusStopTime, NULL);
 
-	  // Send Status to Status process
-     SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct auxStatusType), &AuxStatus);
-       } else { 
-	 //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
-	 perror("select");
-	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: Problem with select");
-       } // if errno
-     } else if (ret>0) {
-       
-       //	     printf("woke up...");
-       write(2,"incoming Call..\r",16);
-       
-       for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) {
-	 
-	 if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect)) {
-	   // new msg on fdNum. socket ...
-	   // printf("fdsSelect: %016lx\n\r",fdsSelect);
-	   //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
-	   //		    fdElekManual=MessagePortList[0].fdSocket;
-	   switch (MessagePort) {
-	   case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
-	     //			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
-	   case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
-	     
-	     if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
-				    &Message,sizeof(struct ElekMessageType)  , 0,
-				    (struct sockaddr *)&their_addr, &addr_len)) == -1)
+   while (!EndOfSession)
+     {
+	write(2,"Wait for data..\r",16);
+
+	fdsSelect=fdsMaster;
+
+	pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
+	pselect_timeout.tv_nsec=0;
+
+	ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
+
+	gettimeofday(&StartAction, NULL);
+
+#ifdef DEBUG_TIMER
+	printf("Time:");
+	localtime_r(&StartAction.tv_sec,&tmZeit);
+
+	printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
+	       tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
+	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
+#endif
+
+	if (ret ==-1 )
+	  {
+	     // select error
+	     //
+	     if (errno==EINTR)
 	       {
-		 perror("recvfrom");
-		 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: Problem with receive");
+		  // got interrupted by timer
+		  if ((StatusFlag % 50)==0)
+		    {
+		       // printf("get Status %6d..\r",StatusFlag);
+		       write(2,"get Status.....\r",16);
+		    }
+		  gettimeofday(&GetStatusStartTime, NULL);
+		  GetAuxStatus(&AuxStatus,IsMaster);
+		  gettimeofday(&GetStatusStopTime, NULL);
+
+		  // Send Status to Status process
+		  SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct auxStatusType), &AuxStatus);
 	       }
-#ifdef DEBUG_SLAVECOM
-	     sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
-		     ntohs(their_addr.sin_port));
-	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif
-	     
-	     switch (Message.MsgType)
+	     else
 	       {
-		 
-	       case MSG_TYPE_FETCH_DATA:  // Master want data
-#ifdef DEBUG_SLAVECOM
-		 printf("elekIOaux: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
-#endif
-		 
-#ifdef DEBUG_SLAVECOM
-		 printf("elekIOaux: gathering Data...\n\r");
-#endif
-		 gettimeofday(&GetStatusStartTime, NULL);
-		 GetAuxStatus(&AuxStatus,IsMaster);
-		 gettimeofday(&GetStatusStopTime, NULL);
-#ifdef DEBUG_SLAVECOM
-		 printf("elekIOaux: Data aquisition took: %02d.%03ds\n\r",
-			GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
-			(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
-#endif
-		 // send this debugmessage message to debugmon
-		 sprintf(buf,"elekIOaux : FETCH_DATA from Port: %05d",
-			 MessageInPortList[MessagePort].PortNumber,
-			 Message.Addr,Message.Value,Message.Value);
-		 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		 
-		 // send requested data, don't send any acknowledges
-		 SendUDPData(&MessageOutPortList[ELEK_ELEKIO_CALIB_MASTER_OUT],
-			     sizeof(struct auxStatusType), &AuxStatus); // send data packet
-		 break;
-		 
-	       case MSG_TYPE_READ_DATA:
-		 // printf("elekIOaux: manual read from Address %04x\n", Message.Addr);
-		 Message.Value=elkReadData(Message.Addr);
-		 Message.MsgType=MSG_TYPE_ACK;
-		 
-		 if (MessagePort!=ELEK_ETALON_IN)
-		   {
-		     sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %d (%04x)",
-			     MessageInPortList[MessagePort].PortNumber,
-			     Message.Addr,Message.Value,Message.Value);
-		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		     
-		     sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		   }
-		 
-		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-				 inet_ntoa(their_addr.sin_addr),
-				 sizeof(struct ElekMessageType), &Message);
-		 break;
-	       case MSG_TYPE_WRITE_DATA:
-		 if (MessagePort!=ELEK_ETALON_IN)
-		   {
-		     sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
-			     MessageInPortList[MessagePort].PortNumber,
-			     Message.Addr,Message.Value,Message.Value);
-		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-		   }
-		 
-		 Message.Status=elkWriteData(Message.Addr,Message.Value);
-		 Message.MsgType=MSG_TYPE_ACK;
-		 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
-				 inet_ntoa(their_addr.sin_addr),
-				 sizeof(struct ElekMessageType), &Message);
-		 break;
-		 
-		 
+		  //  if(errno==EINTR)  so was not the Timer, it was a UDP Packet that caused err
+		  perror("select");
+		  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: Problem with select");
 	       }
-	     
+	     // if errno
+	  }
+	else if (ret>0)
+	  {
+
+	     //	     printf("woke up...");
+	     write(2,"incoming Call..\r",16);
+
+	     for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++)
+	       {
+
+		  if (FD_ISSET(MessageInPortList[MessagePort].fdSocket,&fdsSelect))
+		    {
+		       // new msg on fdNum. socket ...
+		       // printf("fdsSelect: %016lx\n\r",fdsSelect);
+		       //		    fdElekManual=MessagePortList[MessagePort].fdSocket;
+		       //		    fdElekManual=MessagePortList[0].fdSocket;
+		       switch (MessagePort)
+			 {
+			  case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
+			    //			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
+			  case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
+
+			    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
+						   &Message,sizeof(struct ElekMessageType)  , 0,
+						   (struct sockaddr *)&their_addr, &addr_len)) == -1)
+			      {
+				 perror("recvfrom");
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: Problem with receive");
+			      }
+#ifdef DEBUG_SLAVECOM
+			    sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
+				    ntohs(their_addr.sin_port));
+			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif
+
+			    switch (Message.MsgType)
+			      {
+
+			       case MSG_TYPE_FETCH_DATA:  // Master want data
+#ifdef DEBUG_SLAVECOM
+				 printf("elekIOaux: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
+#endif
+
+#ifdef DEBUG_SLAVECOM
+				 printf("elekIOaux: gathering Data...\n\r");
+#endif
+				 gettimeofday(&GetStatusStartTime, NULL);
+				 GetAuxStatus(&AuxStatus,IsMaster);
+				 gettimeofday(&GetStatusStopTime, NULL);
+#ifdef DEBUG_SLAVECOM
+				 printf("elekIOaux: Data aquisition took: %02d.%03ds\n\r",
+					GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
+					(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
+#endif
+				 // send this debugmessage message to debugmon
+				 sprintf(buf,"elekIOaux : FETCH_DATA from Port: %05d",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+				 // send requested data, don't send any acknowledges
+				 SendUDPData(&MessageOutPortList[ELEK_ELEKIO_CALIB_MASTER_OUT],
+					     sizeof(struct auxStatusType), &AuxStatus); // send data packet
+				 break;
+
+			       case MSG_TYPE_READ_DATA:
+				 // printf("elekIOaux: manual read from Address %04x\n", Message.Addr);
+				 Message.Value=elkReadData(Message.Addr);
+				 Message.MsgType=MSG_TYPE_ACK;
+
+				 if (MessagePort!=ELEK_ETALON_IN)
+				   {
+				      sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %d (%04x)",
+					      MessageInPortList[MessagePort].PortNumber,
+					      Message.Addr,Message.Value,Message.Value);
+				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+				      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				   }
+
+				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+						 inet_ntoa(their_addr.sin_addr),
+						 sizeof(struct ElekMessageType), &Message);
+				 break;
+			       case MSG_TYPE_WRITE_DATA:
+				 if (MessagePort!=ELEK_ETALON_IN)
+				   {
+				      sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
+					      MessageInPortList[MessagePort].PortNumber,
+					      Message.Addr,Message.Value,Message.Value);
+				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				   }
+
+				 Message.Status=elkWriteData(Message.Addr,Message.Value);
+				 Message.MsgType=MSG_TYPE_ACK;
+				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
+						 inet_ntoa(their_addr.sin_addr),
+						 sizeof(struct ElekMessageType), &Message);
+				 break;
+
+			      }
+
 	     /* switch MsgType */
-	     break;
-	   default:
-	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: unknown Port Type");
-	     break;
-	     
-	   }
-	   // switch MessagePort
-	   //		    printf("%lld got Message on Port %d from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
-	   //		    printf("packet is %d bytes long\n",numbytes);
-	   TSCin=Message.MsgTime;
-	   MaxTimeDiff= MaxTimeDiff<TSC-TSCin ? TSC-TSCin : MaxTimeDiff;
-	   MinTimeDiff= MinTimeDiff>TSC-TSCin ? TSC-TSCin : MinTimeDiff;
-	   
-	   //		    printf("diff : %9lld Max: %9lld Min: %9lld\n",TSC-TSCin,MaxTimeDiff,MinTimeDiff);
-	   //		    printf("%9lld\n",TSC-TSCin);
-	   // check for end signature
-	   EndOfSession=(bool)(strstr(buf,"ende")!=NULL);
-	   //		    printf("found %u\n",EndOfSession);
-	 }
+			    break;
+			  default:
+			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: unknown Port Type");
+			    break;
+
+			 }
+		       // switch MessagePort
+		       //		    printf("%lld got Message on Port %d from %s\n",TSC,inet_ntoa(their_addr.sin_addr));
+		       //		    printf("packet is %d bytes long\n",numbytes);
+		       TSCin=Message.MsgTime;
+		       MaxTimeDiff= MaxTimeDiff<TSC-TSCin ? TSC-TSCin : MaxTimeDiff;
+		       MinTimeDiff= MinTimeDiff>TSC-TSCin ? TSC-TSCin : MinTimeDiff;
+
+		       //		    printf("diff : %9lld Max: %9lld Min: %9lld\n",TSC-TSCin,MaxTimeDiff,MinTimeDiff);
+		       //		    printf("%9lld\n",TSC-TSCin);
+		       // check for end signature
+		       EndOfSession=(bool)(strstr(buf,"ende")!=NULL);
+		       //		    printf("found %u\n",EndOfSession);
+		    }
 	 /* if fd_isset */
-       }
+	       }
        /* for MessagePort */
-     }
-     else
-       {
+	  }
+	else
+	  {
 	 /* ret==0*/
-	 //	    printf("timeout...\n");
-	 write(2,"timeout........\r",16);
-	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : TimeOut");
-       }
-     
+	     //	    printf("timeout...\n");
+	     write(2,"timeout........\r",16);
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : TimeOut");
+	  }
+
 #ifdef RUNONPC
-     if (timer_getoverrun(StatusTimer_id)>0)
-       {
-	 printf("OVERRUN\n\r");
-	 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : Overrun");
-       }
+	if (timer_getoverrun(StatusTimer_id)>0)
+	  {
+	     printf("OVERRUN\n\r");
+	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : Overrun");
+	  }
      /* if overrun */
 #endif
-     
-     gettimeofday(&StopAction, NULL);
-     
+
+	gettimeofday(&StopAction, NULL);
+
 #ifdef DEBUG_TIME_TASK
-     sprintf(buf,"elekIOaux: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
-	     StopAction.tv_usec-StartAction.tv_usec, (StartAction.tv_usec-LastAction.tv_usec)/1000);
-     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	sprintf(buf,"elekIOaux: %ld RT: %ld DT: %ld",StartAction.tv_usec/1000,
+		StopAction.tv_usec-StartAction.tv_usec, (StartAction.tv_usec-LastAction.tv_usec)/1000);
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 #endif
-     
-     LastAction=StartAction;
-   }
+
+	LastAction=StartAction;
+     }
    /* while */
-   
+
 #ifdef RUNONPC
    /* delete timer */
    timer_delete(StatusTimer_id);
 #endif
-   
+
    // close all in bound sockets
    for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++)
      {
-       close(MessageInPortList[MessagePort].fdSocket);
+	close(MessageInPortList[MessagePort].fdSocket);
      }
    /*for MessagePort */
-   
+
    // close all out bound sockets
    for (MessagePort=0; MessagePort<MAX_MESSAGE_OUTPORTS;MessagePort++)
      {
-       close(MessageOutPortList[MessagePort].fdSocket);
+	close(MessageOutPortList[MessagePort].fdSocket);
      }
    /*for MessagePort */
-   
+
    if (elkExit())
      {
-       // release IO access
-       printf("Error: failed to release IO access rights\n");
-       exit(EXIT_FAILURE);
+	// release IO access
+	printf("Error: failed to release IO access rights\n");
+	exit(EXIT_FAILURE);
      }
-   
+
    exit(EXIT_SUCCESS);
 }
 
