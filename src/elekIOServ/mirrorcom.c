@@ -272,16 +272,18 @@ void MirrorParseLine(char* aBuffer, int iLength, struct sMirrorType* pStructure)
 		if (pEqualsign != NULL)
 		{ 
 			Position=strtol(pEqualsign+1,NULL,0);
+
+			// copy data into shared structure, so make sure the main thread 
+			// is not reading meanwhile
+#ifdef DEBUG
+			printf("position read: %ld\n\r",Position);
+#endif
+			pthread_mutex_lock(&mMirrorMutex);
+			pStructure->CurrentRelPos   = (int32_t)Position;
+			pStructure->CommandSent   = 0;
+			pStructure->ReadPosCommand   = 0;
+			pthread_mutex_unlock(&mMirrorMutex);
 		}
-
-		// copy data into shared structure, so make sure the main thread 
-		// is not reading meanwhile
-
-		pthread_mutex_lock(&mMirrorMutex);
-		pStructure->CurrentRelPos   = (int32_t)Position;
-		pStructure->CommandSent   = 0;
-		pStructure->ReadPosCommand   = 0;
-		pthread_mutex_unlock(&mMirrorMutex);
 	} else {
 		// copy data into shared structure, so make sure the main thread 
 		// is not reading meanwhile
@@ -291,7 +293,4 @@ void MirrorParseLine(char* aBuffer, int iLength, struct sMirrorType* pStructure)
 		pthread_mutex_unlock(&mMirrorMutex);
 	}		
 
-#ifdef DEBUG
-	printf("position read: %ld\n\r",Position);
-#endif
 };

@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.36 $
-last change on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.37 $
+last change on $Date: 2007-03-05 23:51:59 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.37  2007-03-05 23:51:59  martinez
+debugging mirror process
+
 Revision 1.36  2007-03-05 20:51:32  martinez
 debugging mirrors
 
@@ -276,7 +279,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.36 2007-03-05 20:51:32 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.37 2007-03-05 23:51:59 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -628,7 +631,7 @@ int main(int argc, char *argv[])
 	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
 	      printf("ArgCount %d\n",ArgCount);
 	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
-	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR_AXIS))	{
+	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+2],NULL,0) < MAX_MIRROR_AXIS))	{
 			MsgType=MSG_TYPE_MIRROR_MOVE;
 		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
       	      printf("ArgCount %d\n",ArgCount);

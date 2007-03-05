@@ -10,6 +10,9 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
+ * Revision 1.29  2007-03-05 23:51:59  martinez
+ * debugging mirror process
+ *
  * Revision 1.28  2006-10-07 16:13:46  martinez
  * implemented new motorized butterfly valve
  *
@@ -61,7 +64,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.28 $ */
+ /* $Revision: 1.29 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -77,6 +80,7 @@
 #include <stdint.h>
 #else
 typedef unsigned short uint16_t;
+typedef short int16_t;
 typedef unsigned uint32_t;
 typedef int int32_t;
 
@@ -168,21 +172,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.28 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
