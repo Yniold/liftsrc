@@ -316,7 +316,7 @@ end
 
 % reset TempCard if needed
 if ( double(statusData(:,col.TempDyelaser))<27000 |  | double(statusData(:,col.TempMCP1))<20000 )
-    system('resetTemp');
+    system('/lift/src/scripts/resetTemp');
 end
 
 % check dyelaser pressure and keep it constant on set value
