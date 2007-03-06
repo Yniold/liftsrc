@@ -73,15 +73,15 @@ data.ActTimer=handles.ActTimer;
 
 
 % open communication with picomotors
-handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
-set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
-try fopen(handles.serport);
-    data.serport=handles.serport;
-catch 
-    delete(handles.serport);
-    rmfield(handles,'serport');
-    set(handles.textPos,'String','FAILED','BackgroundColor','r');
-end;
+%handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+%set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+%try fopen(handles.serport);
+%    data.serport=handles.serport;
+%catch 
+%    delete(handles.serport);
+%    rmfield(handles,'serport');
+%    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+%end;
 
 %picotport=tcpip('PicoController',23);
 %set(picotport,'ReadAsyncMode','continuous');
@@ -552,10 +552,10 @@ function Exit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 stop(handles.ActTimer);
 delete(handles.ActTimer);
-if isvalid(handles.serport)
-    fclose(handles.serport);
-    delete(handles.serport);
-end;
+%if isvalid(handles.serport)
+%    fclose(handles.serport);
+%    delete(handles.serport);
+%end;
 if isfield(handles,'picotport')
     fclose(handles.picotport);
     delete(handles.picotport);
@@ -973,15 +973,19 @@ function pushgo_Callback(hObject, eventdata, handles)
 set(handles.textPos,'BackgroundColor','r');
 set(handles.pushgo,'BackgroundColor','r');
 
-serport=handles.serport;
+%serport=handles.serport;
 %picotport=handles.picotport;
-steps=get(handles.editsteps,'String');
+steps=str2num(get(handles.editsteps,'String'));
 hor=get(handles.radiohor,'Value');
 forw=get(handles.radiofor,'Value');
 
-%ver=get(handles.radiover,'Value');
-%if forw==0 steps=-steps;
-%system(['/lift/bin/eCmd @Lift s mirrormove ',num2str(get(handles.popupmirror,'Value')),' ',num2str(ver),' ',num2str(steps)]);
+ver=get(handles.radiover,'Value');
+if forw==0 
+    steps=-steps;
+end
+system(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(get(handles.popupmirror,'Value'))-1,' ',num2str(ver),' ',num2str(steps)]);
+disp(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(get(handles.popupmirror,'Value'))-1,' ',num2str(ver),' ',num2str(steps)]);
+
 
 oldpos=str2double(get(handles.textPos,'String'));
 
@@ -1005,35 +1009,36 @@ switch get(handles.popupmirror,'Value')
         else chl='2';
         end
 end
-fprintf(serport,['vel ',driver,' ',chl,'=100']);
-pause(0.1)
-fprintf(serport,['chl ',driver,'=',chl]);
-pause(0.1)
-if forw==1
-    fprintf(serport,['rel ',driver,' ',steps]);
-else
-    fprintf(serport,['rel ',driver,' -',steps]);
-end
-pause(0.1);
-fprintf(serport,['go ',driver]);
+%fprintf(serport,['vel ',driver,' ',chl,'=100']);
+%pause(0.1)
+%fprintf(serport,['chl ',driver,'=',chl]);
+%pause(0.1)
+%if forw==1
+%    fprintf(serport,['rel ',driver,' ',steps]);
+%else
+%    fprintf(serport,['rel ',driver,' -',steps]);
+%end
+%pause(0.1);
+%fprintf(serport,['go ',driver]);
 % check if motor is still moving
-pause(0.1)
-fprintf(serport,['pos ',driver]);
-pause(0.1)
-x=find(serport.UserData=='=');
-pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+%pause(0.1)
+%fprintf(serport,['pos ',driver]);
+%pause(0.1)
+%x=find(serport.UserData=='=');
+%pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
 %serport.UserData
-pos1=pos2-1;
-while pos2~=pos1
-    pos1=pos2;
-    pause(1)
-    fprintf(serport,['pos ',driver]);
-    pause(0.1)
-    x=find(serport.UserData=='=');
-    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
-end
+%pos1=pos2-1;
+%while pos2~=pos1
+%    pos1=pos2;
+%    pause(1)
+%    fprintf(serport,['pos ',driver]);
+%    pause(0.1)
+%    x=find(serport.UserData=='=');
+%    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
+%end
 % display new motor position after motor has stopped
-newpos=oldpos+pos2;
+%newpos=oldpos+pos2;
+newpos=oldpos+steps;
 set(handles.textPos,'String',num2str(newpos),'BackgroundColor','w');
 set(handles.pushgo,'BackgroundColor','w');
 
