@@ -79,13 +79,13 @@ void MirrorThreadFunc(void* pArgument)
 	// thread will run endless till exit();
 	while(true)
 	{
-#ifdef DEBUG
-		printf("MirrorCom : CommandStatus : %d \n\r",pStructure->CommandSent);
-#endif
 	
 		//read only if command has been sent and response is therefore expected
 		if (pStructure->CommandSent == 1) 
 		{
+#ifdef DEBUG
+		    printf("MirrorCom : CommandStatus : %d \n\r",pStructure->CommandSent);
+#endif
 			memset(aMirrorRxBuffer,0,1000);
 			iBytesRead = read(pStructure->iFD, aMirrorRxBuffer, 1024); // read non blocking
 #ifdef DEBUG
@@ -121,9 +121,9 @@ void MirrorThreadFunc(void* pArgument)
 		pthread_mutex_lock(&mMirrorMutex);
 		SetPos = pStructure->RelPositionSet;
 		pthread_mutex_unlock(&mMirrorMutex);
-#ifdef DEBUG
-		printf("MirrorCom : SetPos = %d\n\r",SetPos);
-#endif
+//#ifdef DEBUG
+//		printf("MirrorCom : SetPos = %d\n\r",SetPos);
+//#endif
 
 		// check for emergency stop command
 		if (pStructure->StopFlag ==1)
