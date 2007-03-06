@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.37 $
-last change on $Date: 2007-03-05 23:51:59 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.38 $
+last change on $Date: 2007-03-06 11:33:55 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.38  2007-03-06 11:33:55  harder
+only check parameter after paramter s if enough params are given
+
 Revision 1.37  2007-03-05 23:51:59  martinez
 debugging mirror process
 
@@ -279,7 +282,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.37 2007-03-05 23:51:59 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.38 2007-03-06 11:33:55 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -405,257 +408,258 @@ int main(int argc, char *argv[])
 
 	case 's':
 	  MsgType=MAX_MSG_TYPE;
-
-	    if (strcasecmp(argv[ArgCount],"stopquery")==0) {
-		MsgType=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
-		Addr=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
-		Value=0;
-	    };
-		
-	    if (strcasecmp(argv[ArgCount],"startquery")==0) {
-		MsgType=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
-		Addr=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
-		Value=1;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"instrumentaction")==0) {
-		if (argc>ArgCount+1) { // do we still have a given parameter ?
-		    if ( (ret=FindInstrumentAction(argv[ArgCount+1]))>-1) {
-			MsgType=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
-			Addr=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
-			Value=(uint16_t)ret;
-		    } else { // no valid paramter
-			printf("Error: invalid parameter %s for %s \n",argv[ArgCount], argv[ArgCount+1]);
-		    } /* if FindInstrumentAction */
-		} else { // we don't have enough parameter 
-		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
-		} /* if ArgC> */
-	    } 
-
-	    /* Etalon commands */	    
-	    if (strcasecmp(argv[ArgCount],"etalonnop")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_NOP;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalontoggle")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_TOGGLE;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalonditheronline")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_DITHER_ONLINE;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalonscan")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_SCAN;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalonhome")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_HOME;
-	    };
-
-	    if (strcasecmp(argv[ArgCount],"etalonscanstart")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_SCAN_START;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s %d %d %s\n",argv[ArgCount],argc,ArgCount,argv[ArgCount+1]);
-	      }
-	    };	    	    
-	    
-	    if (strcasecmp(argv[ArgCount],"etalonscanstop")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_SCAN_STOP;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-	    
-	    if (strcasecmp(argv[ArgCount],"etalonscanstep")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_SCAN_STEP;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"etalononline")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_ONLINE;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	  
-  	    
-	    if (strcasecmp(argv[ArgCount],"etalondither")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_DITHER;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"etalonofflineleft")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_OFFLINE_LEFT;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"etalonofflineright")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
-		Addr=SYS_PARAMETER_ETALON_OFFLINE_RIGHT;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"setmask")==0) {
-	      if (argc>ArgCount+2) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+2],NULL,0);
-		MsgType=MSG_TYPE_CHANGE_MASK;
-		// Addr 0-9 for word 0-9 of Channel 0, 10-19 for Channel 1, 20-29 for Channel 2
-		Addr=strtol(argv[ArgCount+1],NULL,0); 
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameters for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-	    
-	    if (strcasecmp(argv[ArgCount],"findonline")==0) {
-	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
-	      Value=ETALON_ACTION_FIND_ONLINE;
-            };
-
-	    if (strcasecmp(argv[ArgCount],"butterflyposition")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_MOVE_BUTTERFLY;
-		Addr=0;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };
-       
-	    if (strcasecmp(argv[ArgCount],"calibwatertemp")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		    Value=strtol(argv[ArgCount+1],NULL,0);
-		    MsgType=MSG_TYPE_CALIB_SETTEMP;
-		    Addr=0;
-	      } else { // we don't have enough parameter
-		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };
-       
-	    if (strcasecmp(argv[ArgCount],"calibflow")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		    Value=strtol(argv[ArgCount+1],NULL,0);
-		    MsgType=MSG_TYPE_CALIB_SETFLOW;
-		    Addr=CALIB_VMFC_TOTAL;                           // 10000
-	        if (argc>ArgCount+2) { // do we have an additional parameter for mfc number ?
-	            if (Value<(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)) {
-	                Addr=Value;
-        	        ptr=strchr(argv[ArgCount+2],'+');           // use counts ?
-		            Value=strtol(argv[ArgCount+2],NULL,0);
-		            if (ptr) Addr=Addr+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
-		        } else {
-        		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
-        		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
-        		    exit(EXIT_FAILURE);
-		        }            
-		    } 
-	      } else { // we don't have enough parameter
-		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
-		    exit(EXIT_FAILURE);
-	      }
-	    };	    	    
-
-        if (strcasecmp(argv[ArgCount],"calibhumidity")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		    Value=strtol(argv[ArgCount+1],NULL,0);
-		    MsgType=MSG_TYPE_CALIB_SETHUMID;
-		    Addr=0;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-       
-	    if (strcasecmp(argv[ArgCount],"refchannel")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		MsgType=MSG_TYPE_REF_CHANNEL;
-		Addr=0;
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"mirrorrealign")==0) {
-	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-		Value=strtol(argv[ArgCount+1],NULL,0);
-		if ((uint16_t)Value<MAX_MIRROR)
-		{
-			MsgType=MSG_TYPE_MIRROR_REALIGN;
-			Addr=((uint16_t) Value) << 8;
-		} else {
-			printf("Error please supply valid number for mirror: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
-		}
-	      } else { // we don't have enough parameter
-		printf("Error please supply parameter for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-	    
-	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
-	      printf("ArgCount %d\n",ArgCount);
-	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
-	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+2],NULL,0) < MAX_MIRROR_AXIS))	{
-			MsgType=MSG_TYPE_MIRROR_MOVE;
-		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
-      	      printf("ArgCount %d\n",ArgCount);
-		} else {
-			printf("Error please supply valid numbers for mirror and axis: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
-		}
-		printf("Value : %d\n",ArgCount);
-		Value=(int64_t)strtol(argv[ArgCount+3],NULL,0);
-		printf("Value : %lld from #%s#\n",Value,argv[ArgCount+3]);
-	      } else { // we don't have enough parameter
-		printf("Error please supply all parameters for %s\n",argv[ArgCount]);
-	      }
-	    };	    	    
-
-	    if (strcasecmp(argv[ArgCount],"mirrorstop")==0) {
-			MsgType=MSG_TYPE_MIRROR_STOP;
-	    };	    	    
-
-	    // if we got a valid Msg send it
-	    if (MsgType<MAX_MSG_TYPE) {
-	      SetStatusCommand(MsgType,Addr,Value); 
-	    } else {
-	      printf("I don't send anything, there was a problem before\n");
-	    } /* if MsgType */
+        if (argc>ArgCount) {
+    	    if (strcasecmp(argv[ArgCount],"stopquery")==0) {
+    		MsgType=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
+    		Addr=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
+    		Value=0;
+    	    };
+    		
+    	    if (strcasecmp(argv[ArgCount],"startquery")==0) {
+    		MsgType=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
+    		Addr=MSG_TYPE_CHANGE_FLAG_STATUS_QUERY;
+    		Value=1;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"instrumentaction")==0) {
+    		if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    if ( (ret=FindInstrumentAction(argv[ArgCount+1]))>-1) {
+    			MsgType=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
+    			Addr=MSG_TYPE_CHANGE_FLAG_INSTRUMENT_ACTION;
+    			Value=(uint16_t)ret;
+    		    } else { // no valid paramter
+    			printf("Error: invalid parameter %s for %s \n",argv[ArgCount], argv[ArgCount+1]);
+    		    } /* if FindInstrumentAction */
+    		} else { // we don't have enough parameter 
+    		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    		} /* if ArgC> */
+    	    } 
+    
+    	    /* Etalon commands */	    
+    	    if (strcasecmp(argv[ArgCount],"etalonnop")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_NOP;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"etalontoggle")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_TOGGLE;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonditheronline")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_DITHER_ONLINE;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonscan")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_SCAN;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonhome")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_HOME;
+    	    };
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonscanstart")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_SCAN_START;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s %d %d %s\n",argv[ArgCount],argc,ArgCount,argv[ArgCount+1]);
+    	      }
+    	    };	    	    
+    	    
+    	    if (strcasecmp(argv[ArgCount],"etalonscanstop")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_SCAN_STOP;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    	    
+    	    if (strcasecmp(argv[ArgCount],"etalonscanstep")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_SCAN_STEP;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"etalononline")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_ONLINE;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	  
+      	    
+    	    if (strcasecmp(argv[ArgCount],"etalondither")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_DITHER;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonofflineleft")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_OFFLINE_LEFT;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"etalonofflineright")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_ETALON_OFFLINE_RIGHT;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"setmask")==0) {
+    	      if (argc>ArgCount+2) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+2],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_MASK;
+    		// Addr 0-9 for word 0-9 of Channel 0, 10-19 for Channel 1, 20-29 for Channel 2
+    		Addr=strtol(argv[ArgCount+1],NULL,0); 
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameters for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    	    
+    	    if (strcasecmp(argv[ArgCount],"findonline")==0) {
+    	      MsgType=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Addr=MSG_TYPE_CHANGE_FLAG_ETALON_ACTION;
+    	      Value=ETALON_ACTION_FIND_ONLINE;
+                };
+    
+    	    if (strcasecmp(argv[ArgCount],"butterflyposition")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_MOVE_BUTTERFLY;
+    		Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };
+           
+    	    if (strcasecmp(argv[ArgCount],"calibwatertemp")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    MsgType=MSG_TYPE_CALIB_SETTEMP;
+    		    Addr=0;
+    	      } else { // we don't have enough parameter
+    		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };
+           
+    	    if (strcasecmp(argv[ArgCount],"calibflow")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    MsgType=MSG_TYPE_CALIB_SETFLOW;
+    		    Addr=CALIB_VMFC_TOTAL;                           // 10000
+    	        if (argc>ArgCount+2) { // do we have an additional parameter for mfc number ?
+    	            if (Value<(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)) {
+    	                Addr=Value;
+            	        ptr=strchr(argv[ArgCount+2],'+');           // use counts ?
+    		            Value=strtol(argv[ArgCount+2],NULL,0);
+    		            if (ptr) Addr=Addr+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
+    		        } else {
+            		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
+            		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
+            		    exit(EXIT_FAILURE);
+    		        }            
+    		    } 
+    	      } else { // we don't have enough parameter
+    		    printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    		    exit(EXIT_FAILURE);
+    	      }
+    	    };	    	    
+    
+            if (strcasecmp(argv[ArgCount],"calibhumidity")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    MsgType=MSG_TYPE_CALIB_SETHUMID;
+    		    Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+           
+    	    if (strcasecmp(argv[ArgCount],"refchannel")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_REF_CHANNEL;
+    		Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"mirrorrealign")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		if ((uint16_t)Value<MAX_MIRROR)
+    		{
+    			MsgType=MSG_TYPE_MIRROR_REALIGN;
+    			Addr=((uint16_t) Value) << 8;
+    		} else {
+    			printf("Error please supply valid number for mirror: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
+    		}
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    	    
+    	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
+    	      printf("ArgCount %d\n",ArgCount);
+    	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
+    	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+2],NULL,0) < MAX_MIRROR_AXIS))	{
+    			MsgType=MSG_TYPE_MIRROR_MOVE;
+    		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
+          	      printf("ArgCount %d\n",ArgCount);
+    		} else {
+    			printf("Error please supply valid numbers for mirror and axis: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
+    		}
+    		printf("Value : %d\n",ArgCount);
+    		Value=(int64_t)strtol(argv[ArgCount+3],NULL,0);
+    		printf("Value : %lld from #%s#\n",Value,argv[ArgCount+3]);
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply all parameters for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+    
+    	    if (strcasecmp(argv[ArgCount],"mirrorstop")==0) {
+    			MsgType=MSG_TYPE_MIRROR_STOP;
+    	    };	    	    
+    
+    	    // if we got a valid Msg send it
+    	    if (MsgType<MAX_MSG_TYPE) {
+    	      SetStatusCommand(MsgType,Addr,Value); 
+    	    } else {
+    	      printf("I don't send anything, MessageType is not valid\n");
+    	    } /* if MsgType */
+    	} /* if ArgCount > argc */
 	    break;
 
 	default:
