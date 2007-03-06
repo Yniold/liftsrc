@@ -39,8 +39,13 @@ int MirrorInit(void)
 #ifdef DEBUG
 	printf("In MirrorInit(): FD is %d\n\r", iMirrorFile);
 #endif
-
+    
+    if (iMirrorFile<0) {
+        iRetCode=2;
+        printf("MirrorInit: can't open serial port\n");
+    } else {
        	iRetCode = pthread_create(&ptMirrorThread, NULL, (void*)&MirrorThreadFunc,(void*) &sMirrorThread);
+    }
 	if(iRetCode > 0)
 	{
 		printf("In MirrorInit: pthread_create failed!\n\r");
