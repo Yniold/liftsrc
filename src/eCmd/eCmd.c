@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.39 $
-last change on $Date: 2007-03-06 11:49:41 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.40 $
+last change on $Date: 2007-03-06 11:55:22 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.40  2007-03-06 11:55:22  harder
+modified printf output
+
 Revision 1.39  2007-03-06 11:49:41  harder
 fixed errormsg
 
@@ -285,7 +288,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.39 2007-03-06 11:49:41 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.40 2007-03-06 11:55:22 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -660,9 +663,11 @@ int main(int argc, char *argv[])
     	    if (MsgType<MAX_MSG_TYPE) {
     	      SetStatusCommand(MsgType,Addr,Value); 
     	    } else {
-    	      printf("I don't send anything, command %s unknown, MessageType is not valid\n", argv[ArgCount]);
+    	      printf("I don't send anything, command <%s> unknown, MessageType is not valid\n", argv[ArgCount]);
     	    } /* if MsgType */
-    	} /* if ArgCount > argc */
+    	} else {
+    	    printf("not enough parameter\n"); 
+    	}/* if ArgCount > argc */
 	    break;
 
 	default:
