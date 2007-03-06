@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-06 12:39:27 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.68  2007-03-06 12:39:27  harder
+ * allow only adressing of three mirrors
+ *
  * Revision 1.67  2007-03-05 20:51:32  martinez
  * debugging mirrors
  *
@@ -2919,13 +2922,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.68 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.68 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.68 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.67 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.68 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3291,7 +3294,7 @@ int main(int argc, char *argv[])
 			    Axis=(Message.Addr & 0x00FF);
 //			    u2s=(union Unsigned2SignedType*) &(Message.Value);
 //			    printf("Value : %d \n\r",(*u2s).i_signed);
-			    if ((Mirror < MAX_MIRROR) && (Axis < MAX_MIRROR_AXIS))	
+			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))	
 			    {
 				    pthread_mutex_lock(&mMirrorMutex);
 
@@ -3325,7 +3328,20 @@ int main(int argc, char *argv[])
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			    } /* if MessagePort */
 			    
-			    SendUDPData(&MessageOutPortList[ELEK_MIRROR_OUT], sizeof(struct ElekMessageType), &Message);
+			    Mirror=(Message.Addr >> 8) & 0x00FF;
+			    Axis=(Message.Addr & 0x00FF);
+//			    u2s=(union Unsigned2SignedType*) &(Message.Value);
+//			    printf("Value : %d \n\r",(*u2s).i_signed);
+			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))	
+			    {
+			        SendUDPData(&MessageOutPortList[ELEK_MIRROR_OUT], sizeof(struct ElekMessageType), &Message);
+				    Message.Status=1;
+			    } else {
+			      sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
+			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				    Message.Status=0;
+			    }
+
 					     			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
