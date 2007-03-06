@@ -7,7 +7,7 @@
 //
 
 //#define DEBUG_MUTEX
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_SETPOS
 
 //#undef DEBUG
@@ -80,7 +80,7 @@ void MirrorThreadFunc(void* pArgument)
 	while(true)
 	{
 #ifdef DEBUG
-		printf("CommandStatus : %d \n\r",pStructure->CommandSent);
+		printf("MirrorCom : CommandStatus : %d \n\r",pStructure->CommandSent);
 #endif
 	
 		//read only if command has been sent and response is therefore expected
@@ -89,13 +89,13 @@ void MirrorThreadFunc(void* pArgument)
 			memset(aMirrorRxBuffer,0,1000);
 			iBytesRead = read(pStructure->iFD, aMirrorRxBuffer, 1024); // read non blocking
 #ifdef DEBUG
-			printf("passed read() %d #%s#\n\r",iBytesRead,aMirrorRxBuffer);
+			printf("MirrorCom : passed read() %d #%s#\n\r",iBytesRead,aMirrorRxBuffer);
 #endif
 			if(iBytesRead > 0)
 			{
 			pCurrentChar = aMirrorRxBuffer;
 #ifdef DEBUG
-				printf("bytesread = %d, char = %c, Index = %d\n\r", iBytesRead, *pCurrentChar, iStatusLineIndex);
+				printf("MirrorCom : bytesread = %d, char = %c, Index = %d\n\r", iBytesRead, *pCurrentChar, iStatusLineIndex);
 #endif
 				
 				for(iIndex = 0; iIndex < iBytesRead; iIndex++)
@@ -122,7 +122,7 @@ void MirrorThreadFunc(void* pArgument)
 		SetPos = pStructure->RelPositionSet;
 		pthread_mutex_unlock(&mMirrorMutex);
 #ifdef DEBUG
-		printf("SetPos = %d\n\r",SetPos);
+		printf("MirrorCom : SetPos = %d\n\r",SetPos);
 #endif
 
 		// check for emergency stop command
@@ -187,7 +187,7 @@ void MirrorThreadFunc(void* pArgument)
 					iSize = sprintf(aBuffer,"chl a%d=%d\r", driver, channel);			
 					if(write(pStructure->iFD, aBuffer, iSize) < 0)
 					{
-						printf("Write failed!\n\r");
+						printf("MirrorCom : Write failed!\n\r");
 					} else {
 						pthread_mutex_lock(&mMirrorMutex);
 						pStructure->PosCommandStatus   = POS_PREP2;
@@ -199,7 +199,7 @@ void MirrorThreadFunc(void* pArgument)
 					iSize = sprintf(aBuffer,"rel a%d %d\r", driver, SetPos);			
 					if(write(pStructure->iFD, aBuffer, iSize) < 0)
 					{
-						printf("Write failed!\n\r");
+						printf("MirrorCom : Write failed!\n\r");
 					} else {
 						pthread_mutex_lock(&mMirrorMutex);
 						pStructure->PosCommandStatus   = POS_PREP3;
@@ -212,7 +212,7 @@ void MirrorThreadFunc(void* pArgument)
 					iSize = sprintf(aBuffer,"go a%d\r", driver);			
 					if(write(pStructure->iFD, aBuffer, iSize) < 0)
 					{
-						printf("Write failed!\n\r");
+						printf("MirrorCom : Write failed!\n\r");
 					} else {
 						pthread_mutex_lock(&mMirrorMutex);
 						pStructure->PosCommandStatus   = POS_MOVING;
@@ -228,7 +228,7 @@ void MirrorThreadFunc(void* pArgument)
 						iSize = sprintf(aBuffer,"pos a%d\r", driver);			
 						if(write(pStructure->iFD, aBuffer, iSize) < 0)
 						{
-							printf("Write failed!\n\r");
+							printf("MirrorCom : Write failed!\n\r");
 						} else {
 							pthread_mutex_lock(&mMirrorMutex);
 							pStructure->PosCommandStatus   = POS_MOVING;
@@ -259,8 +259,8 @@ void MirrorThreadFunc(void* pArgument)
 void MirrorParseLine(char* aBuffer, int iLength, struct sMirrorType* pStructure)
 {
 #ifdef DEBUG
-	printf("Buffer consistes of %d chars\n\r",iLength);
-	printf("Buffer contains: %s\n\r",aBuffer);
+	printf("MirrorCom : Buffer consistes of %d chars\n\r",iLength);
+	printf("MirrorCom : Buffer contains: %s\n\r",aBuffer);
 #endif
 	char *pEqualsign;
 	int32_t Position;
@@ -276,7 +276,7 @@ void MirrorParseLine(char* aBuffer, int iLength, struct sMirrorType* pStructure)
 			// copy data into shared structure, so make sure the main thread 
 			// is not reading meanwhile
 #ifdef DEBUG
-			printf("position read: %ld\n\r",Position);
+			printf("MirrorCom : position read: %ld\n\r",Position);
 #endif
 			pthread_mutex_lock(&mMirrorMutex);
 			pStructure->CurrentRelPos   = (int32_t)Position;
