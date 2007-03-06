@@ -276,19 +276,7 @@ int main(int argc, char *argv[])
     uint64_t MirrorPosX;
     uint64_t MirrorPosY;
     int State;
-    int Mirror, mirrorbitnumber;	
-
-
-    ArgCount=1;
-    if (argc<2) {
-//     printf("Usage :\t%s  OnlinePos +StepOfflineLeft +StepDither\n", argv[0]);
-//     printf("\t + indicates a relative position\n");
-//     printf("\t default  = %d %d %d\n", ETALON_STEP_POS_ONLINE,ETALON_STEP_OFFLINE,ETALON_STEP_DITHER);
-      exit(EXIT_FAILURE);
-    }
-    
-    printf("argc %d\n",argc);
-    
+    int Mirror, mirrorbitnumber;	    
 
     // zero TimeOfDay to indicate invalid status
     ElekStatus.TimeOfDayMaster.tv_sec=0L;
@@ -330,8 +318,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.2 2007-03-06 11:34:50 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.2 2007-03-06 11:34:50 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.3 2007-03-06 12:53:29 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.3 2007-03-06 12:53:29 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 // loop to be executed continuously
