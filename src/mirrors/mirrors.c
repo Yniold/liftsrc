@@ -30,6 +30,23 @@ enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
     ELEK_DEBUG_OUT,
     MAX_MESSAGE_OUTPORTS };
 
+
+struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling
+    /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
+    {"ElekIOin"  ,        UDP_ELEK_MIRROR_OUTPORT, ELEK_ELEKIO_OUT, IP_LOCALHOST,-1, 1,  UDP_IN_PORT},
+    {"ElekStatus", UDP_ELEK_MIRROR_STATUS_OUTPORT,              -1, IP_LOCALHOST,-1, 1,  UDP_IN_PORT}
+};
+
+struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={ // order in list defines sequence of polling
+    /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
+    {"StatusReq",   UDP_ELEK_MIRROR_INPORT, ELEK_ELEKIO_IN, IP_ELEK_SERVER,  -1,  0, UDP_OUT_PORT},
+    {"DebugPort",   UDP_ELEK_DEBUG_OUTPORT,             -1, IP_DEBUG_CLIENT, -1,  0, UDP_OUT_PORT}
+};
+
+
+static uint64_t MessageNumber=0;
+
+
 enum MirrorStateEnum {
   MIRROR_HOME,
   MIRROR_RIGHT,
@@ -60,20 +77,6 @@ struct AverageDataType {
 #define CHECK_TIME   5
 
 
-static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling
-    /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
-    {"ElekIOin"  ,        UDP_ELEK_MIRROR_OUTPORT, ELEK_ELEKIO_OUT, IP_LOCALHOST,-1, 1,  UDP_IN_PORT},
-    {"ElekStatus", UDP_ELEK_MIRROR_STATUS_OUTPORT,              -1, IP_LOCALHOST,-1, 1,  UDP_IN_PORT}
-};
-
-static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={ // order in list defines sequence of polling
-    /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
-    {"StatusReq",   UDP_ELEK_MIRROR_INPORT, ELEK_ELEKIO_IN, IP_ELEK_SERVER,  -1,  0, UDP_OUT_PORT},
-    {"DebugPort",   UDP_ELEK_DEBUG_OUTPORT,             -1, IP_DEBUG_CLIENT, -1,  0, UDP_OUT_PORT}
-};
-
-
-static uint64_t MessageNumber=0;
 
 int ReadCommand(uint16_t Addr) {
 
@@ -318,8 +321,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.3 2007-03-06 12:53:29 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.3 2007-03-06 12:53:29 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.4 2007-03-06 13:07:51 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.4 2007-03-06 13:07:51 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 // loop to be executed continuously
