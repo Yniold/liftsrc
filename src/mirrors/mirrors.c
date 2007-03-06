@@ -38,6 +38,16 @@ enum MirrorStateEnum {
   MIRROR_DOWN,
   MAX_MIRROR_STATE };
 
+static char *strStateDescription[MAX_MIRROR_STATE]=
+{
+   "Home",
+     "Right",
+     "Left",
+     "up",
+     "down"
+};
+
+
 struct AverageDataType {
   unsigned NumDat;
   double   Data;
@@ -231,6 +241,7 @@ int main(int argc, char *argv[])
     extern int errno;
     extern struct MessagePortType MessageOutPortList[];
     extern struct MessagePortType MessageInPortList[];
+    extern char *strStateDescription[];
     
     int ArgCount; 
 
@@ -319,8 +330,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.1 2007-03-05 16:28:36 martinez Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.1 2007-03-05 16:28:36 martinez Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.2 2007-03-06 11:34:50 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.2 2007-03-06 11:34:50 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 // loop to be executed continuously
@@ -428,6 +439,8 @@ int main(int argc, char *argv[])
 		    MirrorPosY=ElekStatus.MirrorData.Mirror[Message.Addr].Axis[YAXIS].Position;
 		  	
 		
+		    printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts : %5f \n",
+		        Mirror,strStateDescription[State],NewPosCounts.Avg,OldPosCounts.Avg);
 		    switch (State) {
 		  
 		    case MIRROR_HOME:
