@@ -321,12 +321,13 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.4 2007-03-06 13:07:51 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.4 2007-03-06 13:07:51 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.5 2007-03-06 13:58:40 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.5 2007-03-06 13:58:40 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 // loop to be executed continuously
     EndOfSession=FALSE;
+    ElekStatus.TimeOfDayMaster.tv_sec=1;
     while (!EndOfSession) {
       //        printf("wait for data ....\n");
 	
