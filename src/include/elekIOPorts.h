@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-05 20:51:32 $ by $Author: martinez $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-06 11:34:31 $ by $Author: harder $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.18  2007-03-06 11:34:31  harder
+* added MsgType Calib Start & Stop
+*
 * Revision 1.17  2007-03-05 20:51:32  martinez
 * debugging mirrors
 *
@@ -117,6 +120,8 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_MIRROR_STOP,		       // stop all mirror movements
     
     // Calibrator
+    MSG_TYPE_CALIB_START,                        // start calibration
+    MSG_TYPE_CALIB_STOP,                        // stop calibration    
     MSG_TYPE_CALIB_SETTEMP,                    // set calibrator water temperature
     MSG_TYPE_CALIB_SETFLOW,                    // set calibrator cumulated flow
     MSG_TYPE_CALIB_SETHUMID,                   // set calibrator humidity mixing ratio
