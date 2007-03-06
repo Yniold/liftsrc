@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.38 $
-last change on $Date: 2007-03-06 11:33:55 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.39 $
+last change on $Date: 2007-03-06 11:49:41 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.39  2007-03-06 11:49:41  harder
+fixed errormsg
+
 Revision 1.38  2007-03-06 11:33:55  harder
 only check parameter after paramter s if enough params are given
 
@@ -282,7 +285,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.38 2007-03-06 11:33:55 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.39 2007-03-06 11:49:41 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -632,18 +635,18 @@ int main(int argc, char *argv[])
     	    };	    	    
     	    
     	    if (strcasecmp(argv[ArgCount],"mirrorgoto")==0) {
-    	      printf("ArgCount %d\n",ArgCount);
+    	      //printf("ArgCount %d\n",ArgCount);
     	      if (argc>ArgCount+3) { // do we have all necessary parameters ?
     	      	if (((int) strtol(argv[ArgCount+1],NULL,0) < MAX_MIRROR) && ((int) strtol(argv[ArgCount+2],NULL,0) < MAX_MIRROR_AXIS))	{
     			MsgType=MSG_TYPE_MIRROR_MOVE;
     		      	Addr=(strtol(argv[ArgCount+1],NULL,0) << 8) + (strtol(argv[ArgCount+2],NULL,0) & 0x00FF);
-          	      printf("ArgCount %d\n",ArgCount);
+          	      //printf("ArgCount %d\n",ArgCount);
     		} else {
     			printf("Error please supply valid numbers for mirror and axis: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
     		}
-    		printf("Value : %d\n",ArgCount);
+    		// printf("Value : %d\n",ArgCount);
     		Value=(int64_t)strtol(argv[ArgCount+3],NULL,0);
-    		printf("Value : %lld from #%s#\n",Value,argv[ArgCount+3]);
+    		// printf("Value : %lld from #%s#\n",Value,argv[ArgCount+3]);
     	      } else { // we don't have enough parameter
     		printf("Error please supply all parameters for %s\n",argv[ArgCount]);
     	      }
@@ -657,7 +660,7 @@ int main(int argc, char *argv[])
     	    if (MsgType<MAX_MSG_TYPE) {
     	      SetStatusCommand(MsgType,Addr,Value); 
     	    } else {
-    	      printf("I don't send anything, MessageType is not valid\n");
+    	      printf("I don't send anything, command %s unknown, MessageType is not valid\n", argv[ArgCount]);
     	    } /* if MsgType */
     	} /* if ArgCount > argc */
 	    break;
