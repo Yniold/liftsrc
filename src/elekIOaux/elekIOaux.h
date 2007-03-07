@@ -3,11 +3,14 @@
 *  Headerfile
 *  ============================================
 *
-* $RCSfile: elekIOaux.h,v $ last changed on $Date: 2007-03-04 13:41:59 $ by $Author: rudolf $
+* $RCSfile: elekIOaux.h,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
 *
 * History:
 *
 * $Log: elekIOaux.h,v $
+* Revision 1.2  2007-03-07 21:13:54  rudolf
+* startet work on ncurses based GUI
+*
 * Revision 1.1  2007-03-04 13:41:59  rudolf
 * created new server for auxilliary data like weather data, ships GPS etc
 *
@@ -67,4 +70,4 @@ extern int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg);
 extern int InitUDPOutSocket();
 extern int InitUDPInSocket();
 extern int SendUDPDataToIP(struct MessagePortType *ptrMessagePort, char *IPAddr, unsigned nByte, void *msg);
-
+extern void InitNcursesWindows(void);

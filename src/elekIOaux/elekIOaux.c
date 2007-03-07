@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.5  2007-03-07 21:13:54  rudolf
+ * startet work on ncurses based GUI
+ *
  * Revision 1.4  2007-03-07 18:11:28  rudolf
  * fixed nasty locking bug
  *
@@ -42,6 +45,7 @@
 #include <errno.h>
 #include <sched.h>
 #include <pthread.h>
+#include <ncurses.h>                   /* ncurses.h includes stdio.h */
 
 #include "../include/elekGeneral.h"
 #include "../include/elekIO.h"
@@ -122,6 +126,14 @@ struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
      {"Script",     ELEK_SCRIPT_OUT,                    -1},
      {      "",                  -1,                    -1}
 };
+
+/**********************************************************************************************************/
+/* NCURSES STUFF                                                                                          */
+/**********************************************************************************************************/
+
+
+   WINDOW *pGPSWin;
+   WINDOW *pMeteoBoxWin;
 
 /**********************************************************************************************************/
 /* Signal Handler                                                                                         */
@@ -290,6 +302,8 @@ void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 	//write(2,"GetMeteo: after lock\n\r",sizeof("GetMeteo: after lock\n\r"));
 	//	pthread_mutex_lock(&mMeteoBoxMutex);
 
+	ptrAuxStatus->Status.Status.Word         = ptrAuxStatus->Status.Status.Word | sMeteoBoxThread.Valid.Word; /* will copy only bits set to one*/
+	sMeteoBoxThread.Valid.Word = 0;
 	ptrAuxStatus->MeteoBox.dWindSpeed        = sMeteoBoxThread.dWindSpeed;        /* Windspeed in m/s */
 	ptrAuxStatus->MeteoBox.uiWindDirection   = sMeteoBoxThread.uiWindDirection;   /* 45° resolution */
 	ptrAuxStatus->MeteoBox.dRelHum           = sMeteoBoxThread.dRelHum;           /* 000.0 - 100.0 % */
@@ -330,11 +344,14 @@ void GetShipData ( struct auxStatusType *ptrAuxStatus)
    char           buf[GENERIC_BUF_LEN];
 
      {
-//	pthread_mutex_lock(&mShipDataMutex);
+	//	pthread_mutex_lock(&mShipDataMutex);
 
 	//write(2,"GetShip: before lock\n\r",sizeof("GetShip: before lock\n\r"));
 	pthread_mutex_lock(&mShipDataMutex);
 	//write(2,"GetShip: after lock\n\r",sizeof("GetShip: after lock\n\r"));
+
+	ptrAuxStatus->Status.Status.Word = ptrAuxStatus->Status.Status.Word | sShipDataThread.Valid.Word; /* will copy only bits set to one*/
+	sShipDataThread.Valid.Word = 0;
 
 	ptrAuxStatus->ShipGPS.ucUTCHours = sShipDataThread.ucUTCHours;               /* binary, not BCD coded (!) 0 - 23 decimal*/
 	ptrAuxStatus->ShipGPS.ucUTCMins = sShipDataThread.ucUTCMins;                 /* binary, 0-59 decimal */
@@ -350,21 +367,34 @@ void GetShipData ( struct auxStatusType *ptrAuxStatus)
 	ptrAuxStatus->ShipGPS.dLatitude = sShipDataThread.dLatitude;                 /* "Breitengrad" I always mix it up...
 			                                                              * signed notation,
 			                                                              * negative values mean "S - south of the equator"
-			                                                              * positive values mean "N - north of the equator
-			                                                              * will stick at 255 if no data received for a long period */
+			                                                              * positive values mean "N - north of the equator*/
 	ptrAuxStatus->ShipGPS.dGroundSpeed = sShipDataThread.dGroundSpeed;           /* speed in knots above ground */
 	ptrAuxStatus->ShipGPS.dCourseOverGround = sShipDataThread.dCourseOverGround; /* heading in degrees */
+	ptrAuxStatus->ShipWater.dSalinity = sShipDataThread.dSalinity;               /* gramms per litre */
+	ptrAuxStatus->ShipWater.dWaterTemp = sShipDataThread.dWaterTemp;             /* water temp in degrees celsius */
 
 	//write(2,"GetShip: before unlock\n\r",sizeof("GetShip: before unlock\n\r"));
 	pthread_mutex_unlock(&mShipDataMutex);
 	//write(2,"GetShip: after unlock\n\r",sizeof("GetShip: after unlock\n\r"));
 
-//	pthread_mutex_unlock(&mShipDataMutex);
+	//	pthread_mutex_unlock(&mShipDataMutex);
 
 #ifdef DEBUG_STRUCTUREPASSING
 	printf("ptrAuxStatus->ShipGPS.ucUTCHours:         %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCHours);
 	printf("ptrAuxStatus->ShipGPS.ucUTCMins:          %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCMins);
 	printf("ptrAuxStatus->ShipGPS.ucUTCSeconds:       %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCSeconds);
+	printf("ptrAuxStatus->ShipGPS.ucUTCDay:           %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCDay);
+	printf("ptrAuxStatus->ShipGPS.ucUTCMonth:         %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCMonth);
+	printf("ptrAuxStatus->ShipGPS.uiUTCYear:          %04d\n\r",ptrAuxStatus->ShipGPS.uiUTCYear);
+	printf("ptrAuxStatus->ShipGPS.dLongitude:         %+06.4f\n\r",ptrAuxStatus->ShipGPS.dLongitude);
+	printf("ptrAuxStatus->ShipGPS.dLatitude:          %+06.4f\n\r",ptrAuxStatus->ShipGPS.dLatitude);
+	printf("ptrAuxStatus->ShipGPS.dGroundSpeed:       %04.2f\n\r",ptrAuxStatus->ShipGPS.dGroundSpeed);
+	printf("ptrAuxStatus->ShipGPS.dCourseOverGround:  %04.2f\n\r",ptrAuxStatus->ShipGPS.dCourseOverGround);
+	printf("ptrAuxStatus->ShipWater.dSalinity:        %04.2f\n\r",ptrAuxStatus->ShipWater.dSalinity);
+	printf("ptrAuxStatus->ShipWater.dWaterTemp:       %04.2f\n\r",ptrAuxStatus->ShipWater.dWaterTemp);
+
+	printf("ptrAuxStatus->Status.Status.Word:         %04x\n\r",ptrAuxStatus->Status.Status.Word);
+	ptrAuxStatus->Status.Status.Word = 0;
 #endif
      }
 }
@@ -530,6 +560,19 @@ int main(int argc, char *argv[])
    int MaskAddr;
    struct SyncFlagType SyncFlag;
    int RequestDataFlag;
+   bool bShowSummary;
+
+   if (argc==2)
+     {
+	// Check if we should display a summary of received data on screen
+	if ((argv[1][0] == 's') || (argv[1][0] == 'S'))
+	  {
+	     bShowSummary = true;
+	     InitNcursesWindows();
+	  }
+	else
+	  bShowSummary = false;
+     };
 
    if (elkInit())
      {
@@ -549,13 +592,16 @@ int main(int argc, char *argv[])
    //
 
 #ifdef RUNONPC
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for I386\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for I386\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for I386\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for I386\n",VERSION);
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+   printf("Structure size of 'AuxStatus' in bytes is: %05d\r\n", sizeof(AuxStatus));
+   sprintf(buf, "Structure size of 'AuxStatus' in bytes is: %05d", sizeof(AuxStatus));
 
     /* init all modules */
    InitModules(&AuxStatus);
@@ -613,7 +659,7 @@ int main(int argc, char *argv[])
 	pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
 	pselect_timeout.tv_nsec=0;
 
-	ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wiat until incoming udp or Signal
+	ret=pselect(fdMax+1, &fdsSelect, NULL, NULL, &pselect_timeout, &SignalMask);             // wait until incoming udp or Signal
 
 	gettimeofday(&StartAction, NULL);
 
@@ -835,5 +881,23 @@ int main(int argc, char *argv[])
      }
 
    exit(EXIT_SUCCESS);
+}
+
+void InitNcursesWindows(void)
+{
+   initscr();                      /* Start curses mode            */
+   cbreak();                       /* Line buffering disabled, Pass on*/
+   refresh();
+   pGPSWin = newwin(10, 40, 0, 0);
+   box(pGPSWin,0,0);
+   mvwprintw(pGPSWin,0,1,"GPS Window");
+   wrefresh(pGPSWin);
+
+   pMeteoBoxWin = newwin(10, 30, 00, 40);
+   box(pMeteoBoxWin,0,0);
+   mvwprintw(pMeteoBoxWin,0,1,"MeteoBox Window");
+   wrefresh(pMeteoBoxWin);
+   getch();
+   endwin();
 }
 

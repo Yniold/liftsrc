@@ -3,11 +3,14 @@
 // Headerfile
 // ============================================
 //
-// $RCSfile: meteobox.h,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
+// $RCSfile: meteobox.h,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.h,v $
+// Revision 1.4  2007-03-07 21:13:54  rudolf
+// startet work on ncurses based GUI
+//
 // Revision 1.3  2007-03-07 18:11:28  rudolf
 // fixed nasty locking bug
 //
@@ -56,7 +59,7 @@
 struct  sMeteoBoxType
 {
    int      iFD;                      /* socket FD */
-   int      iValidFlag;               /* signal if data is valid or not to main thread */
+   union AuxStatusType Valid;         /* signal if data is valid or not to main thread */
    
    double   dWindSpeed;               /* Windspeed in m/s */
    uint16_t uiWindDirection;          /* 45° resolution */

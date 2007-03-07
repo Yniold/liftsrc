@@ -17,7 +17,7 @@ LDFLAGS :=-lrt -lm
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC -combine
-LDFLAGS :=-lrt -lm
+LDFLAGS :=-lrt -lm -lncurses
 endif
 
 CC := $(CROSS_COMPILE)gcc

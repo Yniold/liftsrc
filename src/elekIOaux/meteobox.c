@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.5  2007-03-07 21:13:54  rudolf
+// startet work on ncurses based GUI
+//
 // Revision 1.4  2007-03-07 18:11:28  rudolf
 // fixed nasty locking bug
 //
@@ -106,7 +109,7 @@ static void read_timeout_handler(int signo)
 struct sMeteoBoxType sMeteoBoxThread =
 {
    .iFD = -1,                      /* socket FD */
-     .iValidFlag = 0,                /* signal if data is valid or not to main thread */
+     .Valid = 0,                /* signal if data is valid or not to main thread */
 
      .dWindSpeed = 0,                /* Windspeed in m/s */
      .uiWindDirection = 0,           /* 45° resolution */
@@ -311,6 +314,7 @@ void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDat
 	else
 	  break;
      };
+   sDataStructure->Valid.Field.MeteoBoxDataValid = 1;
    //write(2,"Meteo: before unlock\n\r",sizeof("Meteo: before unlock\n\r"));
    pthread_mutex_unlock(&mMeteoBoxMutex);
    //write(2,"Meteo: after unlock\n\r",sizeof("Meteo: after unlock\n\r"));
