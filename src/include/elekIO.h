@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-05 16:06:58 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-07 16:05:31 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.41  2007-03-07 16:05:31  rudolf
+* added structures for elekIOaux
+*
 * Revision 1.40  2007-03-05 16:06:58  martinez
 * mirror moving implemented
 *
@@ -127,6 +130,12 @@
 *
 */
 /* #define DEBUG_NOHARDWARE 0 */
+
+#ifndef ELEKIO_H
+#define ELEKIO_H
+
+#include <stdint.h>
+#include <sys/types.h>
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
@@ -654,8 +663,64 @@ struct ButterflyType {
   union ButterflyCPUStatusType      CPUStatus;            /* CPU status */ 
 }; /* ButterflyType */
 
+/*************************************************************************************************************/
+/* AUX & METEO stuff */
+/*************************************************************************************************************/
 
-   
+struct AuxStatusFieldType
+{
+   uint16_t Reserved:10;             /* not used up to now */
+   uint16_t ShipWaterDataValid:1;    /* Ships Water data are valid*/
+   uint16_t ShipGyroDataValid:1;     /* Ships Gyro data are valid*/
+   uint16_t ShipSonarDataValid:1;    /* Ships Sonar data are valid*/
+   uint16_t ShipMeteoDataValid:1;    /* Ships Meteo data are valid*/
+   uint16_t ShipGPSDataValid:1;      /* Ships GPS data are valid*/
+   uint16_t MeteoBoxDataValid:1;     /* Meteobox data are valid */
+};
+
+union AuxStatusType
+{
+   struct AuxStatusFieldType Field;
+   uint16_t Word;
+};
+
+struct AuxDataValidType 
+{
+   union AuxStatusType      Status;
+};
+
+struct MeteoBoxType
+{
+   double   dWindSpeed;               /* Windspeed in m/s */
+   uint16_t uiWindDirection;          /* 45° resolution */
+   double   dRelHum;                  /* 000.0 - 100.0 % */
+   double   dAirTemp;                 /* Temperature in degree celsius */
+   double   dGasSensorVoltage;        /* dirt sensor */
+};
+
+struct ShipSonarType
+{
+   double   dFrequency;               /* Frequency used for sonar */
+   double   dWaterDepth;
+};
+
+struct ShipMeteoType
+{
+   double   dWindSpeed;                /* wind speed */
+   double   dWindDirection;            /* wind direction */ 
+};
+
+struct ShipGyroType
+{
+   double   dDirection;                /* direction */ 
+};
+
+struct ShipWaterType
+{
+   double   dSalinity;                /* gramms per litre */
+   double   dWaterTemp;               /* water temp in degrees celsius */
+};
+
 /*************************************************************************************************************/
 
 enum InstrumentActionType { /* update also in instrument.c */
@@ -679,7 +744,7 @@ struct InstrumentFlagsType {                      /* set of flags for the instru
   /*  enum DebugType        Debug;                     */ 
 }; /* ServerFlagsType */
 
-/* structure for TSC for time differenre measurements Master <-> Slave */
+/* structure for TSC for time difference measurements Master <-> Slave */
 
 struct TSCType 
 {
@@ -727,6 +792,29 @@ struct GPSDataType {					/* data type for GPS data*/
 	uint16_t uiHeading;					/* 10 times heading in degrees e.g. 2700 decimal = 270,0 Degress = west */
 
 };
+
+struct ShipGPSDataType {				/* data type for GPS data*/
+	unsigned char ucUTCHours;			/* binary, not BCD coded (!) 0 - 23 decimal*/
+	unsigned char ucUTCMins;			/* binary, 0-59 decimal */
+	unsigned char ucUTCSeconds;			/* binary 0-59 decimal */
+        unsigned char ucUTCDay;                         /* day 1-31 */
+        unsigned char ucUTCMonth;                       /* month 1-12 */
+        uint16_t      uiUTCYear;                         /* year 4 digits */
+	double dLongitude;				/* "Laengengrad" I always mix it up...
+										signed notation,
+										negative values mean "W - west of Greenwich"
+										positive values mean "E - east of Greenwich" */
+
+	double dLatitude;				/* "Breitengrad" I always mix it up...
+										signed notation,
+										negative values mean "S - south of the equator"
+										positive values mean "N - north of the equator 
+										will stick at 255 if no data received for a long period */
+	double dGroundSpeed;				/* speed in knots above ground */
+	double dCourseOverGround;			/* heading in degrees */
+
+};
+
 /*************************************************************************************************************/
 /* defines for Calibrator */
 #define CALIB_VMFC_TOTAL        10000        /* virtual MFC address for total (Dry+Humid Flow) calibrator flow */
@@ -838,10 +926,24 @@ struct calibStatusType     /* new structure introduced for the calibrator automa
   struct PIDregulatorType    PIDRegulator;
 };
 
+struct auxStatusType     /* structure for the meteo box and ship's auxilliary data*/ 
+{
+  /* data structures for the meteobox */
+  struct timeval             TimeOfDayAux;
+  struct MeteoBoxType        MeteoBox;
+  struct ShipGPSDataType     ShipGPS;
+  struct ShipSonarType       ShipSonar;
+  struct ShipMeteoType       ShipMeteo;
+  struct ShipGyroType        ShipGyro;
+  struct ShipWaterType       ShipWater;
+  struct AuxDataValidType    Status;
+};
+
 
 
 extern int elkInit(void);
 extern int elkExit(void);
 extern int elkWriteData(uint16_t Adress, uint16_t Data);
 extern int elkReadData(uint16_t Adress);
+#endif
 
