@@ -410,10 +410,24 @@ x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
+Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
+EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
+
+Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
+EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
+
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)==3)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==3,1);  
 PMTOnlineAvg(statusData(:,col.RAvgOnOffFlag)~=3)=NaN;
-PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)==1)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==1,1);  
-PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)~=1)=NaN;
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==2,2);  
+PMTOfflineAvg(statusData(:,col.RAvgOnOffFlag)~=2)=NaN;
+
+MCP1OfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==2,5);  
+MCP1OfflineAvg(statusData(:,col.RAvgOnOffFlag)~=2)=NaN;
+
+MCP2OfflineAvg(statusData(:,col.RAvgOnOffFlag)==2)=data.AvgData(statusData(:,col.RAvgOnOffFlag)==2,8);  
+MCP2OfflineAvg(statusData(:,col.RAvgOnOffFlag)~=2)=NaN;
 
 % check which child GUIs are active and color push buttons accordingly
 % red color if warning applies to one of the values controlled in the GUI
@@ -430,7 +444,7 @@ if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
-        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100
+        if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100 | abs(EtalonCurPos(lastrow)-EtalonEncPos(lastrow))>5000
             set(handles.Dyelaser,'BackgroundColor','r');
         else
             set(handles.Dyelaser,'BackgroundColor','c');
@@ -463,7 +477,8 @@ if isfield(data,'hFlyDetection')
     else
         if P20(lastrow)<1 | P20(lastrow)>10 | DiodeWZ1in(lastrow)<2 | DiodeWZ1out(lastrow)<0.7*DiodeWZ1in ...
                 | DiodeWZ2in(lastrow)<0.4 | DiodeWZ2out(lastrow)<0.7*DiodeWZ2in | MFCFlow(lastrow)<4 | MFCFlow(lastrow)>9 ...
-                | statusData(lastrow,col.VHV)<12400 | PMTOnlineAvg(lastrow)<2*PMTOfflineAvg(lastrow) | PCuvette<0.5 
+                | statusData(lastrow,col.VHV)<12400 | mean(PMTOnlineAvg(~isnan(PMTOnlineAvg)))<2*mean(PMTOfflineAvg(~isnan(PMTOfflineAvg))) | PCuvette<0.5 ...
+                | MCP1OfflineAvg(lastrow)==0 | MCP2OfflineAvg(lastrow)==0
             set(handles.FlyDetection,'BackgroundColor','r');
         else
             set(handles.FlyDetection,'BackgroundColor','c');
