@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.4  2007-03-07 18:11:28  rudolf
+// fixed nasty locking bug
+//
 // Revision 1.3  2007-03-05 20:48:09  rudolf
 // added thread for collecting ship's data, more work on parser
 //
@@ -121,6 +124,9 @@ int MeteoBoxInit(void)
    int iRetCode;
    pthread_t ptMeteoBoxThread;
 
+   // init mutex before creating thread
+   pthread_mutex_init(&mMeteoBoxMutex,NULL);
+
    iRetCode = pthread_create(&ptMeteoBoxThread, NULL, (void*)&MeteoBoxThreadFunc,(void*) &sMeteoBoxThread);
    if(iRetCode > 0)
      {
@@ -155,9 +161,6 @@ void MeteoBoxThreadFunc(void* pArgument)
    // shared structure
    struct sMeteoBoxType *sStructure = (struct sMeteoBoxType *) pArgument;
 
-   // init mutex before creating thread
-   pthread_mutex_init(&mMeteoBoxMutex,NULL);
-
    while(1)
      {
 	// try to connect till success
@@ -178,7 +181,7 @@ void MeteoBoxThreadFunc(void* pArgument)
 
 	     // set timeout to 2 seconds
 	     alarm(2);
-	     
+
 	     // try connection to XPORT using a timeout
 	     if((iRetVal = connect(sStructure->iFD, (const struct sockaddr*)&ServerAddress, sizeof(ServerAddress))) < 0)
 	       {
@@ -270,20 +273,24 @@ void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDat
 {
    char* pRetVal;
    int iTokenNumber;
+   char* pContext;
+   //write(2,"Meteo: before lock\n\r",sizeof("Meteo: before lock\n\r"));
+   pthread_mutex_lock(&mMeteoBoxMutex);
+   //write(2,"Meteo: after lock\n\r",sizeof("Meteo: after lock\n\r"));
 
-   pRetVal = strtok(pBuffer,";");
+   pRetVal = strtok_r(pBuffer,";",&pContext);
 
    while(true)
      {
 	if(pRetVal != NULL)
 	  {
 	     iTokenNumber++;
-//	     printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
+	     //	     printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
 	     switch(iTokenNumber)
 	       {
 		case 3:
 		  sDataStructure->dWindSpeed = strtod(pRetVal,NULL);
-		
+
 		case 9:
 		  sDataStructure->dAirTemp = strtod(pRetVal,NULL);
 
@@ -299,16 +306,23 @@ void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDat
 		default:
 		  break;
 	       };
-	     pRetVal=strtok(NULL,";");
+	     pRetVal=strtok_r(NULL,";",&pContext);
 	  }
 	else
 	  break;
-
      };
+   //write(2,"Meteo: before unlock\n\r",sizeof("Meteo: before unlock\n\r"));
+   pthread_mutex_unlock(&mMeteoBoxMutex);
+   //write(2,"Meteo: after unlock\n\r",sizeof("Meteo: after unlock\n\r"));
 
-//     printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
-//     printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
-//     printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
-//     printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
-//     printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
- };
+   if(gPlotData)
+     {
+
+	printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
+	printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
+	printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
+	printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
+	printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
+     }
+
+};

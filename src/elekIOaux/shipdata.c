@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-07 17:14:04 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.3  2007-03-07 18:11:28  rudolf
+// fixed nasty locking bug
+//
 // Revision 1.2  2007-03-07 17:14:04  rudolf
 // more work on parser
 //
@@ -121,7 +124,6 @@ void ShipDataThreadFunc(void* pArgument)
    // shared structure
    struct sShipDataType *sStructure = (struct sShipDataType *) pArgument;
 
-
    while(1)
      {
 	// try to connect till success
@@ -213,7 +215,9 @@ void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* s
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
 
+   //write(2,"ShipDataParseGPSBuffer: before lock\n\r",sizeof("ShipDataParseGPSBuffer: before lock\n\r"));
    pthread_mutex_lock(&mShipDataMutex);
+   //write(2,"ShipDataParseGPSBuffer: after lock\n\r",sizeof("ShipDataParseGPSBuffer: after lock\n\r"));
 
    while(true)
      {
@@ -270,7 +274,9 @@ void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* s
      };
 
    sDataStructure->Valid.Field.ShipGPSDataValid = 1;
+   //write(2,"ShipDataParseGPSBuffer: before unlock\n\r",sizeof("ShipDataParseGPSBuffer: before unlock\n\r"));
    pthread_mutex_unlock(&mShipDataMutex);
+   //write(2,"ShipDataParseGPSBuffer: after unlock\n\r",sizeof("ShipDataParseGPSBuffer: after unlock\n\r"));
 
    if(gPlotData)
      {
@@ -291,7 +297,9 @@ void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
+   //write(2,"ShipDataParseWaterBuffer: before lock\n\r",sizeof("ShipDataParseWaterBuffer: before lock\n\r"));
    pthread_mutex_lock(&mShipDataMutex);
+   //write(2,"ShipDataParseWaterBuffer: after lock\n\r",sizeof("ShipDataParseWaterBuffer: after lock\n\r"));
 
    while(true)
      {
@@ -302,8 +310,13 @@ void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 	       {
 		case 2:
 		  if(pRetVal[0] == 'P')
-		    return;
-
+		    {
+		       //write(2,"ShipDataParseWaterBuffer: before unlock (return)\n\r",sizeof("ShipDataParseWaterBuffer: before unlock (return)\n\r"));
+		       pthread_mutex_unlock(&mShipDataMutex);
+		       //write(2,"ShipDataParseWaterBuffer: after unlock (return)\n\r",sizeof("ShipDataParseWaterBuffer: after unlock (return)\n\r"));
+		       return;
+		    };
+		  
 		case 3:
 		  sDataStructure->dWaterTemp = strtod(pRetVal,NULL);
 
@@ -321,7 +334,9 @@ void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
      };
    sDataStructure->Valid.Field.ShipWaterDataValid = 1;
 
+   //write(2,"ShipDataParseWaterBuffer: before unlock\n\r",sizeof("ShipDataParseWaterBuffer: before unlock\n\r"));
    pthread_mutex_unlock(&mShipDataMutex);
+   //write(2,"ShipDataParseWaterBuffer: after unlock\n\r",sizeof("ShipDataParseWaterBuffer: after unlock\n\r"));
 
    if(gPlotData)
      {
@@ -339,7 +354,9 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
 
+   //write(2,"ShipDataParseSonarBuffer: before lock\n\r",sizeof("ShipDataParseSonarBuffer: before lock\n\r"));
    pthread_mutex_lock(&mShipDataMutex);
+   //write(2,"ShipDataParseSonarBuffer: after lock\n\r",sizeof("ShipDataParseSonarBuffer: after lock\n\r"));
 
    while(true)
      {
@@ -351,7 +368,10 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 		case 3:
 		  if(strncmp(pRetVal, "#SF11SBP",8) != 0)
 		    {
+		       //write(2,"ShipDataParseSonarBuffer: before unlock (return)\n\r",sizeof("ShipDataParseSonarBuffer: before unlock (return)\n\r"));
 		       pthread_mutex_unlock(&mShipDataMutex);
+		       //write(2,"ShipDataParseSonarBuffer: after unlock (return)\n\r",sizeof("ShipDataParseSonarBuffer: after unlock (return)\n\r"));
+
 		       return;
 		    };
 
@@ -368,7 +388,9 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 
      };
    sDataStructure->Valid.Field.ShipSonarDataValid = 1;
+   //write(2,"ShipDataParseSonarBuffer: before unlock\n\r",sizeof("ShipDataParseSonarBuffer: before unlock\n\r"));
    pthread_mutex_unlock(&mShipDataMutex);
+   //write(2,"ShipDataParseSonarBuffer: after unlock\n\r",sizeof("ShipDataParseSonarBuffer: after unlock\n\r"));
 
    if(gPlotData)
      {
@@ -384,8 +406,10 @@ void ShipDataParseGyroBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* 
 
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
-   
+
+   //write(2,"ShipDataParseGyroBuffer: before lock\n\r",sizeof("ShipDataParseGyroBuffer: before lock\n\r"));
    pthread_mutex_lock(&mShipDataMutex);
+   //write(2,"ShipDataParseGyroBuffer: after lock\n\r",sizeof("ShipDataParseGyroBuffer: after lock\n\r"));
 
    while(true)
      {
@@ -409,7 +433,9 @@ void ShipDataParseGyroBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* 
      };
    sDataStructure->Valid.Field.ShipGyroDataValid = 1;
 
+   //write(2,"ShipDataParseGyroBuffer: before unlock\n\r",sizeof("ShipDataParseGyroBuffer: before unlock\n\r"));
    pthread_mutex_unlock(&mShipDataMutex);
+   //write(2,"ShipDataParseGyroBuffer: after unlock\n\r",sizeof("ShipDataParseGyroBuffer: after unlock\n\r"));
 
    if(gPlotData)
      {
@@ -425,8 +451,10 @@ void ShipDataParseAnemoBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
-   
+
+   //write(2,"ShipDataParseAnemoBuffer: before lock\n\r",sizeof("ShipDataParseAnemoBuffer: before lock\n\r"));
    pthread_mutex_lock(&mShipDataMutex);
+   //write(2,"ShipDataParseAnemoBuffer: after lock\n\r",sizeof("ShipDataParseAnemoBuffer: after lock\n\r"));
 
    while(true)
      {
@@ -452,7 +480,9 @@ void ShipDataParseAnemoBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
      };
    sDataStructure->Valid.Field.ShipMeteoDataValid = 1;
 
+   //write(2,"ShipDataParseAnemoBuffer: before unlock\n\r",sizeof("ShipDataParseAnemoBuffer: before unlock\n\r"));
    pthread_mutex_unlock(&mShipDataMutex);
+   //write(2,"ShipDataParseAnemoBuffer: after unlock\n\r",sizeof("ShipDataParseAnemoBuffer: after unlock\n\r"));
 
    if(gPlotData)
      {

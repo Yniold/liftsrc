@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.4  2007-03-07 18:11:28  rudolf
+ * fixed nasty locking bug
+ *
  * Revision 1.3  2007-03-05 20:48:09  rudolf
  * added thread for collecting ship's data, more work on parser
  *
@@ -54,7 +57,9 @@
 
 #define CPUCLOCK 500000000UL 	// CPU clock of Markus' Athlon XP
 
-char gPlotData = 1;    // this is not a define, it's meant to be replaced by a commandline arg in the future
+#define DEBUG_STRUCTUREPASSING
+
+char gPlotData = 0;    // this is not a define, it's meant to be replaced by a commandline arg in the future
 
 enum InPortListEnum
 {
@@ -272,45 +277,98 @@ void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 
    extern struct MessagePortType MessageInPortList[];
    extern struct MessagePortType MessageOutPortList[];
-   extern pthread_mutex_t mLicorMutex;
-   extern struct sLicorType sLicorThread;
+   extern pthread_mutex_t mMeteoBoxMutex;
+   extern struct sMeteoType sMeteoThread;
 
    uint16_t       ret;
    uint16_t       Control;
    char           buf[GENERIC_BUF_LEN];
 
      {
+	//write(2,"GetMeteo: before lock\n\r",sizeof("GetMeteo: before lock\n\r"));
 	pthread_mutex_lock(&mMeteoBoxMutex);
-	//	ptrAuxStatus->MeteoBox.LicorTemperature = sMeteoThread.LicorTemperature;
+	//write(2,"GetMeteo: after lock\n\r",sizeof("GetMeteo: after lock\n\r"));
+	//	pthread_mutex_lock(&mMeteoBoxMutex);
 
-	//	ptrAuxStatus->LicorCalib.AmbientPressure = sMeteoThread.AmbientPressure;
-
-	//	ptrAuxStatus->LicorCalib.CO2A = sLicorThread.CO2A;
-	//	ptrAuxStatus->LicorCalib.CO2B = sLicorThread.CO2B; /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
-	//	ptrAuxStatus->LicorCalib.CO2D = sLicorThread.CO2D; /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
-
-	//	ptrAuxStatus->LicorCalib.H2OA = sLicorThread.H2OA; /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
-	//	ptrAuxStatus->LicorCalib.H2OB = sLicorThread.H2OB; /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
-	//	ptrAuxStatus->LicorCalib.H2OD = sLicorThread.H2OD; /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
-	//
+	ptrAuxStatus->MeteoBox.dWindSpeed        = sMeteoBoxThread.dWindSpeed;        /* Windspeed in m/s */
+	ptrAuxStatus->MeteoBox.uiWindDirection   = sMeteoBoxThread.uiWindDirection;   /* 45° resolution */
+	ptrAuxStatus->MeteoBox.dRelHum           = sMeteoBoxThread.dRelHum;           /* 000.0 - 100.0 % */
+	ptrAuxStatus->MeteoBox.dAirTemp          = sMeteoBoxThread.dAirTemp;          /* Temperature in degree celsius */
+	ptrAuxStatus->MeteoBox.dGasSensorVoltage = sMeteoBoxThread.dGasSensorVoltage; /* dirt sensor */
+	//write(2,"GetMeteo: before unlock\n\r",sizeof("GetMeteo: before unlock\n\r"));
 	pthread_mutex_unlock(&mMeteoBoxMutex);
+	//write(2,"GetMeteo: after unlock\n\r",sizeof("GetMeteo: after unlock\n\r"));
+
+	//	pthread_mutex_unlock(&mMeteoBoxMutex);
 
 #ifdef DEBUG_STRUCTUREPASSING
-	printf("ptrAuxStatus->LicorCalib.LicorTemperature: %05d\n\r",ptrAuxStatus->LicorCalib.LicorTemperature);
-	printf("ptrAuxStatus->LicorCalib.AmbientPressure:  %05d\n\r",ptrAuxStatus->LicorCalib.AmbientPressure);
+	printf("ptrAuxStatus->MeteoBox.dWindSpeed:        %04.2f\n\r",ptrAuxStatus->MeteoBox.dWindSpeed);
+	printf("ptrAuxStatus->MeteoBox.uiWindDirection:   %03d\n\r",ptrAuxStatus->MeteoBox.uiWindDirection);
 
-	printf("ptrAuxStatus->LicorCalib.CO2A:             %05d\n\r",ptrAuxStatus->LicorCalib.CO2A);
-	printf("ptrAuxStatus->LicorCalib.CO2B:             %05d\n\r",ptrAuxStatus->LicorCalib.CO2B);
-	printf("ptrAuxStatus->LicorCalib.CO2D:             %05d\n\r\n\r",ptrAuxStatus->LicorCalib.CO2D);
-
-	printf("ptrAuxStatus->LicorCalib.H2OA:             %05d\n\r",ptrAuxStatus->LicorCalib.H2OA);
-	printf("ptrAuxStatus->LicorCalib.H2OB:             %05d\n\r",ptrAuxStatus->LicorCalib.H2OB);
-	printf("ptrAuxStatus->LicorCalib.H2OD:             %05d\n\r\n\r",ptrAuxStatus->LicorCalib.H2OD);
-
+	printf("ptrAuxStatus->MeteoBox.dRelHum:           %04.2f\n\r",ptrAuxStatus->MeteoBox.dRelHum);
+	printf("ptrAuxStatus->MeteoBox.dAirTemp:          %+04.2f\n\r",ptrAuxStatus->MeteoBox.dAirTemp);
+	printf("ptrAuxStatus->MeteoBox.dGasSensorVoltage: %05.3f\n\r",ptrAuxStatus->MeteoBox.dGasSensorVoltage);
 #endif
      }
 }
-/* GetLicorData */
+/* GetMeteoBoxData */
+
+/**********************************************************************************************************/
+/* GetShipData                                                                                            */
+/**********************************************************************************************************/
+
+void GetShipData ( struct auxStatusType *ptrAuxStatus)
+{
+
+   extern struct MessagePortType MessageInPortList[];
+   extern struct MessagePortType MessageOutPortList[];
+   extern pthread_mutex_t mShipDataMutex;
+   extern struct sShipDataType sShipDataThread;
+
+   uint16_t       ret;
+   uint16_t       Control;
+   char           buf[GENERIC_BUF_LEN];
+
+     {
+//	pthread_mutex_lock(&mShipDataMutex);
+
+	//write(2,"GetShip: before lock\n\r",sizeof("GetShip: before lock\n\r"));
+	pthread_mutex_lock(&mShipDataMutex);
+	//write(2,"GetShip: after lock\n\r",sizeof("GetShip: after lock\n\r"));
+
+	ptrAuxStatus->ShipGPS.ucUTCHours = sShipDataThread.ucUTCHours;               /* binary, not BCD coded (!) 0 - 23 decimal*/
+	ptrAuxStatus->ShipGPS.ucUTCMins = sShipDataThread.ucUTCMins;                 /* binary, 0-59 decimal */
+	ptrAuxStatus->ShipGPS.ucUTCSeconds = sShipDataThread.ucUTCSeconds;           /* binary 0-59 decimal */
+	ptrAuxStatus->ShipGPS.ucUTCDay = sShipDataThread.ucUTCDay;                   /* day 1-31 */
+	ptrAuxStatus->ShipGPS.ucUTCMonth = sShipDataThread.ucUTCMonth;               /* month 1-12 */
+	ptrAuxStatus->ShipGPS.uiUTCYear = sShipDataThread.uiUTCYear;                 /* year 4 digits */
+	ptrAuxStatus->ShipGPS.dLongitude = sShipDataThread.dLongitude;               /* "Laengengrad" I always mix it up...
+			                                                              * signed notation,
+			                                                              * negative values mean "W - west of Greenwich"
+			                                                              * positive values mean "E - east of Greenwich" */
+
+	ptrAuxStatus->ShipGPS.dLatitude = sShipDataThread.dLatitude;                 /* "Breitengrad" I always mix it up...
+			                                                              * signed notation,
+			                                                              * negative values mean "S - south of the equator"
+			                                                              * positive values mean "N - north of the equator
+			                                                              * will stick at 255 if no data received for a long period */
+	ptrAuxStatus->ShipGPS.dGroundSpeed = sShipDataThread.dGroundSpeed;           /* speed in knots above ground */
+	ptrAuxStatus->ShipGPS.dCourseOverGround = sShipDataThread.dCourseOverGround; /* heading in degrees */
+
+	//write(2,"GetShip: before unlock\n\r",sizeof("GetShip: before unlock\n\r"));
+	pthread_mutex_unlock(&mShipDataMutex);
+	//write(2,"GetShip: after unlock\n\r",sizeof("GetShip: after unlock\n\r"));
+
+//	pthread_mutex_unlock(&mShipDataMutex);
+
+#ifdef DEBUG_STRUCTUREPASSING
+	printf("ptrAuxStatus->ShipGPS.ucUTCHours:         %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCHours);
+	printf("ptrAuxStatus->ShipGPS.ucUTCMins:          %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCMins);
+	printf("ptrAuxStatus->ShipGPS.ucUTCSeconds:       %02d\n\r",ptrAuxStatus->ShipGPS.ucUTCSeconds);
+#endif
+     }
+}
+/* GetShipData */
 
 /**********************************************************************************************************/
 /* GetAuxStatus                                                                                          */
@@ -324,7 +382,7 @@ void GetAuxStatus ( struct auxStatusType *ptrAuxStatus, int IsMaster)
 
    // get values from MeteoBox
    GetMeteoBoxData (ptrAuxStatus);
-
+   GetShipData (ptrAuxStatus);
 }
 /* GetAuxStatus */
 
@@ -348,7 +406,6 @@ int InitUDPPorts(fd_set *pFDsMaster, int *fdMax)
 	       MessageInPortList[MessagePort].PortNumber);
 
 	MessageInPortList[MessagePort].fdSocket=InitUDPInSocket(MessageInPortList[MessagePort].PortNumber);
-
 	FD_SET(MessageInPortList[MessagePort].fdSocket, pFDsMaster);     // add the manual port to the master set
 	printf("%08x\n",MessageInPortList[MessagePort].fdSocket);
 	(*fdMax)=MessageInPortList[MessagePort].fdSocket;                   // the last one will give the max number
@@ -492,11 +549,11 @@ int main(int argc, char *argv[])
    //
 
 #ifdef RUNONPC
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for I386\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for I386\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for I386\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for I386\n",VERSION);
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.3 2007-03-05 20:48:09 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.4 2007-03-07 18:11:28 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 

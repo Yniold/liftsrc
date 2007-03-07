@@ -3,7 +3,7 @@
 // Headerfile
 // ============================================
 //
-// $RCSfile: shipdata.h,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
+// $RCSfile: shipdata.h,v $ last changed on $Date: 2007-03-07 18:11:29 $ by $Author: rudolf $
 //
 // History:
 //
@@ -43,7 +43,7 @@
 struct  sShipDataType
 {
    int      iFD;                      /* socket FD */
-   int      iValidFlag;               /* signal if data is valid or not to main thread */
+   union AuxStatusType Valid;         /* signal if data is valid or not to main thread */
    //sonar
    double   dFrequency;               /* Frequency used for sonar */
    double   dWaterDepth;              /* meters */
@@ -91,5 +91,7 @@ extern void ShipDataThreadFunc(void* pArgument);
 extern void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure);
 extern void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure);
 extern void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure);
+extern void ShipDataParseGyroBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure);
+extern void ShipDataParseAnemoBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure);
 
 #endif

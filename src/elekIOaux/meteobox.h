@@ -3,11 +3,14 @@
 // Headerfile
 // ============================================
 //
-// $RCSfile: meteobox.h,v $ last changed on $Date: 2007-03-04 19:28:41 $ by $Author: rudolf $
+// $RCSfile: meteobox.h,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.h,v $
+// Revision 1.3  2007-03-07 18:11:28  rudolf
+// fixed nasty locking bug
+//
 // Revision 1.2  2007-03-04 19:28:41  rudolf
 // added parsing for data into the right structure elements
 //
@@ -64,7 +67,7 @@ struct  sMeteoBoxType
 
 extern struct sMeteoBoxType sMeteoBoxThread;
 extern pthread_mutex_t mMeteoBoxMutex;
-
+extern char gPlotData;
 // ====================================
 // prototypes
 // ====================================
