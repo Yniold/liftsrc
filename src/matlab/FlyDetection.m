@@ -624,10 +624,21 @@ MCP2Avg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 set(handles.txtPMTOffline,'String',PMTOfflineAvg(lastrow));
 set(handles.txtMCP1Offline,'String',MCP1OfflineAvg(lastrow));
 set(handles.txtMCP2Offline,'String',MCP2OfflineAvg(lastrow));
-
 set(handles.txtPMTOnline,'String',PMTOnlineAvg(lastrow));
 set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
 set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
+
+% warn if Offline Signals are zero, possible problem with MCPs
+if MCP1OnlineAvg(lastrow)==0
+    set(handles.txtMCP1Online,'BackgroundColor','r');
+else
+    set(handles.txtMCP1Online,'BackgroundColor',[0.7 0.7 0.7]);
+end
+if MCP2OnlineAvg(lastrow)==0
+    set(handles.txtMCP2Online,'BackgroundColor','r');
+else
+    set(handles.txtMCP2Online,'BackgroundColor',[0.7 0.7 0.7]);
+end
 
 % warn if PMTOnline is too low for valid online Signal
 if PMTOnlineAvg(lastrow)<2*PMTOfflineAvg

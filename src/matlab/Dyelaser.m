@@ -254,6 +254,13 @@ set(handles.txtEtCurPos,'String',EtalonCurPos(lastrow));
 set(handles.txtEtSetPos,'String',EtalonSetPos(lastrow));
 set(handles.txtEtEncPos,'String',EtalonEncPos(lastrow));
 set(handles.txtonline,'String',OnlinePos(lastrow));
+% warn with red background if difference between Current and Encoder
+% positions is too large
+if abs(EtalonCurPos(lastrow)-EtalonEncPos(lastrow))>5000
+    set(handles.txtEtCurPos,'BackgroundColor','r');
+else
+    set(handles.txtEtCurPos,'BackgroundColor',[0.7,0.7,0.7]);
+end
 
 if bitget(EtalonStatus(lastrow),9)
     set(handles.txtLimitSwitch,'String','right','BackgroundColor','r');
@@ -311,6 +318,8 @@ if get(handles.chkTDyelaser,'Value')
     plot(handles.axes1,statustime(iZeit),TDyelaser(iZeit));
     hold(handles.axes1,'on');
 end 
+
+% 
 
 xlim(handles.axes1,[minTime maxTime]);
 grid(handles.axes1);
