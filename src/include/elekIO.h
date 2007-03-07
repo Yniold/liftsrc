@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-07 16:05:31 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-07 19:16:54 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.42  2007-03-07 19:16:54  rudolf
+* added missing field for Licor Pressure
+*
 * Revision 1.41  2007-03-07 16:05:31  rudolf
 * added structures for elekIOaux
 *
@@ -669,7 +672,8 @@ struct ButterflyType {
 
 struct AuxStatusFieldType
 {
-   uint16_t Reserved:10;             /* not used up to now */
+   uint16_t Reserved:9;              /* not used up to now */
+   uint16_t LicorPressureDataValid:1;/* Pressure from Calibrator is valid */
    uint16_t ShipWaterDataValid:1;    /* Ships Water data are valid*/
    uint16_t ShipGyroDataValid:1;     /* Ships Gyro data are valid*/
    uint16_t ShipSonarDataValid:1;    /* Ships Sonar data are valid*/
@@ -697,6 +701,11 @@ struct MeteoBoxType
    double   dAirTemp;                 /* Temperature in degree celsius */
    double   dGasSensorVoltage;        /* dirt sensor */
 };
+
+struct LicorPressureType
+{
+   uint16_t uiAmbientPressure;        /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
+};                                    /* field for elekIOServ to copy Licor pressure data */
 
 struct ShipSonarType
 {
@@ -936,6 +945,7 @@ struct auxStatusType     /* structure for the meteo box and ship's auxilliary da
   struct ShipMeteoType       ShipMeteo;
   struct ShipGyroType        ShipGyro;
   struct ShipWaterType       ShipWater;
+  struct LicorPressureType   LicorPressure;
   struct AuxDataValidType    Status;
 };
 
