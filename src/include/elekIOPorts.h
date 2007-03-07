@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-07 16:06:46 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-07 20:38:27 $ by $Author: harder $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.20  2007-03-07 20:38:27  harder
+* Changed RealingCommand name to CMD_Realign
+*
 * Revision 1.19  2007-03-07 16:06:46  rudolf
 * more work on elekIOaux
 *
@@ -81,7 +84,7 @@
 #define UDP_ELEK_SCRIPT_INPORT         1140    // port for Script Task
 #define UDP_ELEK_SLAVE_DATA_INPORT     1150    // port for reception of slave data in MasterMode
 #define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
-#define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task
+#define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task 
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
@@ -121,8 +124,9 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_MOVE_BUTTERFLY,                   // goto a new target position
     MSG_TYPE_REF_CHANNEL,                      // set reference channel
     MSG_TYPE_MIRROR_MOVE,		       // move motorized mirror axis to new target position
-    MSG_TYPE_MIRROR_REALIGN,		       // realign a motorized mirror to optimize signal
+    MSG_TYPE_MIRROR_CMD_REALIGN,		       // realign a motorized mirror to optimize signal
     MSG_TYPE_MIRROR_STOP,		       // stop all mirror movements
+    MSG_TYPE_MIRROR_FLAG_REALIGN,		       // realignment in process
     
     // Calibrator
     MSG_TYPE_CALIB_START,                        // start calibration
