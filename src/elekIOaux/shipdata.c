@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-05 20:48:09 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-07 17:14:04 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.2  2007-03-07 17:14:04  rudolf
+// more work on parser
+//
 // Revision 1.1  2007-03-05 20:48:09  rudolf
 // added thread for collecting ship's data, more work on parser
 //
@@ -38,6 +41,12 @@
 #include <signal.h>
 
 extern struct MessagePortType MessageOutPortList[];
+typedef void Sigfunc (int);
+
+static void dummy_handler(int signo)
+{
+   return;
+};
 
 enum OutPortListEnum
 {
@@ -64,7 +73,6 @@ enum OutPortListEnum
 struct sShipDataType sShipDataThread =
 {
    .iFD = -1,                      /* socket FD */
-     .iValidFlag = 0,                /* signal if data is valid or not to main thread */
 };
 
 pthread_mutex_t mShipDataMutex;
@@ -76,6 +84,9 @@ int ShipDataInit(void)
    int iRetCode;
    pthread_t ptShipDataThread;
 
+   // init mutex before creating thread
+   pthread_mutex_init(&mShipDataMutex,NULL);
+
    iRetCode = pthread_create(&ptShipDataThread, NULL, (void*)&ShipDataThreadFunc,(void*) &sShipDataThread);
    if(iRetCode > 0)
      {
@@ -85,6 +96,7 @@ int ShipDataInit(void)
 	printf("In ShipDataInit(): pthread_create failed!\n\r");
 	return (1);
      };
+   signal(SIGALRM, dummy_handler);
 
    return(0);
 };
@@ -109,8 +121,6 @@ void ShipDataThreadFunc(void* pArgument)
    // shared structure
    struct sShipDataType *sStructure = (struct sShipDataType *) pArgument;
 
-   // init mutex before creating thread
-   pthread_mutex_init(&mShipDataMutex,NULL);
 
    while(1)
      {
@@ -150,10 +160,10 @@ void ShipDataThreadFunc(void* pArgument)
 
 	while(true)
 	  {
+	     // clear buffer
              memset(aUDPBuffer,0,1023);
 	     if( (iRetVal = recvfrom(sStructure->iFD,aUDPBuffer,1023,0,NULL,NULL)) < 0)
 	       {
-
 		  if(errno == EINTR)
 		    printf("elekIOaux : socket timeout\r\n");
 		  else
@@ -162,20 +172,31 @@ void ShipDataThreadFunc(void* pArgument)
 	     // we got data in time
 	     else
 	       {
-		  if(strncmp(aUDPBuffer,"@GPS1",5) == 0)
+		  // strncmp may fail with shorter strings
+		  if(iRetVal > 5)
 		    {
-		       ShipDataParseGPSBuffer(aUDPBuffer,iRetVal,sStructure);
+		       if(strncmp(aUDPBuffer,"@GPS1",5) == 0)
+			 {
+			    ShipDataParseGPSBuffer(aUDPBuffer,iRetVal,sStructure);
+			 };
+		       if(strncmp(aUDPBuffer,"@MTS1",5) == 0)
+			 {
+			    ShipDataParseWaterBuffer(aUDPBuffer,iRetVal,sStructure);
+			 };
+		       if(strncmp(aUDPBuffer,"@ESFB",5) == 0)
+			 {
+			    ShipDataParseSonarBuffer(aUDPBuffer,iRetVal,sStructure);
+			 };
+		       if(strncmp(aUDPBuffer,"@GYR1",5) == 0)
+			 {
+			    ShipDataParseGyroBuffer(aUDPBuffer,iRetVal,sStructure);
+			 };
+		       if(strncmp(aUDPBuffer,"@GIL1",5) == 0)
+			 {
+			    ShipDataParseAnemoBuffer(aUDPBuffer,iRetVal,sStructure);
+			 };
 		    };
-
-		  if(strncmp(aUDPBuffer,"@MTS1",5) == 0)
-		    {
-		       ShipDataParseWaterBuffer(aUDPBuffer,iRetVal,sStructure);
-		    };
-		  if(strncmp(aUDPBuffer,"@ESFB",5) == 0)
-		    {
-		       ShipDataParseSonarBuffer(aUDPBuffer,iRetVal,sStructure);
-		    };
-//		  		  printf("%s\r\n",aUDPBuffer);
+		  //		  		  printf("%s\r\n",aUDPBuffer);
 	       };
 	  };
      };
@@ -192,12 +213,13 @@ void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* s
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
 
+   pthread_mutex_lock(&mShipDataMutex);
+
    while(true)
      {
 	if(pRetVal != NULL)
 	  {
 	     iTokenNumber++;
-	     //	     printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
 	     switch(iTokenNumber)
 	       {
 		case 3:
@@ -246,6 +268,10 @@ void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* s
 	  break;
 
      };
+
+   sDataStructure->Valid.Field.ShipGPSDataValid = 1;
+   pthread_mutex_unlock(&mShipDataMutex);
+
    if(gPlotData)
      {
 	printf("GPS Time:(UTC) %02d:%02d:%02d\r\n",sDataStructure->ucUTCHours,sDataStructure->ucUTCMins,sDataStructure->ucUTCSeconds);
@@ -265,13 +291,13 @@ void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
+   pthread_mutex_lock(&mShipDataMutex);
 
    while(true)
      {
 	if(pRetVal != NULL)
 	  {
 	     iTokenNumber++;
-	     //printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
 	     switch(iTokenNumber)
 	       {
 		case 2:
@@ -293,11 +319,14 @@ void ShipDataParseWaterBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 	  break;
 
      };
+   sDataStructure->Valid.Field.ShipWaterDataValid = 1;
+
+   pthread_mutex_unlock(&mShipDataMutex);
 
    if(gPlotData)
      {
 	printf("Water Temperature:  %04.2f\r\n",sDataStructure->dWaterTemp);
-	printf("Water Salinity:     %04.2f\r\n",sDataStructure->dSalinity);
+	printf("Water Salinity:     %04.2f\r\n\r\n",sDataStructure->dSalinity);
      };
 };
 
@@ -310,17 +339,21 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
    // use thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
 
+   pthread_mutex_lock(&mShipDataMutex);
+
    while(true)
      {
 	if(pRetVal != NULL)
 	  {
 	     iTokenNumber++;
-//	     printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
 	     switch(iTokenNumber)
 	       {
 		case 3:
 		  if(strncmp(pRetVal, "#SF11SBP",8) != 0)
-		    return;
+		    {
+		       pthread_mutex_unlock(&mShipDataMutex);
+		       return;
+		    };
 
 		case 10:
 		  sDataStructure->dWaterDepth = strtod(pRetVal,NULL);
@@ -334,9 +367,96 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 	  break;
 
      };
+   sDataStructure->Valid.Field.ShipSonarDataValid = 1;
+   pthread_mutex_unlock(&mShipDataMutex);
 
    if(gPlotData)
      {
-	printf("Water Depth:     %06.2f\r\n",sDataStructure->dWaterDepth);
+	printf("Water Depth:     %06.2f\r\n\r\n",sDataStructure->dWaterDepth);
+     };
+};
+
+void ShipDataParseGyroBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure)
+{
+   char* pRetVal;
+   int iTokenNumber=0;
+   char* pContext;
+
+   // use thread safe version here...
+   pRetVal = strtok_r(pBuffer,",",&pContext);
+   
+   pthread_mutex_lock(&mShipDataMutex);
+
+   while(true)
+     {
+	if(pRetVal != NULL)
+	  {
+	     iTokenNumber++;
+	     //printf("Token %02d is '%s'\r\n",iTokenNumber,pRetVal);
+	     switch(iTokenNumber)
+	       {
+		case 3:
+		  sDataStructure->dDirection = strtod(pRetVal,NULL);
+
+		default:
+		  break;
+	       };
+	     pRetVal=strtok_r(NULL,",",&pContext);
+	  }
+	else
+	  break;
+
+     };
+   sDataStructure->Valid.Field.ShipGyroDataValid = 1;
+
+   pthread_mutex_unlock(&mShipDataMutex);
+
+   if(gPlotData)
+     {
+	printf("Gyro Heading:     %06.2f\r\n\r\n",sDataStructure->dDirection);
+     };
+};
+
+void ShipDataParseAnemoBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* sDataStructure)
+{
+   char* pRetVal;
+   int iTokenNumber=0;
+   char* pContext;
+
+   // use thread safe version here...
+   pRetVal = strtok_r(pBuffer,",",&pContext);
+   
+   pthread_mutex_lock(&mShipDataMutex);
+
+   while(true)
+     {
+	if(pRetVal != NULL)
+	  {
+	     iTokenNumber++;
+	     switch(iTokenNumber)
+	       {
+		case 3:
+		  sDataStructure->dWindDirection = strtod(pRetVal,NULL);
+
+		case 4:
+		  sDataStructure->dWindSpeed = strtod(pRetVal,NULL);
+
+		default:
+		  break;
+	       };
+	     pRetVal=strtok_r(NULL,",",&pContext);
+	  }
+	else
+	  break;
+
+     };
+   sDataStructure->Valid.Field.ShipMeteoDataValid = 1;
+
+   pthread_mutex_unlock(&mShipDataMutex);
+
+   if(gPlotData)
+     {
+	printf("Wind Direction:     %06.2f\r\n",sDataStructure->dWindDirection);
+	printf("Wind Speed:         %06.2f\r\n\r\n",sDataStructure->dWindSpeed);
      };
 };
