@@ -321,8 +321,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.5 2007-03-06 13:58:40 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.5 2007-03-06 13:58:40 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.6 2007-03-07 20:36:46 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.6 2007-03-07 20:36:46 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 // loop to be executed continuously
@@ -380,14 +380,16 @@ int main(int argc, char *argv[])
     		if (((ptrTmZeit->tm_min % ElekStatus.MirrorData.RealignMinutes) ==0) && (ptrTmZeit->tm_sec  ==0) 
     				&& (ElekStatus.MirrorData.MovingFlag.Field.Realigning ==0))
     		{
+    		 	SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,1);
     		 	ElekStatus.MirrorData.MovingFlag.Field.Realigning = 1;
     			Mirror=MIRROR_GREEN_2;
     		}
     		break;
     		
-	      case MSG_TYPE_MIRROR_REALIGN: // manual command from eCmd to realign a given mirror, both axes
+	      case MSG_TYPE_MIRROR_CMD_REALIGN: // manual command from eCmd to realign a given mirror, both axes
 	        if (ElekStatus.MirrorData.MovingFlag.Field.Realigning ==0)
 	        {
+    		 	SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,1);
     			ElekStatus.MirrorData.MovingFlag.Field.Realigning = 1;
 			Mirror=(Message.Addr >> 8) & 0x00FF;
 			State=MIRROR_HOME;
@@ -516,9 +518,10 @@ int main(int argc, char *argv[])
 				ResetAverageStruct(&NewPosCounts);
     			} else {
 			        MirrorGoTo(Mirror,YAXIS,MirrorPosY+DELTA_YPOSITION);
-				ResetAverageStruct(&OldPosCounts);
-				ResetAverageStruct(&NewPosCounts);
+				    ResetAverageStruct(&OldPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_HOME;
+			        SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,0);     
 		    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
 			} /* if NewPosCounts */
 		      } /* if MirrorCheckTime */		  

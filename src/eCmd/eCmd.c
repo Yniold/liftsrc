@@ -1,9 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.40 $
-last change on $Date: 2007-03-06 11:55:22 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.41 $
+last change on $Date: 2007-03-07 20:37:18 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.41  2007-03-07 20:37:18  harder
+modify realign flag in elekIOServ
+Changed RealingCommand name to CMD_Realign
+
 Revision 1.40  2007-03-06 11:55:22  harder
 modified printf output
 
@@ -288,7 +292,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.40 2007-03-06 11:55:22 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.41 2007-03-07 20:37:18 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -627,7 +631,7 @@ int main(int argc, char *argv[])
     		Value=strtol(argv[ArgCount+1],NULL,0);
     		if ((uint16_t)Value<MAX_MIRROR)
     		{
-    			MsgType=MSG_TYPE_MIRROR_REALIGN;
+    			MsgType=MSG_TYPE_MIRROR_CMD_REALIGN;
     			Addr=((uint16_t) Value) << 8;
     		} else {
     			printf("Error please supply valid number for mirror: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
