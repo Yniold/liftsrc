@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-06 11:34:31 $ by $Author: harder $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-07 16:06:46 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.19  2007-03-07 16:06:46  rudolf
+* more work on elekIOaux
+*
 * Revision 1.18  2007-03-06 11:34:31  harder
 * added MsgType Calib Start & Stop
 *
@@ -56,6 +59,8 @@
 *
 *
 */
+#ifndef ELEKIOPORTS_H
+#define ELEKIOPORTS_H
 
 #define IP_ELEK_SERVER              "127.0.0.1"      // local ELEKIO Server
 #define IP_ELEKIO_MASTER            "10.111.111.196" // ELEKIO which is Master server (LIFT)
@@ -165,4 +170,4 @@ union Unsigned2SignedType {
 int64_t i_signed;
 uint64_t i_unsigned;
 }; /* to treat unsigned variables as signed */
-
+#endif
