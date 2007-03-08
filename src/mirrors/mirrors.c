@@ -321,8 +321,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.7 2007-03-08 12:52:35 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.7 2007-03-08 12:52:35 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.8 2007-03-08 13:24:11 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.8 2007-03-08 13:24:11 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
@@ -434,8 +434,8 @@ int main(int argc, char *argv[])
 		  	MirrorSignal=ElekStatus.ADCCardSlave[DIODE_WZ1IN_ADCCARDSLAVE_NUMBER].ADCChannelData[DIODE_WZ1IN_ADCCARDSLAVE_CHANNEL].ADCData; //DiodeWZ1in
 		  	break;
   		    } /* Mirror */
-		    MirrorPosX=ElekStatus.MirrorData.Mirror[Message.Addr].Axis[XAXIS].Position;
-		    MirrorPosY=ElekStatus.MirrorData.Mirror[Message.Addr].Axis[YAXIS].Position;
+		    MirrorPosX=ElekStatus.MirrorData.Mirror[Mirror].Axis[XAXIS].Position;
+		    MirrorPosY=ElekStatus.MirrorData.Mirror[Mirror].Axis[YAXIS].Position;
 		  	
 		
 		    printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts : %5f \n",
