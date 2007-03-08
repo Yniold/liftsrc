@@ -3,11 +3,14 @@
 // Headerfile
 // ============================================
 
-// $RCSfile: mirrorcom.h,v $ last changed on $Date: 2007-03-05 16:28:36 $ by $Author: martinez $
+// $RCSfile: mirrorcom.h,v $ last changed on $Date: 2007-03-08 19:50:29 $ by $Author: harder $
 
 // History:
 //
 // $Log: mirrorcom.h,v $
+// Revision 1.2  2007-03-08 19:50:29  harder
+// added idle state and allow only new command when idle
+//
 // Revision 1.1  2007-03-05 16:28:36  martinez
 // implemented mirrors
 //
@@ -53,6 +56,7 @@ extern char aMirrorRxBuffer[];
 enum PosCommandStatus
 {
 	POS_IDLE,
+	POS_PREP0,
 	POS_PREP1,
 	POS_PREP2,
 	POS_PREP3,

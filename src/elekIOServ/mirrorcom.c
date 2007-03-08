@@ -124,7 +124,10 @@ void MirrorThreadFunc(void* pArgument)
 		}
 
 		pthread_mutex_lock(&mMirrorMutex);
-		SetPos = pStructure->RelPositionSet;
+		   if (pStructure->RelPositionSet && pStructure->PosCommandStatus==POS_IDLE) { // do we have a move command and are idle ?
+		      pStructure->PosCommandStatus=POS_PREP0;
+		      SetPos = pStructure->RelPositionSet;
+		   } // if RelPos && CommandStatus
 		pthread_mutex_unlock(&mMirrorMutex);
 //#ifdef DEBUG
 //		printf("MirrorCom : SetPos = %d\n\r",SetPos);
@@ -161,7 +164,7 @@ void MirrorThreadFunc(void* pArgument)
 			if (pStructure->CommandSent ==0)
 			{
 				switch (pStructure->PosCommandStatus) {
-				case POS_IDLE:
+				case POS_PREP0:
   					pthread_mutex_lock(&mMirrorMutex);
 					mirror = pStructure->Mirror;
 					axis = pStructure->Axis;
@@ -245,7 +248,7 @@ void MirrorThreadFunc(void* pArgument)
 						}			
 					} else { // movement ended
 						pthread_mutex_lock(&mMirrorMutex);
-						pStructure->PosCommandStatus   = 0;
+						pStructure->PosCommandStatus   = POS_IDLE;
 						pStructure->CurrentAbsPos = StartPos + pStructure->CurrentRelPos;
 						pStructure->CurrentRelPos = 0;
 						pStructure->RelPositionSet = 0;
