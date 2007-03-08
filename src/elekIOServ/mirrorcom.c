@@ -247,9 +247,12 @@ void MirrorThreadFunc(void* pArgument)
 						pthread_mutex_lock(&mMirrorMutex);
 						pStructure->PosCommandStatus   = 0;
 						pStructure->CurrentAbsPos = StartPos + pStructure->CurrentRelPos;
-						pStructure->CurrentRelPos = 0;;
+						pStructure->CurrentRelPos = 0;
 						pStructure->RelPositionSet = 0;
 						pthread_mutex_unlock(&mMirrorMutex);
+#ifdef DEBUG
+            			printf("MirrorCom : Final position: %ld\n\r",pStructure->CurrentAbsPos );
+#endif
 					}						
 				} /* switch PosCommandStatus */
 			} /* if CommandSent */
