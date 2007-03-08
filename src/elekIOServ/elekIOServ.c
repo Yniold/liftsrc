@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 13:59:54 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 19:52:14 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.72  2007-03-08 19:52:14  harder
+ * added idle state for mirrorcom and allow only new command when idle
+ *
  * Revision 1.71  2007-03-08 13:59:54  harder
  * enabled debug msg
  *
@@ -2645,7 +2648,7 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 	  
 	
 #ifdef DEBUG_MIRROR
-	printf("ptrElekStatus->Mirror[%d].Axis[%d].CurrentPosition:	         %05d\n\r",MirrorNumber,AxisNumber,ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position);
+	printf("ptrElekStatus->Mirror[%d].Axis[%d].Position:	         %05d\n\r",MirrorNumber,AxisNumber,ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position);
 #endif
      } else {
 	return;	/* Mirror only used in master */
@@ -2932,13 +2935,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.71 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.71 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.71 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.71 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3307,20 +3310,23 @@ int main(int argc, char *argv[])
 			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))	
 			    {
 				    pthread_mutex_lock(&mMirrorMutex);
-
-				    sMirrorThread.Mirror=Mirror;
-				    sMirrorThread.Axis=Axis;
-
-				    sMirrorThread.RelPositionSet = (int32_t)Message.Value;
-			    
+				    if (sMirrorThread.PosCommandStatus==POS_IDLE) {
+                        sMirrorThread.Mirror=Mirror;
+    				    sMirrorThread.Axis=Axis;
+    				    sMirrorThread.RelPositionSet = (int32_t)Message.Value;			    
+				        Message.Status=1;
+    				} else {
+    				    Message.Status=0;
+                    }				    
 				    pthread_mutex_unlock(&mMirrorMutex);
-				    
-				    Message.Status=1;
+				    if (0==Message.Status) {
+    			      sprintf(buf,"mirror is not idle, skipping command for %d:%d", Mirror, Axis);
+    			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				    }
 			    } else {
 			      sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
 			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-
-				    Message.Status=0;
+				  Message.Status=0;
 			    }
 
 			    Message.MsgType=MSG_TYPE_ACK;
@@ -3744,4 +3750,4 @@ if (elkExit())
 exit(EXIT_SUCCESS);
 }
 
-                                                                             
+                                                                                   
