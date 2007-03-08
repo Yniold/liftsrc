@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-07 20:38:27 $ by $Author: harder $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-08 13:09:07 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.21  2007-03-08 13:09:07  rudolf
+* added new port for elekIOaux->elekIOServ(M)
+*
 * Revision 1.20  2007-03-07 20:38:27  harder
 * Changed RealingCommand name to CMD_Realign
 *
@@ -84,7 +87,8 @@
 #define UDP_ELEK_SCRIPT_INPORT         1140    // port for Script Task
 #define UDP_ELEK_SLAVE_DATA_INPORT     1150    // port for reception of slave data in MasterMode
 #define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
-#define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task 
+#define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task
+#define UDP_ELEK_AUX_INPORT            1180    // port for Aux Data (weather, ship etc.)
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
@@ -98,7 +102,7 @@
 #define UDP_ELEK_DEBUG_OUTPORT         1300    // port for debug messages
 #define UDP_CALIB_STATUS_STATUS_OUTPORT 1400    // port for status (Calib->Status)
 #define UDP_ELEK_MIRROR_STATUS_OUTPORT 1270    // port for status (elekIO->etalon)
-
+#define UDP_AUX_STATUS_STATUS_OUTPORT  1280    // port for status (elekAux->elekIOMaster)
 
 #define UDP_SERVER_TIMEOUT               5     // timeout until elek server makes its round 
 
