@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-07 19:16:54 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-08 21:07:03 $ by $Author: harder $
 *
 * $Log: elekIO.h,v $
+* Revision 1.43  2007-03-08 21:07:03  harder
+* enabled automirror
+*
 * Revision 1.42  2007-03-07 19:16:54  rudolf
 * added missing field for Licor Pressure
 *
@@ -848,10 +851,10 @@ enum MirrorAxis {
     MAX_MIRROR_AXIS 
 }; 
 
-#define REALIGN_MINUTES -1 /* mirror.c starts realignment every REALIGN_MINUTES, or never for negative numbers */
+#define REALIGN_MINUTES 30 /* mirror.c starts realignment every REALIGN_MINUTES, or never for negative numbers */
 #define MIN_UV_DIFF_CTS 8 /* eq. 0.1 mW UV Diode Power */
-#define DELTA_XPOSITION 50
-#define DELTA_YPOSITION 100
+#define DELTA_XPOSITION 25
+#define DELTA_YPOSITION 50
 
 struct AxisType {
   int32_t Position;
