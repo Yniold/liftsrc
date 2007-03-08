@@ -334,8 +334,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.10 2007-03-08 19:49:30 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.10 2007-03-08 19:49:30 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.11 2007-03-08 20:03:46 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.11 2007-03-08 20:03:46 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
@@ -540,7 +540,7 @@ int main(int argc, char *argv[])
             break;
 
 		    case MIRROR_LEFT_MOVE_UP:
-		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
 		        ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
                 if (ret) { // successfully moved Mirror
     				ResetAverageStruct(&NewPosCounts);
@@ -557,9 +557,9 @@ int main(int argc, char *argv[])
 		        MirrorCheckTime=CHECK_TIME;
 		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;		         
 		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
-			        State=MIRROR_MOVE_UP;
+			        State=MIRROR_UP_MOVE_UP;
     			} else {			        
-			        State=MIRROR_MOVE_DOWN;
+			        State=MIRROR_UP_MOVE_DOWN;
 			} /* if NewPosCounts */
 		      } /* if MirrorCheckTime */		  
 		      break;
@@ -591,7 +591,6 @@ int main(int argc, char *argv[])
 		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;
 		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
 			        State=MIRROR_DOWN_MOVE_DOWN;
-				ResetAverageStruct(&NewPosCounts);
     			} else {
 			        State=MIRROR_DOWN_MOVE_HOME;
 			} /* if NewPosCounts */
@@ -603,6 +602,7 @@ int main(int argc, char *argv[])
 		        ret=MirrorGoTo(Mirror,YAXIS,-DELTA_YPOSITION);
                 if (ret) { // successfully moved Mirror
 	    		    MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_DOWN;
                 } // if ret 
             break;
