@@ -7,7 +7,7 @@
 //
 
 //#define DEBUG_MUTEX
-#define DEBUG
+// #define DEBUG
 //#define DEBUG_SETPOS
 
 //#undef DEBUG

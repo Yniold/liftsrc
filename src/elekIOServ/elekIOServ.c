@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 19:52:14 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 21:05:53 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.73  2007-03-08 21:05:53  harder
+ * disabled debug
+ *
  * Revision 1.72  2007-03-08 19:52:14  harder
  * added idle state for mirrorcom and allow only new command when idle
  *
@@ -255,7 +258,7 @@
 #define STATUS_INTERVAL  100
 
 #define DEBUGLEVEL 0
-#define DEBUG_MIRROR
+// #define DEBUG_MIRROR
 
 //#define DEBUG_NOHARDWARE
 
@@ -2935,13 +2938,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.72 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
