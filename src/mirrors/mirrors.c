@@ -49,10 +49,24 @@ static uint64_t MessageNumber=0;
 
 enum MirrorStateEnum {
   MIRROR_HOME,
+  MIRROR_HOME_MOVE_RIGHT,
+
   MIRROR_RIGHT,
+  MIRROR_RIGHT_MOVE_RIGHT,
+  MIRROR_RIGHT_MOVE_LEFT,
+
   MIRROR_LEFT,
+  MIRROR_LEFT_MOVE_LEFT,
+  MIRROR_LEFT_MOVE_RIGHT,
+  MIRROR_LEFT_MOVE_UP,
+  
   MIRROR_UP,
+  MIRROR_UP_MOVE_UP,
+  MIRROR_UP_MOVE_DOWN,
+  
   MIRROR_DOWN,
+  MIRROR_DOWN_MOVE_DOWN,
+  MIRROR_DOWN_MOVE_HOME,
   MAX_MIRROR_STATE };
 
 static char *strStateDescription[MAX_MIRROR_STATE]=
@@ -74,8 +88,8 @@ struct AverageDataType {
   double   Std;
 };
 
-#define CHECK_TIME   5
-
+#define CHECK_TIME   25
+#define AXIS_MOVE_DELAY 25   // delay time between move mirror commands
 
 
 int ReadCommand(uint16_t Addr) {
@@ -233,7 +247,7 @@ int MirrorGoTo(int Mirror, int Axis, int32_t Position) {
     RecieveUDPData(&MessageInPortList[ELEK_ELEKIO_IN], sizeof(struct ElekMessageType), &Message);    
 //    printf("ID: %d %4x %d\n",Message.MsgID,Message.Value, Message.MsgType);
 
-    return(Message.Value);
+    return(Message.Status);
 }
 
 
@@ -265,6 +279,7 @@ int main(int argc, char *argv[])
     
     uint64_t TimeCounter=0;
     int MirrorCheckTime=CHECK_TIME;
+    int iAxisMoveDelay=AXIS_MOVE_DELAY;
 
     struct AverageDataType  OldPosCounts;
     struct AverageDataType  NewPosCounts;
@@ -319,8 +334,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.9 2007-03-08 17:21:31 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.9 2007-03-08 17:21:31 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.10 2007-03-08 19:49:30 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.10 2007-03-08 19:49:30 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
@@ -444,10 +459,16 @@ int main(int argc, char *argv[])
 			    
  		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
-		        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
-		        State=MIRROR_RIGHT;
-			} /* if MirrorCheckTime */
+		        State=MIRROR_HOME_MOVE_RIGHT;
+    		  } /* if MirrorCheckTime */
 		      break;
+
+		    case MIRROR_HOME_MOVE_RIGHT:
+		        ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+                if (ret) { // successfully moved Mirror
+                    State=MIRROR_RIGHT;
+                } // if ret 
+            break;
 
 		    case MIRROR_RIGHT:
 		  
@@ -455,78 +476,151 @@ int main(int argc, char *argv[])
 
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
-		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
-			        State=MIRROR_RIGHT;
-	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
-				ResetAverageStruct(&NewPosCounts);
+		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;
+		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
+			        State=MIRROR_RIGHT_MOVE_RIGHT;
     			} else {
-			        MirrorGoTo(Mirror,XAXIS,-2*DELTA_XPOSITION);
-				ResetAverageStruct(&NewPosCounts);
-			        State=MIRROR_LEFT;
-			} /* if NewPosCounts */
+			        State=MIRROR_RIGHT_MOVE_LEFT;
+			    } /* if NewPosCounts */
+			
 		      } /* if MirrorCheckTime */		  
 		      break;
+
+		    case MIRROR_RIGHT_MOVE_RIGHT:
+		        printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
+		        ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+                if (ret) { // successfully moved Mirror
+	    		    MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
+                    State=MIRROR_RIGHT;
+                } // if ret 
+            break;
+
+		    case MIRROR_RIGHT_MOVE_LEFT:
+		        printf("Diffcounts : %4f moving Mirror : %2d Xaxis BACK to Position : %d\n",DiffCounts,Mirror,-2*DELTA_XPOSITION);
+		        ret=MirrorGoTo(Mirror,XAXIS,-2*DELTA_XPOSITION);
+                if (ret) { // successfully moved Mirror
+				    ResetAverageStruct(&NewPosCounts);
+			        State=MIRROR_LEFT;
+                } // if ret 
+            break;
+
+
 		  
 		    case MIRROR_LEFT:
-
 		      AddCounts(&NewPosCounts,MirrorSignal);
 
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
-		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,XAXIS,-DELTA_XPOSITION);
-			        State=MIRROR_LEFT;
-	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
-				ResetAverageStruct(&NewPosCounts);
+		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;
+		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
+			        State=MIRROR_LEFT_MOVE_LEFT;
     			} else {
-			        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
-			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
-				ResetAverageStruct(&NewPosCounts);
-			        State=MIRROR_UP;
-			} /* if NewPosCounts */
+			        State=MIRROR_LEFT_MOVE_RIGHT;
+			    } /* if NewPosCounts */
 		      } /* if MirrorCheckTime */		  
 		      break;
+
+		    case MIRROR_LEFT_MOVE_LEFT:
+		        printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,-DELTA_XPOSITION);
+		        ret=MirrorGoTo(Mirror,XAXIS,-DELTA_XPOSITION);
+                if (ret) { // successfully moved Mirror
+	    		    MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
+			        State=MIRROR_LEFT;
+                } // if ret 
+            break;
+
+		    case MIRROR_LEFT_MOVE_RIGHT:
+		        printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
+		        ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+                if (ret) { // successfully moved Mirror
+			        State=MIRROR_LEFT_MOVE_UP;
+                } // if ret 
+            break;
+
+		    case MIRROR_LEFT_MOVE_UP:
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
+		        ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+                if (ret) { // successfully moved Mirror
+    				ResetAverageStruct(&NewPosCounts);
+			        State=MIRROR_UP;
+                } // if ret 
+            break;
+
 
 		    case MIRROR_UP:
 
 		      AddCounts(&NewPosCounts,MirrorSignal);
 
 		      if (MirrorCheckTime--<1) { 
-		        MirrorCheckTime=CHECK_TIME; 
-		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
-			        State=MIRROR_UP;
-	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
-				ResetAverageStruct(&NewPosCounts);
-    			} else {
-			        MirrorGoTo(Mirror,YAXIS,-2*DELTA_YPOSITION);
-				ResetAverageStruct(&NewPosCounts);
-			        State=MIRROR_DOWN;
+		        MirrorCheckTime=CHECK_TIME;
+		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;		         
+		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
+			        State=MIRROR_MOVE_UP;
+    			} else {			        
+			        State=MIRROR_MOVE_DOWN;
 			} /* if NewPosCounts */
 		      } /* if MirrorCheckTime */		  
 		      break;
+
+		    case MIRROR_UP_MOVE_UP:
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
+		        ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+                if (ret) { // successfully moved Mirror
+	    		    MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
+			        State=MIRROR_UP;
+                } // if ret 
+            break;
+
+		    case MIRROR_UP_MOVE_DOWN:
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-2*DELTA_YPOSITION);
+		        ret=MirrorGoTo(Mirror,YAXIS,-2*DELTA_YPOSITION);
+                if (ret) { // successfully moved Mirror
+				    ResetAverageStruct(&NewPosCounts);
+			        State=MIRROR_DOWN;
+                } // if ret 
+            break;
 
 		    case MIRROR_DOWN:
 		      AddCounts(&NewPosCounts,MirrorSignal);
 
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
-		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,YAXIS,-DELTA_YPOSITION);
-			        State=	MIRROR_DOWN;
-	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+		        DiffCounts=NewPosCounts.Avg-OldPosCounts.Avg;
+		        if (DiffCounts>ElekStatus.MirrorData.MinUVDiffCts){
+			        State=MIRROR_DOWN_MOVE_DOWN;
 				ResetAverageStruct(&NewPosCounts);
     			} else {
-			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
-				    ResetAverageStruct(&OldPosCounts);
-				    ResetAverageStruct(&NewPosCounts);
-			        State=MIRROR_HOME;
-			        SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,0);     
-		    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
+			        State=MIRROR_DOWN_MOVE_HOME;
 			} /* if NewPosCounts */
 		      } /* if MirrorCheckTime */		  
 		      break;
+
+		    case MIRROR_DOWN_MOVE_DOWN:
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-DELTA_YPOSITION);
+		        ret=MirrorGoTo(Mirror,YAXIS,-DELTA_YPOSITION);
+                if (ret) { // successfully moved Mirror
+	    		    MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
+			        State=MIRROR_DOWN;
+                } // if ret 
+            break;
+
+		    case MIRROR_DOWN_MOVE_HOME:
+		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-DELTA_YPOSITION);
+		        ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+                if (ret) { // successfully moved Mirror
+				    ResetAverageStruct(&OldPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
+			        SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,0);     
+		    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
+			        State=MIRROR_HOME;
+                } // if ret 
+            break;
+
+
+
 
 		    default:
 		      sprintf(buf,"Mirrors: %d unknown state",State);
