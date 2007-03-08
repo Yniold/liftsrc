@@ -3,11 +3,14 @@
 *  Headerfile
 *  ============================================
 *
-* $RCSfile: elekIOaux.h,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
+* $RCSfile: elekIOaux.h,v $ last changed on $Date: 2007-03-08 18:53:23 $ by $Author: rudolf $
 *
 * History:
 *
 * $Log: elekIOaux.h,v $
+* Revision 1.3  2007-03-08 18:53:23  rudolf
+* made fields flash green if new data received, cosmetics
+*
 * Revision 1.2  2007-03-07 21:13:54  rudolf
 * startet work on ncurses based GUI
 *
@@ -71,3 +74,4 @@ extern int InitUDPOutSocket();
 extern int InitUDPInSocket();
 extern int SendUDPDataToIP(struct MessagePortType *ptrMessagePort, char *IPAddr, unsigned nByte, void *msg);
 extern void InitNcursesWindows(void);
+extern void UpdateWindows(struct auxStatusType *ptrAuxStatus);

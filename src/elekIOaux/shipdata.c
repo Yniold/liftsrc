@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-08 18:53:23 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.5  2007-03-08 18:53:23  rudolf
+// made fields flash green if new data received, cosmetics
+//
 // Revision 1.4  2007-03-08 14:01:22  rudolf
 // cleaned up unused ports
 //
@@ -45,7 +48,10 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
+#include <ncurses.h>
 
+extern bool bEnableGUI;
+extern WINDOW* pStatusWin;
 extern struct MessagePortType MessageOutPortList[];
 typedef void Sigfunc (int);
 
@@ -153,6 +159,12 @@ void ShipDataThreadFunc(void* pArgument)
 	else
 	  {
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : bound to ship's broadcast data");
+	     if(bEnableGUI)
+	       {
+		  wprintw(pStatusWin,"Bound to ship's broadcast data\n");
+		  wrefresh(pStatusWin);
+	       }
+	     	     else  
 	     printf("elekIOaux : bound to ship's broadcast data\r\n");
 	  };
 
@@ -347,7 +359,7 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
    int iTokenNumber=0;
    char* pContext;
 
-   // use thread safe version here...
+   //thread safe version here...
    pRetVal = strtok_r(pBuffer,",",&pContext);
 
    //write(2,"ShipDataParseSonarBuffer: before lock\n\r",sizeof("ShipDataParseSonarBuffer: before lock\n\r"));
@@ -370,6 +382,8 @@ void ShipDataParseSonarBuffer(char* pBuffer, int iBuffLen, struct sShipDataType*
 
 		       return;
 		    };
+		case 8:
+		  sDataStructure->dFrequency = strtod(pRetVal,NULL);
 
 		case 10:
 		  sDataStructure->dWaterDepth = strtod(pRetVal,NULL);

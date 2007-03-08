@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-08 18:53:23 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.7  2007-03-08 18:53:23  rudolf
+ * made fields flash green if new data received, cosmetics
+ *
  * Revision 1.6  2007-03-08 14:01:22  rudolf
  * cleaned up unused ports
  *
@@ -114,8 +117,14 @@ struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 /**********************************************************************************************************/
 
 bool bEnableGUI;
+
 WINDOW* pGPSWin;
 WINDOW* pMeteoBoxWin;
+WINDOW* pWaterWin;
+WINDOW* pSonarWin;
+WINDOW* pGyroWin;
+WINDOW* pAnemoWin;
+
 WINDOW* pStatusBorderWin; // we create a dummy window just containing the border, so we can use wprintw
 // without needing to set the x position to 1 each time
 WINDOW* pStatusWin;
@@ -299,16 +308,6 @@ void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 
 	//	pthread_mutex_unlock(&mMeteoBoxMutex);
 
-	if(bEnableGUI)
-	  {
-	     mvwprintw(pMeteoBoxWin,1,2,"Windspeed:  %04.2f m/s",ptrAuxStatus->MeteoBox.dWindSpeed);
-	     mvwprintw(pMeteoBoxWin,2,2,"Wind Dir:   %03d °",ptrAuxStatus->MeteoBox.uiWindDirection);
-	     mvwprintw(pMeteoBoxWin,3,2,"Rel. Humid: %04.2f %",ptrAuxStatus->MeteoBox.dRelHum);
-	     mvwprintw(pMeteoBoxWin,4,2,"Air Temp:   %+04.2f °C",ptrAuxStatus->MeteoBox.dAirTemp);
-	     mvwprintw(pMeteoBoxWin,5,2,"Gas Sensor: %05.3f V",ptrAuxStatus->MeteoBox.dGasSensorVoltage);
-	     wrefresh(pMeteoBoxWin);
-	  };
-
 #ifdef DEBUG_STRUCTUREPASSING
 	printf("ptrAuxStatus->MeteoBox.dWindSpeed:        %04.2f\n\r",ptrAuxStatus->MeteoBox.dWindSpeed);
 	printf("ptrAuxStatus->MeteoBox.uiWindDirection:   %03d\n\r",ptrAuxStatus->MeteoBox.uiWindDirection);
@@ -367,6 +366,14 @@ void GetShipData ( struct auxStatusType *ptrAuxStatus)
 	ptrAuxStatus->ShipWater.dSalinity = sShipDataThread.dSalinity;               /* gramms per litre */
 	ptrAuxStatus->ShipWater.dWaterTemp = sShipDataThread.dWaterTemp;             /* water temp in degrees celsius */
 
+	ptrAuxStatus->ShipMeteo.dWindSpeed = sShipDataThread.dWindSpeed;             /* m/s */
+	ptrAuxStatus->ShipMeteo.dWindDirection = sShipDataThread.dWindDirection;     /* in degrees relative to ship ??? */
+
+	ptrAuxStatus->ShipSonar.dFrequency = sShipDataThread.dFrequency;             /* Khz */
+	ptrAuxStatus->ShipSonar.dWaterDepth = sShipDataThread.dWaterDepth;           /* m */
+
+	ptrAuxStatus->ShipGyro.dDirection = sShipDataThread.dDirection;              /* degrees */
+	
 	//write(2,"GetShip: before unlock\n\r",sizeof("GetShip: before unlock\n\r"));
 	pthread_mutex_unlock(&mShipDataMutex);
 	//write(2,"GetShip: after unlock\n\r",sizeof("GetShip: after unlock\n\r"));
@@ -382,8 +389,8 @@ void GetShipData ( struct auxStatusType *ptrAuxStatus)
 	printf("ptrAuxStatus->ShipGPS.uiUTCYear:          %04d\n\r",ptrAuxStatus->ShipGPS.uiUTCYear);
 	printf("ptrAuxStatus->ShipGPS.dLongitude:         %+06.4f\n\r",ptrAuxStatus->ShipGPS.dLongitude);
 	printf("ptrAuxStatus->ShipGPS.dLatitude:          %+06.4f\n\r",ptrAuxStatus->ShipGPS.dLatitude);
-	printf("ptrAuxStatus->ShipGPS.dGroundSpeed:       %04.2f\n\r",ptrAuxStatus->ShipGPS.dGroundSpeed);
-	printf("ptrAuxStatus->ShipGPS.dCourseOverGround:  %04.2f\n\r",ptrAuxStatus->ShipGPS.dCourseOverGround);
+	printf("ptrAuxStatus->ShipGPS.dGroundSpeed:       %-5.2f\n\r",ptrAuxStatus->ShipGPS.dGroundSpeed);
+	printf("ptrAuxStatus->ShipGPS.dCourseOverGround:  %-6.2f\n\r",ptrAuxStatus->ShipGPS.dCourseOverGround);
 	printf("ptrAuxStatus->ShipWater.dSalinity:        %04.2f\n\r",ptrAuxStatus->ShipWater.dSalinity);
 	printf("ptrAuxStatus->ShipWater.dWaterTemp:       %04.2f\n\r",ptrAuxStatus->ShipWater.dWaterTemp);
 
@@ -566,6 +573,12 @@ int main(int argc, char *argv[])
    FD_ZERO(&fdsSelect);
    InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
+   // change scheduler and set priority
+   if (-1==(ret=ChangePriority()))
+     {
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : cannot set Priority");
+     }
+
    if (argc==2)
      {
 	// Check if we should display a summary of received data on screen
@@ -586,31 +599,31 @@ int main(int argc, char *argv[])
 #ifdef RUNONPC
    if(bEnableGUI)
      {
-	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $)\n");
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
+	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $)\n");
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
 	wrefresh(pStatusWin);
      }
    else
      {
-	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
+	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
      };
 
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
    if(bEnableGUI)
      {
-	wprintw(pStatusWin,"Structure size of 'AuxStatus' in bytes is: %05d\n",sizeof(AuxStatus));
+	wprintw(pStatusWin,"Structure size of 'AuxStatus' in bytes is: %d\n",sizeof(AuxStatus));
 	wrefresh(pStatusWin);
      }
    else
      printf("Structure size of 'AuxStatus' in bytes is: %05d\r\n", sizeof(AuxStatus));
 
-   sprintf(buf, "Structure size of 'AuxStatus' in bytes is: %05d", sizeof(AuxStatus));
+   sprintf(buf, "elekIOaux : Structure size of 'AuxStatus' in bytes is: %d", sizeof(AuxStatus));
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
    wrefresh(pStatusWin);
    refresh();
@@ -648,13 +661,6 @@ int main(int argc, char *argv[])
 	perror("timer_settime");
 	return EXIT_FAILURE;
      }
-/*
-   // change scheduler and set priority
-   if (-1==(ret=ChangePriority()))
-     {
-	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : cannot set Priority");
-     }
-*/
    sigemptyset(&SignalMask);
    //    sigsuspend(&SignalMask);
    //
@@ -664,14 +670,14 @@ int main(int argc, char *argv[])
 
    while (!EndOfSession)
      {
-	if(bEnableGUI)
+/*	if(bEnableGUI)
 	  {
 	     wprintw(pStatusWin,"Wait for data..\n");
 	     wrefresh(pStatusWin);
 	  }
 	else
 	  write(2,"Wait for data..\r",16);
-
+*/
 	fdsSelect=fdsMaster;
 
 	pselect_timeout.tv_sec= UDP_SERVER_TIMEOUT;
@@ -702,6 +708,8 @@ int main(int argc, char *argv[])
 
 		  // Send Status to Status process
 		  SendUDPData(&MessageOutPortList[ELEK_ELEKIO_AUX_MASTER_OUT],sizeof(struct auxStatusType), &AuxStatus);
+		  UpdateWindows((struct auxStatusType*)&AuxStatus);
+		  AuxStatus.Status.Status.Word = 0; // mark data invalid
 	       }
 	     else
 	       {
@@ -737,31 +745,16 @@ int main(int argc, char *argv[])
 				 perror("recvfrom");
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux: Problem with receive");
 			      }
-#ifdef DEBUG_SLAVECOM
-			    sprintf(buf,"recv command from %s on port %d",inet_ntoa(their_addr.sin_addr),
-				    ntohs(their_addr.sin_port));
-			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif
 
 			    switch (Message.MsgType)
 			      {
 
 			       case MSG_TYPE_FETCH_DATA:  // Master want data
-#ifdef DEBUG_SLAVECOM
-				 printf("elekIOaux: FETCH_DATA received, TIME_T  was: %016lx\n\r", Message.MsgTime);
-#endif
 
-#ifdef DEBUG_SLAVECOM
-				 printf("elekIOaux: gathering Data...\n\r");
-#endif
 				 gettimeofday(&GetStatusStartTime, NULL);
 				 GetAuxStatus(&AuxStatus,IsMaster);
 				 gettimeofday(&GetStatusStopTime, NULL);
-#ifdef DEBUG_SLAVECOM
-				 printf("elekIOaux: Data aquisition took: %02d.%03ds\n\r",
-					GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
-					(GetStatusStopTime.tv_usec-GetStatusStartTime.tv_usec)/1000);
-#endif
+
 				 // send this debugmessage message to debugmon
 				 sprintf(buf,"elekIOaux : FETCH_DATA from Port: %05d",
 					 MessageInPortList[MessagePort].PortNumber,
@@ -774,7 +767,7 @@ int main(int argc, char *argv[])
 				 break;
 
 			       case MSG_TYPE_READ_DATA:
-				 
+
 				 // printf("elekIOaux: manual read from Address %04x\n", Message.Addr);
 				 Message.Value=elkReadData(Message.Addr);
 				 Message.MsgType=MSG_TYPE_ACK;
@@ -793,7 +786,7 @@ int main(int argc, char *argv[])
 				 break;
 
 			       case MSG_TYPE_WRITE_DATA:
-			
+
 				 sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
@@ -894,22 +887,182 @@ void InitNcursesWindows(void)
    initscr();                      /* Start curses mode            */
    cbreak();                       /* Line buffering disabled, Pass on*/
    refresh();
-   pGPSWin = newwin(10, 40, 0, 0);
+   curs_set(0);
+   start_color();                  /* Start color                  */
+   init_pair(1, COLOR_YELLOW, COLOR_BLACK);
+   init_pair(2, COLOR_WHITE, COLOR_BLACK);
+   init_pair(3, COLOR_GREEN, COLOR_BLACK);
+
+   attron(COLOR_PAIR(2));
+
+   pGPSWin = newwin(8, 30, 0, 0);
+   wattron(pGPSWin,COLOR_PAIR(1));
    box(pGPSWin,0,0);
-   mvwprintw(pGPSWin,0,1,"GPS Window");
+   mvwprintw(pGPSWin,0,1,"GPS Ship");
    wrefresh(pGPSWin);
 
-   pMeteoBoxWin = newwin(10, 40, 00, 40);
+   pMeteoBoxWin = newwin(8, 26, 00, 30);
+   wattron(pMeteoBoxWin,COLOR_PAIR(1));
    box(pMeteoBoxWin,0,0);
-   mvwprintw(pMeteoBoxWin,0,1,"MeteoBox Window");
+   mvwprintw(pMeteoBoxWin,0,1,"MeteoBox");
    wrefresh(pMeteoBoxWin);
 
-   pStatusBorderWin = newwin(10, 80, 10, 0);
+   pWaterWin = newwin(4, 24, 00, 56);
+   wattron(pWaterWin,COLOR_PAIR(1));
+   box(pWaterWin,0,0);
+   mvwprintw(pWaterWin,0,1,"Water Ship");
+   wrefresh(pWaterWin);
+
+   pAnemoWin = newwin(4, 24, 04, 56);
+   wattron(pAnemoWin,COLOR_PAIR(1));
+   box(pAnemoWin,0,0);
+   mvwprintw(pAnemoWin,0,1,"Anemometer Ship");
+   wrefresh(pAnemoWin);
+
+   pSonarWin = newwin(4, 30, 8, 0);
+   wattron(pSonarWin,COLOR_PAIR(1));
+   box(pSonarWin,0,0);
+   mvwprintw(pSonarWin,0,1,"Sonar Ship");
+   wrefresh(pSonarWin);
+
+   pGyroWin = newwin(4, 26, 8, 30);
+   wattron(pGyroWin,COLOR_PAIR(1));
+   box(pGyroWin,0,0);
+   mvwprintw(pGyroWin,0,1,"Gyro Ship");
+   wrefresh(pGyroWin);
+   
+   pStatusBorderWin = newwin(12, 80, 12, 0);
+   wattron(pStatusBorderWin,COLOR_PAIR(1));
    box(pStatusBorderWin,0,0);
-   mvwprintw(pStatusBorderWin,0,20,"Status Window");
+   mvwprintw(pStatusBorderWin,0,36,"Messages");
    wrefresh(pStatusBorderWin);
 
-   pStatusWin = newwin(8, 78, 11, 1);
+   pStatusWin = newwin(10, 78, 13, 1);
    wrefresh(pStatusWin);
 }
 
+void UpdateWindows(struct auxStatusType *ptrAuxStatus)
+{
+   if(bEnableGUI)
+     {
+	// GPS
+	//
+	if(ptrAuxStatus->Status.Status.Field.ShipGPSDataValid == 1)
+	  {
+	     wattroff(pGPSWin,COLOR_PAIR(1));
+	     wattroff(pGPSWin,COLOR_PAIR(2));
+	     wattron(pGPSWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pGPSWin,COLOR_PAIR(1));
+	     wattroff(pGPSWin,COLOR_PAIR(3));
+	     wattron(pGPSWin,COLOR_PAIR(2));
+	  };
+
+	mvwprintw(pGPSWin,1,2,"Time (UTC):   %02d:%02d:%02d",ptrAuxStatus->ShipGPS.ucUTCHours\
+             ,ptrAuxStatus->ShipGPS.ucUTCMins\
+             ,ptrAuxStatus->ShipGPS.ucUTCSeconds);
+
+	mvwprintw(pGPSWin,2,2,"Date:         %02d.%02d.%04d",ptrAuxStatus->ShipGPS.ucUTCDay\
+             ,ptrAuxStatus->ShipGPS.ucUTCMonth\
+             ,ptrAuxStatus->ShipGPS.uiUTCYear);
+
+	mvwprintw(pGPSWin,3,2,"Longitude:    %+06.4f °",ptrAuxStatus->ShipGPS.dLongitude);
+	mvwprintw(pGPSWin,4,2,"Latitude:     %+06.4f °",ptrAuxStatus->ShipGPS.dLatitude);
+
+	mvwprintw(pGPSWin,5,2,"COG:          %-6.2f °",ptrAuxStatus->ShipGPS.dCourseOverGround);
+	mvwprintw(pGPSWin,6,2,"Ground Speed: %-5.2f knots",ptrAuxStatus->ShipGPS.dGroundSpeed);
+	wrefresh(pGPSWin);
+
+	// Water Ship
+	if(ptrAuxStatus->Status.Status.Field.ShipWaterDataValid == 1)
+	  {
+	     wattroff(pWaterWin,COLOR_PAIR(1));
+	     wattroff(pWaterWin,COLOR_PAIR(2));
+	     wattron(pWaterWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pWaterWin,COLOR_PAIR(1));
+	     wattroff(pWaterWin,COLOR_PAIR(3));
+	     wattron(pWaterWin,COLOR_PAIR(2));
+	  };
+	mvwprintw(pWaterWin,1,2,"Temp.:    %+5.2f °C",ptrAuxStatus->ShipWater.dWaterTemp);
+	mvwprintw(pWaterWin,2,2,"Salinity: %-6.2f g/l",ptrAuxStatus->ShipWater.dSalinity);
+	wrefresh(pWaterWin);
+
+	// Anemo Ship
+      	if(ptrAuxStatus->Status.Status.Field.ShipMeteoDataValid == 1)
+	  {
+	     wattroff(pAnemoWin,COLOR_PAIR(1));
+	     wattroff(pAnemoWin,COLOR_PAIR(2));
+	     wattron(pAnemoWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pAnemoWin,COLOR_PAIR(1));
+	     wattroff(pAnemoWin,COLOR_PAIR(3));
+	     wattron(pAnemoWin,COLOR_PAIR(2));
+	  };
+	mvwprintw(pAnemoWin,1,2,"Direction: %-6.2f °",ptrAuxStatus->ShipMeteo.dWindDirection);
+	mvwprintw(pAnemoWin,2,2,"Speed:     %-2.0f m/s",ptrAuxStatus->ShipMeteo.dWindSpeed);
+	wrefresh(pAnemoWin);
+
+	// Sonar Ship
+     	if(ptrAuxStatus->Status.Status.Field.ShipSonarDataValid == 1)
+	  {
+	     wattroff(pSonarWin,COLOR_PAIR(1));
+	     wattroff(pSonarWin,COLOR_PAIR(2));
+	     wattron(pSonarWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pSonarWin,COLOR_PAIR(1));
+	     wattroff(pSonarWin,COLOR_PAIR(3));
+	     wattron(pSonarWin,COLOR_PAIR(2));
+	  };
+
+	mvwprintw(pSonarWin,1,2,"Frequency:  %-6.4f Khz",ptrAuxStatus->ShipSonar.dFrequency);
+	mvwprintw(pSonarWin,2,2,"Waterdepth: %-8.2f m",ptrAuxStatus->ShipSonar.dWaterDepth);
+	wrefresh(pSonarWin);
+
+	// Gyro Ship
+     	if(ptrAuxStatus->Status.Status.Field.ShipGyroDataValid == 1)
+	  {
+	     wattroff(pGyroWin,COLOR_PAIR(1));
+	     wattroff(pGyroWin,COLOR_PAIR(2));
+	     wattron(pGyroWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pGyroWin,COLOR_PAIR(1));
+	     wattroff(pGyroWin,COLOR_PAIR(3));
+	     wattron(pGyroWin,COLOR_PAIR(2));
+	  };
+
+	mvwprintw(pGyroWin,1,2,"Heading:  %03.0f °",ptrAuxStatus->ShipGyro.dDirection);
+	wrefresh(pGyroWin);
+
+	// MeteoBox
+	if(ptrAuxStatus->Status.Status.Field.MeteoBoxDataValid == 1)
+	  {
+	     wattroff(pMeteoBoxWin,COLOR_PAIR(1));
+	     wattroff(pMeteoBoxWin,COLOR_PAIR(2));
+	     wattron(pMeteoBoxWin,COLOR_PAIR(3));
+	  }
+	else
+	  {
+	     wattroff(pMeteoBoxWin,COLOR_PAIR(1));
+	     wattroff(pMeteoBoxWin,COLOR_PAIR(3));
+	     wattron(pMeteoBoxWin,COLOR_PAIR(2));
+	  };
+	mvwprintw(pMeteoBoxWin,1,2,"Windspeed:  %-6.2f m/s",ptrAuxStatus->MeteoBox.dWindSpeed);
+	mvwprintw(pMeteoBoxWin,2,2,"Windspeed:  %-6.2f km/h",ptrAuxStatus->MeteoBox.dWindSpeed*3.6f);
+	mvwprintw(pMeteoBoxWin,3,2,"Wind Dir:   %-3d °",ptrAuxStatus->MeteoBox.uiWindDirection);
+	mvwprintw(pMeteoBoxWin,4,2,"Rel. Humid: %-5.2f %",ptrAuxStatus->MeteoBox.dRelHum);
+	mvwprintw(pMeteoBoxWin,5,2,"Air Temp:   %+05.2f °C",ptrAuxStatus->MeteoBox.dAirTemp);
+	mvwprintw(pMeteoBoxWin,6,2,"Gas Sensor: %-5.3f V",ptrAuxStatus->MeteoBox.dGasSensorVoltage);
+	wrefresh(pMeteoBoxWin);
+     };
+};
