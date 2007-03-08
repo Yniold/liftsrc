@@ -276,8 +276,6 @@ int main(int argc, char *argv[])
     int EndOfSession;
      
     double MirrorSignal;
-    uint64_t MirrorPosX;
-    uint64_t MirrorPosY;
     int State;
     int Mirror, mirrorbitnumber;	    
 
@@ -321,8 +319,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.8 2007-03-08 13:24:11 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.8 2007-03-08 13:24:11 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.9 2007-03-08 17:21:31 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.9 2007-03-08 17:21:31 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
@@ -434,8 +432,6 @@ int main(int argc, char *argv[])
 		  	MirrorSignal=ElekStatus.ADCCardSlave[DIODE_WZ1IN_ADCCARDSLAVE_NUMBER].ADCChannelData[DIODE_WZ1IN_ADCCARDSLAVE_CHANNEL].ADCData; //DiodeWZ1in
 		  	break;
   		    } /* Mirror */
-		    MirrorPosX=ElekStatus.MirrorData.Mirror[Mirror].Axis[XAXIS].Position;
-		    MirrorPosY=ElekStatus.MirrorData.Mirror[Mirror].Axis[YAXIS].Position;
 		  	
 		
 		    printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts : %5f \n",
@@ -448,7 +444,7 @@ int main(int argc, char *argv[])
 			    
  		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
-		        MirrorGoTo(Mirror,XAXIS,MirrorPosX+DELTA_XPOSITION);
+		        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
 		        State=MIRROR_RIGHT;
 			} /* if MirrorCheckTime */
 		      break;
@@ -460,12 +456,12 @@ int main(int argc, char *argv[])
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
 		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,XAXIS,MirrorPosX+DELTA_XPOSITION);
+			        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
 			        State=MIRROR_RIGHT;
 	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
 				ResetAverageStruct(&NewPosCounts);
     			} else {
-			        MirrorGoTo(Mirror,XAXIS,MirrorPosX-2*DELTA_XPOSITION);
+			        MirrorGoTo(Mirror,XAXIS,-2*DELTA_XPOSITION);
 				ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_LEFT;
 			} /* if NewPosCounts */
@@ -479,13 +475,13 @@ int main(int argc, char *argv[])
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
 		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,XAXIS,MirrorPosX-DELTA_XPOSITION);
+			        MirrorGoTo(Mirror,XAXIS,-DELTA_XPOSITION);
 			        State=MIRROR_LEFT;
 	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
 				ResetAverageStruct(&NewPosCounts);
     			} else {
-			        MirrorGoTo(Mirror,XAXIS,MirrorPosX+DELTA_XPOSITION);
-			        MirrorGoTo(Mirror,YAXIS,MirrorPosY+DELTA_YPOSITION);
+			        MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
 				ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_UP;
 			} /* if NewPosCounts */
@@ -499,12 +495,12 @@ int main(int argc, char *argv[])
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
 		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,YAXIS,MirrorPosY+DELTA_YPOSITION);
+			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
 			        State=MIRROR_UP;
 	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
 				ResetAverageStruct(&NewPosCounts);
     			} else {
-			        MirrorGoTo(Mirror,YAXIS,MirrorPosY-2*DELTA_YPOSITION);
+			        MirrorGoTo(Mirror,YAXIS,-2*DELTA_YPOSITION);
 				ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_DOWN;
 			} /* if NewPosCounts */
@@ -517,12 +513,12 @@ int main(int argc, char *argv[])
 		      if (MirrorCheckTime--<1) { 
 		        MirrorCheckTime=CHECK_TIME; 
 		        if (NewPosCounts.Avg-OldPosCounts.Avg>ElekStatus.MirrorData.MinUVDiffCts){
-			        MirrorGoTo(Mirror,YAXIS,MirrorPosY-DELTA_YPOSITION);
+			        MirrorGoTo(Mirror,YAXIS,-DELTA_YPOSITION);
 			        State=	MIRROR_DOWN;
 	    		      	MakeNewOldStruct(&OldPosCounts,&NewPosCounts);
 				ResetAverageStruct(&NewPosCounts);
     			} else {
-			        MirrorGoTo(Mirror,YAXIS,MirrorPosY+DELTA_YPOSITION);
+			        MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
 				    ResetAverageStruct(&OldPosCounts);
 				    ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_HOME;
