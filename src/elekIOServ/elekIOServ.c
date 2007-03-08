@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-07 20:37:38 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 13:10:37 $ by $Author: harder $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.70  2007-03-08 13:10:37  harder
+ * added msg for change realign flag
+ *
  * Revision 1.69  2007-03-07 20:37:38  harder
  * modify realign flag in elekIOServ
  * Changed RealingCommand name to CMD_Realign
@@ -2926,13 +2929,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.69 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.70 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.69 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.70 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.69 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.70 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.69 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.70 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3325,12 +3328,14 @@ int main(int argc, char *argv[])
 
 			  case MSG_TYPE_MIRROR_FLAG_REALIGN:
 
-			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_FLAG_REALIGN from %4d Port %04x Value %05d (%04x)",
+	    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = Message.Value;
+
+			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_FLAG_REALIGN from %4d Port %04x Value %05d (%04x) Flag now : %d",
 					 MessageInPortList[MessagePort].PortNumber,
-					 Message.Addr,Message.Value,Message.Value);
+					 Message.Addr,Message.Value,Message.Value, 
+					 ElekStatus.MirrorData.MovingFlag.Field.Realigning );
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-	    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = Message.Value;
 			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
@@ -3736,4 +3741,4 @@ if (elkExit())
 exit(EXIT_SUCCESS);
 }
 
- 
+                                                                             
