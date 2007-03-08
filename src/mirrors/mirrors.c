@@ -321,9 +321,14 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.6 2007-03-07 20:36:46 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.6 2007-03-07 20:36:46 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.7 2007-03-08 12:52:35 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.7 2007-03-08 12:52:35 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
+
+// reset any realigning procedure
+    SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,0);     
+	ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
+
    
 // loop to be executed continuously
     EndOfSession=FALSE;
