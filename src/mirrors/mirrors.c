@@ -293,6 +293,7 @@ int main(int argc, char *argv[])
     double MirrorSignal;
     int State;
     int Mirror, mirrorbitnumber;	    
+    double DiffCounts;
 
     // zero TimeOfDay to indicate invalid status
     ElekStatus.TimeOfDayMaster.tv_sec=0L;
@@ -334,8 +335,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.11 2007-03-08 20:03:46 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.11 2007-03-08 20:03:46 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.12 2007-03-08 20:05:45 harder Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.12 2007-03-08 20:05:45 harder Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
