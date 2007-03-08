@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.6  2007-03-08 14:01:22  rudolf
+// cleaned up unused ports
+//
 // Revision 1.5  2007-03-07 21:13:54  rudolf
 // startet work on ncurses based GUI
 //
@@ -48,22 +51,18 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
+#include <ncurses.h>
 
 extern struct MessagePortType MessageOutPortList[];
+extern bool bEnableGUI;
+extern WINDOW* pStatusWin;
 
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-   CALIB_STATUS_OUT,                // port for outgoing messages to status
-     ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
-     ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
-     ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
-     ELEK_ETALON_OUT,                // port for outgoing messages to etalon
-     ELEK_ETALON_STATUS_OUT,         // port for outgoing messages to etalon status, so etalon is directly informed of the status
-     ELEK_SCRIPT_OUT,                // port for outgoing messages to script
-     ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
-     ELEK_ELEKIO_SLAVE_MASTER_OUT,   // port for outgoing data packets from slave to master
-     ELEK_ELEKIO_CALIB_MASTER_OUT,   // port for outgoing data packets from calib to master
+   ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
+     ELEK_MANUAL_OUT,                // reverse port for answers to eCmd
+     ELEK_ELEKIO_AUX_MASTER_OUT,     // port for outgoing data packets from elekAux to master
      MAX_MESSAGE_OUTPORTS
 };
 
@@ -79,7 +78,13 @@ static void connect_timeout_handler(int signo)
 {
    extern struct MessagePortType MessageOutPortList[];
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : can't connect to MeteoBox for 2 seconds, still trying...");
-   printf("elekIOaux : can't connect to MeteoBox for 2000ms, still trying...\n\r");
+   if(bEnableGUI)
+     {
+	wprintw(pStatusWin,"Can't connect to MeteoBox for 2000ms, still trying...\n");
+	wrefresh(pStatusWin);
+     }
+   else
+     printf("elekIOaux : can't connect to MeteoBox for 2000ms, still trying...\n\r");
    return;
 };
 
@@ -94,7 +99,13 @@ static void read_timeout_handler(int signo)
 	sprintf(aUDPBuffer,"elekIOaux : did not get any data from MeteoBox for %02d seconds, try # %02d...",iTryCounts*2, iTryCounts);
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],aUDPBuffer);
 
-	printf("elekIOaux : did not get any data from MeteoBox for %02d seconds, try # %02d...\n\r",iTryCounts*2, iTryCounts);
+	if(bEnableGUI)
+	  {
+	     wprintw(pStatusWin,"Did not get any data from MeteoBox for %02d seconds, try # %02d...\n",iTryCounts*2, iTryCounts);
+	     wrefresh(pStatusWin);
+	  }
+	else
+	  printf("elekIOaux : did not get any data from MeteoBox for %02d seconds, try # %02d...\n\r",iTryCounts*2, iTryCounts);
      }
    else
      {
@@ -135,7 +146,6 @@ int MeteoBoxInit(void)
      {
 	extern struct MessagePortType MessageOutPortList[];
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : init MeteoBox successfull");
-
 	printf("In MeteoBoxInit(): pthread_create failed!\n\r");
 	return (1);
      };
@@ -209,6 +219,12 @@ void MeteoBoxThreadFunc(void* pArgument)
 	else
 	  {
 	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : Connected to XPORT on MeteoBox");
+	if(bEnableGUI)
+	  {
+	     wprintw(pStatusWin,"Connected to XPORT on MeteoBox\n");
+	     wrefresh(pStatusWin);
+	  }
+	else
 	     printf("elekIOaux : Connected to XPORT on MeteoBox\r\n");
 	  }
 	;

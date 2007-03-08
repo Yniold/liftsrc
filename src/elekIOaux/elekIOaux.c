@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-07 21:13:54 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.6  2007-03-08 14:01:22  rudolf
+ * cleaned up unused ports
+ *
  * Revision 1.5  2007-03-07 21:13:54  rudolf
  * startet work on ncurses based GUI
  *
@@ -61,69 +64,48 @@
 
 #define CPUCLOCK 500000000UL 	// CPU clock of Markus' Athlon XP
 
-#define DEBUG_STRUCTUREPASSING
-
+// #define DEBUG_STRUCTUREPASSING
+//
 char gPlotData = 0;    // this is not a define, it's meant to be replaced by a commandline arg in the future
 
 enum InPortListEnum
 {
    // this list has to be coherent with MessageInPortList
    ELEK_MANUAL_IN,       // port for incoming commands from  eCmd
-     ELEK_ETALON_IN,       // port for incoming commands from  etalon
-     ELEK_SCRIPT_IN,       // port for incoming commands from  scripting host (not yet existing, HH, Feb2005
-     //     ELEK_STATUS_IN,       // port to receive status data from slaves
      MAX_MESSAGE_INPORTS
 };
 
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-   CALIB_STATUS_OUT,                // port for outgoing messages to status
-     ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
-     ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
-     ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
-     ELEK_ETALON_OUT,                // port for outgoing messages to etalon
-     ELEK_ETALON_STATUS_OUT,         // port for outgoing messages to etalon status, so etalon is directly informed of the status
-     ELEK_SCRIPT_OUT,                // port for outgoing messages to script
-     ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
-     ELEK_ELEKIO_SLAVE_MASTER_OUT,   // port for outgoing data packets from slave to master
-     ELEK_ELEKIO_CALIB_MASTER_OUT,   // port for outgoing data packets from calib to master
+   ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
+     ELEK_MANUAL_OUT,                // reverse port for answers to eCmd
+     ELEK_ELEKIO_AUX_MASTER_OUT,     // port for outgoing data packets from elekAux to master
      MAX_MESSAGE_OUTPORTS
 };
 
 struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
 {
    // order in list defines sequence of polling
-    /* Name   , PortNo                    , ReversePort  , IPAddr, fdSocket, MaxMsg, Direction */
-     {"Manual"        , UDP_ELEK_MANUAL_INPORT        , ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
-     {"Etalon"        , UDP_ELEK_ETALON_INPORT        , ELEK_ETALON_OUT, IP_LOCALHOST, -1, 10, UDP_IN_PORT},
-     {"Script"        , UDP_ELEK_SCRIPT_INPORT        , ELEK_SCRIPT_OUT, IP_LOCALHOST, -1, 5,  UDP_IN_PORT},
-   //     {"ElekIOCalibIn" , UDP_ELEK_CALIB_DATA_INPORT    , -1             , IP_LOCALHOST, -1, 1,  UDP_IN_PORT} // status inport from elekIOServ
+    /* Name           , PortNo                        , ReversePort    , IPAddr      , fdSocket, MaxMsg, Direction */
+     {"Manual"        , UDP_ELEK_MANUAL_INPORT        , ELEK_MANUAL_OUT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT}
 };
 
 struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
 {
    // order in list defines sequence of polling
-    /* Name           ,PortNo                        , ReversePort        , IPAddr, fdSocket, MaxMsg, Direction */
-   //     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , "10.111.111.188", -1, 0,  UDP_OUT_PORT},
-     {"Status"        ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                   , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
-     {"ElekIOStatus"  ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
-     {"ElekIOServer"  ,UDP_ELEK_MANUAL_INPORT        , ELEK_ELEKIO_STATUS_OUT, IP_ELEK_SERVER  , -1, 0,  UDP_OUT_PORT},
-     {"Manual"        ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN        , IP_LOCALHOST    , -1, 0,  UDP_OUT_PORT},
-     {"Etalon"        ,UDP_ELEK_ETALON_OUTPORT       , -1                    , IP_ETALON_CLIENT, -1, 0,  UDP_OUT_PORT},
-     {"EtalonStatus"  ,UDP_ELEK_ETALON_STATUS_OUTPORT, -1                    , IP_STATUS_CLIENT, -1, 0,  UDP_OUT_PORT},
-     {"Script"        ,UDP_ELEK_SCRIPT_OUTPORT       , ELEK_SCRIPT_IN        , IP_SCRIPT_CLIENT, -1, 0,  UDP_OUT_PORT},
-     {"DebugPort"     ,UDP_ELEK_DEBUG_OUTPORT        , -1                    , IP_DEBUG_CLIENT , -1, 0,  UDP_OUT_PORT},
-     {"ElekIOOut"     ,UDP_ELEK_SLAVE_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT},
-     {"ElekIOcalibOut",UDP_ELEK_CALIB_DATA_INPORT    , -1                    , IP_ELEKIO_MASTER, -1, 0,  UDP_OUT_PORT}
+    /* Name           ,PortNo                        , ReversePort        , IPAddr          , fdSocket, MaxMsg, Direction */
+     {"DebugPort"     ,UDP_ELEK_DEBUG_OUTPORT        , -1                 , IP_DEBUG_CLIENT , -1      , 0     ,  UDP_OUT_PORT},
+     {"Manual"        ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN     , IP_LOCALHOST    , -1      , 0     ,  UDP_OUT_PORT},
+     {"ElekIOauxOut"  ,UDP_ELEK_AUX_INPORT           , -1                 , IP_ELEKIO_MASTER, -1      , 0     ,  UDP_OUT_PORT}
 };
 
 struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 {
    // order defines sequence of wake up after timer
     /* TaskName TaskConn TaskWantStatusOnPort */
-     {"Etalon",     ELEK_ETALON_OUT,ELEK_ETALON_STATUS_OUT},    // Etalon Task needs Status info
-     {"Script",     ELEK_SCRIPT_OUT,                    -1},
+     {      "",                  -1,                    -1},
+     {      "",                  -1,                    -1},
      {      "",                  -1,                    -1}
 };
 
@@ -131,9 +113,12 @@ struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
 /* NCURSES STUFF                                                                                          */
 /**********************************************************************************************************/
 
-
-   WINDOW *pGPSWin;
-   WINDOW *pMeteoBoxWin;
+bool bEnableGUI;
+WINDOW* pGPSWin;
+WINDOW* pMeteoBoxWin;
+WINDOW* pStatusBorderWin; // we create a dummy window just containing the border, so we can use wprintw
+// without needing to set the x position to 1 each time
+WINDOW* pStatusWin;
 
 /**********************************************************************************************************/
 /* Signal Handler                                                                                         */
@@ -286,7 +271,6 @@ void InitModules(struct auxStatusType *ptrAuxStatus)
 
 void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 {
-
    extern struct MessagePortType MessageInPortList[];
    extern struct MessagePortType MessageOutPortList[];
    extern pthread_mutex_t mMeteoBoxMutex;
@@ -314,6 +298,16 @@ void GetMeteoBoxData ( struct auxStatusType *ptrAuxStatus)
 	//write(2,"GetMeteo: after unlock\n\r",sizeof("GetMeteo: after unlock\n\r"));
 
 	//	pthread_mutex_unlock(&mMeteoBoxMutex);
+
+	if(bEnableGUI)
+	  {
+	     mvwprintw(pMeteoBoxWin,1,2,"Windspeed:  %04.2f m/s",ptrAuxStatus->MeteoBox.dWindSpeed);
+	     mvwprintw(pMeteoBoxWin,2,2,"Wind Dir:   %03d °",ptrAuxStatus->MeteoBox.uiWindDirection);
+	     mvwprintw(pMeteoBoxWin,3,2,"Rel. Humid: %04.2f %",ptrAuxStatus->MeteoBox.dRelHum);
+	     mvwprintw(pMeteoBoxWin,4,2,"Air Temp:   %+04.2f °C",ptrAuxStatus->MeteoBox.dAirTemp);
+	     mvwprintw(pMeteoBoxWin,5,2,"Gas Sensor: %05.3f V",ptrAuxStatus->MeteoBox.dGasSensorVoltage);
+	     wrefresh(pMeteoBoxWin);
+	  };
 
 #ifdef DEBUG_STRUCTUREPASSING
 	printf("ptrAuxStatus->MeteoBox.dWindSpeed:        %04.2f\n\r",ptrAuxStatus->MeteoBox.dWindSpeed);
@@ -560,31 +554,29 @@ int main(int argc, char *argv[])
    int MaskAddr;
    struct SyncFlagType SyncFlag;
    int RequestDataFlag;
-   bool bShowSummary;
+
+   if (elkInit())
+     {
+	printf("Error: failed to grant IO access rights\n");
+	exit(EXIT_FAILURE);
+     };
+
+   // setup master fd
+   FD_ZERO(&fdsMaster);              // clear the master and temp sets
+   FD_ZERO(&fdsSelect);
+   InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
    if (argc==2)
      {
 	// Check if we should display a summary of received data on screen
 	if ((argv[1][0] == 's') || (argv[1][0] == 'S'))
 	  {
-	     bShowSummary = true;
+	     bEnableGUI = true;
 	     InitNcursesWindows();
 	  }
 	else
-	  bShowSummary = false;
+	  bEnableGUI = false;
      };
-
-   if (elkInit())
-     {
-	// grant IO access
-	printf("Error: failed to grant IO access rights\n");
-	exit(EXIT_FAILURE);
-     }
-
-   // setup master fd
-   FD_ZERO(&fdsMaster);              // clear the master and temp sets
-   FD_ZERO(&fdsSelect);
-   InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
    addr_len = sizeof(struct sockaddr);
 
@@ -592,18 +584,38 @@ int main(int argc, char *argv[])
    //
 
 #ifdef RUNONPC
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for I386\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for I386\n",VERSION);
+   if(bEnableGUI)
+     {
+	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $)\n");
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
+	wrefresh(pStatusWin);
+     }
+   else
+     {
+	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for I386\n",VERSION);
+     };
+
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.5 2007-03-07 21:13:54 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.6 2007-03-08 14:01:22 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-   printf("Structure size of 'AuxStatus' in bytes is: %05d\r\n", sizeof(AuxStatus));
-   sprintf(buf, "Structure size of 'AuxStatus' in bytes is: %05d", sizeof(AuxStatus));
+   if(bEnableGUI)
+     {
+	wprintw(pStatusWin,"Structure size of 'AuxStatus' in bytes is: %05d\n",sizeof(AuxStatus));
+	wrefresh(pStatusWin);
+     }
+   else
+     printf("Structure size of 'AuxStatus' in bytes is: %05d\r\n", sizeof(AuxStatus));
 
-    /* init all modules */
+   sprintf(buf, "Structure size of 'AuxStatus' in bytes is: %05d", sizeof(AuxStatus));
+   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+   wrefresh(pStatusWin);
+   refresh();
+
+   /* init all modules */
    InitModules(&AuxStatus);
 
     /* set up signal handler */
@@ -636,13 +648,13 @@ int main(int argc, char *argv[])
 	perror("timer_settime");
 	return EXIT_FAILURE;
      }
-
+/*
    // change scheduler and set priority
    if (-1==(ret=ChangePriority()))
      {
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekIOaux : cannot set Priority");
      }
-
+*/
    sigemptyset(&SignalMask);
    //    sigsuspend(&SignalMask);
    //
@@ -652,7 +664,13 @@ int main(int argc, char *argv[])
 
    while (!EndOfSession)
      {
-	write(2,"Wait for data..\r",16);
+	if(bEnableGUI)
+	  {
+	     wprintw(pStatusWin,"Wait for data..\n");
+	     wrefresh(pStatusWin);
+	  }
+	else
+	  write(2,"Wait for data..\r",16);
 
 	fdsSelect=fdsMaster;
 
@@ -678,18 +696,12 @@ int main(int argc, char *argv[])
 	     //
 	     if (errno==EINTR)
 	       {
-		  // got interrupted by timer
-		  if ((StatusFlag % 50)==0)
-		    {
-		       // printf("get Status %6d..\r",StatusFlag);
-		       write(2,"get Status.....\r",16);
-		    }
 		  gettimeofday(&GetStatusStartTime, NULL);
 		  GetAuxStatus(&AuxStatus,IsMaster);
 		  gettimeofday(&GetStatusStopTime, NULL);
 
 		  // Send Status to Status process
-		  SendUDPData(&MessageOutPortList[CALIB_STATUS_OUT],sizeof(struct auxStatusType), &AuxStatus);
+		  SendUDPData(&MessageOutPortList[ELEK_ELEKIO_AUX_MASTER_OUT],sizeof(struct auxStatusType), &AuxStatus);
 	       }
 	     else
 	       {
@@ -717,8 +729,6 @@ int main(int argc, char *argv[])
 		       switch (MessagePort)
 			 {
 			  case ELEK_MANUAL_IN:       // port for incoming commands from  eCmd
-			    //			  case ELEK_ETALON_IN:       // port for incoming commands from  etalon
-			  case ELEK_SCRIPT_IN:       // port for incoming commands from  scripting host (not yet existing)
 
 			    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket,
 						   &Message,sizeof(struct ElekMessageType)  , 0,
@@ -759,39 +769,35 @@ int main(int argc, char *argv[])
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
 				 // send requested data, don't send any acknowledges
-				 SendUDPData(&MessageOutPortList[ELEK_ELEKIO_CALIB_MASTER_OUT],
+				 SendUDPData(&MessageOutPortList[ELEK_ELEKIO_AUX_MASTER_OUT],
 					     sizeof(struct auxStatusType), &AuxStatus); // send data packet
 				 break;
 
 			       case MSG_TYPE_READ_DATA:
+				 
 				 // printf("elekIOaux: manual read from Address %04x\n", Message.Addr);
 				 Message.Value=elkReadData(Message.Addr);
 				 Message.MsgType=MSG_TYPE_ACK;
 
-				 if (MessagePort!=ELEK_ETALON_IN)
-				   {
-				      sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %d (%04x)",
-					      MessageInPortList[MessagePort].PortNumber,
-					      Message.Addr,Message.Value,Message.Value);
-				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				 sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %d (%04x)",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-				      sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
-				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-				   }
+				 sprintf(buf,"%d",MessageInPortList[MessagePort].RevMessagePort);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
 				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 						 inet_ntoa(their_addr.sin_addr),
 						 sizeof(struct ElekMessageType), &Message);
 				 break;
-			       case MSG_TYPE_WRITE_DATA:
-				 if (MessagePort!=ELEK_ETALON_IN)
-				   {
-				      sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
-					      MessageInPortList[MessagePort].PortNumber,
-					      Message.Addr,Message.Value,Message.Value);
-				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-				   }
 
+			       case MSG_TYPE_WRITE_DATA:
+			
+				 sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
+					 MessageInPortList[MessagePort].PortNumber,
+					 Message.Addr,Message.Value,Message.Value);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 				 Message.Status=elkWriteData(Message.Addr,Message.Value);
 				 Message.MsgType=MSG_TYPE_ACK;
 				 SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
@@ -893,11 +899,17 @@ void InitNcursesWindows(void)
    mvwprintw(pGPSWin,0,1,"GPS Window");
    wrefresh(pGPSWin);
 
-   pMeteoBoxWin = newwin(10, 30, 00, 40);
+   pMeteoBoxWin = newwin(10, 40, 00, 40);
    box(pMeteoBoxWin,0,0);
    mvwprintw(pMeteoBoxWin,0,1,"MeteoBox Window");
    wrefresh(pMeteoBoxWin);
-   getch();
-   endwin();
+
+   pStatusBorderWin = newwin(10, 80, 10, 0);
+   box(pStatusBorderWin,0,0);
+   mvwprintw(pStatusBorderWin,0,20,"Status Window");
+   wrefresh(pStatusBorderWin);
+
+   pStatusWin = newwin(8, 78, 11, 1);
+   wrefresh(pStatusWin);
 }
 

@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-07 18:11:28 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.4  2007-03-08 14:01:22  rudolf
+// cleaned up unused ports
+//
 // Revision 1.3  2007-03-07 18:11:28  rudolf
 // fixed nasty locking bug
 //
@@ -54,16 +57,9 @@ static void dummy_handler(int signo)
 enum OutPortListEnum
 {
    // this list has to be coherent with MessageOutPortList
-   CALIB_STATUS_OUT,                // port for outgoing messages to status
-     ELEK_ELEKIO_STATUS_OUT,         // port for outgoing status to elekIO
-     ELEK_ELEKIO_SLAVE_OUT,          // port for outgoing messages to slaves
-     ELEK_MANUAL_OUT,                // port for outgoing messages to eCmd
-     ELEK_ETALON_OUT,                // port for outgoing messages to etalon
-     ELEK_ETALON_STATUS_OUT,         // port for outgoing messages to etalon status, so etalon is directly informed of the status
-     ELEK_SCRIPT_OUT,                // port for outgoing messages to script
-     ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
-     ELEK_ELEKIO_SLAVE_MASTER_OUT,   // port for outgoing data packets from slave to master
-     ELEK_ELEKIO_CALIB_MASTER_OUT,   // port for outgoing data packets from calib to master
+   ELEK_DEBUG_OUT,                 // port for outgoing messages to debug
+     ELEK_MANUAL_OUT,                // reverse port for answers to eCmd
+     ELEK_ELEKIO_AUX_MASTER_OUT,     // port for outgoing data packets from elekAux to master
      MAX_MESSAGE_OUTPORTS
 };
 
