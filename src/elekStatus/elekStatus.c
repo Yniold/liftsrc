@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-09 13:09:21 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-09 16:22:35 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.31  2007-03-09 16:22:35  rudolf
+ * fixed bug using wrong structure for auxdata for filename and saving
+ *
  * Revision 1.30  2007-03-09 13:09:21  rudolf
  * added new port for aux data, recording of aux data and dumping of aux data
  *
@@ -590,7 +593,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
 	
   if ((fp=fopen(FileName,"a"))==NULL)
     {
-      sprintf(buf,"ElekStatus: can't open %s",FileName);
+      sprintf(buf,"ElekStatus: __FUNCTION__ can't open %s",FileName);
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
     }
   else
@@ -1055,9 +1058,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.30 2007-03-09 13:09:21 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.31 2007-03-09 16:22:35 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.30 2007-03-09 13:09:21 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n %d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.31 2007-03-09 16:22:35 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1150,7 +1153,7 @@ int main()
 	     
 	   case AUX_IN:
 	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
-				   &CalibStatus,CalibStatus_len , MSG_WAITALL,
+				   &AuxStatus,AuxStatus_len , MSG_WAITALL,
 				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
 	      perror("recvfrom");
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
@@ -1166,7 +1169,7 @@ int main()
 	    GenerateFileName(DATAPATH,AuxStatusFileName,NULL,"aux");
 
 	  //  if (ElekStatus.InstrumentFlags.StatusSave)
-	      WriteAuxStatus(RAMDISKPATH, CalibStatusFileName,&CalibStatus);
+	      WriteAuxStatus(RAMDISKPATH, AuxStatusFileName,&AuxStatus);
 	  //  else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
 
 	    // Send Statusdata to other interested clients
