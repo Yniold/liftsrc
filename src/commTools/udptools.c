@@ -1,7 +1,10 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2006-09-04 11:53:29 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2007-03-09 16:19:47 $ by $Author: rudolf $
 *
 * $Log: udptools.c,v $
+* Revision 1.8  2007-03-09 16:19:47  rudolf
+* allow broadcast addresses for UDP_OUT
+*
 * Revision 1.7  2006-09-04 11:53:29  rudolf
 * Fixed warnings for GCC 4.03, added newline and CVS revision info
 *
@@ -33,7 +36,7 @@
 #include <netdb.h>
 
 #ifdef RUNONPC
-#include <asm/msr.h>
+# include <asm/msr.h>
 #endif
 
 #include "../include/elekIOPorts.h"
@@ -41,60 +44,71 @@
 #define DEBUGLEVEL 0
 #define DEBUGDEBUGMESSAGES 0
 
-
 /*********************************************************************************************************/
 /*                                                                                                       */
 /* Function to init inbound UDP Sockets                                                                  */
 /*                                                                                                       */
 /*********************************************************************************************************/
-int InitUDPInSocket(unsigned Port) {
+int InitUDPInSocket(unsigned Port)
+{
 
-    struct sockaddr_in my_addr;    // my address information
-    int                fdSocket;
-    int                addr_len;
+   struct sockaddr_in my_addr;    // my address information
+   int                fdSocket;
+   int                addr_len;
 
-
-    // open debug udp socket 
-    if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+   // open debug udp socket
+   if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+     {
         perror("socket");
         exit(1);
-    }
+     }
 
-    my_addr.sin_family = AF_INET;         // host byte order
-    my_addr.sin_port = htons(Port);     // short, network byte order
-    my_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP
-    memset(&(my_addr.sin_zero), '\0', 8); // zero the rest of the struct
-    addr_len = sizeof(struct sockaddr);
-    
-    if (bind(fdSocket, (struct sockaddr *)&my_addr, addr_len) == -1) {
-        perror("bind");
-        exit(1);
-    }
+   my_addr.sin_family = AF_INET;         // host byte order
+   my_addr.sin_port = htons(Port);     // short, network byte order
+   my_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP
+   memset(&(my_addr.sin_zero), '\0', 8); // zero the rest of the struct
+   addr_len = sizeof(struct sockaddr);
 
-    return(fdSocket);
+   if (bind(fdSocket, (struct sockaddr *)&my_addr, addr_len) == -1)
+     {
+	perror("bind");
+	exit(1);
+     }
 
-} /* InitUDPInSocket */
+   return(fdSocket);
+
+}
+   /* InitUDPInSocket */
 
 /*********************************************************************************************************/
 /*                                                                                                       */
 /* Function to init outbound UDP Sockets                                                                 */
 /*                                                                                                       */
 /*********************************************************************************************************/
-int InitUDPOutSocket() {
+int InitUDPOutSocket()
+{
+   const int iEnableOption = 1;
 
-    struct sockaddr_in my_addr;    // my address information
-    int                fdSocket;
+   struct sockaddr_in my_addr;    // my address information
+   int                fdSocket;
 
-    // open debug udp socket 
-    if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        perror("socket");
-        exit(1);
-    }
-    return(fdSocket);
+   // open debug udp socket
+   if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+     {
+	perror("socket");
+	exit(1);
+     }
+   // allow broadcast addresses
+   if(setsockopt(fdSocket,SOL_SOCKET,SO_BROADCAST,&iEnableOption,sizeof(iEnableOption)) == -1)
+     {
+	perror("__function__: setsockopt() error:");
+	exit(2);
+     }
 
-} /* InitUDPOutSocket */
+   return(fdSocket);
 
-
+}
+   /* InitUDPOutSocket */
 
 /*********************************************************************************************************/
 /*                                                                                                       */
@@ -102,30 +116,32 @@ int InitUDPOutSocket() {
 /*                                                                                                       */
 /*********************************************************************************************************/
 
-int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg) {
+int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg)
+{
 
-    struct sockaddr_in their_addr;
-    int numbytes;
+   struct sockaddr_in their_addr;
+   int numbytes;
 
-    their_addr.sin_family = AF_INET;     // host byte order
-    their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
-    their_addr.sin_addr.s_addr = inet_addr(ptrMessagePort->IPAddr);
-    memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
-       
-    if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
-		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr_in))) == -1){
-        printf("\nproblem with sendto MsgPort: %d %s\n",
-	ptrMessagePort->PortNumber,ptrMessagePort->PortName);
-        perror("sendto");
-        exit(1);
-    }
+   their_addr.sin_family = AF_INET;     // host byte order
+   their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
+   their_addr.sin_addr.s_addr = inet_addr(ptrMessagePort->IPAddr);
+   memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
+
+   if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
+			(struct sockaddr *)&their_addr, sizeof(struct sockaddr_in))) == -1)
+     {
+	printf("\nproblem with sendto MsgPort: %d %s\n",
+	       ptrMessagePort->PortNumber,ptrMessagePort->PortName);
+	perror("sendto");
+	exit(1);
+     }
 
 #if DEBUGLEVEL>0
    printf("[%s] sent %d bytes to %s:%d\n", ptrMessagePort->PortName,numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
-} /* SendUDPData */
-
+}
+   /* SendUDPData */
 
 /*********************************************************************************************************/
 /*                                                                                                       */
@@ -133,27 +149,30 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
 /*                                                                                                       */
 /*********************************************************************************************************/
 
-int SendUDPDataToIP(struct MessagePortType *ptrMessagePort, char *IPAddr, unsigned nByte, void *msg) {
+int SendUDPDataToIP(struct MessagePortType *ptrMessagePort, char *IPAddr, unsigned nByte, void *msg)
+{
 
-    struct sockaddr_in their_addr;
-    int numbytes;
+   struct sockaddr_in their_addr;
+   int numbytes;
 
-    their_addr.sin_family = AF_INET;     // host byte order
-    their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
-    their_addr.sin_addr.s_addr = inet_addr(IPAddr);
-    memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
-    
-    if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
-		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
-        perror("sendto");
-        exit(1);
-    }
+   their_addr.sin_family = AF_INET;     // host byte order
+   their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
+   their_addr.sin_addr.s_addr = inet_addr(IPAddr);
+   memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
+
+   if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
+			(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1)
+     {
+	perror("sendto");
+	exit(1);
+     }
 
 #if DEBUGLEVEL>0
    printf("sent %d bytes to %s:%d\n", numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
-} /* SendUDPDatatoIP */
+}
+   /* SendUDPDatatoIP */
 
 /*********************************************************************************************************/
 /*                                                                                                       */
@@ -161,27 +180,30 @@ int SendUDPDataToIP(struct MessagePortType *ptrMessagePort, char *IPAddr, unsign
 /*                                                                                                       */
 /*********************************************************************************************************/
 
-int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg) {
+int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg)
+{
 
-    struct sockaddr_in their_addr;
-    int numbytes;
+   struct sockaddr_in their_addr;
+   int numbytes;
 
-    their_addr.sin_family = AF_INET;     // host byte order
-    their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
-    their_addr.sin_addr.s_addr = inet_addr(ptrMessagePort->IPAddr);
-    memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
-    
-	 if (DEBUGDEBUGMESSAGES)
-	 	printf("%s\n\r", msg);
-		
-    if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, strlen(msg), 0,
-		     (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
-        perror("sendto");
-        exit(1);
-    }
-//   printf("sent %d bytes to %s\n", numbytes, inet_ntoa(their_addr.sin_addr));
+   their_addr.sin_family = AF_INET;     // host byte order
+   their_addr.sin_port = htons(ptrMessagePort->PortNumber); // short, network byte order
+   their_addr.sin_addr.s_addr = inet_addr(ptrMessagePort->IPAddr);
+   memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
 
-} /* SendUDPMsg */
+   if (DEBUGDEBUGMESSAGES)
+     printf("%s\n\r", msg);
+
+   if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, strlen(msg), 0,
+			(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1)
+     {
+	perror("sendto");
+	exit(1);
+     }
+   //   printf("sent %d bytes to %s\n", numbytes, inet_ntoa(their_addr.sin_addr));
+   //
+}
+   /* SendUDPMsg */
 
 /*********************************************************************************************************/
 /*                                                                                                       */
@@ -189,22 +211,25 @@ int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg) {
 /*                                                                                                       */
 /*********************************************************************************************************/
 
-int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg) {
+int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg)
+{
 
-    struct sockaddr_in their_addr;
-    int numbytes;
-    socklen_t addr_len;
+   struct sockaddr_in their_addr;
+   int numbytes;
+   socklen_t addr_len;
 
-    addr_len = sizeof(struct sockaddr);
+   addr_len = sizeof(struct sockaddr);
 
-    if ((numbytes=recvfrom(ptrMessagePort->fdSocket, msg,nByte , MSG_WAITALL,
-			   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+   if ((numbytes=recvfrom(ptrMessagePort->fdSocket, msg,nByte , MSG_WAITALL,
+			  (struct sockaddr *)&their_addr, &addr_len)) == -1)
+     {
 	perror("ReceiveUDPData: ");
 	return(-1);
-    }
-    
+     }
+
 #if DEBUGLEVEL>0
    printf("[%s] receive %d bytes from %s:%d\n", ptrMessagePort->PortName,numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
 #endif
 
-} /* RecieveUDPData */
+}
+   /* RecieveUDPData */
