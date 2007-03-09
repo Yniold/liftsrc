@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-02-21 22:57:57 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-09 13:09:21 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.30  2007-03-09 13:09:21  rudolf
+ * added new port for aux data, recording of aux data and dumping of aux data
+ *
  * Revision 1.29  2007-02-21 22:57:57  rudolf
  * added new group for LICOR in status printing
  *
@@ -131,6 +134,7 @@ enum InPortListEnum {  // this list has to be coherent with MessageInPortList
   ELEK_STATUS_REQ_IN,
   ELEK_ELEKIO_IN,
   CALIB_IN,
+  AUX_IN,
   MAX_MESSAGE_INPORTS }; 
 
 enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
@@ -142,11 +146,14 @@ enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // order in list defines sequence of polling 
   /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
-  {"StatusReq",    UDP_ELEK_STATUS_REQ_INPORT,    UDP_ELEK_STATUS_REQ_OUTPORT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
-  { "ElekIOIn",UDP_ELEK_STATUS_STATUS_OUTPORT,                             -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ
-  { "CalibIn ",UDP_CALIB_STATUS_STATUS_OUTPORT,                             -1, IP_LOCALHOST, -1, 1,  UDP_IN_PORT}  // status inport from elekIOcalib
-};
-
+  {"StatusReq",    UDP_ELEK_STATUS_REQ_INPORT,      UDP_ELEK_STATUS_REQ_OUTPORT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
+  {"ElekIOIn"     ,UDP_ELEK_STATUS_STATUS_OUTPORT,  -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ (instrument data)
+  {"CalibIn "     ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ (calibration data)
+  {"AuxIn"        ,UDP_ELEK_AUX_INPORT,             -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}  // status inport from elekIOServ (aux/meteo data)
+                                                                                                                     // uses same portnumber as elekIOaux uses to send	
+};                                                                                                                   // the data to elekIOServ to simplify direct connection
+                                                                                                                     // elekIOaux->elekStatus if needed
+														     
 static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={                                    // order in list defines sequence of polling 
   /* Name, PortNo, ReversePortNo, fdSocket, MaxMessages, Direction */
   {"StatusReq",   UDP_ELEK_STATUS_REQ_OUTPORT, UDP_ELEK_STATUS_REQ_INPORT, IP_ELEK_SERVER,  -1, 0, UDP_OUT_PORT},
@@ -155,6 +162,31 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={        
 };
 
 static long LastStatusNumber;
+
+void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize) 
+{
+
+  int i;
+  struct tm tmZeit;
+  time_t    Seconds;
+	
+  // ***************** DATASET DATA (number of dataset etc. **************
+  if(uiGroupFlags & GROUP_AUXDATA)
+    {
+      printf("Time(aux),faked:");
+      Seconds=ptrAuxStatus->TimeOfDayAux.tv_sec;
+      gmtime_r(&Seconds,&tmZeit);
+		
+      printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
+	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrAuxStatus->TimeOfDayAux.tv_usec/1000);
+
+       printf("Wind(Met): %04.2f Temp(Met): %+04.2f",\
+       ptrAuxStatus->MeteoBox.dWindSpeed,\
+       ptrAuxStatus->MeteoBox.dAirTemp);
+       printf("\n\r");	      
+    };
+   
+};
 
 void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize) 
 {
@@ -634,6 +666,52 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
     } // if fopen
 } /*WriteElekStatus*/
 
+int WriteAuxStatus(char *PathToRamDisk, char *FileName, struct auxStatusType *ptrAuxStatus) 
+{
+	
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+	
+  extern long LastStatusNumber;
+	
+  FILE *fp;
+  int i;
+  int ret;
+  long len;
+  int nelements;
+  char buf[GENERIC_BUF_LEN];
+		
+  if ((fp=fopen(FileName,"a"))==NULL)
+    {
+      sprintf(buf,"ElekStatus: can't open %s",FileName);
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+    }
+  else
+    {
+      // write data. may return with 1 even if disk is full.
+      ret=fwrite(ptrAuxStatus,sizeof (struct auxStatusType),1,fp);
+      if (ret!=1)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: AUX DATA NOT WRITTEN, fwrite() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+		
+      // flush buffer to check if disk is full an to prevent data loss
+      ret=fflush(fp);
+      if (ret == EOF)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: AUX DATA NOT WRITTEN, fflush() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+      fclose(fp);
+    } // if fopen
+	
+} /*WriteAuxStatus*/
+
 int WriteCalibStatus(char *PathToRamDisk, char *FileName, struct calibStatusType *ptrCalibStatus) 
 {
 	
@@ -859,6 +937,14 @@ void EvaluateKeyboard(void)
 	  else
 	    printf("\n\rDisplay of LICOR DATA is now off.\n\r");
 	  break;
+
+	 case 'X':					// Butterfly
+	  uiGroupFlags ^= GROUP_AUXDATA;
+	  if (uiGroupFlags & GROUP_AUXDATA)
+	    printf("\n\rDisplay of AUXILIARY DATA is now on.\n\r");
+	  else
+	    printf("\n\rDisplay of AUXILIARY DATA is now off.\n\r");
+	  break;
 				
 	case 'S':					// Show all
 	  uiGroupFlags = 0xFFFFFFFF;
@@ -886,7 +972,8 @@ void ShowHelp(void)
   printf("[A] ADC DATA    \t[E] ETALON DATA     \t[G] GPS DATA\n\r");
   printf("[C] CC DATA     \t[M] CC Mask info    \t[P] TEMPERATURE DATA\n\r");
   printf("[D] DATASET DATA\t[V] VALVE DATA      \t[B] BUTTERFLY DATA\n\r");
-  printf("[T] TIME DATA   \t[S] SHOW ALL        \t[R] RESET ALL\n\r");
+  printf("[T] TIME DATA   \t[L] LICOR DATA      \t[X] AUX DATA (METEO)\n\r");
+  printf("[S] SHOW ALL    \t[R] RESET ALL\n\r");
   printf("\n\r*** PRESS [H] FOR HELP DURING DATA DUMPING! ***\n\r");
 };
 
@@ -896,13 +983,16 @@ void ShowHelp(void)
 int main() 
 {
   long CalibStatusCount;
-  
+  long AuxStatusCount;
+   
   extern int errno;
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
               
   struct elekStatusType ElekStatus;
   struct calibStatusType CalibStatus;
+  struct auxStatusType AuxStatus;
+   
   int MessagePort;
   int fdMax;                      // max fd for select
   int i;                          // loop counter
@@ -914,7 +1004,7 @@ int main()
   struct timespec RealTime;         // Real time clock 
   struct sockaddr_in my_addr;     // my address information
   struct sockaddr_in their_addr;  // connector's address information
-  int    ElekStatus_len, CalibStatus_len,numbytes;
+  int    ElekStatus_len, CalibStatus_len,AuxStatus_len,numbytes;
   socklen_t addr_len;
   bool   EndOfSession;  
 
@@ -922,8 +1012,9 @@ int main()
 
   char StatusFileName[MAX_FILENAME_LEN]; 
   char CalibStatusFileName[MAX_FILENAME_LEN]; 
-    
-  if(cbreak(STDIN_FILENO) == -1) 
+  char AuxStatusFileName[MAX_FILENAME_LEN];  
+  
+   if(cbreak(STDIN_FILENO) == -1) 
     {
       printf("Fehler bei der Funktion cbreak ... \n");
       exit(EXIT_FAILURE);
@@ -960,12 +1051,13 @@ int main()
   addr_len = sizeof(struct sockaddr);
   ElekStatus_len=sizeof(struct elekStatusType);
   CalibStatus_len=sizeof(struct calibStatusType);
-    
+  AuxStatus_len=sizeof(struct auxStatusType);
+   
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.29 2007-02-21 22:57:57 rudolf Exp $) for ARM\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.30 2007-03-09 13:09:21 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.29 2007-02-21 22:57:57 rudolf Exp $) for i386\nexpected StatusLen %d\n",VERSION,ElekStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.30 2007-03-09 13:09:21 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n %d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1003,7 +1095,7 @@ int main()
 				   &ElekStatus,ElekStatus_len , MSG_WAITALL,
 				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
 	      perror("recvfrom");
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
 	    }
 	    StatusCount++;
 	    EvaluateKeyboard();
@@ -1031,7 +1123,7 @@ int main()
 				   &CalibStatus,CalibStatus_len , MSG_WAITALL,
 				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
 	      perror("recvfrom");
-	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with recieve");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
 	    }
 	     // update timestamp in calib structure
 	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
@@ -1055,7 +1147,38 @@ int main()
 	    //			    SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"172.31.178.25",ElekStatus_len,&ElekStatus);
 			    
 	    break;
-	  case ELEK_STATUS_REQ_IN:
+	     
+	   case AUX_IN:
+	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				   &CalibStatus,CalibStatus_len , MSG_WAITALL,
+				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+	      perror("recvfrom");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
+	    }
+	     // update timestamp in calib structure
+	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
+	    AuxStatusCount++;
+	    EvaluateKeyboard();
+	    if ((AuxStatusCount % 5)==0) { 
+	      PrintAuxStatus(&AuxStatus, numbytes); 
+	    }
+	    
+	    GenerateFileName(DATAPATH,AuxStatusFileName,NULL,"aux");
+
+	  //  if (ElekStatus.InstrumentFlags.StatusSave)
+	      WriteAuxStatus(RAMDISKPATH, CalibStatusFileName,&CalibStatus);
+	  //  else SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : DATA NOT STORED !!!");
+
+	    // Send Statusdata to other interested clients
+			    
+	    // SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"141.5.1.178",ElekStatus_len,&ElekStatus);
+	    // SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"10.111.111.10",ElekStatus_len,&ElekStatus);
+	    //			    SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"172.31.178.24",ElekStatus_len,&ElekStatus);
+	    //			    SendUDPDataToIP(&MessageOutPortList[ELEK_CLIENT_OUT],"172.31.178.25",ElekStatus_len,&ElekStatus);
+			    
+	    break;
+
+	   case ELEK_STATUS_REQ_IN:
 	    break;
 	  default :
 	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"Unknown MessagPort");

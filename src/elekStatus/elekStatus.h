@@ -1,6 +1,9 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2007-02-21 22:57:57 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2007-03-09 13:09:21 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
+* Revision 1.10  2007-03-09 13:09:21  rudolf
+* added new port for aux data, recording of aux data and dumping of aux data
+*
 * Revision 1.9  2007-02-21 22:57:57  rudolf
 * added new group for LICOR in status printing
 *
@@ -37,6 +40,7 @@
 #define GROUP_BUTTERFLYDATA	(1<< 9)
 
 #define GROUP_CALIBDATA         (1<<10)
+#define GROUP_AUXDATA           (1<<11)
 // GLOBALS
 
 // our keyboard scan routine
