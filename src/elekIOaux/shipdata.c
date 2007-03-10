@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-08 18:53:23 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-10 18:09:30 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.6  2007-03-10 18:09:30  rudolf
+// fixed lat and longitude swapped
+//
 // Revision 1.5  2007-03-08 18:53:23  rudolf
 // made fields flash green if new data received, cosmetics
 //
@@ -252,18 +255,18 @@ void ShipDataParseGPSBuffer(char* pBuffer, int iBuffLen, struct sShipDataType* s
 		  sDataStructure->uiUTCYear = atoi(pRetVal);
 
 		case 7:
-		  sDataStructure->dLongitude= strtod(pRetVal,NULL);
+		  sDataStructure->dLatitude= strtod(pRetVal,NULL);
 
 		case 8:
 		  if(pRetVal[0] == 'S')
-		    sDataStructure->dLongitude = -sDataStructure->dLongitude;
+		    sDataStructure->dLatitude= -sDataStructure->dLatitude;
 
 		case 9:
-		  sDataStructure->dLatitude= strtod(pRetVal,NULL);
+		  sDataStructure->dLongitude= strtod(pRetVal,NULL);
 
 		case 10:
 		  if(pRetVal[0] == 'W')
-		    sDataStructure->dLatitude = -sDataStructure->dLatitude;
+		    sDataStructure->dLongitude = -sDataStructure->dLongitude;
 
 		case 11:
 		  sDataStructure->dCourseOverGround= strtod(pRetVal,NULL);
