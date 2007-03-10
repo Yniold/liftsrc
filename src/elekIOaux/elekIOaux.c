@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-08 18:53:23 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-10 14:34:49 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.8  2007-03-10 14:34:49  rudolf
+ * broadcasting data on Port 1180
+ *
  * Revision 1.7  2007-03-08 18:53:23  rudolf
  * made fields flash green if new data received, cosmetics
  *
@@ -100,7 +103,7 @@ struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]=
     /* Name           ,PortNo                        , ReversePort        , IPAddr          , fdSocket, MaxMsg, Direction */
      {"DebugPort"     ,UDP_ELEK_DEBUG_OUTPORT        , -1                 , IP_DEBUG_CLIENT , -1      , 0     ,  UDP_OUT_PORT},
      {"Manual"        ,UDP_ELEK_MANUAL_OUTPORT       , ELEK_MANUAL_IN     , IP_LOCALHOST    , -1      , 0     ,  UDP_OUT_PORT},
-     {"ElekIOauxOut"  ,UDP_ELEK_AUX_INPORT           , -1                 , IP_ELEKIO_MASTER, -1      , 0     ,  UDP_OUT_PORT}
+     {"ElekIOauxOut"  ,UDP_ELEK_AUX_INPORT           , -1                 , "255.255.255.255", -1      , 0     ,  UDP_OUT_PORT}
 };
 
 struct TaskListType TasktoWakeList[MAX_TASKS_TO_WAKE]=
@@ -599,19 +602,19 @@ int main(int argc, char *argv[])
 #ifdef RUNONPC
    if(bEnableGUI)
      {
-	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $)\n");
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
+	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $)\n");
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
 	wrefresh(pStatusWin);
      }
    else
      {
-	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for I386\n",VERSION);
+	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
      };
 
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.7 2007-03-08 18:53:23 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
