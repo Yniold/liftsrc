@@ -1,8 +1,11 @@
 
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 15:30:37 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 16:02:52 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.34  2007-03-11 16:02:52  rudolf
+ * added more fields from Ship and Meteo in dumping
+ *
  * Revision 1.33  2007-03-11 15:30:37  rudolf
  * added creation of running status file also for calibration and aux data
  *
@@ -192,9 +195,25 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
       printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
 	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrAuxStatus->TimeOfDayAux.tv_usec/1000);
 
-       printf("Wind(Met): %04.2f Temp(Met): %+04.2f",\
+       printf("WS(Met): %5.2f WDir(Met): %03d Temp(Met): %+5.2f RH(Met): %5.2f GS(Met): %5.3f ",\
        ptrAuxStatus->MeteoBox.dWindSpeed,\
-       ptrAuxStatus->MeteoBox.dAirTemp);
+       ptrAuxStatus->MeteoBox.uiWindDirection,\
+       ptrAuxStatus->MeteoBox.dAirTemp,\
+       ptrAuxStatus->MeteoBox.dRelHum,\
+       ptrAuxStatus->MeteoBox.dGasSensorVoltage);
+
+       printf("(ShGPS)UTC %02d:%02d:%02d Date:%02d.%02d.%04d Lat: %+9.4f Lon: %+9.4f COG: %5.2f Speed: %5.2f",\
+       ptrAuxStatus->ShipGPS.ucUTCHours,\
+       ptrAuxStatus->ShipGPS.ucUTCMins,\
+       ptrAuxStatus->ShipGPS.ucUTCSeconds,\
+
+       ptrAuxStatus->ShipGPS.ucUTCDay,\
+       ptrAuxStatus->ShipGPS.ucUTCMonth,\
+       ptrAuxStatus->ShipGPS.uiUTCYear,\
+       ptrAuxStatus->ShipGPS.dLatitude,\
+       ptrAuxStatus->ShipGPS.dLongitude,\
+       ptrAuxStatus->ShipGPS.dCourseOverGround,\
+       ptrAuxStatus->ShipGPS.dGroundSpeed);
        printf("\n\r");	      
     };
    
@@ -1223,9 +1242,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.33 2007-03-11 15:30:37 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.34 2007-03-11 16:02:52 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.33 2007-03-11 15:30:37 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.34 2007-03-11 16:02:52 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
