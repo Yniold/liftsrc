@@ -1,8 +1,11 @@
 
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 16:02:52 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 17:05:14 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.35  2007-03-11 17:05:14  rudolf
+ * added last fields missing
+ *
  * Revision 1.34  2007-03-11 16:02:52  rudolf
  * added more fields from Ship and Meteo in dumping
  *
@@ -192,17 +195,20 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
       Seconds=ptrAuxStatus->TimeOfDayAux.tv_sec;
       gmtime_r(&Seconds,&tmZeit);
 		
-      printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
+      printf("%JD:d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
 	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrAuxStatus->TimeOfDayAux.tv_usec/1000);
 
-       printf("WS(Met): %5.2f WDir(Met): %03d Temp(Met): %+5.2f RH(Met): %5.2f GS(Met): %5.3f ",\
+       printf("WS(MeteoBox): %5.2f WDir: %03d Temp: %+5.2f RH: %5.2f GS: %5.3f ",\
        ptrAuxStatus->MeteoBox.dWindSpeed,\
        ptrAuxStatus->MeteoBox.uiWindDirection,\
        ptrAuxStatus->MeteoBox.dAirTemp,\
        ptrAuxStatus->MeteoBox.dRelHum,\
        ptrAuxStatus->MeteoBox.dGasSensorVoltage);
+       
+       printf("PLicor: %05d ",\
+       ptrAuxStatus->LicorPressure.uiAmbientPressure);
 
-       printf("(ShGPS)UTC %02d:%02d:%02d Date:%02d.%02d.%04d Lat: %+9.4f Lon: %+9.4f COG: %5.2f Speed: %5.2f",\
+       printf("(ShGPS)UTC %02d:%02d:%02d Date:%02d.%02d.%04d Lat: %+9.4f Lon: %+9.4f COG: %5.2f Speed: %5.2f ",\
        ptrAuxStatus->ShipGPS.ucUTCHours,\
        ptrAuxStatus->ShipGPS.ucUTCMins,\
        ptrAuxStatus->ShipGPS.ucUTCSeconds,\
@@ -214,6 +220,22 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
        ptrAuxStatus->ShipGPS.dLongitude,\
        ptrAuxStatus->ShipGPS.dCourseOverGround,\
        ptrAuxStatus->ShipGPS.dGroundSpeed);
+
+       printf("(ShMeteo)WDir: %5.2f WS: %5.2f ",\
+       ptrAuxStatus->ShipMeteo.dWindDirection,\
+       ptrAuxStatus->ShipMeteo.dWindSpeed);
+
+       printf("(ShGyro)Hdg: %5.2f ",\
+       ptrAuxStatus->ShipGyro.dDirection);
+
+       printf("(ShSonar)Freq: %5.2f Depth: %6.2f ",\
+       ptrAuxStatus->ShipSonar.dFrequency,\
+       ptrAuxStatus->ShipSonar.dWaterDepth);
+
+       printf("(ShWater)Salt: %5.2f Temp: %+5.2f",\
+       ptrAuxStatus->ShipWater.dSalinity,\
+       ptrAuxStatus->ShipWater.dWaterTemp);
+       
        printf("\n\r");	      
     };
    
@@ -1242,9 +1264,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.34 2007-03-11 16:02:52 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.35 2007-03-11 17:05:14 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.34 2007-03-11 16:02:52 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.35 2007-03-11 17:05:14 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
