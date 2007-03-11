@@ -1,8 +1,11 @@
 
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 17:05:14 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 17:06:55 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.36  2007-03-11 17:06:55  rudolf
+ * fixed typo
+ *
  * Revision 1.35  2007-03-11 17:05:14  rudolf
  * added last fields missing
  *
@@ -195,7 +198,7 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
       Seconds=ptrAuxStatus->TimeOfDayAux.tv_sec;
       gmtime_r(&Seconds,&tmZeit);
 		
-      printf("%JD:d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
+      printf("JD:%03d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday, 
 	     tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrAuxStatus->TimeOfDayAux.tv_usec/1000);
 
        printf("WS(MeteoBox): %5.2f WDir: %03d Temp: %+5.2f RH: %5.2f GS: %5.3f ",\
@@ -1264,9 +1267,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.35 2007-03-11 17:05:14 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.36 2007-03-11 17:06:55 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.35 2007-03-11 17:05:14 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.36 2007-03-11 17:06:55 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
