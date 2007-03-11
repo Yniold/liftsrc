@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-10 14:34:49 $ by $Author: rudolf $
+ * $RCSfile: elekIOaux.c,v $ last changed on $Date: 2007-03-11 11:17:36 $ by $Author: rudolf $
  *
  * $Log: elekIOaux.c,v $
+ * Revision 1.9  2007-03-11 11:17:36  rudolf
+ * put timestamp to structure
+ *
  * Revision 1.8  2007-03-10 14:34:49  rudolf
  * broadcasting data on Port 1180
  *
@@ -602,19 +605,19 @@ int main(int argc, char *argv[])
 #ifdef RUNONPC
    if(bEnableGUI)
      {
-	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $)\n");
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
+	wprintw(pStatusWin,"elekIOaux I386(CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $)\n");
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $) for I386\n",VERSION);
 	wrefresh(pStatusWin);
      }
    else
      {
-	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
-	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for I386\n",VERSION);
+	printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $) for I386\n",VERSION);
+	sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $) for I386\n",VERSION);
      };
 
 #else
-   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.8 2007-03-10 14:34:49 rudolf Exp $) for ARM\n",VERSION);
+   printf("This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $) for ARM\n",VERSION);
+   sprintf(buf, "This is elekIOaux Version %3.2f (CVS: $Id: elekIOaux.c,v 1.9 2007-03-11 11:17:36 rudolf Exp $) for ARM\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -709,6 +712,7 @@ int main(int argc, char *argv[])
 		  GetAuxStatus(&AuxStatus,IsMaster);
 		  gettimeofday(&GetStatusStopTime, NULL);
 
+		  AuxStatus.TimeOfDayAux = GetStatusStartTime;
 		  // Send Status to Status process
 		  SendUDPData(&MessageOutPortList[ELEK_ELEKIO_AUX_MASTER_OUT],sizeof(struct auxStatusType), &AuxStatus);
 		  UpdateWindows((struct auxStatusType*)&AuxStatus);
