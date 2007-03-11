@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-09 16:22:35 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 11:17:15 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.32  2007-03-11 11:17:15  rudolf
+ * use timestamp from structure, not local
+ *
  * Revision 1.31  2007-03-09 16:22:35  rudolf
  * fixed bug using wrong structure for auxdata for filename and saving
  *
@@ -176,7 +179,7 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
   // ***************** DATASET DATA (number of dataset etc. **************
   if(uiGroupFlags & GROUP_AUXDATA)
     {
-      printf("Time(aux),faked:");
+      printf("Time(aux)");
       Seconds=ptrAuxStatus->TimeOfDayAux.tv_sec;
       gmtime_r(&Seconds,&tmZeit);
 		
@@ -1058,9 +1061,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.31 2007-03-09 16:22:35 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.32 2007-03-11 11:17:15 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.31 2007-03-09 16:22:35 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.32 2007-03-11 11:17:15 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1158,8 +1161,7 @@ int main()
 	      perror("recvfrom");
 	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
 	    }
-	     // update timestamp in calib structure
-	    gettimeofday(&CalibStatus.TimeOfDayCalib,NULL);
+
 	    AuxStatusCount++;
 	    EvaluateKeyboard();
 	    if ((AuxStatusCount % 5)==0) { 
