@@ -1,7 +1,11 @@
+
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 11:17:15 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 15:30:37 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.33  2007-03-11 15:30:37  rudolf
+ * added creation of running status file also for calibration and aux data
+ *
  * Revision 1.32  2007-03-11 11:17:15  rudolf
  * use timestamp from structure, not local
  *
@@ -167,7 +171,9 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={        
   {"StatusClient",UDP_ELEK_STATUS_STATUS_OUTPORT,                      -1, IP_DEBUG_CLIENT, -1, 0, UDP_OUT_PORT} // status inport from elekIOServ
 };
 
-static long LastStatusNumber;
+static long LastElekStatusNumber;
+static long LastCalibStatusNumber;
+static long LastAuxStatusNumber;
 
 void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize) 
 {
@@ -575,7 +581,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
 	
-  extern long LastStatusNumber;
+  extern long LastElekStatusNumber;
 	
   FILE *fp;
   int i;
@@ -637,9 +643,9 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
 	}
     } /* if open */
   //go to the next entry position
-  ret=fseek(fp,LastStatusNumber*sizeof (struct elekStatusType),SEEK_SET);
-  //    sprintf(buf,"ElekStatus: write Status to %d,%d %d %ld",LastStatusNumber,
-  //	    LastStatusNumber*sizeof (struct elekStatusType),ret,ftell(fp) );
+  ret=fseek(fp,LastElekStatusNumber*sizeof (struct elekStatusType),SEEK_SET);
+  //    sprintf(buf,"ElekStatus: write Status to %d,%d %d %ld",LastElekStatusNumber,
+  //	    LastElekStatusNumber*sizeof (struct elekStatusType),ret,ftell(fp) );
   // SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);      
   ret=fwrite(ptrElekStatus,sizeof (struct elekStatusType),1,fp);
 	
@@ -647,7 +653,7 @@ int WriteElekStatus(char *PathToRamDisk, char *FileName, struct elekStatusType *
     {
       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.bin");
     }
-  LastStatusNumber=(LastStatusNumber+1) % STATUSFILE_RING_LEN;	    
+  LastElekStatusNumber=(LastElekStatusNumber+1) % STATUSFILE_RING_LEN;	    
   fclose(fp);
 	
   strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
@@ -678,7 +684,7 @@ int WriteAuxStatus(char *PathToRamDisk, char *FileName, struct auxStatusType *pt
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
 	
-  extern long LastStatusNumber;
+  extern long LastAuxStatusNumber;
 	
   FILE *fp;
   int i;
@@ -715,6 +721,29 @@ int WriteAuxStatus(char *PathToRamDisk, char *FileName, struct auxStatusType *pt
 	};
       fclose(fp);
     } // if fopen
+
+  strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
+  strcat(buf,"/status.aux");
+	
+  if ((fp=fopen(buf,"r+"))==NULL) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.aux does not exist");
+      if ((fp=fopen(buf,"w+"))==NULL) 
+	{
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't create status.aux");
+	  return (-1);
+	}
+    } /* if open */
+  //go to the next entry position
+  ret=fseek(fp,LastAuxStatusNumber*sizeof (struct auxStatusType),SEEK_SET);
+  ret=fwrite(ptrAuxStatus,sizeof (struct auxStatusType),1,fp);
+	
+  if (ret!=1) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.aux");
+    }
+  LastAuxStatusNumber=(LastAuxStatusNumber+1) % STATUSFILE_RING_LEN;	    
+  fclose(fp);
 	
 } /*WriteAuxStatus*/
 
@@ -724,7 +753,7 @@ int WriteCalibStatus(char *PathToRamDisk, char *FileName, struct calibStatusType
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
 	
-  extern long LastStatusNumber;
+  extern long LastElekStatusNumber;
 	
   FILE *fp;
   int i;
@@ -761,6 +790,29 @@ int WriteCalibStatus(char *PathToRamDisk, char *FileName, struct calibStatusType
 	};
       fclose(fp);
     } // if fopen
+
+   strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
+  strcat(buf,"/status.cal");
+	
+  if ((fp=fopen(buf,"r+"))==NULL) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.cal does not exist");
+      if ((fp=fopen(buf,"w+"))==NULL) 
+	{
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't create status.cal");
+	  return (-1);
+	}
+    } /* if open */
+  //go to the next entry position
+  ret=fseek(fp,LastCalibStatusNumber*sizeof (struct calibStatusType),SEEK_SET);
+  ret=fwrite(ptrCalibStatus,sizeof (struct calibStatusType),1,fp);
+	
+  if (ret!=1) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.cal");
+    }
+  LastCalibStatusNumber=(LastCalibStatusNumber+1) % STATUSFILE_RING_LEN;	    
+  fclose(fp);
 	
 } /*WriteCalibStatus*/
 
@@ -790,11 +842,11 @@ void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime, char *Exte
 /******************************************************************************************/
 
 
-int InitStatusFile(char *Path) {
+int InitElekStatusFile(char *Path) {
 
   extern struct MessagePortType MessageOutPortList[];
   extern struct MessagePortType MessageInPortList[];
-  extern long LastStatusNumber;
+  extern long LastElekStatusNumber;
 
 
   FILE *fp;
@@ -809,13 +861,13 @@ int InitStatusFile(char *Path) {
   strncpy(buf,Path,GENERIC_BUF_LEN);
   strcat(buf,"/status.bin");
   if ((fp=fopen(buf,"r"))==NULL) {
-    // file does not exist yet, so we set LastStatusNumber to 0
-    LastStatusNumber=0;
+    // file does not exist yet, so we set LastElekStatusNumber to 0
+    LastElekStatusNumber=0;
     return (0);
   }
  
   // find out what the last entry is
-  LastStatusNumber=0;
+  LastElekStatusNumber=0;
   RecordNo=0;
   LastTime.tv_sec=0;
   LastTime.tv_usec=0;
@@ -823,7 +875,7 @@ int InitStatusFile(char *Path) {
   while (!feof(fp)) {
       
     ret=fread(&elekStatus,sizeof (struct elekStatusType),1,fp);
-    //      sprintf(buf,"ElekStatus InitStatusFile: %d %d. read %ld compare %ld\n",
+    //      sprintf(buf,"ElekStatus InitElekStatusFile: %d %d. read %ld compare %ld\n",
     //	      feof(fp),RecordNo,
     //	      elekStatus.TimeOfDay.tv_sec,
     //	      LastTime.tv_sec);
@@ -832,7 +884,7 @@ int InitStatusFile(char *Path) {
     if ((LastTime.tv_sec<elekStatus.TimeOfDayMaster.tv_sec) && 
 	(LastTime.tv_sec<elekStatus.TimeOfDayMaster.tv_sec)) {
 	
-      LastStatusNumber=RecordNo;
+      LastElekStatusNumber=RecordNo;
       LastTime=elekStatus.TimeOfDayMaster;
     }/* if time */
       
@@ -843,7 +895,117 @@ int InitStatusFile(char *Path) {
     
 
 
-} /* Init Status File */
+} /* Init Elek Status File */
+
+/******************************************************************************************/
+/* search Calib Status file for last entry and set global variable accordingly            */
+/******************************************************************************************/
+
+
+int InitCalibStatusFile(char *Path) {
+
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+  extern long LastCalibStatusNumber;
+
+
+  FILE *fp;
+  struct tm tmZeit;
+  time_t    Seconds;
+  char buf[GENERIC_BUF_LEN];
+  struct calibStatusType calibStatus;
+  long RecordNo;
+  struct timeval LastTime;
+  int ret;
+    
+  strncpy(buf,Path,GENERIC_BUF_LEN);
+  strcat(buf,"/status.cal");
+  if ((fp=fopen(buf,"r"))==NULL) {
+    // file does not exist yet, so we set LastCalibStatusNumber to 0
+    LastCalibStatusNumber=0;
+    return (0);
+  }
+ 
+  // find out what the last entry is
+  LastCalibStatusNumber=0;
+  RecordNo=0;
+  LastTime.tv_sec=0;
+  LastTime.tv_usec=0;
+   
+  while (!feof(fp)) {
+      
+    ret=fread(&calibStatus,sizeof (struct calibStatusType),1,fp);
+	    
+    if ((LastTime.tv_sec<calibStatus.TimeOfDayCalib.tv_sec) && 
+	(LastTime.tv_sec<calibStatus.TimeOfDayCalib.tv_sec)) {
+	
+      LastCalibStatusNumber=RecordNo;
+      LastTime=calibStatus.TimeOfDayCalib;
+    }/* if time */
+      
+    RecordNo++;
+  } /* while feof */
+    
+  fclose(fp);
+    
+
+
+} /* Init Calib Status File */
+
+/******************************************************************************************/
+/* search Aux Status file for last entry and set global variable accordingly              */
+/******************************************************************************************/
+
+
+int InitAuxStatusFile(char *Path) {
+
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+  extern long LastAuxStatusNumber;
+
+
+  FILE *fp;
+  struct tm tmZeit;
+  time_t    Seconds;
+  char buf[GENERIC_BUF_LEN];
+  struct auxStatusType auxStatus;
+  long RecordNo;
+  struct timeval LastTime;
+  int ret;
+    
+  strncpy(buf,Path,GENERIC_BUF_LEN);
+  strcat(buf,"/status.aux");
+  if ((fp=fopen(buf,"r"))==NULL) {
+    // file does not exist yet, so we set LastAuxStatusNumber to 0
+    LastAuxStatusNumber=0;
+    return (0);
+  }
+ 
+  // find out what the last entry is
+  LastAuxStatusNumber=0;
+  RecordNo=0;
+  LastTime.tv_sec=0;
+  LastTime.tv_usec=0;
+   
+  while (!feof(fp)) {
+      
+    ret=fread(&auxStatus,sizeof (struct auxStatusType),1,fp);
+	    
+    if ((LastTime.tv_sec<auxStatus.TimeOfDayAux.tv_sec) && 
+	(LastTime.tv_sec<auxStatus.TimeOfDayAux.tv_sec)) {
+	
+      LastAuxStatusNumber=RecordNo;
+      LastTime=auxStatus.TimeOfDayAux;
+    }/* if time */
+      
+    RecordNo++;
+  } /* while feof */
+    
+  fclose(fp);
+    
+
+
+} /* Init Aux Status File */
 
 
 
@@ -1061,9 +1223,9 @@ int main()
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.32 2007-03-11 11:17:15 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.33 2007-03-11 15:30:37 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.32 2007-03-11 11:17:15 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.33 2007-03-11 15:30:37 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1072,8 +1234,8 @@ int main()
   //    GenerateFileName(DATAPATH,StatusFileName,NULL);
 
   // Check Status ringfile buffer and initialize the pointer to the appropriate position
-  InitStatusFile(RAMDISKPATH);
-    
+  InitElekStatusFile(RAMDISKPATH);
+  InitCalibStatusFile(RAMDISKPATH);
   EndOfSession=FALSE;
   while (!EndOfSession) {
     //        printf("wait for data ....\n");
