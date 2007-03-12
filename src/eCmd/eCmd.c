@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.41 $
-last change on $Date: 2007-03-07 20:37:18 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.42 $
+last change on $Date: 2007-03-12 08:54:20 $ by $Author: harder $
 
 $Log: eCmd.c,v $
+Revision 1.42  2007-03-12 08:54:20  harder
+cal or measure instrument action mode
+
 Revision 1.41  2007-03-07 20:37:18  harder
 modify realign flag in elekIOServ
 Changed RealingCommand name to CMD_Realign
@@ -292,13 +295,13 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.41 2007-03-07 20:37:18 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.42 2007-03-12 08:54:20 harder Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
 	printf("eCmd @host s stopquery\n");
 	printf("eCmd @host s startquery\n");
-	printf("eCmd @host s instrumentaction data\n");
+	printf("eCmd @host s instrumentaction [nop/measure/cal/diag/powerup/powerdown]\n");
 	printf("eCmd @host s etalonnop\n");
 	printf("eCmd @host s etalontoggle\n");	
 	printf("eCmd @host s etalonditherOnline\n");		
