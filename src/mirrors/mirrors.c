@@ -345,8 +345,8 @@ int main(int argc, char *argv[])
     ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
 // greetings
-    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.13 2007-03-08 20:54:28 harder Exp $) for i386\n");
-    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.13 2007-03-08 20:54:28 harder Exp $) for i386\n");
+    printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.14 2007-03-16 08:14:15 martinez Exp $) for i386\n");
+    sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.14 2007-03-16 08:14:15 martinez Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
 
 // reset any realigning procedure
@@ -546,15 +546,22 @@ int main(int argc, char *argv[])
 		        printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
 		        ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
                 if (ret) { // successfully moved Mirror
+				    ResetAverageStruct(&OldPosCounts);
+				    ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_LEFT_MOVE_UP;
                 } // if ret 
             break;
 
 		    case MIRROR_LEFT_MOVE_UP:
+		      AddCounts(&OldPosCounts,MirrorSignal);
+
+		      if (MirrorCheckTime--<1) { 
+		        MirrorCheckTime=CHECK_TIME; 
+		      } /* if MirrorCheckTime */		  
+		      break;
 		        printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
 		        ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
                 if (ret) { // successfully moved Mirror
-    				ResetAverageStruct(&NewPosCounts);
 			        State=MIRROR_UP;
                 } // if ret 
             break;
