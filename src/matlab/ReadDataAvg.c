@@ -10,6 +10,9 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
+ * Revision 1.30  2007-03-20 20:59:06  martinez
+ * included mirror data and correct mirror position calculation, also corrected etalon position calculation
+ *
  * Revision 1.29  2007-03-05 23:51:59  martinez
  * debugging mirror process
  *
@@ -64,7 +67,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.29 $ */
+ /* $Revision: 1.30 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -86,10 +89,7 @@ typedef int int32_t;
 
 typedef unsigned __int64 uint64_t;
 
-struct timeval {
-  long    tv_sec; 
-  long    tv_usec;
-};
+
 #endif
 
 #include "mex.h"
@@ -110,6 +110,12 @@ struct RunningAVGType {
   int *Num;
   int *OnOffFlag;
 };
+
+union MirrorPosType {
+  struct LongWordType PositionWord;
+  int32_t Position;
+}; /* union PositionType */
+
 
 int cmptimesort(const void *ptrElekStatus1,
                 const void *ptrElekStatus2) {
@@ -160,6 +166,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   struct RunningAVGType OnlineAverage[MAX_COUNTER_CHANNEL];
   struct RunningAVGType OfflineLeftAverage[MAX_COUNTER_CHANNEL];
   struct RunningAVGType OfflineRightAverage[MAX_COUNTER_CHANNEL];
+  union MirrorPosType MirrorPos;
   /*  uint16_t *MCP1RayCounts;
   uint16_t *MCP2RayCounts;
   uint16_t Sum1;
@@ -172,21 +179,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.29 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
@@ -256,6 +263,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   dims[1]= dims[1] + 2*11;  /* GPS Masterand Slave*/
   dims[1]= dims[1] + 1;  /* ValidSlaveDataFlag */
   dims[1]= dims[1] + 3*2;  /* Butterfly */
+  dims[1]= dims[1] + 4*2+4;  /* Mirrors */
 
 
   dims[1]= dims[1] + 3;  /* extra reserve */
@@ -1395,7 +1403,56 @@ void mexFunction( int nlhs, mxArray *plhs[],
   for (i=0; i<nelements;i++) {
     *(z+count++)=elekStatus[i].ButterflySlave.CPUStatus.ButterflyCPUWord;     
   }
+
+
   
+/******************* Mirrors ***************************/  
+    for (k=0; k<MAX_MIRROR; k++) {
+        for (j=0; j<MAX_MIRROR_AXIS; j++) {
+  #ifdef D_HEADER
+            mexPrintf("Mirror %d Axis %d Position Low %d\n",k,j,1+count/nelements);      
+  #endif
+            for (i=0; i<nelements;i++) {
+            	MirrorPos.Position=elekStatus[i].MirrorData.Mirror[k].Axis[j].Position;
+                *(z+count++)=MirrorPos.PositionWord.Low;
+            }
+  #ifdef D_HEADER
+            mexPrintf("Mirror %d Axis %d Position High %d\n",k,j,1+count/nelements);      
+  #endif
+            for (i=0; i<nelements;i++) {
+            	MirrorPos.Position=elekStatus[i].MirrorData.Mirror[k].Axis[j].Position;
+                *(z+count++)=MirrorPos.PositionWord.High;
+            }
+        }
+    }
+
+  #ifdef D_HEADER
+    mexPrintf("Mirror Realigning Flag %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].MirrorData.MovingFlag.Field.Realigning;     
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("Mirror Moving Flags %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].MirrorData.MovingFlag.Field.MovingFlagByte;     
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("Mirror MinUVDiffCts %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].MirrorData.MinUVDiffCts;     
+  }
+
+  #ifdef D_HEADER
+    mexPrintf("Mirror RealignMinutes %d\n",1+count/nelements);      
+  #endif
+  for (i=0; i<nelements;i++) {
+    *(z+count++)=elekStatus[i].MirrorData.RealignMinutes;     
+  }
 
   return;
 }

@@ -379,7 +379,28 @@ statusDataCols=...
 'PCuvette',957,'(x-10485).*5.12264e-4+1','bar';
 'PCuvetteSupply',960,'x*NaN','';
 'ButterflyPositionValid',1129,'x','';
-'ButterflyCurrentPosition',1130,'x',''};
+'ButterflyCurrentPosition',1130,'x','';
+'MirrorGr1XAxisLo',1135,'x','';
+'MirrorGr1XAxisHi',1136,'x','';
+'MirrorGr1YAxisLo',1137,'x','';
+'MirrorGr1YAxisHi',1138,'x','';
+'MirrorGr2XAxisLo',1139,'x','';
+'MirrorGr2XAxisHi',1140,'x','';
+'MirrorGr2YAxisLo',1141,'x','';
+'MirrorGr2YAxisHi',1142,'x','';
+'MirrorUV1XAxisLo',1143,'x','';
+'MirrorUV1XAxisHi',1144,'x','';
+'MirrorUV1YAxisLo',1145,'x','';
+'MirrorUV1YAxisHi',1146,'x','';
+'MirrorUV2XAxisLo',1147,'x','';
+'MirrorUV2XAxisHi',1148,'x','';
+'MirrorUV2YAxisLo',1149,'x','';
+'MirrorUV2YAxisHi',1150,'x','';
+'MirrorRealigning',1151,'x','';
+'MirrorMovingFlags',1152,'x','';
+'MirrorMinUVDiffCts',1153,'x','';
+'MirrorRealignMinutes',1154,'x',''
+};
 
 % create structure 'col' with field names taken from 1st column of
 % statusDataCols and values from 2nd column
