@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-20 12:25:36 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-20 20:50:38 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.75  2007-03-20 20:50:38  martinez
+ * corrected MirrorMovingFlags,
+ *
  * Revision 1.74  2007-03-20 12:25:36  martinez
  * get all Status before transferring to mirrors
  *
@@ -2644,11 +2647,11 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 	     mirrorbitnumber = 2*MirrorNumber+AxisNumber;
 	     if (PosCommandStatus==POS_MOVING)
 	       {
-		  bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
+		  ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
 	       }
 	     else
 	       {
-		  bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
+		  ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
 	       }
 	  }
 
@@ -2942,13 +2945,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
