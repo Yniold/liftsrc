@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
    int EndOfSession;
 
    double MirrorSignal;
-   int State;
+   int State=MIRROR_HOME;
    int Mirror, mirrorbitnumber;
    double DiffCounts;
    int delta_xposition, delta_yposition;
@@ -362,8 +362,8 @@ int main(int argc, char *argv[])
    ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
    // greetings
-   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.17 2007-03-20 12:25:36 martinez Exp $) for i386\n");
-   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.17 2007-03-20 12:25:36 martinez Exp $) for i386\n");
+   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.18 2007-03-20 13:16:40 martinez Exp $) for i386\n");
+   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.18 2007-03-20 13:16:40 martinez Exp $) for i386\n");
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
    // reset any realigning procedure
@@ -446,7 +446,6 @@ int main(int argc, char *argv[])
 				      SetStatusCommand(MSG_TYPE_MIRROR_FLAG_REALIGN,0,1);
 				      ElekStatus.MirrorData.MovingFlag.Field.Realigning = 1;
 				      Mirror=(Message.Addr >> 8) & 0x00FF;
-				      State=MIRROR_HOME;
 				   }
 				 break;
 
@@ -497,8 +496,6 @@ int main(int argc, char *argv[])
 
 				      printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts:  %5f MirrorSignal: %5f \n",
 					     Mirror,strStateDescription[State],NewPosCounts.Avg,OldPosCounts.Avg,MirrorSignal);
-				/* Realign only second green mirror or first UV mirror */
-				if (Mirror==1 || Mirror==2) {	
 				      switch (State)
 					{
 
@@ -741,10 +738,6 @@ int main(int argc, char *argv[])
 					   break; /* default */
 					}
 				      /* switch State */
-				} /* if Mirror */
-				else {
-				    sprintf(buf,"Mirror: Mirror #%d not available for realigning",Mirror);
-				}
 				   }
 				 /* if MovingFlag */
 			      }

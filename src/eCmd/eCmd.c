@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.42 $
-last change on $Date: 2007-03-12 08:54:20 $ by $Author: harder $
+$RCSfile: eCmd.c,v $ $Revision: 1.43 $
+last change on $Date: 2007-03-20 13:16:40 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.43  2007-03-20 13:16:40  martinez
+permit only realignment of 2. green mirror and 1. UV mirror
+
 Revision 1.42  2007-03-12 08:54:20  harder
 cal or measure instrument action mode
 
@@ -295,7 +298,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.42 2007-03-12 08:54:20 harder Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.43 2007-03-20 13:16:40 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -632,12 +635,12 @@ int main(int argc, char *argv[])
     	    if (strcasecmp(argv[ArgCount],"mirrorrealign")==0) {
     	      if (argc>ArgCount+1) { // do we still have a given parameter ?
     		Value=strtol(argv[ArgCount+1],NULL,0);
-    		if ((uint16_t)Value<MAX_MIRROR)
+    		if (((uint16_t)Value==MIRROR_GREEN_2) || ((uint16_t)Value==MIRROR_UV_1)) 
     		{
     			MsgType=MSG_TYPE_MIRROR_CMD_REALIGN;
     			Addr=((uint16_t) Value) << 8;
     		} else {
-    			printf("Error please supply valid number for mirror: 0 for Green1, 1 for Green2, 2 for UV1, 3 for UV2\n");
+    			printf("Error please supply valid number for mirror: 1 for Green2, 2 for UV1\n");
     		}
     	      } else { // we don't have enough parameter
     		printf("Error please supply parameter for %s\n",argv[ArgCount]);
