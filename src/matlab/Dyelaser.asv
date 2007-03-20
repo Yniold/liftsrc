@@ -269,15 +269,9 @@ else
     set(handles.txtLimitSwitch,'String','none','BackgroundColor','c');
 end
 
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-col=horusdata.col;
-data = getappdata(handles.output, 'Dyelaserdata');
-lastrow=data.lastrow;
-
+% display current mirror position
 mirror=get(handles.popupmirror,'Value')-1;
 axis=get(handles.radiover,'Value');
-
 switch mirror
     case 0
         if axis==0
@@ -298,18 +292,18 @@ switch mirror
             mirrorstr='UV1Y'
         end            
 end
-
 eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
 eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
 if Mirrorhelp==1
     currpos=bitset(floor(currpos),32,0)-2^32/2;
 end
-% check if motor is still moving
-while double(statusData(lastrow,col.MirrorMovingFlags))~=0
-    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
+set(handles.textPos,'String',num2str(currpos));
+if statusData(lastrow,col.MirrorMovingFlags)==0 & statusData(lastrow,col.Realigning)==0
+    set(handles.textPos,'BackgroundColor','w');
+else
+    set(handles.textPos,'BackgroundColor','r');
 end
-set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
-set(handles.pushgo,'BackgroundColor','w');
+    
 
 
 % plot parameters in graph 1

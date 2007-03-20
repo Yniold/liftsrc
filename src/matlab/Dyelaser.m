@@ -275,29 +275,38 @@ axis=get(handles.radiover,'Value');
 switch mirror
     case 0
         if axis==0
-            mirrorstr='Gr1X'
+            mirrorstr='Gr1X';
         else
-            mirrorstr='Gr1Y'
+            mirrorstr='Gr1Y';
         end            
     case 1
         if axis==0
-            mirrorstr='Gr2X'
+            mirrorstr='Gr2X';
         else
-            mirrorstr='Gr2Y'
+            mirrorstr='Gr2Y';
         end            
     case 2
         if axis==0
-            mirrorstr='UV1X'
+            mirrorstr='UV1X';
         else
-            mirrorstr='UV1Y'
+            mirrorstr='UV1Y';
         end            
 end
-eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
-eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
 if Mirrorhelp==1
     currpos=bitset(floor(currpos),32,0)-2^32/2;
 end
 set(handles.textPos,'String',num2str(currpos));
+if statusData(lastrow,col.MirrorMovingFlags)==0 & statusData(lastrow,col.MirrorRealigning)==0
+    set(handles.textPos,'BackgroundColor','w');
+    set(handles.pushgo,'BackgroundColor','w');
+else
+    set(handles.textPos,'BackgroundColor','r');
+    set(handles.pushgo,'BackgroundColor','r');
+end
+    
+
 
 % plot parameters in graph 1
 
@@ -1034,26 +1043,26 @@ disp(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(mirror),' ',num2str(axis),' '
 switch mirror
     case 0
         if axis==0
-            mirrorstr='Gr1X'
+            mirrorstr='Gr1X';
         else
-            mirrorstr='Gr1Y'
+            mirrorstr='Gr1Y';
         end            
     case 1
         if axis==0
-            mirrorstr='Gr2X'
+            mirrorstr='Gr2X';
         else
-            mirrorstr='Gr2Y'
+            mirrorstr='Gr2Y';
         end            
     case 2
         if axis==0
-            mirrorstr='UV1X'
+            mirrorstr='UV1X';
         else
-            mirrorstr='UV1Y'
+            mirrorstr='UV1Y';
         end            
 end
 
-eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
-eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
 if Mirrorhelp==1
     currpos=bitset(floor(currpos),32,0)-2^32/2;
 end
@@ -1087,26 +1096,26 @@ axis=get(handles.radiover,'Value');
 switch mirror
     case 0
         if axis==0
-            mirrorstr='Gr1X'
+            mirrorstr='Gr1X';
         else
-            mirrorstr='Gr1Y'
+            mirrorstr='Gr1Y';
         end            
     case 1
         if axis==0
-            mirrorstr='Gr2X'
+            mirrorstr='Gr2X';
         else
-            mirrorstr='Gr2Y'
+            mirrorstr='Gr2Y';
         end            
     case 2
         if axis==0
-            mirrorstr='UV1X'
+            mirrorstr='UV1X';
         else
-            mirrorstr='UV1Y'
+            mirrorstr='UV1Y';
         end            
 end
 
-eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
-eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
 if Mirrorhelp==1
     currpos=bitset(floor(currpos),32,0)-2^32/2;
 end
