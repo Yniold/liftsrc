@@ -178,9 +178,9 @@ end
 
 % check Pitot Zeroing Valve
 if bitget(statusData(lastrow,col.Valve1armAxis),12)
-    set(handles.tglPitot,'BackgroundColor','y','String','Pitot 0 ON','Value',1);
+    set(handles.tglPitot,'BackgroundColor','y','String','Pitot 0 ON');
 else
-    set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF','Value',0);
+    set(handles.tglPitot,'BackgroundColor','c','String','Pitot 0 OFF');
 end
 
 % check Heaters
