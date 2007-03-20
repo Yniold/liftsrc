@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 07:54:34 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 20:52:05 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
+* Revision 1.45  2007-03-20 20:52:05  martinez
+* included typedefs for  not Unix instead of stdint.h
+*
 * Revision 1.44  2007-03-20 07:54:34  martinez
 * different delta_positions for different mirrors, realign only second green and first UV mirror
 *
@@ -143,7 +146,22 @@
 #ifndef ELEKIO_H
 #define ELEKIO_H
 
+#ifdef UNIX                             /* there are some differences between windows & linux header files */
 #include <stdint.h>
+#else
+typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned uint32_t;
+typedef int int32_t;
+
+typedef unsigned __int64 uint64_t;
+
+struct timeval {
+  long    tv_sec; 
+  long    tv_usec;
+};
+#endif
+
 #include <sys/types.h>
 
 #define INIT_MODULE_FAILED  0
@@ -875,7 +893,7 @@ struct MirrorType {
 
 struct MovingFlagFieldType
 {
-  unsigned MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
+  uint16_t MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
   unsigned Realigning:1;      /* moving due to realignment routine */
   unsigned unused:7;	/* not used (probably 0) */
 };
