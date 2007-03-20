@@ -230,22 +230,21 @@ else
     set(handles.txtIFilament,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
-
-Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+Etalonhelp=bitget(uint16(statusData(:,col.etaSetPosHigh)),16);
 EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
-EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
+EtalonSetPos(Etalonhelp==1)=bitset(floor(EtalonSetPos(Etalonhelp==1)),32,0)-2^32/2;
 
-Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+Etalonhelp=bitget(uint16(statusData(:,col.etaCurPosHigh)),16);
 EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
-EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
+EtalonCurPos(Etalonhelp==1)=bitset(floor(EtalonCurPos(Etalonhelp==1)),32,0)-2^32/2;
 
-Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
 EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
-EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
+EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32/2;
 
-Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+Etalonhelp=bitget(uint16(statusData(:,col.etaOnlinePosHigh)),16);
 OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
-OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32/2;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
@@ -269,6 +268,36 @@ elseif bitget(EtalonStatus(lastrow),10)
 else
     set(handles.txtLimitSwitch,'String','none','BackgroundColor','c');
 end
+
+% display current mirror position
+mirror=get(handles.popupmirror,'Value')-1;
+axis=get(handles.radiover,'Value');
+switch mirror
+    case 0
+        if axis==0
+            mirrorstr='Gr1X'
+        else
+            mirrorstr='Gr1Y'
+        end            
+    case 1
+        if axis==0
+            mirrorstr='Gr2X'
+        else
+            mirrorstr='Gr2Y'
+        end            
+    case 2
+        if axis==0
+            mirrorstr='UV1X'
+        else
+            mirrorstr='UV1Y'
+        end            
+end
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+if Mirrorhelp==1
+    currpos=bitset(floor(currpos),32,0)-2^32/2;
+end
+set(handles.textPos,'String',num2str(currpos));
 
 % plot parameters in graph 1
 
@@ -979,78 +1008,61 @@ function pushgo_Callback(hObject, eventdata, handles)
 % hObject    handle to pushgo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
 set(handles.textPos,'BackgroundColor','r');
 set(handles.pushgo,'BackgroundColor','r');
 
 %serport=handles.serport;
 %picotport=handles.picotport;
-steps=str2num(get(handles.editsteps,'String'));
-hor=get(handles.radiohor,'Value');
-forw=get(handles.radiofor,'Value');
+mirror=get(handles.popupmirror,'Value')-1;
+axis=get(handles.radiover,'Value');
 
-ver=get(handles.radiover,'Value');
+steps=str2num(get(handles.editsteps,'String'));
+forw=get(handles.radiofor,'Value');
 if forw==0 
     steps=-steps;
 end
-system(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(get(handles.popupmirror,'Value'))-1,' ',num2str(ver),' ',num2str(steps)]);
-disp(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(get(handles.popupmirror,'Value'))-1,' ',num2str(ver),' ',num2str(steps)]);
 
+system(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
+disp(['/lift/bin/eCmd @Lift s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
 
-oldpos=str2double(get(handles.textPos,'String'));
-
-switch get(handles.popupmirror,'Value')
+switch mirror
+    case 0
+        if axis==0
+            mirrorstr='Gr1X'
+        else
+            mirrorstr='Gr1Y'
+        end            
     case 1
-        driver='a1';
-        if hor==1 chl='0';
-        else chl='1';
-        end
+        if axis==0
+            mirrorstr='Gr2X'
+        else
+            mirrorstr='Gr2Y'
+        end            
     case 2
-        if hor==1;
-            driver='a1';
-            chl='2';
-        else 
-            driver='a2';
-            chl='0';
-        end
-    case 3 
-        driver='a2';
-        if hor==1 chl='1';
-        else chl='2';
-        end
+        if axis==0
+            mirrorstr='UV1X'
+        else
+            mirrorstr='UV1Y'
+        end            
 end
-%fprintf(serport,['vel ',driver,' ',chl,'=100']);
-%pause(0.1)
-%fprintf(serport,['chl ',driver,'=',chl]);
-%pause(0.1)
-%if forw==1
-%    fprintf(serport,['rel ',driver,' ',steps]);
-%else
-%    fprintf(serport,['rel ',driver,' -',steps]);
-%end
-%pause(0.1);
-%fprintf(serport,['go ',driver]);
-% check if motor is still moving
-%pause(0.1)
-%fprintf(serport,['pos ',driver]);
-%pause(0.1)
-%x=find(serport.UserData=='=');
-%pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
-%serport.UserData
-%pos1=pos2-1;
-%while pos2~=pos1
-%    pos1=pos2;
-%    pause(1)
-%    fprintf(serport,['pos ',driver]);
-%    pause(0.1)
-%    x=find(serport.UserData=='=');
-%    pos2=str2double(serport.UserData(x+1:length(serport.UserData)-1));
-%end
-% display new motor position after motor has stopped
-%newpos=oldpos+pos2;
-newpos=oldpos+steps;
-set(handles.textPos,'String',num2str(newpos),'BackgroundColor','w');
-set(handles.pushgo,'BackgroundColor','w');
 
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+if Mirrorhelp==1
+    currpos=bitset(floor(currpos),32,0)-2^32/2;
+end
+% check if motor is still moving
+while double(statusData(lastrow,col.MirrorMovingFlags))~=0
+    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
+end
+set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
+set(handles.pushgo,'BackgroundColor','w');
 
 
 
@@ -1059,8 +1071,52 @@ function pushStop_Callback(hObject, eventdata, handles)
 % hObject    handle to pushStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fprintf(handles.serport,'hal');
-%system(['/lift/bin/eCmd @Lift s mirrorstop']);
+%fprintf(handles.serport,'hal');
+system(['/lift/bin/eCmd @Lift s mirrorstop']);
+disp(['/lift/bin/eCmd @Lift s mirrorstop']);
+
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
+mirror=get(handles.popupmirror,'Value')-1;
+axis=get(handles.radiover,'Value');
+
+switch mirror
+    case 0
+        if axis==0
+            mirrorstr='Gr1X'
+        else
+            mirrorstr='Gr1Y'
+        end            
+    case 1
+        if axis==0
+            mirrorstr='Gr2X'
+        else
+            mirrorstr='Gr2Y'
+        end            
+    case 2
+        if axis==0
+            mirrorstr='UV1X'
+        else
+            mirrorstr='UV1Y'
+        end            
+end
+
+eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16)']);
+eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo))']);
+if Mirrorhelp==1
+    currpos=bitset(floor(currpos),32,0)-2^32/2;
+end
+% check if motor is still moving
+while double(statusData(lastrow,col.MirrorMovingFlags))~=0
+    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
+end
+set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
+set(handles.pushgo,'BackgroundColor','w');
+
 
 
 % --- Executes on button press in pushgoto.
