@@ -317,6 +317,7 @@ int main(int argc, char *argv[])
    int State;
    int Mirror, mirrorbitnumber;
    double DiffCounts;
+   int delta_xposition, delta_yposition;
 
    // zero TimeOfDay to indicate invalid status
    ElekStatus.TimeOfDayMaster.tv_sec=0L;
@@ -361,8 +362,8 @@ int main(int argc, char *argv[])
    ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
    // greetings
-   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.15 2007-03-16 09:52:32 martinez Exp $) for i386\n");
-   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.15 2007-03-16 09:52:32 martinez Exp $) for i386\n");
+   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.16 2007-03-20 07:54:34 martinez Exp $) for i386\n");
+   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.16 2007-03-20 07:54:34 martinez Exp $) for i386\n");
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
    // reset any realigning procedure
@@ -473,21 +474,31 @@ int main(int argc, char *argv[])
 					{
 					 case MIRROR_GREEN_1:
 					   MirrorSignal=ElekStatus.ADCCardMaster[DIODE_UV_ADCCARDMASTER_NUMBER].ADCChannelData[DIODE_UV_ADCCARDMASTER_CHANNEL].ADCData; //DiodeUV
+					   delta_xposition=DELTA_XPOSITION_MIRROR_GR1;
+					   delta_yposition=DELTA_YPOSITION_MIRROR_GR1;
 					   break;
 					 case MIRROR_GREEN_2:
 					   MirrorSignal=ElekStatus.ADCCardMaster[DIODE_UV_ADCCARDMASTER_NUMBER].ADCChannelData[DIODE_UV_ADCCARDMASTER_CHANNEL].ADCData; //DiodeUV
+					   delta_xposition=DELTA_XPOSITION_MIRROR_GR2;
+					   delta_yposition=DELTA_YPOSITION_MIRROR_GR2;
 					   break;
 					 case MIRROR_UV_1:
-					   MirrorSignal=ElekStatus.ADCCardSlave[DIODE_WZ2IN_ADCCARDSLAVE_NUMBER].ADCChannelData[DIODE_WZ2IN_ADCCARDSLAVE_CHANNEL].ADCData; //DiodeWZ2in
+					   MirrorSignal=ElekStatus.ADCCardSlave[DIODE_WZ1IN_ADCCARDSLAVE_NUMBER].ADCChannelData[DIODE_WZ1IN_ADCCARDSLAVE_CHANNEL].ADCData; //DiodeWZ1in
+					   delta_xposition=DELTA_XPOSITION_MIRROR_UV1;
+					   delta_yposition=DELTA_YPOSITION_MIRROR_UV1;
 					   break;
 					 case MIRROR_UV_2:
 					   MirrorSignal=ElekStatus.ADCCardSlave[DIODE_WZ1IN_ADCCARDSLAVE_NUMBER].ADCChannelData[DIODE_WZ1IN_ADCCARDSLAVE_CHANNEL].ADCData; //DiodeWZ1in
+					   delta_xposition=DELTA_XPOSITION_MIRROR_UV2;
+					   delta_yposition=DELTA_YPOSITION_MIRROR_UV2;
 					   break;
 					}
 				      /* Mirror */
 
 				      printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts : %5f \n",
 					     Mirror,strStateDescription[State],NewPosCounts.Avg,OldPosCounts.Avg);
+				/* Realign only second green mirror or first UV mirror */
+				if (Mirror==1 || Mirror==2) {	
 				      switch (State)
 					{
 
@@ -504,7 +515,7 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_HOME_MOVE_RIGHT:
-					   ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+					   ret=MirrorGoTo(Mirror,XAXIS,delta_xposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -536,8 +547,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_RIGHT_MOVE_RIGHT:
-					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
-					   ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,delta_xposition);
+					   ret=MirrorGoTo(Mirror,XAXIS,delta_xposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -549,8 +560,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_RIGHT_MOVE_LEFT:
-					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis BACK to Position : %d\n",DiffCounts,Mirror,-2*DELTA_XPOSITION);
-					   ret=MirrorGoTo(Mirror,XAXIS,-2*DELTA_XPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis BACK to Position : %d\n",DiffCounts,Mirror,-2*delta_xposition);
+					   ret=MirrorGoTo(Mirror,XAXIS,-2*delta_xposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -581,8 +592,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_LEFT_MOVE_LEFT:
-					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,-DELTA_XPOSITION);
-					   ret=MirrorGoTo(Mirror,XAXIS,-DELTA_XPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,-delta_xposition);
+					   ret=MirrorGoTo(Mirror,XAXIS,-delta_xposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -594,8 +605,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_LEFT_MOVE_RIGHT:
-					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,DELTA_XPOSITION);
-					   ret=MirrorGoTo(Mirror,XAXIS,DELTA_XPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Xaxis Position : %d\n",DiffCounts,Mirror,delta_xposition);
+					   ret=MirrorGoTo(Mirror,XAXIS,delta_xposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -620,8 +631,8 @@ int main(int argc, char *argv[])
 					   
 					 case MIRROR_LEFT_MOVE_UP:
 
-					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
-					   ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,delta_yposition);
+					   ret=MirrorGoTo(Mirror,YAXIS,delta_yposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -652,8 +663,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_UP_MOVE_UP:
-					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
-					   ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,delta_yposition);
+					   ret=MirrorGoTo(Mirror,YAXIS,delta_yposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -665,8 +676,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_UP_MOVE_DOWN:
-					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-2*DELTA_YPOSITION);
-					   ret=MirrorGoTo(Mirror,YAXIS,-2*DELTA_YPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-2*delta_yposition);
+					   ret=MirrorGoTo(Mirror,YAXIS,-2*delta_yposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -697,8 +708,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_DOWN_MOVE_DOWN:
-					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-DELTA_YPOSITION);
-					   ret=MirrorGoTo(Mirror,YAXIS,-DELTA_YPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,-delta_yposition);
+					   ret=MirrorGoTo(Mirror,YAXIS,-delta_yposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -710,8 +721,8 @@ int main(int argc, char *argv[])
 					   break;
 
 					 case MIRROR_DOWN_MOVE_HOME:
-					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,DELTA_YPOSITION);
-					   ret=MirrorGoTo(Mirror,YAXIS,DELTA_YPOSITION);
+					   printf("Diffcounts : %4f moving Mirror : %2d Yaxis Position : %d\n",DiffCounts,Mirror,delta_yposition);
+					   ret=MirrorGoTo(Mirror,YAXIS,delta_yposition);
 					   if (ret)
 					     {
 						// successfully moved Mirror
@@ -730,6 +741,10 @@ int main(int argc, char *argv[])
 					   break; /* default */
 					}
 				      /* switch State */
+				} /* if Mirror */
+				else {
+				    sprintf(buf,"Mirror: Mirror #%d not available for realigning",Mirror);
+				}
 				   }
 				 /* if MovingFlag */
 			      }

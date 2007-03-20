@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-08 21:07:03 $ by $Author: harder $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 07:54:34 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
+* Revision 1.44  2007-03-20 07:54:34  martinez
+* different delta_positions for different mirrors, realign only second green and first UV mirror
+*
 * Revision 1.43  2007-03-08 21:07:03  harder
 * enabled automirror
 *
@@ -853,8 +856,14 @@ enum MirrorAxis {
 
 #define REALIGN_MINUTES 30 /* mirror.c starts realignment every REALIGN_MINUTES, or never for negative numbers */
 #define MIN_UV_DIFF_CTS 8 /* eq. 0.1 mW UV Diode Power */
-#define DELTA_XPOSITION 25
-#define DELTA_YPOSITION 50
+#define DELTA_XPOSITION_MIRROR_GR1 0	/* used by second green mirror */
+#define DELTA_YPOSITION_MIRROR_GR1 0	/* used by second green mirror */
+#define DELTA_XPOSITION_MIRROR_GR2 25	/* used by second green mirror */
+#define DELTA_YPOSITION_MIRROR_GR2 50	/* used by second green mirror */
+#define DELTA_XPOSITION_MIRROR_UV1 200  	/* used by UV Mirror */
+#define DELTA_YPOSITION_MIRROR_UV1 200  	/* used by UV Mirror */
+#define DELTA_XPOSITION_MIRROR_UV2 0  	/* used by UV Mirror */
+#define DELTA_YPOSITION_MIRROR_UV2 0  	/* used by UV Mirror */
 
 struct AxisType {
   int32_t Position;
