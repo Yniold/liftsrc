@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 20:52:05 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 21:00:48 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
+* Revision 1.46  2007-03-20 21:00:48  martinez
+* MovingFlags is unsigned
+*
 * Revision 1.45  2007-03-20 20:52:05  martinez
 * included typedefs for  not Unix instead of stdint.h
 *
@@ -893,7 +896,7 @@ struct MirrorType {
 
 struct MovingFlagFieldType
 {
-  uint16_t MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
+  unsigned MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
   unsigned Realigning:1;      /* moving due to realignment routine */
   unsigned unused:7;	/* not used (probably 0) */
 };
