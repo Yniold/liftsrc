@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-08 21:05:53 $ by $Author: harder $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-20 12:25:36 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.74  2007-03-20 12:25:36  martinez
+ * get all Status before transferring to mirrors
+ *
  * Revision 1.73  2007-03-08 21:05:53  harder
  * disabled debug
  *
@@ -259,7 +262,7 @@
 
 #define DEBUGLEVEL 0
 // #define DEBUG_MIRROR
-
+//
 //#define DEBUG_NOHARDWARE
 
 //#define DEBUG_STRUCTUREPASSING
@@ -1404,61 +1407,58 @@ int InitButterfly(struct elekStatusType *ptrElekStatus, int IsMaster)
 }
 /* Init Butterfly */
 
-
 /**********************************************************************************************************/
 /* Init Mirrors
 /**********************************************************************************************************/
+  int InitMirror(struct elekStatusType *ptrElekStatus, int IsMaster)
+  {
 
-int InitMirror(struct elekStatusType *ptrElekStatus, int IsMaster)
-{
+     extern struct MessagePortType MessageInPortList[];
+     extern struct MessagePortType MessageOutPortList[];
+     char debugbuf[GENERIC_BUF_LEN];
 
-   extern struct MessagePortType MessageInPortList[];
-   extern struct MessagePortType MessageOutPortList[];
-   char debugbuf[GENERIC_BUF_LEN];
+     int ret;
+     int i,j;
 
-   int ret;
-   int i,j;
+     if(IsMaster)
+       {
+	  // set data to initial values
+	  //
 
-   if(IsMaster)
-     {
-        // set data to initial values
-	//
+	  for (i=0;i<MAX_MIRROR; i++)
+	    {
+	       for (j=0;j<MAX_MIRROR_AXIS; j++)
+		 {
+		    ptrElekStatus->MirrorData.Mirror[i].Axis[j].Position = 0;
+		 }
+	    }
+	  ptrElekStatus->MirrorData.MovingFlag.Word = 0;
+	  ptrElekStatus->MirrorData.MinUVDiffCts = MIN_UV_DIFF_CTS;
+	  ptrElekStatus->MirrorData.RealignMinutes = REALIGN_MINUTES;
 
-   	for (i=0;i<MAX_MIRROR; i++)
-   	{
-   		for (j=0;j<MAX_MIRROR_AXIS; j++)
-		{	
-        		ptrElekStatus->MirrorData.Mirror[i].Axis[j].Position = 0;
-		}
-	}
-        ptrElekStatus->MirrorData.MovingFlag.Word = 0;
-        ptrElekStatus->MirrorData.MinUVDiffCts = MIN_UV_DIFF_CTS;
-        ptrElekStatus->MirrorData.RealignMinutes = REALIGN_MINUTES;
+	  // create mirror thread
+	  ret = MirrorInit();
 
-        // create mirror thread
-        ret = MirrorInit();
+	  if(ret == 1)
+	    {
+	       sprintf(debugbuf,"ElekIOServ(M) : Can't create MirrorThread!\n\r");
+	       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
-        if(ret == 1)
-	  {
-	     sprintf(debugbuf,"ElekIOServ(M) : Can't create MirrorThread!\n\r");
-	     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
+	       return (INIT_MODULE_FAILED);
+	    };
 
-	     return (INIT_MODULE_FAILED);
-	  };
+	  // success
+	  sprintf(debugbuf,"ElekIOServ(M) : Mirror Thread running!\n\r");
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
-        // success
-        sprintf(debugbuf,"ElekIOServ(M) : Mirror Thread running!\n\r");
-        SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
-
-        return (INIT_MODULE_SUCCESS);
-     }
-   else // SLAVE
-     {
-        return (INIT_MODULE_FAILED); // slave has no motorized mirrors
-     }
-}
+	  return (INIT_MODULE_SUCCESS);
+       }
+     else // SLAVE
+       {
+	  return (INIT_MODULE_FAILED); // slave has no motorized mirrors
+       }
+  }
 /* Init Mirror */
-
 
 /**********************************************************************************************************/
 /* Init Modules                                                                                        */
@@ -1990,7 +1990,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 #ifdef DEBUG_NOHARDWARE
 	sprintf(buf,"elekIOServ(M) WARNING: DEBUG_NOHARDWARE defined, not querying actual hardware");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif	
+#endif
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++)
 	  {
 	     TimeSlot=0;
@@ -2094,7 +2094,7 @@ void GetCounterCardData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 #ifdef DEBUG_NOHARDWARE
 	sprintf(buf,"elekIOServ(S) WARNING: DEBUG_NOHARDWARE defined, not querying actual hardware");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-#endif	
+#endif
         for (Channel=0; Channel<MAX_COUNTER_CHANNEL; Channel++)
 	  {
 	     TimeSlot=0;
@@ -2631,31 +2631,36 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
      {
 	pthread_mutex_lock(&mMirrorMutex);
 
-     	MirrorNumber=sMirrorThread.Mirror;
-     	AxisNumber=sMirrorThread.Axis;
+	MirrorNumber=sMirrorThread.Mirror;
+	AxisNumber=sMirrorThread.Axis;
 	PosCommandStatus=sMirrorThread.PosCommandStatus;
         CurrentAbsPos=sMirrorThread.CurrentAbsPos;
 	pthread_mutex_unlock(&mMirrorMutex);
 
-	if (MirrorNumber<MAX_MIRROR && AxisNumber<MAX_MIRROR_AXIS) { 
-	  
-	  ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
-	  mirrorbitnumber = 2*MirrorNumber+AxisNumber;
-	  if (PosCommandStatus==POS_MOVING)
-	    {
-	      bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
-	    } else {
-	      bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
-	    }
-	}
-	  
-	
+	if (MirrorNumber<MAX_MIRROR && AxisNumber<MAX_MIRROR_AXIS)
+	  {
+
+	     ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
+	     mirrorbitnumber = 2*MirrorNumber+AxisNumber;
+	     if (PosCommandStatus==POS_MOVING)
+	       {
+		  bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
+	       }
+	     else
+	       {
+		  bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
+	       }
+	  }
+
 #ifdef DEBUG_MIRROR
 	printf("ptrElekStatus->Mirror[%d].Axis[%d].Position:	         %05d\n\r",MirrorNumber,AxisNumber,ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position);
 #endif
-     } else {
+     }
+   else
+     {
 	return;	/* Mirror only used in master */
-     } /* if IsMaster */
+     }
+   /* if IsMaster */
 }
 /* GetMirrorData */
 
@@ -2904,10 +2909,9 @@ int main(int argc, char *argv[])
    int MaskAddr;
    struct SyncFlagType SyncFlag;
    int RequestDataFlag;
-   
+
    uint16_t Mirror;
    uint16_t Axis;
-
 
    if (argc<2)
      {
@@ -2938,13 +2942,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.73 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.74 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3018,9 +3022,9 @@ int main(int argc, char *argv[])
      }
 
 #endif
-   #ifdef DEBUG_NOHARDWARE
+#ifdef DEBUG_NOHARDWARE
    printf("WARNING: DEBUG_NOHARDWARE defined, not querying hardware!\n\r");
-   #endif
+#endif
    sigemptyset(&SignalMask);
    //    sigsuspend(&SignalMask);
    //
@@ -3142,28 +3146,6 @@ int main(int argc, char *argv[])
 			 }
 		       /* if Syncflag.MaskChange */
 
-		       if(IsMaster)
-			 {
-			    // let the other tasks know that we are done with retrieving the status
-			    // not needed if we are running as slave, as there is no Etalon nor Script
-			    //
-			    Task=0;
-			    Message.MsgType=MSG_TYPE_SIGNAL;
-			    Message.MsgID=-1;
-			    while (TasktoWakeList[Task].TaskConn>-1)
-			      {
-				 if (TasktoWakeList[Task].TaskWantStatusOnPort>-1)
-				   { // but only if he wants to
-				      SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],
-						  sizeof(struct elekStatusType), &ElekStatus);
-				   }
-				 SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],
-					     sizeof(struct ElekMessageType), &Message);
-				 Task++;
-			      }
-			    // while task
-			 }
-		       // if isMaster
 		    }
 		  else
 		    {
@@ -3177,6 +3159,28 @@ int main(int argc, char *argv[])
 			    SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
 					sizeof(struct elekStatusType), &ElekStatus);
 
+			    if(IsMaster)
+			      {
+				 // let the other tasks know that we are done with retrieving the status
+				 // not needed if we are running as slave, as there is no Etalon nor Script
+				 //
+				 Task=0;
+				 Message.MsgType=MSG_TYPE_SIGNAL;
+				 Message.MsgID=-1;
+				 while (TasktoWakeList[Task].TaskConn>-1)
+				   {
+				      if (TasktoWakeList[Task].TaskWantStatusOnPort>-1)
+					{ // but only if he wants to
+					   SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],
+						       sizeof(struct elekStatusType), &ElekStatus);
+					}
+				      SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],
+						  sizeof(struct ElekMessageType), &Message);
+				      Task++;
+				   }
+				 // while task
+			      }
+			    // if isMaster
 			 }
 		       // RequestDataFlag
 		       //
@@ -3305,32 +3309,38 @@ int main(int argc, char *argv[])
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			      }
 			    /* if MessagePort */
-			    
+
 			    Mirror=(Message.Addr >> 8) & 0x00FF;
 			    Axis=(Message.Addr & 0x00FF);
-//			    u2s=(union Unsigned2SignedType*) &(Message.Value);
-//			    printf("Value : %d \n\r",(*u2s).i_signed);
-			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))	
-			    {
-				    pthread_mutex_lock(&mMirrorMutex);
-				    if (sMirrorThread.PosCommandStatus==POS_IDLE) {
-                        sMirrorThread.Mirror=Mirror;
-    				    sMirrorThread.Axis=Axis;
-    				    sMirrorThread.RelPositionSet = (int32_t)Message.Value;			    
-				        Message.Status=1;
-    				} else {
-    				    Message.Status=0;
-                    }				    
-				    pthread_mutex_unlock(&mMirrorMutex);
-				    if (0==Message.Status) {
-    			      sprintf(buf,"mirror is not idle, skipping command for %d:%d", Mirror, Axis);
-    			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-				    }
-			    } else {
-			      sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
-			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-				  Message.Status=0;
-			    }
+			    //			    u2s=(union Unsigned2SignedType*) &(Message.Value);
+			    //			    printf("Value : %d \n\r",(*u2s).i_signed);
+			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))
+			      {
+				 pthread_mutex_lock(&mMirrorMutex);
+				 if (sMirrorThread.PosCommandStatus==POS_IDLE)
+				   {
+				      sMirrorThread.Mirror=Mirror;
+				      sMirrorThread.Axis=Axis;
+				      sMirrorThread.RelPositionSet = (int32_t)Message.Value;
+				      Message.Status=1;
+				   }
+				 else
+				   {
+				      Message.Status=0;
+				   }
+				 pthread_mutex_unlock(&mMirrorMutex);
+				 if (0==Message.Status)
+				   {
+				      sprintf(buf,"mirror is not idle, skipping command for %d:%d", Mirror, Axis);
+				      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				   }
+			      }
+			    else
+			      {
+				 sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				 Message.Status=0;
+			      }
 
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
@@ -3340,15 +3350,14 @@ int main(int argc, char *argv[])
 
 			  case MSG_TYPE_MIRROR_FLAG_REALIGN:
 
-	    		ElekStatus.MirrorData.MovingFlag.Field.Realigning = Message.Value;
+			    ElekStatus.MirrorData.MovingFlag.Field.Realigning = Message.Value;
 
 			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_FLAG_REALIGN from %4d Port %04x Value %05d (%04x) Flag now : %d",
-					 MessageInPortList[MessagePort].PortNumber,
-					 Message.Addr,Message.Value,Message.Value, 
-					 ElekStatus.MirrorData.MovingFlag.Field.Realigning );
+				    MessageInPortList[MessagePort].PortNumber,
+				    Message.Addr,Message.Value,Message.Value,
+				    ElekStatus.MirrorData.MovingFlag.Field.Realigning );
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 					    inet_ntoa(their_addr.sin_addr),
@@ -3357,28 +3366,30 @@ int main(int argc, char *argv[])
 
 			  case MSG_TYPE_MIRROR_CMD_REALIGN:
 			    if (MessagePort!=ELEK_MIRROR_IN)
-			    {
+			      {
 				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_CMD_REALIGN from %4d Port %04x Value %05d (%04x)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-			    } /* if MessagePort */
-			    
+			      }
+			    /* if MessagePort */
+
 			    Mirror=(Message.Addr >> 8) & 0x00FF;
 			    Axis=(Message.Addr & 0x00FF);
-//			    u2s=(union Unsigned2SignedType*) &(Message.Value);
-//			    printf("Value : %d \n\r",(*u2s).i_signed);
-			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))	
-			    {
-			        SendUDPData(&MessageOutPortList[ELEK_MIRROR_OUT], sizeof(struct ElekMessageType), &Message);
-				    Message.Status=1;
-			    } else {
-			      sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
-			      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-				    Message.Status=0;
-			    }
+			    //			    u2s=(union Unsigned2SignedType*) &(Message.Value);
+			    //			    printf("Value : %d \n\r",(*u2s).i_signed);
+			    if ((Mirror < MAX_MIRROR-1) && (Axis < MAX_MIRROR_AXIS))
+			      {
+				 SendUDPData(&MessageOutPortList[ELEK_MIRROR_OUT], sizeof(struct ElekMessageType), &Message);
+				 Message.Status=1;
+			      }
+			    else
+			      {
+				 sprintf(buf,"mirror address out of range %d:%d", Mirror, Axis);
+				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				 Message.Status=0;
+			      }
 
-					     			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 					    inet_ntoa(their_addr.sin_addr),
@@ -3388,17 +3399,16 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MIRROR_STOP:
 
 			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_STOP from %4d Port %04x Value %05d (%04x)",
-					 MessageInPortList[MessagePort].PortNumber,
-					 Message.Addr,Message.Value,Message.Value);
+				    MessageInPortList[MessagePort].PortNumber,
+				    Message.Addr,Message.Value,Message.Value);
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-	    		    ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
+			    ElekStatus.MirrorData.MovingFlag.Field.Realigning = 0;
 
 			    pthread_mutex_lock(&mMirrorMutex);
 			    sMirrorThread.StopFlag=1;
 			    pthread_mutex_unlock(&mMirrorMutex);
 
-			    
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
 					    inet_ntoa(their_addr.sin_addr),
@@ -3636,6 +3646,29 @@ int main(int argc, char *argv[])
 				      SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
 						  sizeof(struct elekStatusType), &ElekStatus);
 				   }
+				 if(IsMaster)
+				   {
+				      // let the other tasks know that we are done with retrieving the status
+				      // not needed if we are running as slave, as there is no Etalon nor Script
+				      //
+				      Task=0;
+				      Message.MsgType=MSG_TYPE_SIGNAL;
+				      Message.MsgID=-1;
+				      while (TasktoWakeList[Task].TaskConn>-1)
+					{
+					   if (TasktoWakeList[Task].TaskWantStatusOnPort>-1)
+					     { // but only if he wants to
+						SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskWantStatusOnPort],
+							    sizeof(struct elekStatusType), &ElekStatus);
+					     }
+					   SendUDPData(&MessageOutPortList[TasktoWakeList[Task].TaskConn],
+						       sizeof(struct ElekMessageType), &Message);
+					   Task++;
+					}
+				      // while task
+				   }
+				 // if isMaster
+				 //
 				 // if RequestDataFlag
 				 //
 				 if (ProcessTime>MAX_AGE_SLAVE_STATUS)
@@ -3753,4 +3786,3 @@ if (elkExit())
 exit(EXIT_SUCCESS);
 }
 
-                                                                                   

@@ -362,8 +362,8 @@ int main(int argc, char *argv[])
    ElekStatus.MirrorData.MinUVDiffCts=MIN_UV_DIFF_CTS;
 
    // greetings
-   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.16 2007-03-20 07:54:34 martinez Exp $) for i386\n");
-   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.16 2007-03-20 07:54:34 martinez Exp $) for i386\n");
+   printf("This is Mirror Version (CVS: $Id: mirrors.c,v 1.17 2007-03-20 12:25:36 martinez Exp $) for i386\n");
+   sprintf(buf,"Mirror : This is Mirror Version (CVS: $Id: mirrors.c,v 1.17 2007-03-20 12:25:36 martinez Exp $) for i386\n");
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
    // reset any realigning procedure
@@ -495,8 +495,8 @@ int main(int argc, char *argv[])
 					}
 				      /* Mirror */
 
-				      printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts : %5f \n",
-					     Mirror,strStateDescription[State],NewPosCounts.Avg,OldPosCounts.Avg);
+				      printf("Mirror : %d State : %s NewPosCounts : %5f OldPosCounts:  %5f MirrorSignal: %5f \n",
+					     Mirror,strStateDescription[State],NewPosCounts.Avg,OldPosCounts.Avg,MirrorSignal);
 				/* Realign only second green mirror or first UV mirror */
 				if (Mirror==1 || Mirror==2) {	
 				      switch (State)
