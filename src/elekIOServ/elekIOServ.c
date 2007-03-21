@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-20 20:50:38 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-21 00:37:52 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.76  2007-03-21 00:37:52  martinez
+ * corrected error in CurrentPosition
+ *
  * Revision 1.75  2007-03-20 20:50:38  martinez
  * corrected MirrorMovingFlags,
  *
@@ -2628,7 +2631,7 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
    char           buf[GENERIC_BUF_LEN];
    uint16_t       MirrorNumber, AxisNumber, mirrorbitnumber;
    uint16_t       PosCommandStatus;
-   uint32_t       CurrentAbsPos;
+   int32_t       CurrentAbsPos, RelPositionSet;
 
    if(IsMaster)
      {
@@ -2638,21 +2641,32 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 	AxisNumber=sMirrorThread.Axis;
 	PosCommandStatus=sMirrorThread.PosCommandStatus;
         CurrentAbsPos=sMirrorThread.CurrentAbsPos;
+        RelPositionSet=sMirrorThread.RelPositionSet;
 	pthread_mutex_unlock(&mMirrorMutex);
 
 	if (MirrorNumber<MAX_MIRROR && AxisNumber<MAX_MIRROR_AXIS)
 	  {
-
-	     ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
-	     mirrorbitnumber = 2*MirrorNumber+AxisNumber;
-	     if (PosCommandStatus==POS_MOVING)
-	       {
-		  ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
-	       }
-	     else
-	       {
-		  ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,0);
-	       }
+	     if (RelPositionSet~=0 && PosCommandStatus<=POS_PREP2) /* preparing movement */
+	     {			
+		pthread_mutex_lock(&mMirrorMutex);
+	     	sMirrorThread.CurrentAbsPos=ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position;
+		pthread_mutex_unlock(&mMirrorMutex);
+	     }
+     	     else
+	     {
+	     	mirrorbitnumber = 2*MirrorNumber+AxisNumber;
+	        if (RelPositionSet==0) /* movement already finished*/
+	        {
+	     	   ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
+	        }
+	        if (PosCommandStatus==POS_MOVING)
+	        {
+	     	   ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position = CurrentAbsPos;
+		   ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=bitset(ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte,mirrorbitnumber,1);
+	        } else {
+		   ptrElekStatus->MirrorData.MovingFlag.Field.MovingFlagByte=0;
+	        }
+	     }
 	  }
 
 #ifdef DEBUG_MIRROR
@@ -2945,13 +2959,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.75 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
