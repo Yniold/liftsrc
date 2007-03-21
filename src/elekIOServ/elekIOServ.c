@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-21 00:37:52 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-21 06:53:42 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.77  2007-03-21 06:53:42  martinez
+ * minor bug fix
+ *
  * Revision 1.76  2007-03-21 00:37:52  martinez
  * corrected error in CurrentPosition
  *
@@ -2646,7 +2649,7 @@ void GetMirrorData ( struct elekStatusType *ptrElekStatus, int IsMaster)
 
 	if (MirrorNumber<MAX_MIRROR && AxisNumber<MAX_MIRROR_AXIS)
 	  {
-	     if (RelPositionSet~=0 && PosCommandStatus<=POS_PREP2) /* preparing movement */
+	     if (RelPositionSet!=0 && PosCommandStatus<=POS_PREP2) /* preparing movement */
 	     {			
 		pthread_mutex_lock(&mMirrorMutex);
 	     	sMirrorThread.CurrentAbsPos=ptrElekStatus->MirrorData.Mirror[MirrorNumber].Axis[AxisNumber].Position;
@@ -2959,13 +2962,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.76 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
