@@ -230,21 +230,25 @@ else
     set(handles.txtIFilament,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
+stepratio=2;
+
 Etalonhelp=bitget(uint16(statusData(:,col.etaSetPosHigh)),16);
 EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
 EtalonSetPos(Etalonhelp==1)=bitset(floor(EtalonSetPos(Etalonhelp==1)),32,0)-2^32/2;
+EtalonSetPos=EtalonSetPos*stepratio;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaCurPosHigh)),16);
 EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
 EtalonCurPos(Etalonhelp==1)=bitset(floor(EtalonCurPos(Etalonhelp==1)),32,0)-2^32/2;
+EtalonCurPos=EtalonCurPos*stepratio;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
 EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
-EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32/2;
+EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaOnlinePosHigh)),16);
 OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
-OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32/2;
+OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
@@ -740,10 +744,11 @@ function offline_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to offline_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+stepratio=2;
 onlinepos=str2double(get(handles.txtonline,'String'));
 currentpos=str2double(get(handles.txtEtCurPos,'String'));
 encoderpos=str2double(get(handles.txtEtEncPos,'String'));
-setpos=onlinepos+1000+currentpos-encoderpos;
+setpos=(onlinepos+1000+currentpos-encoderpos)/stepratio;
 if isnan(onlinepos)
     error('invalid values');
 else
@@ -753,7 +758,7 @@ else
     else
         negpos=0;
     end
-    setposhex=dec2hex(setpos);
+    setposhex=dec2hex(floor(setpos));
     setposhex=[zeros(1,8-length(setposhex)),setposhex];
     setposlow=hex2dec(setposhex(5:8));
     setposhigh=hex2dec(setposhex(1:4));
@@ -791,16 +796,17 @@ function home_pushbutton_Callback(hObject, eventdata, handles)
 % hObject    handle to home_pushbutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+stepratio=2;
 currentpos=str2double(get(handles.txtEtCurPos,'String'));
 encoderpos=str2double(get(handles.txtEtEncPos,'String'));
-setpos=currentpos-encoderpos-10000;
+setpos=(currentpos-encoderpos-10000)/stepratio;
 if setpos<0
     setpos=setpos+2^32/2;
     negpos=1;
 else
     negpos=0;
 end
-setposhex=dec2hex(setpos);
+setposhex=dec2hex(floor(setpos));
 setposhex=[zeros(1,8-length(setposhex)),setposhex];
 setposlow=hex2dec(setposhex(5:8));
 setposhigh=hex2dec(setposhex(1:4));
@@ -1133,10 +1139,11 @@ function pushgoto_Callback(hObject, eventdata, handles)
 % hObject    handle to pushgoto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+stepratio=2;
 onlinepos=str2double(get(handles.txtonline,'String'));
 currentpos=str2double(get(handles.txtEtCurPos,'String'));
 encoderpos=str2double(get(handles.txtEtEncPos,'String'));
-setpos=str2double(get(handles.set_pos,'String'))+currentpos-encoderpos;
+setpos=floor((str2double(get(handles.set_pos,'String'))+currentpos-encoderpos)/stepratio);
 
 if isnan(setpos)
     error('invalid values');
@@ -1148,7 +1155,7 @@ else
     else
         negpos=0;
     end
-    setposhex=dec2hex(setpos);
+    setposhex=dec2hex(floor(setpos));
     setposhex=[zeros(1,8-length(setposhex)),setposhex];
     setposlow=hex2dec(setposhex(5:8));
     setposhigh=hex2dec(setposhex(1:4));

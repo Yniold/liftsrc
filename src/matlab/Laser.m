@@ -1,3 +1,5 @@
+% MM 15.5.2007 corrected shutter by changing strcmp to strfind
+
 function varargout = Laser(varargin)
 % GUI for pump laser control
 % diode current should be 35.4 for PSSN 120865, HEADSN 2363/710
@@ -271,14 +273,14 @@ else
 end
 %check if switching was successfull
 fprintf(tport,'?SHT'); 
-pause(3);
+pause(1);
 ShutterStatus=tport.UserData;
 tport.UserData=[];
-if strcmp(ShutterStatus(1:4),'OPEN') %shutter is open
+if ~isempty(strfind(ShutterStatus,'OPEN')) %shutter is open
     set(hObject,'Value',1)
     set(hObject,'BackgroundColor','g')
     set(hObject,'String','Shutter is OPEN')
-elseif strcmp(ShutterStatus(1:4),'CLOS')
+elseif ~isempty(strfind(ShutterStatus,'CLOSED'))
     set(hObject,'Value',0)
     set(hObject,'BackgroundColor','c')
     set(hObject,'String','Shutter is CLOSED')

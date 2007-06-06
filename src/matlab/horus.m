@@ -1,3 +1,7 @@
+% MM 8.5.2007: resetTemp for armAxis only if armAxis active
+
+
+
 function varargout = horus(varargin)
 % HORUS M-file for horus.fig
 %      HORUS, by itself, creates a new HORUS or raises the existing
@@ -314,10 +318,33 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
     end
 end
 
+% make a long scan every 5 min
+%            EtalonAction=statusData(:,col.EtalonAction);
+%        if ( mod(double(statusData(lastrow,4)),4)==0 & double(statusData(lastrow,5))<10 & statusData(lastrow,col.MirrorRealigning)==0) %first 10 sec period of every three min
+%            if EtalonAction~=9
+%                system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%                system(['/lift/bin/eCmd @Lift s etalonscanstart ',num2str(20000)])
+%                system(['/lift/bin/eCmd @Lift s etalonscanstop ',num2str(28000)]);
+%                system(['/lift/bin/eCmd @Lift s etalonscanstep ',num2str(16)]);
+%                system('/lift/bin/eCmd @Lift s etalonscan');
+%            end
+%        end
+%        if EtalonAction==5
+%                disp(['/lift/bin/eCmd @Lift s etalontoggle']);    
+%                system(['/lift/bin/eCmd @Lift s etalontoggle']);    
+%        end
+
+
 % reset TempCard if needed
-if ( double(statusData(:,col.TempDyelaser))<27000 | double(statusData(:,col.TempMCP1))<20000 )
+if ( double(statusData(lastrow,col.TempDyelaser))<27000 )
     system('/lift/src/scripts/resetTemp');
 end
+if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
+    if ( double(statusData(lastrow,col.TempMCP1))<20000 )
+        system('/lift/src/scripts/resetTemp');
+    end
+end
+
 
 % check dyelaser pressure and keep it constant on set value
 x=double(statusData(:,col.PDyelaser)); eval(['PDyelaser=',fcts2val.PDyelaser,';']);
