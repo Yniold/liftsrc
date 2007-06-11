@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-03-20 21:00:48 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 15:46:20 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.46  2007-03-20 21:00:48  martinez
+* Revision 1.47  2007-06-11 15:46:20  rudolf
+* Changed not properly specified bitfields to uint16_t otherwise Win32 compiler will treat them as 32bit ints which will lead to structure size mismatch. Unix part untested, must be tested on LIFT asap
+*
+* Revision 1.46  2007/03/20 21:00:48  martinez
 * MovingFlags is unsigned
 *
 * Revision 1.45  2007-03-20 20:52:05  martinez
@@ -149,23 +152,17 @@
 #ifndef ELEKIO_H
 #define ELEKIO_H
 
-#ifdef UNIX                             /* there are some differences between windows & linux header files */
-#include <stdint.h>
-#else
-typedef unsigned short uint16_t;
-typedef short int16_t;
-typedef unsigned uint32_t;
-typedef int int32_t;
 
-typedef unsigned __int64 uint64_t;
+//#include <stdint.h>
+#include <sys/types.h>
 
-struct timeval {
-  long    tv_sec; 
-  long    tv_usec;
-};
+#ifndef uint16_t
+#define uint16_t unsigned short
 #endif
 
-#include <sys/types.h>
+#ifndef int16_t
+#define int16_t short
+#endif
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
@@ -203,10 +200,10 @@ struct timeval {
 #define ELK_TIMEOUT (unsigned) 0x0001
 #endif
 
-#define ELK_BASE (unsigned)0x200
+#define ELK_BASE (uint16_t)0x200
 #define ELK_ADR  ELK_BASE
-#define ELK_DATA (ELK_BASE + (unsigned) 2)
-#define ELK_TODO (ELK_BASE + (unsigned) 4)
+#define ELK_DATA (ELK_BASE + (uint16_t) 2)
+#define ELK_TODO (ELK_BASE + (uint16_t) 4)
 #define ELK_QSIZE 4
 
 #define ELK_BACKPLANE_BASE   0xa400
@@ -371,11 +368,11 @@ union PositionType {
 }; /* union PositionType */
 
 struct StatusFieldType {                                            /* Bit Field */
-  unsigned int  RefChannel:2;                                       /* Channel number of Reference Cell */
-  unsigned int  Unused1:6;                                          /* */
-  unsigned int  EndswitchRight:1;                                   /* Endschalter rechts aktiv */
-  unsigned int  EndswitchLeft:1;                                    /* Endschalter links aktiv */
-  unsigned int  Unused2:6;                                          /*  */
+  uint16_t RefChannel:2;                                       /* Channel number of Reference Cell */
+  uint16_t Unused1:6;                                          /* */
+  uint16_t EndswitchRight:1;                                   /* Endschalter rechts aktiv */
+  uint16_t EndswitchLeft:1;                                    /* Endschalter links aktiv */
+  uint16_t Unused2:6;                                          /*  */
 };
 
 union StatusType {
@@ -408,11 +405,11 @@ struct EtalonDataType {
 
 
 struct ADCChannelConfigBitType {
-    unsigned MuxChannel:3;
-    unsigned Bridge:1;
-    unsigned Gain:2;
-    unsigned Offset:2;
-    unsigned Unused:8;
+    uint16_t MuxChannel:3;
+    uint16_t Bridge:1;
+    uint16_t Gain:2;
+    uint16_t Offset:2;
+    uint16_t Unused:8;
 }; /* ADCChannelConfigBitType */
 
 union ADCChannelConfigType {
@@ -460,12 +457,12 @@ struct ADC24CardType {
 
 
 struct MFCChannelConfigBitType {
-  unsigned MuxChannel:3;
-  unsigned Unused:5;
-  unsigned Ch0:2;
-  unsigned Ch1:2;
-  unsigned Ch2:2;
-  unsigned Ch3:2;
+  uint16_t MuxChannel:3;
+  uint16_t Unused:5;
+  uint16_t Ch0:2;
+  uint16_t Ch1:2;
+  uint16_t Ch2:2;
+  uint16_t Ch3:2;
 }; /* MFCChannelConfigBitType */
 
 union MFCChannelConfigType {
@@ -532,12 +529,12 @@ struct DCDC4CardType {
 #define ELK_TEMP_SCANFLAG        0x0004                               /* AVR is scanning for         */
 
 struct TempSensorFieldType {                                            /* Bit Field */
-  unsigned int  TempFrac:4;                                             /* Temperatur Fraction 1/16 K */
-  int           TempMain:8;                                             /* Temperatur K --> Ges Temp=TempMain+TempFrac/16 */ 
-  unsigned int  bValid:1;                                               /* Temperatur Daten Gueltig=1 */
-  unsigned int  bCRCError:1;                                            /* CRC Fehler, Pruefsumme falsch */
-  unsigned int  bNoResponse:1;                                          /* Sensor antowrtet nicht */
-  unsigned int  bAlarmFlag:1;                                           /* Sensor meldet Alarm */
+  uint16_t TempFrac:4;                                             /* Temperatur Fraction 1/16 K */
+  int16_t  TempMain:8;                                             /* Temperatur K --> Ges Temp=TempMain+TempFrac/16 */ 
+  uint16_t bValid:1;                                               /* Temperatur Daten Gueltig=1 */
+  uint16_t bCRCError:1;                                            /* CRC Fehler, Pruefsumme falsch */
+  uint16_t bNoResponse:1;                                          /* Sensor antowrtet nicht */
+  uint16_t bAlarmFlag:1;                                           /* Sensor meldet Alarm */
   unsigned char aROMCode[6];                                            /* 6 Byte ID vom Sensor */
   signed char cTempLimitMax;                                           
   signed char cTempLimitMin;
@@ -557,11 +554,11 @@ union TempSensorDataType {
 
 
 struct TempSensorControlFieldType {
-  unsigned int Busy:1;
-  unsigned int Update:1;
-  unsigned int Scan:1;
-  unsigned int Unused:12;
-  unsigned int Reset:1;
+  uint16_t Busy:1;
+  uint16_t Update:1;
+  uint16_t Scan:1;
+  uint16_t Unused:12;
+  uint16_t Reset:1;
 };
 
 union TempSensorControlType {
@@ -896,9 +893,9 @@ struct MirrorType {
 
 struct MovingFlagFieldType
 {
-  unsigned MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
-  unsigned Realigning:1;      /* moving due to realignment routine */
-  unsigned unused:7;	/* not used (probably 0) */
+  uint16_t MovingFlagByte:8;	/* Bitnumber=MirrorNumber*MAX_MIRROR_AXIS+MirrorAxis */
+  uint16_t Realigning:1;      /* moving due to realignment routine */
+  uint16_t unused:7;	/* not used (probably 0) */
 };
 
 
