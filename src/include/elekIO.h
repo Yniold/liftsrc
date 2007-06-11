@@ -1,12 +1,15 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 15:46:20 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 17:06:18 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.47  2007-06-11 15:46:20  rudolf
+* Revision 1.48  2007-06-11 17:06:18  rudolf
+* changes for steppercard etalon
+*
+* Revision 1.47  2007/06/11 15:46:20  rudolf
 * Changed not properly specified bitfields to uint16_t otherwise Win32 compiler will treat them as 32bit ints which will lead to structure size mismatch. Unix part untested, must be tested on LIFT asap
 *
-* Revision 1.46  2007/03/20 21:00:48  martinez
+* Revision 1.46  2007-03-20 21:00:48  martinez
 * MovingFlags is unsigned
 *
 * Revision 1.45  2007-03-20 20:52:05  martinez
@@ -152,17 +155,24 @@
 #ifndef ELEKIO_H
 #define ELEKIO_H
 
+#include <stdint.h>
 
-//#include <stdint.h>
+#ifdef UNIX                             /* there are some differences between windows & linux header files */
+#else
+/*typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned uint32_t;
+typedef int int32_t;
+
+typedef unsigned long uint64_t;
+
+struct timeval {
+  long    tv_sec; 
+  long    tv_usec;
+};*/
+#endif
+
 #include <sys/types.h>
-
-#ifndef uint16_t
-#define uint16_t unsigned short
-#endif
-
-#ifndef int16_t
-#define int16_t short
-#endif
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
@@ -200,10 +210,10 @@
 #define ELK_TIMEOUT (unsigned) 0x0001
 #endif
 
-#define ELK_BASE (uint16_t)0x200
+#define ELK_BASE (unsigned)0x200
 #define ELK_ADR  ELK_BASE
-#define ELK_DATA (ELK_BASE + (uint16_t) 2)
-#define ELK_TODO (ELK_BASE + (uint16_t) 4)
+#define ELK_DATA (ELK_BASE + (unsigned) 2)
+#define ELK_TODO (ELK_BASE + (unsigned) 4)
 #define ELK_QSIZE 4
 
 #define ELK_BACKPLANE_BASE   0xa400
@@ -337,7 +347,7 @@ enum EtalonActionType { /* update also in etalon.c */
     ETALON_ACTION_MAX
 };
 
-
+#define ETALON_STEPRATIO_ENCODER_MOTOR    2
 #define ETALON_SCAN_POS_START      5
 #define ETALON_SCAN_POS_STOP       20000
 #define ETALON_SCAN_STEP_WIDTH     8
