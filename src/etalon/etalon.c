@@ -1,7 +1,10 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2006-10-15 12:02:59 $ by $Author: harder $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2007-06-11 16:55:57 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
+* Revision 1.27  2007-06-11 16:55:57  martinez
+* etalon controller changes
+*
 * Revision 1.26  2006-10-15 12:02:59  harder
 * minor bugs and disp changes in ref channel
 *
@@ -138,7 +141,6 @@ struct AverageDataType {
 #define OFFLINE_LEFT_TIME  25
 #define OFFLINE_RIGHT_TIME 25
 #define ONLINE_TIME        25
-
 
 
 #define MAX_AVG_DIFF       0.01
@@ -523,8 +525,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.26 2006-10-15 12:02:59 harder Exp $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.26 2006-10-15 12:02:59 harder Exp $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.27 2007-06-11 16:55:57 martinez Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.27 2007-06-11 16:55:57 martinez Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
@@ -630,8 +632,9 @@ int main(int argc, char *argv[])
 		  // printf("State %d Action %d\n",State,ElekStatus.InstrumentFlags.EtalonAction);
 		    switch (State) {
 		    case ETALON_DITHER_LEFT:
-		      SetPosition=ElekStatus.EtalonData.Online.Position+
-		    	  ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		      SetPosition=(ElekStatus.EtalonData.Online.Position+
+		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
+		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
 		      //AddCounts(&OnlineLeftCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		      //printf("Left (%d/%d): %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		      //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -666,8 +669,9 @@ int main(int argc, char *argv[])
 		      break; /* ETALON_DITHER_LEFT */
 		    
 		    case ETALON_DITHER_RIGHT:
-		      SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.DitherStepWidth+
-		    	  ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		      SetPosition=(ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.DitherStepWidth+
+		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
+		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
 		      //AddCounts(&OnlineRightCounts,ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts);
 		      //printf("Right (%d/%d) : %d %d %lf %lf\n",(int)SetPosition,(int)ElekStatus.EtalonData.Current.Position,
 		      //   ElekStatus.CounterCard.Channel[CHANNEL_REF_CELL].Counts,
@@ -702,8 +706,9 @@ int main(int argc, char *argv[])
 		      break; /*ETALON_DITHER_RIGHT*/
 		    
 		    case ETALON_OFFLINE_LEFT:
-		      SetPosition=ElekStatus.EtalonData.Online.Position-ElekStatus.EtalonData.OfflineStepLeft+
-		    	  ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		      SetPosition=(ElekStatus.EtalonData.Online.Position-ElekStatus.EtalonData.OfflineStepLeft+
+		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
+		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
 		    
 		      if (OfflineLeftTime--<1) { 
 		        OnlineTime=ONLINE_TIME; 
@@ -718,8 +723,9 @@ int main(int argc, char *argv[])
 		      break; /* ETALON_OFFLINE_LEFT */
 		    
 		    case ETALON_OFFLINE_RIGHT:
-		      SetPosition=ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight+
-		    	  ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		      SetPosition=(ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight+
+		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
+		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
 		      if (OfflineRightTime--<1) { 
 		        OnlineTime=ONLINE_TIME; 
 		        DitherRightTime=DITHER_RIGHT_TIME; 
@@ -741,7 +747,7 @@ int main(int argc, char *argv[])
 		    } /* switch state */
 		  
 		    if (ElekStatus.TimeOfDayMaster.tv_sec) {   // do we have a valid status ?
-		      // SetPosition=(SetPosition-ElekStatus.EtalonData.Current.Position)+ElekStatus.EtalonData.Encoder.Position;
+		      // SetPosition=((SetPosition-ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR)+ElekStatus.EtalonData.Encoder.Position)/ETALON_STEPRATIO_ENCODER_MOTOR;
 		      //		  printf("Deviation : %d\n",(ElekStatus.EtalonData.Encoder.Position-ElekStatus.EtalonData.Current.Position));		    
 		    } /*if ElekStatus.TimeOfDay */
 		    // we sort and add the counts
@@ -765,7 +771,8 @@ int main(int argc, char *argv[])
 		        SetAction(ETALON_ACTION_NOP);
 		      } /* if EtalonScanPos */
 		    } /* if RunningCommand */
-		    SetPosition=EtalonScanPos+ElekStatus.EtalonData.Current.Position-ElekStatus.EtalonData.Encoder.Position;
+		    SetPosition=(EtalonScanPos+ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
+		    	/ETALON_STEPRATIO_ENCODER_MOTOR;
 		    ret=StepperGoTo(SetPosition);
 		    break; /* ETALON_ACTION_SCAN */
 		  case ETALON_ACTION_HOME:
@@ -790,8 +797,8 @@ int main(int argc, char *argv[])
 		      SetStatusCommand(MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER, 
 			   SYS_PARAMETER_ETALON_ONLINE,
 			   StepPosOnline);
-		      SetPosition=StepPosOnline+ElekStatus.EtalonData.Current.Position-
-		          ElekStatus.EtalonData.Encoder.Position;
+		      SetPosition=(StepPosOnline+ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-
+		          ElekStatus.EtalonData.Encoder.Position)/ETALON_STEPRATIO_ENCODER_MOTOR;
 		      ret=StepperGoTo(SetPosition);               // go to new online position
 		      RunningCommand=ETALON_ACTION_DITHER_ONLINE;
 		      SetAction(ETALON_ACTION_DITHER_ONLINE);
