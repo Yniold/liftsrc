@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 17:09:53 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 17:27:42 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.49  2007-06-11 17:09:53  rudolf
+* Revision 1.50  2007-06-11 17:27:42  martinez
+* more fixes....
+*
+* Revision 1.49  2007/06/11 17:09:53  rudolf
 * more fixes...
 *
 * Revision 1.48  2007/06/11 17:06:18  rudolf
@@ -168,6 +171,23 @@
 #ifndef int16_t
 #define int16_t short
 #endif
+
+#ifndef int32_t
+#define int32_t int
+#endif
+
+#ifndef uint32_t
+#define uint32_t unsigned int
+#endif
+
+#ifndef int64_t
+#define int64_t long long
+#endif
+
+#ifndef uint64_t
+#define uint64_t unsigned long long
+#endif
+
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1
