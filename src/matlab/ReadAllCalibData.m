@@ -1,9 +1,12 @@
 %
 %
-% $ID: $
+% $Id: ReadAllCalibData.m,v 1.2 2007-06-11 15:52:06 rudolf Exp $
 %
 % $Log: ReadAllCalibData.m,v $
-% Revision 1.1  2007-06-11 15:50:34  rudolf
+% Revision 1.2  2007-06-11 15:52:06  rudolf
+% fixed typo
+%
+% Revision 1.1  2007/06/11 15:50:34  rudolf
 % added helper scripts to read all datasets in one directory in one huge structure
 %
 %
