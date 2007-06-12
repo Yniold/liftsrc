@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-11 17:27:42 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 11:33:15 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.50  2007-06-11 17:27:42  martinez
+* Revision 1.51  2007-06-12 11:33:15  rudolf
+* changed outcommented line from C++ to C style for stupid MEX compiler...
+*
+* Revision 1.50  2007/06/11 17:27:42  martinez
 * more fixes....
 *
 * Revision 1.49  2007/06/11 17:09:53  rudolf
@@ -161,7 +164,10 @@
 #ifndef ELEKIO_H
 #define ELEKIO_H
 
-//#include <stdint.h>
+/*
+#include <stdint.h>
+*/
+
 #include <sys/types.h>
 
 #ifndef uint16_t
