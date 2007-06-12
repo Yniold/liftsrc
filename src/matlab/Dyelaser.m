@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 22-Sep-2005 12:37:58
+% Last Modified by GUIDE v2.5 25-May-2007 13:31:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -302,14 +302,25 @@ if Mirrorhelp==1
     currpos=bitset(floor(currpos),32,0)-2^32/2;
 end
 set(handles.textPos,'String',num2str(currpos));
-if statusData(lastrow,col.MirrorMovingFlags)==0 & statusData(lastrow,col.MirrorRealigning)==0
+if double(statusData(lastrow,col.MirrorMovingFlags))==0 & double(statusData(lastrow,col.MirrorRealigning))==0
     set(handles.textPos,'BackgroundColor','w');
     set(handles.pushgo,'BackgroundColor','w');
 else
     set(handles.textPos,'BackgroundColor','r');
     set(handles.pushgo,'BackgroundColor','r');
 end
-    
+if double(statusData(lastrow,col.MirrorRealigning))==1
+    set(handles.pushRealign,'BackgroundColor','y');
+else    
+    set(handles.pushRealign,'BackgroundColor','g');
+end
+if double(statusData(lastrow,col.MirrorRealignMinutes))>30
+    set(handles.txtRealignMin,'BackgroundColor','r');
+    set(handles.txtRealignMin,'String','0');
+else
+    set(handles.txtRealignMin,'BackgroundColor','w');
+    set(handles.txtRealignMin,'String',statusData(lastrow,col.MirrorRealignMinutes));
+end
 
 
 % plot parameters in graph 1
@@ -1185,3 +1196,43 @@ function chkEtEncPos_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkEtEncPos
 
 
+
+
+% --- Executes on button press in pushRealign.
+function pushRealign_Callback(hObject, eventdata, handles)
+% hObject    handle to pushRealign (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of pushRealign
+
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
+mirror=get(handles.popupmirror,'Value')-1;
+if horusdata(lastrow,col.MirrorRealigning)==0
+    system(['/lift/bin/eCmd s mirrorrealign ',num2str(mirror)]);   
+    set(hObject,'BackgroundColor','g');
+else
+    system(['/lift/bin/eCmd s mirrorstoprealign']);   
+    set(hObject,'BackgroundColor','r');
+end    
+
+
+function editRealignMin_Callback(hObject, eventdata, handles)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+statusData=horusdata.statusData;
+col=horusdata.col;
+data = getappdata(handles.output, 'Dyelaserdata');
+lastrow=data.lastrow;
+
+Minutes=uint16(str2double(get(hObject,'String')));
+if isnan(steps)
+    set(hObject,'BackgroundColor','red');
+else
+    set(hObject,'BackgroundColor','white');
+end
+system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Minutes)]);   
