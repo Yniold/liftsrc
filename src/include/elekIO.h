@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 12:08:01 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 12:56:27 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.52  2007-06-12 12:08:01  martinez
+* Revision 1.53  2007-06-12 12:56:27  martinez
+* corrected syntax errors
+*
+* Revision 1.52  2007/06/12 12:08:01  martinez
 * included eCmd commands set realignminutes and stoprealigning
 *
 * Revision 1.51  2007/06/12 11:33:15  rudolf
@@ -197,7 +200,7 @@
 #define uint64_t unsigned long long
 #endif
 
-struct timeval {
+/* struct timeval {
   long    tv_sec; 
   long    tv_usec;
 };*/

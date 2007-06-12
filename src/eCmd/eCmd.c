@@ -1,10 +1,13 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.44 $
-last change on $Date: 2007-06-12 12:08:00 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.45 $
+last change on $Date: 2007-06-12 12:56:27 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
-Revision 1.44  2007-06-12 12:08:00  martinez
+Revision 1.45  2007-06-12 12:56:27  martinez
+corrected syntax errors
+
+Revision 1.44  2007/06/12 12:08:00  martinez
 included eCmd commands set realignminutes and stoprealigning
 
 Revision 1.43  2007-03-20 13:16:40  martinez
@@ -301,7 +304,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.44 2007-06-12 12:08:00 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.45 2007-06-12 12:56:27 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -682,6 +685,7 @@ int main(int argc, char *argv[])
     	      } else { // we don't have enough parameter
     		printf("Error please supply parameter for %s\n",argv[ArgCount]);
     	      }
+            }
 
     	    if (strcasecmp(argv[ArgCount],"mirrorstoprealign")==0) {
     		Value=0;
