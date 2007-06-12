@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.43 $
-last change on $Date: 2007-03-20 13:16:40 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.44 $
+last change on $Date: 2007-06-12 12:08:00 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.44  2007-06-12 12:08:00  martinez
+included eCmd commands set realignminutes and stoprealigning
+
 Revision 1.43  2007-03-20 13:16:40  martinez
 permit only realignment of 2. green mirror and 1. UV mirror
 
@@ -298,7 +301,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.43 2007-03-20 13:16:40 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.44 2007-06-12 12:08:00 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
@@ -327,6 +330,8 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s mirrorrealign data\n");
 	printf("eCmd @host s mirrorgoto data (mirror axis position)\n");
 	printf("eCmd @host s mirrorstop\n");
+	printf("eCmd @host s mirrorrealignmin data\n");
+	printf("eCmd @host s mirrorstoprealign\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -668,6 +673,20 @@ int main(int argc, char *argv[])
     	    if (strcasecmp(argv[ArgCount],"mirrorstop")==0) {
     			MsgType=MSG_TYPE_MIRROR_STOP;
     	    };	    	    
+
+    	    if (strcasecmp(argv[ArgCount],"mirrorrealignmin")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		Value=strtol(argv[ArgCount+1],NULL,0);
+    		MsgType=MSG_TYPE_CHANGE_FLAG_SYSTEM_PARAMETER;
+    		Addr=SYS_PARAMETER_MIRRORS_REALIGN_MINUTES;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+
+    	    if (strcasecmp(argv[ArgCount],"mirrorstoprealign")==0) {
+    		Value=0;
+    		MsgType=MSG_TYPE_MIRROR_FLAG_REALIGN;
+    	    };	  
     
     	    // if we got a valid Msg send it
     	    if (MsgType<MAX_MSG_TYPE) {
@@ -675,6 +694,8 @@ int main(int argc, char *argv[])
     	    } else {
     	      printf("I don't send anything, command <%s> unknown, MessageType is not valid\n", argv[ArgCount]);
     	    } /* if MsgType */
+
+
     	} else {
     	    printf("not enough parameter\n"); 
     	}/* if ArgCount > argc */

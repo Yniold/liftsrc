@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 11:33:15 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 12:08:01 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.51  2007-06-12 11:33:15  rudolf
+* Revision 1.52  2007-06-12 12:08:01  martinez
+* included eCmd commands set realignminutes and stoprealigning
+*
+* Revision 1.51  2007/06/12 11:33:15  rudolf
 * changed outcommented line from C++ to C style for stupid MEX compiler...
 *
 * Revision 1.50  2007/06/11 17:27:42  martinez
@@ -194,6 +197,11 @@
 #define uint64_t unsigned long long
 #endif
 
+struct timeval {
+  long    tv_sec; 
+  long    tv_usec;
+};*/
+#include <sys/types.h>
 
 #define INIT_MODULE_FAILED  0
 #define INIT_MODULE_SUCCESS 1

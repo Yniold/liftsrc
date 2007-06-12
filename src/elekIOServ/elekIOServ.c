@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-03-21 06:53:42 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-06-12 12:08:00 $ by $Author: martinez $
  *
  * $Log: elekIOServ.c,v $
+ * Revision 1.78  2007-06-12 12:08:00  martinez
+ * included eCmd commands set realignminutes and stoprealigning
+ *
  * Revision 1.77  2007-03-21 06:53:42  martinez
  * minor bug fix
  *
@@ -2962,13 +2965,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.77 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3555,6 +3558,10 @@ int main(int argc, char *argv[])
 
 			       case SYS_PARAMETER_ETALON_SCAN_STEP:
 				 ElekStatus.EtalonData.ScanStepWidth=Message.Value;
+				 break;
+
+			       case SYS_PARAMETER_MIRRORS_REALIGN_MINUTES:
+				 ElekStatus.MirrorData.RealignMinutes=Message.Value;
 				 break;
 
 			       default:

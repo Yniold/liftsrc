@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-03-08 13:09:07 $ by $Author: rudolf $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-06-12 12:08:01 $ by $Author: martinez $
 *
 * $Log: elekIOPorts.h,v $
-* Revision 1.21  2007-03-08 13:09:07  rudolf
+* Revision 1.22  2007-06-12 12:08:01  martinez
+* included eCmd commands set realignminutes and stoprealigning
+*
+* Revision 1.21  2007/03/08 13:09:07  rudolf
 * added new port for elekIOaux->elekIOServ(M)
 *
 * Revision 1.20  2007-03-07 20:38:27  harder
@@ -152,6 +155,8 @@ enum SysParameterListEnum {                 // list of System Parameters
   SYS_PARAMETER_ETALON_SCAN_START,
   SYS_PARAMETER_ETALON_SCAN_STOP,
   SYS_PARAMETER_ETALON_SCAN_STEP,
+  
+  SYS_PARAMETER_MIRRORS_REALIGN_MINUTES,
   
   MAX_SYS_PARAMETER };
 
