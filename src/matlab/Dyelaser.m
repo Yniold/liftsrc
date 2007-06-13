@@ -1230,7 +1230,7 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 Minutes=uint16(str2double(get(hObject,'String')));
-if isnan(steps)
+if isnan(Minutes)
     set(hObject,'BackgroundColor','red');
 else
     set(hObject,'BackgroundColor','white');
