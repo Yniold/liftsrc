@@ -437,9 +437,12 @@ x=double(statusData(:,col.DiodeWZ2in)); eval(['DiodeWZ2in=',fcts2val.DiodeWZ2in,
 x=double(statusData(:,col.MFCFlow)); eval(['MFCFlow=',fcts2val.MFCFlow,';']);
 x=double(statusData(:,col.PCuvette)); eval(['PCuvette=',fcts2val.PCuvette,';']);
 
+stepratio=2;
+
 Etalonhelp=bitget(uint16(statusData(:,col.etaCurPosHigh)),16);
 EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
 EtalonCurPos(Etalonhelp==1)=bitset(floor(EtalonCurPos(Etalonhelp==1)),32,0)-2^32/2;
+EtalonCurPos=EtalonCurPos*stepratio;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
 EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
