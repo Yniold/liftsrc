@@ -1213,7 +1213,7 @@ data = getappdata(handles.output, 'Dyelaserdata');
 lastrow=data.lastrow;
 
 mirror=get(handles.popupmirror,'Value')-1;
-if horusdata(lastrow,col.MirrorRealigning)==0
+if statusData(lastrow,col.MirrorRealigning)==0
     system(['/lift/bin/eCmd s mirrorrealign ',num2str(mirror)]);   
     set(hObject,'BackgroundColor','g');
 else
