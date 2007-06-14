@@ -10,7 +10,10 @@
  *    and MinRefCellCounts is min. PMT count value that must be reached in online modus
  * $ID:$
  * $Log: ReadDataAvg.c,v $
- * Revision 1.30  2007-03-20 20:59:06  martinez
+ * Revision 1.31  2007-06-14 19:20:27  martinez
+ * fixed size bug in Instrument bit field
+ *
+ * Revision 1.30  2007/03/20 20:59:06  martinez
  * included mirror data and correct mirror position calculation, also corrected etalon position calculation
  *
  * Revision 1.29  2007-03-05 23:51:59  martinez
@@ -67,7 +70,7 @@
  *
  *=================================================================*/
  
- /* $Revision: 1.30 $ */
+ /* $Revision: 1.31 $ */
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -179,21 +182,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   /* Check for proper number of arguments */
   
   if (nrhs != 3) { 
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.31 $ \n");
     mexErrMsgTxt("three input arguments required, Filename, Average length, min online ref cell counts"); 
   } else if (nlhs != 2) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.31 $ \n");
     mexErrMsgTxt("Two output arguments required: data, averages."); 
   } 
   
   /* Input must be a string. */
   if (mxIsChar(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.31 $ \n");
     mexErrMsgTxt("Input must be a string.");
 }  
   /* Input must be a row vector. */
   if (mxGetM(prhs[0]) != 1) {
-    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.30 $ \n");
+    mexPrintf("This is ReadDataAvg CVS: $RCSfile: ReadDataAvg.c,v $ $Revision: 1.31 $ \n");
     mexErrMsgTxt("Input must be a row vector.");
   }
   
@@ -232,10 +235,20 @@ void mexFunction( int nlhs, mxArray *plhs[],
   
   fseek(fp,0,SEEK_END);
   flen=ftell(fp);
-  
+   nelements=flen/sizeof(struct elekStatusType);
+ 
+  if(flen % sizeof(struct elekStatusType) != 0)
+  {
+	  mexPrintf(" struct size : %d mod file size = %d, number of elements : %d sizeof unsigned char %d \n",sizeof(struct elekStatusType), flen % sizeof(struct elekStatusType),nelements,sizeof(unsigned char));
+	  mexPrintf(" enum size 1: %d enum size2 = %d, \n",sizeof(enum InstrumentActionType),sizeof(enum EtalonActionType));
+
+	  mexPrintf("This is $Id: ReadDataAvg.c,v 1.31 2007-06-14 19:20:27 martinez Exp $ \n");
+		mexErrMsgTxt("File size is not a multiple of structure size, please select a proper .bin file!");
+  }
+
+
   /* we have to allocate some space, use mxCalloc, matlab is cleaning up memory upon exit */
   Databuf=mxCalloc(flen, sizeof(char));
-  nelements=flen/sizeof(struct elekStatusType);
   /* go to the beginning */
   fseek(fp,0,SEEK_SET);
   

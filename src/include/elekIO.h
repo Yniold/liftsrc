@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-12 12:56:27 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-14 19:20:26 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
-* Revision 1.53  2007-06-12 12:56:27  martinez
+* Revision 1.54  2007-06-14 19:20:26  martinez
+* fixed size bug in Instrument bit field
+*
+* Revision 1.53  2007/06/12 12:56:27  martinez
 * corrected syntax errors
 *
 * Revision 1.52  2007/06/12 12:08:01  martinez
@@ -200,10 +203,13 @@
 #define uint64_t unsigned long long
 #endif
 
-/* struct timeval {
+#ifdef VISUAL
+struct timeval {
   long    tv_sec; 
   long    tv_usec;
-};*/
+};
+#endif
+
 #include <sys/types.h>
 
 #define INIT_MODULE_FAILED  0
@@ -461,8 +467,8 @@ union ADCChannelConfigType {
     
 struct ADCChannelDataType {
     uint16_t ADCData;
-    unsigned SumDat;
-    unsigned SumSqr;
+    uint32_t SumDat;
+    uint32_t SumSqr;
 }; /* ADCChannelType */
 
 struct ADCChannel24DWType {
@@ -515,8 +521,8 @@ union MFCChannelConfigType {
 struct MFCChannelDataType {
     uint16_t SetFlow;
     uint16_t Flow;
-    unsigned SumDat;
-    unsigned SumSqr;
+    uint32_t SumDat;
+    uint32_t SumSqr;
 }; /* MFCChannelType */
 
 struct MFCCardType {                                                      
@@ -812,8 +818,8 @@ enum InstrumentActionType { /* update also in instrument.c */
 
 
 struct InstrumentFlagsType {                      /* set of flags for the instrument Server status */
-  uint16_t  StatusSave:1;                       /* indicates if Status should be saved to disk */
-  uint16_t  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
+  unsigned char  StatusSave:1;                       /* indicates if Status should be saved to disk */
+  unsigned char  StatusQuery:1;                      /* indicates if Status should be Queried from elekIOServ */
   enum EtalonActionType EtalonAction;           /* indicates what the etalon is doing */
   enum InstrumentActionType InstrumentAction;		/* indicates what the instrument is doing (measuring, calibrating, etc.) */	
   /*  enum DebugType        Debug;                     */ 
