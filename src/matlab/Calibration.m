@@ -126,12 +126,12 @@ OnOffFlag=statusData(lastrow-4:lastrow,col.RAvgOnOffFlag);
 
 % calculate running averages
 for i=1:5
+    data.Counter=data.Counter+1;
+    if OnOffFlag(i)==3
     data.sumDiodeWZ1in=data.sumDiodeWZ1in+DiodeWZ1in(i);
     data.sumDiodeWZ1out=data.sumDiodeWZ1out+DiodeWZ1out(i);
     data.sumDiodeWZ2in=data.sumDiodeWZ2in+DiodeWZ2in(i);
     data.sumDiodeWZ2out=data.sumDiodeWZ2out+DiodeWZ2out(i);
-    data.Counter=data.Counter+1;
-    if OnOffFlag(i)==3
         data.sumctsMCP1onl=data.sumctsMCP1onl+ctsMCP1(i);
         data.sumctsMCP2onl=data.sumctsMCP2onl+ctsMCP2(i);
         data.CounterOnl=data.CounterOnl+1;
@@ -141,11 +141,11 @@ for i=1:5
         data.CounterOffl=data.CounterOffl+1;
     end
 end
-avgDiodeWZ1in=data.sumDiodeWZ1in/data.Counter;
-avgDiodeWZ1out=data.sumDiodeWZ1out/data.Counter;
-avgDiodeWZ2in=data.sumDiodeWZ2in/data.Counter;
-avgDiodeWZ2out=data.sumDiodeWZ2out/data.Counter;
 if data.CounterOnl>0
+avgDiodeWZ1in=data.sumDiodeWZ1in/data.CounterOnl;
+avgDiodeWZ1out=data.sumDiodeWZ1out/data.CounterOnl;
+avgDiodeWZ2in=data.sumDiodeWZ2in/data.CounterOnl;
+avgDiodeWZ2out=data.sumDiodeWZ2out/data.CounterOnl;
     avgMCP1onl=data.sumctsMCP1onl/data.CounterOnl;
     avgMCP2onl=data.sumctsMCP2onl/data.CounterOnl;
 else
