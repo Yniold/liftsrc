@@ -339,7 +339,7 @@ end
 if ( double(statusData(lastrow,col.TempDyelaser))<27000 )
     system('/lift/src/scripts/resetTemp');
 end
-if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
+if statusData(lastrow,col.ValidSlaveDataFlag && ~isnan(col.TempMCP1)) % only if armaxis is on
     if ( double(statusData(lastrow,col.TempMCP1))<20000 )
         system('/lift/src/scripts/resetTemp');
     end
@@ -544,6 +544,13 @@ if isfield(data,'hCalibration')
         set(handles.Calibration,'BackgroundColor','g');
     else
         set(handles.Calibration,'BackgroundColor','c');
+    end
+end
+if isfield(data,'hSpectrometer')
+    if ishandle(data.hSpectrometer) 
+        set(handles.Spectrometer,'BackgroundColor','g');
+    else
+        set(handles.Spectrometer,'BackgroundColor','c');
     end
 end
 
