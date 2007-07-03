@@ -142,13 +142,17 @@ for i=1:5
     end
 end
 if data.CounterOnl>0
-avgDiodeWZ1in=data.sumDiodeWZ1in/data.CounterOnl;
-avgDiodeWZ1out=data.sumDiodeWZ1out/data.CounterOnl;
-avgDiodeWZ2in=data.sumDiodeWZ2in/data.CounterOnl;
-avgDiodeWZ2out=data.sumDiodeWZ2out/data.CounterOnl;
+    avgDiodeWZ1in=data.sumDiodeWZ1in/data.CounterOnl;
+    avgDiodeWZ1out=data.sumDiodeWZ1out/data.CounterOnl;
+    avgDiodeWZ2in=data.sumDiodeWZ2in/data.CounterOnl;
+    avgDiodeWZ2out=data.sumDiodeWZ2out/data.CounterOnl;
     avgMCP1onl=data.sumctsMCP1onl/data.CounterOnl;
     avgMCP2onl=data.sumctsMCP2onl/data.CounterOnl;
 else
+    avgDiodeWZ1in=NaN;
+    avgDiodeWZ1out=NaN;
+    avgDiodeWZ2in=NaN;
+    avgDiodeWZ2out=NaN;
     avgMCP1onl=NaN;
     avgMCP2onl=NaN;
 end
