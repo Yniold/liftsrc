@@ -21,8 +21,8 @@ if [ $ArmOn -eq 0 ]; then
      
   echo switch off HV
   HVOff
-#  echo close Butterfly
-#  ButterFlyOff
+  echo close Butterfly
+  ButterFlyOff
   echo turn off Blower
   BlowerOff
 
@@ -41,5 +41,6 @@ killall elekStatus
 # cp /mnt/magera/elekStatus ./bin
 killall debugMon   
 # cp /mnt/magera/debugMon ./bin
-
+killall mirrors
+killall spectrumAnalyzer
 # cp /mnt/magera/eRead ./bin

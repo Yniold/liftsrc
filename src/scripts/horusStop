@@ -41,5 +41,6 @@ killall elekStatus
 # cp /mnt/magera/elekStatus ./bin
 killall debugMon   
 # cp /mnt/magera/debugMon ./bin
-
+killall mirrors
+killall spectrometerServer
 # cp /mnt/magera/eRead ./bin
