@@ -400,6 +400,7 @@ statusDataCols=...
 'MirrorMovingFlags',1152,'x','';
 'MirrorMinUVDiffCts',1153,'x','';
 'MirrorRealignMinutes',1154,'x',''
+'I28V',982,'(x-10000)./3030.*80','A';
 };
 
 % create structure 'col' with field names taken from 1st column of

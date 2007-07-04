@@ -89,7 +89,8 @@ fcts2val=horusdata.fcts2val;
 statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,3))./24.0+...
            double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0;
+           double(statusData(:,5))./86400.0+...
+           double(statusData(:,6))./86400000.0;
 
 [SortZeit,indexZeit]=sort(statustime);
 maxLen=size(statustime,1);
@@ -283,6 +284,12 @@ switch char(xpar)
         else
             x=double(statusData(:,col.V1_5VarmAxis)); eval(['xdata=',fcts2val.V1_5VarmAxis,';']);
         end
+    case '+1.5VarmAxis'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.V1_5VarmAxis);
+        else
+            x=double(statusData(:,col.V1_5VarmAxis)); eval(['xdata=',fcts2val.V1_5VarmAxis,';']);
+        end
     case 'EtaSpd'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.etaCurSpd);
@@ -290,30 +297,30 @@ switch char(xpar)
             x=double(statusData(:,col.etaCurSpd)); eval(['xdata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaSetPosHigh)),16);
         EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
-        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
-        ydata=EtalonSetPos;
+        EtalonSetPos(Etalonhelp==1)=bitset(floor(EtalonSetPos(Etalonhelp==1)),32,0)-2^32/2;
+        xdata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaCurPosHigh)),16);
         EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
-        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
-        ydata=EtalonCurPos;
+        EtalonCurPos(Etalonhelp==1)=bitset(floor(EtalonCurPos(Etalonhelp==1)),32,0)-2^32/2;
+        xdata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
         EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
-        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
-        ydata=EtalonEncPos;
+        EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32/2;
+        xdata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaIndexPosHigh)),16);
         EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
-        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
-        ydata=EtalonIndPos;
+        EtalonIndPos(Etalonhelp==1)=bitset(floor(EtalonIndPos(Etalonhelp==1)),32,0)-2^32/2;
+        xdata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaOnlinePosHigh)),16);
         OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
-        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
-        ydata=OnlinePos;
+        OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32/2;
+        xdata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.ValveVoltLift);
@@ -845,6 +852,28 @@ switch char(xpar)
             xdata=statustime;
             xdata(:)=NaN;
         end
+    case 'TempScrollMotor'
+        if ~isnan(col.TempScrollMotor)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempScrollMotor);
+            else
+                x=double(statusData(:,col.TempScrollMotor)); eval(['xdata=',fcts2val.TempScrollMotor,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempScrollContr'
+        if ~isnan(col.TempScrollContr)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempScrollContr);
+            else
+                x=double(statusData(:,col.TempScrollContr)); eval(['xdata=',fcts2val.TempScrollContr,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
     case 'TempLaserPlateid'
         if ~isnan(col.TempLaserPlateid)
             if get(handles.toggleX,'Value')==0
@@ -1186,6 +1215,146 @@ switch char(xpar)
             xdata=statustime;
             xdata(:)=NaN;
         end
+    case 'TempScrollMotorid'
+        if ~isnan(col.TempScrollMotorid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempScrollMotorid);
+            else
+                x=uint16(statusData(:,col.TempScrollMotorid)); eval(['xdata=',fcts2val.TempScrollMotorid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempScrollContrid'
+        if ~isnan(col.TempScrollContrid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempScrollContrid);
+            else
+                x=uint16(statusData(:,col.TempScrollContrid)); eval(['xdata=',fcts2val.TempScrollContrid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'EtalonAction'
+        if ~isnan(col.EtalonAction)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.EtalonAction);
+            else
+                x=uint16(statusData(:,col.EtalonAction)); eval(['xdata=',fcts2val.EtalonAction,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'InstrumentAction'
+        if ~isnan(col.InstrumentAction)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.InstrumentAction);
+            else
+                x=uint16(statusData(:,col.InstrumentAction)); eval(['xdata=',fcts2val.InstrumentAction,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'ButterflyCurrentPosition'
+        if ~isnan(col.ButterflyCurrentPosition)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.ButterflyCurrentPosition);
+            else
+                x=uint16(statusData(:,col.ButterflyCurrentPosition)); eval(['xdata=',fcts2val.ButterflyCurrentPosition,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'MirrorGr1XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr1XAxisHi)),16);
+        MirrorGr1XAxis=double(statusData(:,col.MirrorGr1XAxisHi)).*65536+double(statusData(:,col.MirrorGr1XAxisLo));
+        MirrorGr1XAxis(Mirrorhelp==1)=bitset(floor(MirrorGr1XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorGr1XAxis;
+    case 'MirrorGr1YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr1YAxisHi)),16);
+        MirrorGr1YAxis=double(statusData(:,col.MirrorGr1YAxisHi)).*65536+double(statusData(:,col.MirrorGr1YAxisLo));
+        MirrorGr1YAxis(Mirrorhelp==1)=bitset(floor(MirrorGr1YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorGr1YAxis;
+    case 'MirrorGr2XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr2XAxisHi)),16);
+        MirrorGr2XAxis=double(statusData(:,col.MirrorGr2XAxisHi)).*65536+double(statusData(:,col.MirrorGr2XAxisLo));
+        MirrorGr2XAxis(Mirrorhelp==1)=bitset(floor(MirrorGr2XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorGr2XAxis;
+    case 'MirrorGr2YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr2YAxisHi)),16);
+        MirrorGr2YAxis=double(statusData(:,col.MirrorGr2YAxisHi)).*65536+double(statusData(:,col.MirrorGr2YAxisLo));
+        MirrorGr2YAxis(Mirrorhelp==1)=bitset(floor(MirrorGr2YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorGr2YAxis;
+    case 'MirrorUV1XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV1XAxisHi)),16);
+        MirrorUV1XAxis=double(statusData(:,col.MirrorUV1XAxisHi)).*65536+double(statusData(:,col.MirrorUV1XAxisLo));
+        MirrorUV1XAxis(Mirrorhelp==1)=bitset(floor(MirrorUV1XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorUV1XAxis;
+    case 'MirrorUV1YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV1YAxisHi)),16);
+        MirrorUV1YAxis=double(statusData(:,col.MirrorUV1YAxisHi)).*65536+double(statusData(:,col.MirrorUV1YAxisLo));
+        MirrorUV1YAxis(Mirrorhelp==1)=bitset(floor(MirrorUV1YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorUV1YAxis;
+    case 'MirrorUV2XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV2XAxisHi)),16);
+        MirrorUV2XAxis=double(statusData(:,col.MirrorUV2XAxisHi)).*65536+double(statusData(:,col.MirrorUV2XAxisLo));
+        MirrorUV2XAxis(Mirrorhelp==1)=bitset(floor(MirrorUV2XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorUV2XAxis;
+    case 'MirrorUV2YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV2YAxisHi)),16);
+        MirrorUV2YAxis=double(statusData(:,col.MirrorUV2YAxisHi)).*65536+double(statusData(:,col.MirrorUV2YAxisLo));
+        MirrorUV2YAxis(Mirrorhelp==1)=bitset(floor(MirrorUV2YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        xdata=MirrorUV2YAxis;
+    case 'MirrorRealigning'
+        if ~isnan(col.MirrorRealigning)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.MirrorRealigning);
+            else
+                x=uint16(statusData(:,col.MirrorRealigning)); eval(['xdata=',fcts2val.MirrorRealigning,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'MirrorMovingFlags'
+        if ~isnan(col.MirrorMovingFlags)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.MirrorMovingFlags);
+            else
+                x=uint16(statusData(:,col.MirrorMovingFlags)); eval(['xdata=',fcts2val.MirrorMovingFlags,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'MirrorMinUVDiffCts'
+        if ~isnan(col.MirrorMinUVDiffCts)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.MirrorMinUVDiffCts);
+            else
+                x=uint16(statusData(:,col.MirrorMinUVDiffCts)); eval(['xdata=',fcts2val.MirrorMinUVDiffCts,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'MirrorRealignMinutes'
+        if ~isnan(col.MirrorRealignMinutes)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.MirrorRealignMinutes);
+            else
+                x=uint16(statusData(:,col.MirrorRealignMinutes)); eval(['xdata=',fcts2val.MirrorRealignMinutes,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+
 end
         
 % assign data to y-axis
@@ -1373,29 +1542,29 @@ switch char(ypar)
             x=double(statusData(:,col.etaCurSpd)); eval(['ydata=',fcts2val.etaCurSpd,';']);
         end
     case 'EtaSetPos'
-        Etalonhelp=bitget(statusData(:,col.etaSetPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaSetPosHigh)),16);
         EtalonSetPos=double(statusData(:,col.etaSetPosHigh)).*65536+double(statusData(:,col.etaSetPosLow));
-        EtalonSetPos(Etalonhelp==1)=bitset(EtalonSetPos(Etalonhelp==1),32,0)-2^32/2;
+        EtalonSetPos(Etalonhelp==1)=bitset(floor(EtalonSetPos(Etalonhelp==1)),32,0)-2^32/2;
         ydata=EtalonSetPos;
     case 'EtaCurPos'
-        Etalonhelp=bitget(statusData(:,col.etaCurPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaCurPosHigh)),16);
         EtalonCurPos=double(statusData(:,col.etaCurPosHigh)).*65536+double(statusData(:,col.etaCurPosLow));
-        EtalonCurPos(Etalonhelp==1)=bitset(EtalonCurPos(Etalonhelp==1),32,0)-2^32/2;
+        EtalonCurPos(Etalonhelp==1)=bitset(floor(EtalonCurPos(Etalonhelp==1)),32,0)-2^32/2;
         ydata=EtalonCurPos;
     case 'EtaEncPos'
-        Etalonhelp=bitget(statusData(:,col.etaEncoderPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
         EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
-        EtalonEncPos(Etalonhelp==1)=bitset(EtalonEncPos(Etalonhelp==1),32,0)-2^32/2;
+        EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32/2;
         ydata=EtalonEncPos;
     case 'EtaIndPos'
-        Etalonhelp=bitget(statusData(:,col.etaIndexPosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaIndexPosHigh)),16);
         EtalonIndPos=double(statusData(:,col.etaIndexPosHigh)).*65536+double(statusData(:,col.etaIndexPosLow));
-        EtalonIndPos(Etalonhelp==1)=bitset(EtalonIndPos(Etalonhelp==1),32,0)-2^32/2;
+        EtalonIndPos(Etalonhelp==1)=bitset(floor(EtalonIndPos(Etalonhelp==1)),32,0)-2^32/2;
         ydata=EtalonIndPos;
     case 'EtaOnlinePos'
-        Etalonhelp=bitget(statusData(:,col.etaOnlinePosHigh),16);
+        Etalonhelp=bitget(uint16(statusData(:,col.etaOnlinePosHigh)),16);
         OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
-        OnlinePos(Etalonhelp==1)=bitset(OnlinePos(Etalonhelp==1),32,0)-2^32/2;
+        OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32/2;
         ydata=OnlinePos;
     case 'ValveVoltLift'
         if get(handles.toggleY,'Value')==0
@@ -1428,25 +1597,25 @@ switch char(ypar)
             x=double(statusData(:,col.MFCSetFlow)); eval(['ydata=',fcts2val.MFCSetFlow,';']);
         end
     case 'PitotAbs'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.PitotAbs);
         else
             x=double(statusData(:,col.PitotAbs)); eval(['ydata=',fcts2val.PitotAbs,';']);
         end
     case 'PitotDiff'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.PitotDiff);
         else
             x=double(statusData(:,col.PitotDiff)); eval(['ydata=',fcts2val.PitotDiff,';']);
         end
     case 'PhototubeLamp1'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.PhototubeLamp1);
         else
             x=double(statusData(:,col.PhototubeLamp1)); eval(['ydata=',fcts2val.PhototubeLamp1,';']);
         end
     case 'PhototubeLamp2'
-        if get(handles.toggleX,'Value')==0
+        if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.PhototubeLamp2);
         else
             x=double(statusData(:,col.PhototubeLamp2)); eval(['ydata=',fcts2val.PhototubeLamp2,';']);
@@ -1928,6 +2097,28 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
+    case 'TempScrollMotor'
+        if ~isnan(col.TempScrollMotor)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempScrollMotor);
+            else
+                x=double(statusData(:,col.TempScrollMotor)); eval(['ydata=',fcts2val.TempScrollMotor,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempScrollContr'
+        if ~isnan(col.TempScrollContr)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempScrollContr);
+            else
+                x=double(statusData(:,col.TempScrollContr)); eval(['ydata=',fcts2val.TempScrollContr,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
     case 'TempLaserPlateid'
         if ~isnan(col.TempLaserPlateid)
             if get(handles.toggleY,'Value')==0
@@ -2269,6 +2460,145 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
+    case 'TempScrollMotorid'
+        if ~isnan(col.TempScrollMotorid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempScrollMotorid);
+            else
+                x=uint16(statusData(:,col.TempScrollMotorid)); eval(['ydata=',fcts2val.TempScrollMotorid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempScrollContrid'
+        if ~isnan(col.TempScrollContrid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempScrollContrid);
+            else
+                x=uint16(statusData(:,col.TempScrollContrid)); eval(['ydata=',fcts2val.TempScrollContrid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'EtalonAction'
+        if ~isnan(col.EtalonAction)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.EtalonAction);
+            else
+                x=uint16(statusData(:,col.EtalonAction)); eval(['ydata=',fcts2val.EtalonAction,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'InstrumentAction'
+        if ~isnan(col.InstrumentAction)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.InstrumentAction);
+            else
+                x=uint16(statusData(:,col.InstrumentAction)); eval(['ydata=',fcts2val.InstrumentAction,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'ButterflyCurrentPosition'
+        if ~isnan(col.ButterflyCurrentPosition)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.ButterflyCurrentPosition);
+            else
+                x=uint16(statusData(:,col.ButterflyCurrentPosition)); eval(['ydata=',fcts2val.ButterflyCurrentPosition,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'MirrorGr1XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr1XAxisHi)),16);
+        MirrorGr1XAxis=double(statusData(:,col.MirrorGr1XAxisHi)).*65536+double(statusData(:,col.MirrorGr1XAxisLo));
+        MirrorGr1XAxis(Mirrorhelp==1)=bitset(floor(MirrorGr1XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorGr1XAxis;
+    case 'MirrorGr1YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr1YAxisHi)),16);
+        MirrorGr1YAxis=double(statusData(:,col.MirrorGr1YAxisHi)).*65536+double(statusData(:,col.MirrorGr1YAxisLo));
+        MirrorGr1YAxis(Mirrorhelp==1)=bitset(floor(MirrorGr1YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorGr1YAxis;
+    case 'MirrorGr2XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr2XAxisHi)),16);
+        MirrorGr2XAxis=double(statusData(:,col.MirrorGr2XAxisHi)).*65536+double(statusData(:,col.MirrorGr2XAxisLo));
+        MirrorGr2XAxis(Mirrorhelp==1)=bitset(floor(MirrorGr2XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorGr2XAxis;
+    case 'MirrorGr2YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorGr2YAxisHi)),16);
+        MirrorGr2YAxis=double(statusData(:,col.MirrorGr2YAxisHi)).*65536+double(statusData(:,col.MirrorGr2YAxisLo));
+        MirrorGr2YAxis(Mirrorhelp==1)=bitset(floor(MirrorGr2YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorGr2YAxis;
+    case 'MirrorUV1XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV1XAxisHi)),16);
+        MirrorUV1XAxis=double(statusData(:,col.MirrorUV1XAxisHi)).*65536+double(statusData(:,col.MirrorUV1XAxisLo));
+        MirrorUV1XAxis(Mirrorhelp==1)=bitset(floor(MirrorUV1XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorUV1XAxis;
+    case 'MirrorUV1YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV1YAxisHi)),16);
+        MirrorUV1YAxis=double(statusData(:,col.MirrorUV1YAxisHi)).*65536+double(statusData(:,col.MirrorUV1YAxisLo));
+        MirrorUV1YAxis(Mirrorhelp==1)=bitset(floor(MirrorUV1YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorUV1YAxis;
+    case 'MirrorUV2XAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV2XAxisHi)),16);
+        MirrorUV2XAxis=double(statusData(:,col.MirrorUV2XAxisHi)).*65536+double(statusData(:,col.MirrorUV2XAxisLo));
+        MirrorUV2XAxis(Mirrorhelp==1)=bitset(floor(MirrorUV2XAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorUV2XAxis;
+    case 'MirrorUV2YAxis'
+        Mirrorhelp=bitget(uint16(statusData(:,col.MirrorUV2YAxisHi)),16);
+        MirrorUV2YAxis=double(statusData(:,col.MirrorUV2YAxisHi)).*65536+double(statusData(:,col.MirrorUV2YAxisLo));
+        MirrorUV2YAxis(Mirrorhelp==1)=bitset(floor(MirrorUV2YAxis(Mirrorhelp==1)),32,0)-2^32/2;
+        ydata=MirrorUV2YAxis;
+    case 'MirrorRealigning'
+        if ~isnan(col.MirrorRealigning)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.MirrorRealigning);
+            else
+                x=uint16(statusData(:,col.MirrorRealigning)); eval(['ydata=',fcts2val.MirrorRealigning,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'MirrorMovingFlags'
+        if ~isnan(col.MirrorMovingFlags)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.MirrorMovingFlags);
+            else
+                x=uint16(statusData(:,col.MirrorMovingFlags)); eval(['ydata=',fcts2val.MirrorMovingFlags,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'MirrorMinUVDiffCts'
+        if ~isnan(col.MirrorMinUVDiffCts)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.MirrorMinUVDiffCts);
+            else
+                x=uint16(statusData(:,col.MirrorMinUVDiffCts)); eval(['ydata=',fcts2val.MirrorMinUVDiffCts,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'MirrorRealignMinutes'
+        if ~isnan(col.MirrorRealignMinutes)
+            if get(handles.toggleX,'Value')==0
+                ydata=statusData(:,col.MirrorRealignMinutes);
+            else
+                x=uint16(statusData(:,col.MirrorRealignMinutes)); eval(['ydata=',fcts2val.MirrorRealignMinutes,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
 end
 
 % display latest x and y values
@@ -2326,7 +2656,7 @@ set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
-    '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
+    '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';'I28V';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'PitotAbs';'PitotDiff';...
     'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
@@ -2342,13 +2672,15 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
     'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
     'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
-    'TempPrallpl';'TempAxis';...
+    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';...
     'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
     'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid'};
+    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
+    'MirrorGr1XAxis';'MirrorGr1YAxis';'MirrorGr2XAxis';'MirrorGr2YAxis';'MirrorUV1XAxis';'MirrorUV1YAxis';'MirrorUV2XAxis';'MirrorUV2YAxis';...
+    'MirrorRealigning';'MirrorMovingFlags';'MirrorMinUVDiffCts';'MirrorRealignMinutes'};
 set(hObject,'String',vars);
 
 
@@ -2374,7 +2706,7 @@ set(hObject,'BackgroundColor','white');
 vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'DiodeWZ2in';'DiodeWZ2out';...
     'Ophir';'P20';'P1000';'PRef';'PDyelaser';'PVent';'PNO';'PCuvette';'IFilament';...
     'VHV';'LaserTrigThresh';'PMTThresh';'MCP1Thresh';'MCP2Thresh';'+5VLift';'+28VLift';...
-    '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';...
+    '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';'I28V';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'PitotAbs';'PitotDiff';...
     'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
@@ -2390,13 +2722,15 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
     'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
     'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
-    'TempPrallpl';'TempAxis';...
+    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';...
     'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
     'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid'};
+    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
+    'MirrorGr1XAxis';'MirrorGr1YAxis';'MirrorGr2XAxis';'MirrorGr2YAxis';'MirrorUV1XAxis';'MirrorUV1YAxis';'MirrorUV2XAxis';'MirrorUV2YAxis';...
+    'MirrorRealigning';'MirrorMovingFlags';'MirrorMinUVDiffCts';'MirrorRealignMinutes'};
 set(hObject,'String',vars);
 
 
