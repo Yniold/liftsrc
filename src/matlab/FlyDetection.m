@@ -504,12 +504,16 @@ if get(handles.chkPdiff,'Value')
     hold(handles.axes1,'on');
 end 
 if get(handles.chkTPrall,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPrallpl),'r');
-    hold(handles.axes1,'on');
+    if ~isnan(col.TempPrallpl)
+        plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPrallpl),'r');
+        hold(handles.axes1,'on');
+    end
 end 
 if get(handles.chkTLamp,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPenray),'r');
-    hold(handles.axes1,'on');
+    if ~isnan(col.TempPenray)
+        plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPenray),'r');
+        hold(handles.axes1,'on');
+    end
 end 
 if get(handles.chkPCuv,'Value')
     plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PCuvette),'r');
