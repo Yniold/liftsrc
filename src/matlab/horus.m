@@ -476,7 +476,7 @@ if isfield(data,'hDyelaser')
     else
         if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100 | abs(EtalonCurPos(lastrow)-EtalonEncPos(lastrow))>5000
             set(handles.Dyelaser,'BackgroundColor','r');
-        elseif double(statusData(lastrow,col.MirrorRealigning))==1
+        elseif double(statusData(lastrow,col.MirrorRealigning))==1 | double(statusData(lastrow,col.MirrorRealignMinutes))==0 | double(statusData(lastrow,col.MirrorRealignMinutes))>30
             set(handles.Dyelaser,'BackgroundColor','y');
         else
             set(handles.Dyelaser,'BackgroundColor','c');

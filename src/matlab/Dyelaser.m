@@ -314,9 +314,11 @@ if double(statusData(lastrow,col.MirrorRealigning))==1
 else    
     set(handles.pushRealign,'BackgroundColor','g');
 end
-if double(statusData(lastrow,col.MirrorRealignMinutes))>30
+if double(statusData(lastrow,col.MirrorRealignMinutes))>30 | double(statusData(lastrow,col.MirrorRealignMinutes))==0
     set(handles.txtRealignMin,'BackgroundColor','r');
-    set(handles.txtRealignMin,'String','0');
+    set(handles.txtRealignMin,'String',num2str(statusData(lastrow,col.MirrorRealignMinutes)));
+elseif double(statusData(lastrow,col.MirrorRealignMinutes))==0
+    set(handles.txtRealignMin,'BackgroundColor','y');
 else
     set(handles.txtRealignMin,'BackgroundColor','w');
     set(handles.txtRealignMin,'String',statusData(lastrow,col.MirrorRealignMinutes));
@@ -438,7 +440,6 @@ if bitget(statusData(lastrow,col.ValveLift),10)==0
 else 
     set(handles.toggleAmbient,'BackgroundColor','g');
 end
-
 
 data.lastrow=lastrow;
 data.OnlinePos=OnlinePos;
