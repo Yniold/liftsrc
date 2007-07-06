@@ -330,7 +330,7 @@ end
 hold(handles.axes1,'off'); 
 
 if get(handles.checkDiodeGr,'Value')
-    plot(handles.axes1,statustime(iZeit),DiodeGr,'r');
+    plot(handles.axes1,statustime(iZeit),DiodeGr(iZeit),'r');
     hold(handles.axes1,'on');
 end 
 
@@ -345,12 +345,12 @@ if get(handles.checkDiodeEt,'Value')
 end 
 
 if get(handles.checkPDyelaser,'Value')
-    plot(handles.axes1,statustime(iZeit),PDyelaser,'r');
+    plot(handles.axes1,statustime(iZeit),PDyelaser(iZeit),'r');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.checkPVent,'Value')
-    plot(handles.axes1,statustime(iZeit),PVent,'r');
+    plot(handles.axes1,statustime(iZeit),PVent(iZeit),'r');
     hold(handles.axes1,'on');
 end 
 
