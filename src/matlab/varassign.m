@@ -401,6 +401,14 @@ statusDataCols=...
 'MirrorMinUVDiffCts',1153,'x','';
 'MirrorRealignMinutes',1154,'x',''
 'I28V',972,'(x-10000)./3030.*80','A';
+'CalFlow0Set',NaN,'(x-2.107).*4.7306e-3','';
+'CalFlow0',NaN,'(x-9985.01).*36.034','sccm';
+'CalFlow1Set',NaN,'(x+3.378).*4.8982e-3','';
+'CalFlow1',NaN,'(x-10014.68).*34.874','sccm';
+'CalFlow2Set',NaN,'(x-1.281).*4.8307e-2','';
+'CalFlow2',NaN,'(x-9992.05).*3.5217','sccm';
+'CalFlow3Set',NaN,'(x+1.0291).*4.8305e-2','';
+'CalFlow3',NaN,'(x-10000.85).*3.5215','sccm';
 };
 
 % create structure 'col' with field names taken from 1st column of

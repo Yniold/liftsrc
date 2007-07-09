@@ -135,27 +135,28 @@ ctsMCP2=double(statusData(:,col.ccCounts2));
 OnOffFlag=statusData(:,col.RAvgOnOffFlag);
 
 H2O=double(calib.LicorCalib.H2OB);
-Pamb=double(calib.LicorCalib.AmbientPressure);
-TLicor=double(calib.LicorCalib.LicorTemperature);
-TH2O=double(calib.PIDRegulator.ActualValueH2O);
-Flow0=double(calib.MFCCardCalib.ChannelData0.Flow);
-Flow1=double(calib.MFCCardCalib.ChannelData1.Flow);
-Flow2=double(calib.MFCCardCalib.ChannelData2.Flow);
-Flow3=double(calib.MFCCardCalib.ChannelData3.Flow);
-Humid=Flow0./Flow1.*100;
+Pamb=double(calib.LicorCalib.AmbientPressure)./10;
+TLicor=double(calib.LicorCalib.LicorTemperature)/100-273.15;
+TH2O=double(calib.PIDRegulator.ActualValueH2O)/100-273.15;
+
+x=double(calib.MFCCardCalib.ChannelData0.Flow); eval(['Flow0=',fcts2val.CalFlow0,';']);
+x=double(calib.MFCCardCalib.ChannelData1.Flow); eval(['Flow1=',fcts2val.CalFlow1,';']);
+x=double(calib.MFCCardCalib.ChannelData2.Flow); eval(['Flow2=',fcts2val.CalFlow2,';']);
+x=double(calib.MFCCardCalib.ChannelData3.Flow); eval(['Flow3=',fcts2val.CalFlow3,';']);
+
+Humid=Flow0./(Flow0+Flow1).*100;
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
-set(handles.textPamb,'String',[num2str(Pamb(lastrow),3),' ppm']);
-set(handles.textTLicor,'String',[num2str(TLicor(lastrow),3),' ppm']);
-set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' ppm']);
-set(handles.textFlow0,'String',[num2str(Flow0(lastrow),3),' ppm']);
-set(handles.textFlow1,'String',[num2str(Flow1(lastrow),3),' ppm']);
-set(handles.textFlow2,'String',[num2str(Flow2(lastrow),3),' ppm']);
-set(handles.textFlow3,'String',[num2str(Flow3(lastrow),3),' ppm']);
-set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' ppm']);
-
+set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
+set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
+set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
+set(handles.textFlow0,'String',[num2str(Flow0(lastrow),5),' sccm']);
+set(handles.textFlow1,'String',[num2str(Flow1(lastrow),5),' sccm']);
 set(handles.textFlow2,'String',[num2str(Flow2(lastrow),3),' sccm']);
+set(handles.textFlow3,'String',[num2str(Flow3(lastrow),3),' sccm']);
+set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
+
 % warn with red background if values are off limits
 if Flow2~=300
     set(handles.textFlow2,'BackgroundColor','r');
@@ -243,10 +244,10 @@ for i=1:5
     end
 end
 if data.CounterOnl>0
-    avgDiodeWZ1inonl=data.sumDiodeWZ1in/data.CounterOnl;
-    avgDiodeWZ1outonl=data.sumDiodeWZ1out/data.CounterOnl;
-    avgDiodeWZ2inonl=data.sumDiodeWZ2in/data.CounterOnl;
-    avgDiodeWZ2outonl=data.sumDiodeWZ2out/data.CounterOnl;
+    avgDiodeWZ1inonl=data.sumDiodeWZ1inonl/data.CounterOnl;
+    avgDiodeWZ1outonl=data.sumDiodeWZ1outonl/data.CounterOnl;
+    avgDiodeWZ2inonl=data.sumDiodeWZ2inonl/data.CounterOnl;
+    avgDiodeWZ2outonl=data.sumDiodeWZ2outonl/data.CounterOnl;
     avgMCP1onl=data.sumctsMCP1onl/data.CounterOnl;
     avgMCP2onl=data.sumctsMCP2onl/data.CounterOnl;
 else
@@ -258,10 +259,10 @@ else
     avgMCP2onl=NaN;
 end
 if data.CounterOffl>0
-    avgDiodeWZ1inoffl=data.sumDiodeWZ1in/data.CounterOnl;
-    avgDiodeWZ1outoffl=data.sumDiodeWZ1out/data.CounterOnl;
-    avgDiodeWZ2inoffl=data.sumDiodeWZ2in/data.CounterOnl;
-    avgDiodeWZ2outoffl=data.sumDiodeWZ2out/data.CounterOnl;
+    avgDiodeWZ1inoffl=data.sumDiodeWZ1inoffl/data.CounterOffl;
+    avgDiodeWZ1outoffl=data.sumDiodeWZ1outoffl/data.CounterOffl;
+    avgDiodeWZ2inoffl=data.sumDiodeWZ2inoffl/data.CounterOffl;
+    avgDiodeWZ2outoffl=data.sumDiodeWZ2outoffl/data.CounterOffl;
     avgMCP1offl=data.sumctsMCP1offl/data.CounterOffl;
     avgMCP2offl=data.sumctsMCP2offl/data.CounterOffl;
 else
