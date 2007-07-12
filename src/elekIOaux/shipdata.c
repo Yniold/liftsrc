@@ -3,11 +3,14 @@
 // ShipData Control Thread
 // ============================================
 //
-// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-03-10 18:09:30 $ by $Author: rudolf $
+// $RCSfile: shipdata.c,v $ last changed on $Date: 2007-07-12 17:18:44 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: shipdata.c,v $
+// Revision 1.7  2007-07-12 17:18:44  rudolf
+// corrected include file order
+//
 // Revision 1.6  2007-03-10 18:09:30  rudolf
 // fixed lat and longitude swapped
 //
@@ -38,13 +41,6 @@
 #undef DEBUG
 #undef DEBUG_SETPOS
 #undef DEBUG_MUTEX
-
-#include "../include/elekGeneral.h"
-#include "../include/elekIO.h"
-#include "../include/elekIOPorts.h"
-#include "../commTools/udptools.h"
-
-#include "shipdata.h"
 #include <stdint.h>
 #include <pthread.h>
 #include <sys/socket.h>
@@ -52,6 +48,14 @@
 #include <errno.h>
 #include <signal.h>
 #include <ncurses.h>
+
+
+#include "../include/elekGeneral.h"
+#include "../include/elekIO.h"
+#include "../include/elekIOPorts.h"
+#include "../commTools/udptools.h"
+
+#include "shipdata.h"
 
 extern bool bEnableGUI;
 extern WINDOW* pStatusWin;

@@ -3,11 +3,14 @@
 // MeteoBox Control Thread
 // ============================================
 //
-// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-03-08 14:01:22 $ by $Author: rudolf $
+// $RCSfile: meteobox.c,v $ last changed on $Date: 2007-07-12 17:18:44 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: meteobox.c,v $
+// Revision 1.7  2007-07-12 17:18:44  rudolf
+// corrected include file order
+//
 // Revision 1.6  2007-03-08 14:01:22  rudolf
 // cleaned up unused ports
 //
@@ -39,12 +42,6 @@
 #undef DEBUG_SETPOS
 #undef DEBUG_MUTEX
 
-#include "../include/elekGeneral.h"
-#include "../include/elekIO.h"
-#include "../include/elekIOPorts.h"
-#include "../commTools/udptools.h"
-
-#include "meteobox.h"
 #include <stdint.h>
 #include <pthread.h>
 #include <sys/socket.h>
@@ -52,6 +49,14 @@
 #include <errno.h>
 #include <signal.h>
 #include <ncurses.h>
+
+
+#include "../include/elekGeneral.h"
+#include "../include/elekIO.h"
+#include "../include/elekIOPorts.h"
+#include "../commTools/udptools.h"
+
+#include "meteobox.h"
 
 extern struct MessagePortType MessageOutPortList[];
 extern bool bEnableGUI;
