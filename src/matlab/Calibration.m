@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 06-Jul-2007 11:26:53
+% Last Modified by GUIDE v2.5 12-Jul-2007 18:16:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -167,22 +167,22 @@ end
 hold(handles.axes1,'off'); 
 
 if get(handles.chkDUV,'Value')
-    plot(handles.axes1,statustime(iZeit),DiodeUV(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),DiodeUV(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkH2O,'Value')
-    plot(handles.axes1,statustime(iZeit),H2O(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),H2O(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkPamb,'Value')
-    plot(handles.axes1,statustime(iZeit),Pamb(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),Pamb(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkTLicor,'Value')
-    plot(handles.axes1,statustime(iZeit),TLicor(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),TLicor(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 
@@ -191,23 +191,13 @@ if get(handles.chkTH2O,'Value')
     hold(handles.axes1,'on');
 end 
 
-if get(handles.chkFlow0,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow0(iZeit),'r');
+if get(handles.chkFlowCal,'Value')
+    plot(handles.axes1,statustime(iZeit),Flow0(iZeit)+Flow1(iZeit),'r');
     hold(handles.axes1,'on');
 end 
 
-if get(handles.chkFlow1,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow1(iZeit),'r');
-    hold(handles.axes1,'on');
-end 
-
-if get(handles.chkFlow2,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow2(iZeit),'r');
-    hold(handles.axes1,'on');
-end 
-
-if get(handles.chkFlow3,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow3(iZeit),'r');
+if get(handles.chkFlowLicor,'Value')
+    plot(handles.axes1,statustime(iZeit),(Flow2(iZeit)+Flow3(iZeit))/2,'r');
     hold(handles.axes1,'on');
 end 
 
@@ -390,31 +380,22 @@ function chkDUV_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkDUV
 
 
-% --- Executes on button press in chkFlow0.
-function chkFlow0_Callback(hObject, eventdata, handles)
-% hObject    handle to chkFlow0 (see GCBO)
+% --- Executes on button press in chkFlowCal.
+function chkFlowCal_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowCal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkFlow0
+% Hint: get(hObject,'Value') returns toggle state of chkFlowCal
 
 
-% --- Executes on button press in chkFlow1.
-function chkFlow1_Callback(hObject, eventdata, handles)
-% hObject    handle to chkFlow1 (see GCBO)
+% --- Executes on button press in chkFlowLicor.
+function chkFlowLicor_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowLicor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkFlow1
-
-
-% --- Executes on button press in chkFlow2.
-function chkFlow2_Callback(hObject, eventdata, handles)
-% hObject    handle to chkFlow2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of chkFlow2
+% Hint: get(hObject,'Value') returns toggle state of chkFlowLicor
 
 
 % --- Executes on button press in chkTLicor.
@@ -435,15 +416,6 @@ function chkPamb_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkPamb
 
 
-% --- Executes on button press in chkFlow3.
-function chkFlow3_Callback(hObject, eventdata, handles)
-% hObject    handle to chkFlow3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of chkFlow3
-
-
 % --- Executes on button press in chkTH2O.
 function chkTH2O_Callback(hObject, eventdata, handles)
 % hObject    handle to chkTH2O (see GCBO)
@@ -453,26 +425,39 @@ function chkTH2O_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkTH2O
 
 
-% --- Executes on button press in pushSetFlow0.
-function pushSetFlow0_Callback(hObject, eventdata, handles)
-% hObject    handle to pushSetFlow0 (see GCBO)
+% --- Executes on button press in pushSetFlowLicor.
+function pushSetFlowLicor_Callback(hObject, eventdata, handles)
+% hObject    handle to pushSetFlowLicor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+Flow=str2double(get(handles.editFlowLicor,'String'));
+if ~isnan(Flow)
+    system(['/lift/bin/eCmd @armCalib s calibflow 2 '; num2str(Flow)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 3 '; num2str(Flow)]);   
+end
+
+
+
+function editFlowLicor_Callback(hObject, eventdata, handles)
+% hObject    handle to editFlowLicor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-
-function Flow010_Callback(hObject, eventdata, handles)
-% hObject    handle to Flow010 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of Flow010 as text
-%        str2double(get(hObject,'String')) returns contents of Flow010 as a double
+% Hints: get(hObject,'String') returns contents of editFlowLicor as text
+%        str2double(get(hObject,'String')) returns contents of editFlowLicor as a double
+Flow=uint16(str2double(get(hObject,'String')));
+if Flow>500 Flow=500; end
+if isnan(Flow)
+    set(hObject,'BackgroundColor','red');
+else
+    set(hObject,'BackgroundColor','white');
+end
+system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Flow)]);   
 
 
 % --- Executes during object creation, after setting all properties.
-function Flow010_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Flow010 (see GCBO)
+function editFlowLicor_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editFlowLicor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -483,86 +468,43 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushSetFlow1.
-function pushSetFlow1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushSetFlow1 (see GCBO)
+% --- Executes on button press in pushSetFlowCal.
+function pushSetFlowCal_Callback(hObject, eventdata, handles)
+% hObject    handle to pushSetFlowCal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-
-function editFlow1_Callback(hObject, eventdata, handles)
-% hObject    handle to editFlow1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editFlow1 as text
-%        str2double(get(hObject,'String')) returns contents of editFlow1 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function editFlow1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to editFlow1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+Flow=str2double(get(handles.editFlowCal,'String'));
+Humid=str2double(get(handles.editHumid,'String'))/100;
+FlowOn=get(handles.tglAir,'Value');
+Flow0=Humid*Flow;
+Flow1=Flow-Flow0;
+if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
 end
 
 
-% --- Executes on button press in pushSetFlow2.
-function pushSetFlow2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushSetFlow2 (see GCBO)
+
+function editFlowCal_Callback(hObject, eventdata, handles)
+% hObject    handle to editFlowCal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-
-function editFlow2_Callback(hObject, eventdata, handles)
-% hObject    handle to editFlow2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editFlow2 as text
-%        str2double(get(hObject,'String')) returns contents of editFlow2 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function editFlow2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to editFlow2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+% Hints: get(hObject,'String') returns contents of editFlowCal as text
+%        str2double(get(hObject,'String')) returns contents of editFlowCal as a double
+Flow=uint16(str2double(get(hObject,'String')));
+if Flow>50000 Flow=50000; end
+if isnan(Flow)
+    set(hObject,'BackgroundColor','red');
+else
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in pushSetFlow3.
-function pushSetFlow3_Callback(hObject, eventdata, handles)
-% hObject    handle to pushSetFlow3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
-function editFlow3_Callback(hObject, eventdata, handles)
-% hObject    handle to editFlow3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of editFlow3 as text
-%        str2double(get(hObject,'String')) returns contents of editFlow3 as a double
+system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Flow)]);   
 
 
 % --- Executes during object creation, after setting all properties.
-function editFlow3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to editFlow3 (see GCBO)
+function editFlowCal_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editFlowCal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -578,6 +520,11 @@ function pushSetTH2O_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetTH2O (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+TH2O=str2double(get(handles.editTH2O,'String'))+273.15;
+if ~isnan(TH2O)
+    system(['/lift/bin/eCmd @armCalib s calibwatertemp '; num2str(TH2O)]);   
+end
+
 
 
 
@@ -588,6 +535,14 @@ function editTH2O_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editTH2O as text
 %        str2double(get(hObject,'String')) returns contents of editTH2O as a double
+TH2O=uint16(str2double(get(hObject,'String')));
+if TH2O>40 TH2O=40; end
+if isnan(TH2O)
+    set(hObject,'BackgroundColor','red');
+else
+    set(hObject,'BackgroundColor','white');
+end
+system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(TH2O)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -620,34 +575,30 @@ function pushSethumid_Callback(hObject, eventdata, handles)
 
 
 
-function edithumid_Callback(hObject, eventdata, handles)
-% hObject    handle to edithumid (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edithumid as text
-%        str2double(get(hObject,'String')) returns contents of edithumid as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edithumid_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edithumid (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes on button press in tglAir.
 function tglAir_Callback(hObject, eventdata, handles)
 % hObject    handle to tglAir (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+if get(hObject,'Value')
+    Flow=str2double(get(handles.editFlowCal,'String'));
+    Humid=str2double(get(handles.editHumid,'String'))/100;
+    FlowOn=get(handles.tglAir,'Value');
+    Flow0=Humid*Flow;
+    Flow1=Flow-Flow0;
+    if ~isnan(Flow0) & ~isnan(Flow1)
+        system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
+        system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
+        set(hObject,'BackgroundColor','g');
+    else
+        set(hObject,'BackgroundColor','r');
+    end
+else
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 0']);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 0']);   
+    set(hObject,'BackgroundColor','c');
+end
 
 
 function editHumid_Callback(hObject, eventdata, handles)
@@ -657,6 +608,14 @@ function editHumid_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editHumid as text
 %        str2double(get(hObject,'String')) returns contents of editHumid as a double
+x=uint16(str2double(get(hObject,'String')));
+if x>100 x=100; end
+if isnan(x)
+    set(hObject,'BackgroundColor','red');
+else
+    set(hObject,'BackgroundColor','white');
+end
+system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(x)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -677,5 +636,15 @@ function pushSetHumid_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetHumid (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+Flow=str2double(get(handles.editFlowCal,'String'));
+Humid=str2double(get(handles.editHumid,'String'))/100;
+FlowOn=get(handles.tglAir,'Value');
+Flow0=Humid*Flow;
+Flow1=Flow-Flow0;
+
+if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
+end
 
 
