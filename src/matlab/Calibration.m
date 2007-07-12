@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 12-Jul-2007 18:16:20
+% Last Modified by GUIDE v2.5 12-Jul-2007 19:08:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -151,17 +151,15 @@ set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
 set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
-set(handles.textFlow0,'String',[num2str(Flow0(lastrow),5),' sccm']);
-set(handles.textFlow1,'String',[num2str(Flow1(lastrow),5),' sccm']);
-set(handles.textFlow2,'String',[num2str(Flow2(lastrow),3),' sccm']);
-set(handles.textFlow3,'String',[num2str(Flow3(lastrow),3),' sccm']);
+set(handles.textFlowCalib,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
+set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,5),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 
 % warn with red background if values are off limits
-if Flow2~=300
-    set(handles.textFlow2,'BackgroundColor','r');
+if Flow2~=300 | Flow3~=300
+    set(handles.textFlowLicor,'BackgroundColor','r');
 else
-    set(handles.textFlow2,'BackgroundColor',[0.7,0.7,0.7]);
+    set(handles.textFlowLicor,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
 hold(handles.axes1,'off'); 
