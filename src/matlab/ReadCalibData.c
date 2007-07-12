@@ -4,9 +4,12 @@
  *
  *   [statusdata] = ReadCalibData('filename')
  *
- * $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $
+ * $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $
  *
  * $Log: ReadCalibData.c,v $
+ * Revision 1.5  2007-07-12 17:51:52  rudolf
+ * LICOR channels can also be negative, changed uint16 to int16
+ *
  * Revision 1.4  2007-07-12 17:45:44  martinez
  * corrected errors
  *
@@ -179,6 +182,7 @@ void* pValue;
 struct calibStatusType* pTempPointer;
 uint32_t* pU32Target;
 uint16_t* pU16Target;
+int16_t* pI16Target;
 uint8_t* pU08Target;
 uint8_t* pBoolTarget;
 uint8_t ucTrue = 1;
@@ -222,18 +226,18 @@ int nrhs, const mxArray*prhs[] )
   /* Check for proper number of arguments */
     if (nrhs != 1)
     {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $ \n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $ \n");
         mexErrMsgTxt("input argument required: FILENAME.CAL");
     }
     
   /* Input must be a string. */
     if (mxIsChar(prhs[0]) != 1) {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $\n");
         mexErrMsgTxt("Input must be a string.");
     }
   /* Input must be a row vector. */
     if (mxGetM(prhs[0]) != 1) {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $\n");
         mexErrMsgTxt("Input must be a row vector.");
     }
     
@@ -284,7 +288,7 @@ int nrhs, const mxArray*prhs[] )
     
     if(lFileLength % sizeof(struct calibStatusType) != 0)
     {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $\n");
         mexErrMsgTxt("File size is not a multiple of structure size, please select a proper .cal file!");
     }
   /* we have to allocate some space, use mxCalloc, matlab is cleaning up memory upon exit */
@@ -301,7 +305,7 @@ int nrhs, const mxArray*prhs[] )
     qsort(ptrCalibStatus,lDataSets,sizeof(struct calibStatusType),cmptimesort);
     
 #ifdef X_DEBUG
-    mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
+    mexPrintf("This is $Id: ReadCalibData.c,v 1.5 2007-07-12 17:51:52 rudolf Exp $\n");
     mexPrintf("Read %ld datasets from file %s\n",lDataSets,input_buf);
 #endif
     
@@ -471,23 +475,23 @@ int nrhs, const mxArray*prhs[] )
 	/*******************************************/
 
     /* create 1xM matrix with proper data type */
-    pLicorStatusCO2AArray = mxCreateNumericArray(2, dims, mxUINT16_CLASS, mxREAL);
+    pLicorStatusCO2AArray = mxCreateNumericArray(2, dims, mxINT16_CLASS, mxREAL);
     
     /* determine at which index to hook in the whole array */
     iArrayIndex = mxGetFieldNumber(pLicorCalibArray,"CO2A");
     
     /* allocate heap for all elements, DON'T USE VARIABLES ON STACK !!! */
-    pValue = mxCalloc(lDataSets,sizeof(uint16_t));
+    pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.CO2A),sizeof(uint16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.CO2A),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusCO2AArray,pValue);
@@ -498,23 +502,23 @@ int nrhs, const mxArray*prhs[] )
 	/*******************************************/
 
     /* create 1xM matrix with proper data type */
-    pLicorStatusCO2BArray = mxCreateNumericArray(2, dims, mxUINT16_CLASS, mxREAL);
+    pLicorStatusCO2BArray = mxCreateNumericArray(2, dims, mxINT16_CLASS, mxREAL);
     
     /* determine at which index to hook in the whole array */
     iArrayIndex = mxGetFieldNumber(pLicorCalibArray,"CO2B");
     
     /* allocate heap for all elements, DON'T USE VARIABLES ON STACK !!! */
-    pValue = mxCalloc(lDataSets,sizeof(uint16_t));
+    pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.CO2B),sizeof(uint16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.CO2B),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusCO2BArray,pValue);
@@ -534,14 +538,14 @@ int nrhs, const mxArray*prhs[] )
     pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.CO2D),sizeof(int16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.CO2D),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusCO2DArray,pValue);
@@ -552,23 +556,23 @@ int nrhs, const mxArray*prhs[] )
 	/*******************************************/
 
     /* create 1xM matrix with proper data type */
-    pLicorStatusH2OAArray = mxCreateNumericArray(2, dims, mxUINT16_CLASS, mxREAL);
+    pLicorStatusH2OAArray = mxCreateNumericArray(2, dims, mxINT16_CLASS, mxREAL);
     
     /* determine at which index to hook in the whole array */
     iArrayIndex = mxGetFieldNumber(pLicorCalibArray,"H2OA");
     
     /* allocate heap for all elements, DON'T USE VARIABLES ON STACK !!! */
-    pValue = mxCalloc(lDataSets,sizeof(uint16_t));
+    pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.H2OA),sizeof(uint16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.H2OA),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusH2OAArray,pValue);
@@ -579,23 +583,23 @@ int nrhs, const mxArray*prhs[] )
 	/*******************************************/
 
     /* create 1xM matrix with proper data type */
-    pLicorStatusH2OBArray = mxCreateNumericArray(2, dims, mxUINT16_CLASS, mxREAL);
+    pLicorStatusH2OBArray = mxCreateNumericArray(2, dims, mxINT16_CLASS, mxREAL);
     
     /* determine at which index to hook in the whole array */
     iArrayIndex = mxGetFieldNumber(pLicorCalibArray,"H2OB");
     
     /* allocate heap for all elements, DON'T USE VARIABLES ON STACK !!! */
-    pValue = mxCalloc(lDataSets,sizeof(uint16_t));
+    pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.H2OB),sizeof(uint16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.H2OB),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusH2OBArray,pValue);
@@ -615,14 +619,14 @@ int nrhs, const mxArray*prhs[] )
     pValue = mxCalloc(lDataSets,sizeof(int16_t));
 
 	pTempPointer = ptrCalibStatus;
-	pU16Target = pValue;
+	pI16Target = pValue;
 
 	for(iElement = 0; iElement < lDataSets; iElement++)
 	{
 		/* copy the values into the allocated heap space */
-		memcpy((void*)pU16Target,&(pTempPointer->LicorCalib.H2OD),sizeof(int16_t));
+		memcpy((void*)pI16Target,&(pTempPointer->LicorCalib.H2OD),sizeof(int16_t));
 		pTempPointer++;
-		pU16Target++;
+		pI16Target++;
 	}
     /* let the pointer of the array point to the heap space with our data */
     mxSetData(pLicorStatusH2ODArray,pValue);
