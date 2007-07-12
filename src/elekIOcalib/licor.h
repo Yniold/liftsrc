@@ -3,11 +3,14 @@
 // Headerfile
 // ============================================
 //
-// $RCSfile: licor.h,v $ last changed on $Date: 2007-02-21 16:06:30 $ by $Author: rudolf $
+// $RCSfile: licor.h,v $ last changed on $Date: 2007-07-12 17:37:56 $ by $Author: rudolf $
 //
 // History:
 //
 // $Log: licor.h,v $
+// Revision 1.4  2007-07-12 17:37:56  rudolf
+// LICOR channels can also be negative, changed uint16 to int16
+//
 // Revision 1.3  2007-02-21 16:06:30  rudolf
 // licor struct now read from parsing thread and copied to status struct
 //
@@ -62,12 +65,12 @@ struct  sLicorType
    uint16_t LicorTemperature; /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
    uint16_t AmbientPressure;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
-   uint16_t CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-   uint16_t CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+   int16_t CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+   int16_t CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
    int16_t CO2D;              /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
-   uint16_t H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
-   uint16_t H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+   int16_t H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+   int16_t H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
    int16_t H2OD;              /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 };
 

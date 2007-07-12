@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-06-14 19:20:26 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-07-12 17:35:34 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.55  2007-07-12 17:35:34  rudolf
+* LICOR channels can also be negative, changed uint16 to int16
+*
 * Revision 1.54  2007-06-14 19:20:26  martinez
 * fixed size bug in Instrument bit field
 *
@@ -649,12 +652,12 @@ struct LicorH2OCO2Type
    uint16_t                   LicorTemperature; /* Unit: degree kelvin * 100 e.g. 20 degree celsius -> 273,15 + 20,0 => 29315 */
    uint16_t                   AmbientPressure;  /* Unit: kPA * 100 e.g. 1002.7 mBar => 10027 */
 
-   uint16_t                   CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
-   uint16_t                   CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
+   int16_t                    CO2A;             /* CO2 concentration cell A in mymol/mol, coding scheme T.B.D. */
+   int16_t                    CO2B;             /* CO2 concentration cell B in mymol/mol, coding scheme T.B.D. */
    int16_t                    CO2D;             /* CO2 differential concentration in mymol/mol, coding scheme T.B.D. */
 
-   uint16_t                   H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
-   uint16_t                   H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
+   int16_t                    H2OA;             /* H2O concentration cell A in mmol/mol, coding scheme T.B.D. */
+   int16_t                    H2OB;             /* H2O concentration cell B in mmol/mol, coding scheme T.B.D. */
    int16_t                    H2OD;             /* H2O differential concentration in mmol/mol, coding scheme T.B.D. */
 };
 
