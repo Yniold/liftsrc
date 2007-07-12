@@ -336,8 +336,10 @@ end
 
 
 % reset TempCard if needed
-if ( double(statusData(lastrow,col.TempDyelaser))<27000 )
-    system('/lift/src/scripts/resetTemp');
+if ~isnan(col.TempDyelaser)
+    if ( double(statusData(lastrow,col.TempDyelaser))<27000 )
+        system('/lift/src/scripts/resetTemp');
+    end
 end
 if statusData(lastrow,col.ValidSlaveDataFlag && ~isnan(col.TempMCP1)) % only if armaxis is on
     if ( double(statusData(lastrow,col.TempMCP1))<20000 )
