@@ -4,9 +4,12 @@
  *
  *   [statusdata] = ReadCalibData('filename')
  *
- * $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $
+ * $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $
  *
  * $Log: ReadCalibData.c,v $
+ * Revision 1.4  2007-07-12 17:45:44  martinez
+ * corrected errors
+ *
  * Revision 1.3  2007-06-11 14:59:21  rudolf
  * added c file for reading binary data files into MATLAB structures
  *
@@ -219,18 +222,18 @@ int nrhs, const mxArray*prhs[] )
   /* Check for proper number of arguments */
     if (nrhs != 1)
     {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $ \n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $ \n");
         mexErrMsgTxt("input argument required: FILENAME.CAL");
     }
     
   /* Input must be a string. */
     if (mxIsChar(prhs[0]) != 1) {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
         mexErrMsgTxt("Input must be a string.");
     }
   /* Input must be a row vector. */
     if (mxGetM(prhs[0]) != 1) {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
         mexErrMsgTxt("Input must be a row vector.");
     }
     
@@ -281,7 +284,7 @@ int nrhs, const mxArray*prhs[] )
     
     if(lFileLength % sizeof(struct calibStatusType) != 0)
     {
-        mexPrintf("This is $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $\n");
+        mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
         mexErrMsgTxt("File size is not a multiple of structure size, please select a proper .cal file!");
     }
   /* we have to allocate some space, use mxCalloc, matlab is cleaning up memory upon exit */
@@ -297,8 +300,10 @@ int nrhs, const mxArray*prhs[] )
     
     qsort(ptrCalibStatus,lDataSets,sizeof(struct calibStatusType),cmptimesort);
     
-    mexPrintf("This is $Id: ReadCalibData.c,v 1.3 2007-06-11 14:59:21 rudolf Exp $\n");
+#ifdef X_DEBUG
+    mexPrintf("This is $Id: ReadCalibData.c,v 1.4 2007-07-12 17:45:44 martinez Exp $\n");
     mexPrintf("Read %ld datasets from file %s\n",lDataSets,input_buf);
+#endif
     
 
   /*******************/

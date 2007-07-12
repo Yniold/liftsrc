@@ -151,7 +151,7 @@ set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
 set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
-set(handles.textFlowCalib,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
+set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
 set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,5),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 
@@ -430,8 +430,8 @@ function pushSetFlowLicor_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 Flow=str2double(get(handles.editFlowLicor,'String'));
 if ~isnan(Flow)
-    system(['/lift/bin/eCmd @armCalib s calibflow 2 '; num2str(Flow)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 3 '; num2str(Flow)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 2 ', num2str(Flow)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 3 ', num2str(Flow)]);   
 end
 
 
@@ -477,8 +477,8 @@ FlowOn=get(handles.tglAir,'Value');
 Flow0=Humid*Flow;
 Flow1=Flow-Flow0;
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
-    system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
 end
 
 
@@ -520,7 +520,7 @@ function pushSetTH2O_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 TH2O=str2double(get(handles.editTH2O,'String'))+273.15;
 if ~isnan(TH2O)
-    system(['/lift/bin/eCmd @armCalib s calibwatertemp '; num2str(TH2O)]);   
+    system(['/lift/bin/eCmd @armCalib s calibwatertemp ', num2str(TH2O)]);   
 end
 
 
@@ -586,15 +586,15 @@ if get(hObject,'Value')
     Flow0=Humid*Flow;
     Flow1=Flow-Flow0;
     if ~isnan(Flow0) & ~isnan(Flow1)
-        system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
-        system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
+        system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
+        system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
         set(hObject,'BackgroundColor','g');
     else
         set(hObject,'BackgroundColor','r');
     end
 else
-    system(['/lift/bin/eCmd @armCalib s calibflow 0 0']);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 1 0']);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 +0']);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 +0']);   
     set(hObject,'BackgroundColor','c');
 end
 
@@ -641,8 +641,8 @@ Flow0=Humid*Flow;
 Flow1=Flow-Flow0;
 
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
-    system(['/lift/bin/eCmd @armCalib s calibflow 0 '; num2str(Flow0)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 1 '; num2str(Flow1)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
 end
 
 
