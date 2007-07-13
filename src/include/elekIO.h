@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-07-12 17:35:34 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-07-13 07:52:09 $ by $Author: martinez $
 *
 * $Log: elekIO.h,v $
+* Revision 1.56  2007-07-13 07:52:09  martinez
+* instrument flag cal_measure
+*
 * Revision 1.55  2007-07-12 17:35:34  rudolf
 * LICOR channels can also be negative, changed uint16 to int16
 *
@@ -813,7 +816,8 @@ enum InstrumentActionType { /* update also in instrument.c */
     INSTRUMENT_ACTION_CAL,   
     INSTRUMENT_ACTION_DIAG,  
     INSTRUMENT_ACTION_POWERUP, 
-    INSTRUMENT_ACTION_POWERDOWN, 
+    INSTRUMENT_ACTION_POWERDOWN,
+	INSTRUMENT_ACTION_CAL_MEASURE,
 
     INSTRUMENT_ACTION_MAX
 };
