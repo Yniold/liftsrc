@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.45 $
-last change on $Date: 2007-06-12 12:56:27 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.46 $
+last change on $Date: 2007-07-13 12:21:00 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.46  2007-07-13 12:21:00  martinez
+included calmeasure flag
+
 Revision 1.45  2007-06-12 12:56:27  martinez
 corrected syntax errors
 
@@ -304,13 +307,13 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.45 2007-06-12 12:56:27 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.46 2007-07-13 12:21:00 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
 	printf("eCmd @host s stopquery\n");
 	printf("eCmd @host s startquery\n");
-	printf("eCmd @host s instrumentaction [nop/measure/cal/diag/powerup/powerdown]\n");
+	printf("eCmd @host s instrumentaction [nop/measure/cal/diag/powerup/powerdown/calmeasure]\n");
 	printf("eCmd @host s etalonnop\n");
 	printf("eCmd @host s etalontoggle\n");	
 	printf("eCmd @host s etalonditherOnline\n");		
