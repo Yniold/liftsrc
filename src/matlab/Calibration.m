@@ -428,10 +428,18 @@ function pushSetFlowLicor_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetFlowLicor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Flow=str2double(get(handles.editFlowLicor,'String'));
+x=str2double(get(handles.editFlowLicor,'String'));
+if x==0
+    SetFlow2=0;
+    SetFlow3=0;
+else
+    eval(['SetFlow2=',fcts2val.CalFlow2Set,';']);
+    eval(['SetFlow3=',fcts2val.CalFlow3Set,';']);
+end
+
 if ~isnan(Flow)
-    system(['/lift/bin/eCmd @armCalib s calibflow 2 ', num2str(Flow)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 3 ', num2str(Flow)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 2 +', num2str(SetFlow2)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 3 +', num2str(SetFlow3)]);   
 end
 
 
@@ -450,7 +458,6 @@ if isnan(Flow)
 else
     set(hObject,'BackgroundColor','white');
 end
-system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Flow)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -476,9 +483,19 @@ Humid=str2double(get(handles.editHumid,'String'))/100;
 FlowOn=get(handles.tglAir,'Value');
 Flow0=Humid*Flow;
 Flow1=Flow-Flow0;
+if Flow0==0
+    SetFlow0=0;
+else
+    x=Flow0; eval(['SetFlow0=',fcts2val.CalFlow0Set,';']);
+end
+if Flow1==0
+    SetFlow1=0;
+else
+    x=Flow1; eval(['SetFlow1=',fcts2val.CalFlow1Set,';']);
+end
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
-    system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 +', num2str(SetFlow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 +', num2str(SetFlow1)]);   
 end
 
 
@@ -497,7 +514,6 @@ if isnan(Flow)
 else
     set(hObject,'BackgroundColor','white');
 end
-system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Flow)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -540,7 +556,6 @@ if isnan(TH2O)
 else
     set(hObject,'BackgroundColor','white');
 end
-system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(TH2O)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -585,9 +600,19 @@ if get(hObject,'Value')
     FlowOn=get(handles.tglAir,'Value');
     Flow0=Humid*Flow;
     Flow1=Flow-Flow0;
+    if Flow0==0
+        SetFlow0=0;
+    else
+        x=Flow0; eval(['SetFlow0=',fcts2val.CalFlow0Set,';']);
+    end
+    if Flow1==0
+        SetFlow1=0;
+    else
+        x=Flow1; eval(['SetFlow1=',fcts2val.CalFlow1Set,';']);
+    end
     if ~isnan(Flow0) & ~isnan(Flow1)
-        system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
-        system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
+        system(['/lift/bin/eCmd @armCalib s calibflow 0 +', num2str(SetFlow0)]);   
+        system(['/lift/bin/eCmd @armCalib s calibflow 1 +', num2str(SetFlow1)]);   
         set(hObject,'BackgroundColor','g');
     else
         set(hObject,'BackgroundColor','r');
@@ -613,7 +638,6 @@ if isnan(x)
 else
     set(hObject,'BackgroundColor','white');
 end
-system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(x)]);   
 
 
 % --- Executes during object creation, after setting all properties.
@@ -639,10 +663,19 @@ Humid=str2double(get(handles.editHumid,'String'))/100;
 FlowOn=get(handles.tglAir,'Value');
 Flow0=Humid*Flow;
 Flow1=Flow-Flow0;
-
+if Flow0==0
+    SetFlow0=0;
+else
+    x=Flow0; eval(['SetFlow0=',fcts2val.CalFlow0Set,';']);
+end
+if Flow1==0
+    SetFlow1=0;
+else
+    x=Flow1; eval(['SetFlow1=',fcts2val.CalFlow1Set,';']);
+end
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
-    system(['/lift/bin/eCmd @armCalib s calibflow 0 ', num2str(Flow0)]);   
-    system(['/lift/bin/eCmd @armCalib s calibflow 1 ', num2str(Flow1)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 0 +', num2str(SetFlow0)]);   
+    system(['/lift/bin/eCmd @armCalib s calibflow 1 +', num2str(SetFlow1)]);   
 end
 
 
