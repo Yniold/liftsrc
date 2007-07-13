@@ -534,7 +534,7 @@ function pushSetTH2O_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetTH2O (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-TH2O=str2double(get(handles.editTH2O,'String'))+273.15;
+TH2O=(str2double(get(handles.editTH2O,'String'))+273.15)*100;
 if ~isnan(TH2O)
     system(['/lift/bin/eCmd @armCalib s calibwatertemp ', num2str(TH2O)]);   
 end
