@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 12-Jul-2007 19:08:58
+% Last Modified by GUIDE v2.5 13-Jul-2007 12:07:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -145,6 +145,7 @@ x=double(calib.MFCCardCalib.ChannelData2.Flow); eval(['Flow2=',fcts2val.CalFlow2
 x=double(calib.MFCCardCalib.ChannelData3.Flow); eval(['Flow3=',fcts2val.CalFlow3,';']);
 
 Humid=Flow0./(Flow0+Flow1).*100;
+CalFlag=double(statusData(:,col.InstrumentAction));
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
@@ -154,12 +155,21 @@ set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
 set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
 set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,5),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
-
 % warn with red background if values are off limits
-if Flow2~=300 | Flow3~=300
+if CalFlag==2(lastrow) | CalFlag(lastrow)==6
+    set(handles.pushFlag,'String','Flag On','BackgroundColor','g')
+else
+    set(handles.pushFlag,'String','Flag Off','BackgroundColor','r')
+end
+if Flow2(lastrow)<250 | Flow2(lastrow)>350 | Flow3(lastrow)<250 | Flow3(lastrow)>350
     set(handles.textFlowLicor,'BackgroundColor','r');
 else
     set(handles.textFlowLicor,'BackgroundColor',[0.7,0.7,0.7]);
+end
+if (Flow0(lastrow)+Flow1(lastrow))<49500 | (Flow0(lastrow)+Flow1(lastrow))>50500
+    set(handles.textFlowCal,'BackgroundColor','r');
+else
+    set(handles.textFlowCal,'BackgroundColor',[0.7,0.7,0.7]);
 end
 
 hold(handles.axes1,'off'); 
@@ -350,11 +360,13 @@ if get(hObject,'Value')
     data.sumH2O=0;
     data.averaging=1;
     set(handles.txtStartTime,'String',strcat(datestr(statustime(lastrow),13)));
+    system(['/lift/bin/eCmd @lift s instrumentaction 6']);   
 else
     set(hObject,'String','Start')
     % display system time
     data.averaging=0;
     set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13)));
+    system(['/lift/bin/eCmd @lift s instrumentaction 2']);   
 end
 
 setappdata(handles.output, 'Caldata', data);
@@ -676,6 +688,20 @@ end
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
     system(['/lift/bin/eCmd @armCalib s calibflow 0 +', num2str(SetFlow0)]);   
     system(['/lift/bin/eCmd @armCalib s calibflow 1 +', num2str(SetFlow1)]);   
+end
+
+
+
+
+% --- Executes on button press in pushflag.
+function pushflag_Callback(hObject, eventdata, handles)
+% hObject    handle to pushflag (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(hObject,'BackgroundColor')=='r'
+    system(['/lift/bin/eCmd @lift s instrumentaction 2']);   
+else
+    system(['/lift/bin/eCmd @lift s instrumentaction 0']);   
 end
 
 
