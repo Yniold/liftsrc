@@ -153,13 +153,13 @@ set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
 set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
-set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,5),' sccm']);
+set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,3),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 % warn with red background if values are off limits
 if CalFlag==2(lastrow) | CalFlag(lastrow)==6
-    set(handles.pushFlag,'String','Flag On','BackgroundColor','g')
+    set(handles.pushflag,'String','Flag On','BackgroundColor','g')
 else
-    set(handles.pushFlag,'String','Flag Off','BackgroundColor','r')
+    set(handles.pushflag,'String','Flag Off','BackgroundColor','r')
 end
 if Flow2(lastrow)<250 | Flow2(lastrow)>350 | Flow3(lastrow)<250 | Flow3(lastrow)>350
     set(handles.textFlowLicor,'BackgroundColor','r');
@@ -440,6 +440,10 @@ function pushSetFlowLicor_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetFlowLicor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
+
 x=str2double(get(handles.editFlowLicor,'String'));
 if x==0
     SetFlow2=0;
@@ -490,6 +494,10 @@ function pushSetFlowCal_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetFlowCal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
+
 Flow=str2double(get(handles.editFlowCal,'String'));
 Humid=str2double(get(handles.editHumid,'String'))/100;
 FlowOn=get(handles.tglAir,'Value');
@@ -592,20 +600,14 @@ function chkHumid_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkHumid
 
 
-% --- Executes on button press in pushSethumid.
-function pushSethumid_Callback(hObject, eventdata, handles)
-% hObject    handle to pushSethumid (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
-
 % --- Executes on button press in tglAir.
 function tglAir_Callback(hObject, eventdata, handles)
 % hObject    handle to tglAir (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
 if get(hObject,'Value')
     Flow=str2double(get(handles.editFlowCal,'String'));
     Humid=str2double(get(handles.editHumid,'String'))/100;
