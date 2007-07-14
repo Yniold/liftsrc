@@ -371,9 +371,9 @@ statusDataCols=...
 'TempPrallhz',colTempPrallhz,'x/100-273.15','C';
 'TempPrallhzStatus',colTempPrallhz+1,'x*NaN','';
 'TempPrallhzid',colTempPrallhz+2,'x*NaN','';
-'TempPrallhz',colTempPrallhz,'x/100-273.15','C';
-'TempPrallhzStatus',colTempPrallhz+1,'x*NaN','';
-'TempPrallhzid',colTempPrallhz+2,'x*NaN','';
+'TempFiberTube',colTempFiberTube,'x/100-273.15','C';
+'TempFiberTubeStatus',colTempFiberTube+1,'x*NaN','';
+'TempFiberTubeid',colTempFiberTube+2,'x*NaN','';
 'TempWPUnknown',colTempWPUnknown,'x/100-273.15','C';
 'TempWPUnknownStatus',colTempWPUnknown+1,'x*NaN','';
 'TempWPUnknownid',colTempWPUnknown+2,'dec2hex(x)','';
