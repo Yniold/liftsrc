@@ -874,6 +874,50 @@ switch char(xpar)
             xdata=statustime;
             xdata(:)=NaN;
         end
+    case 'TempArmTempCard'
+        if ~isnan(col.TempArmTempCard)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmTempCard);
+            else
+                x=double(statusData(:,col.TempArmTempCard)); eval(['xdata=',fcts2val.TempArmTempCard,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempPhotoOpp'
+        if ~isnan(col.TempPhotoOpp)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPhotoOpp);
+            else
+                x=double(statusData(:,col.TempPhotoOpp)); eval(['xdata=',fcts2val.TempPhotoOpp,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempPrallhz'
+        if ~isnan(col.TempPrallhz)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPrallhz);
+            else
+                x=double(statusData(:,col.TempPrallhz)); eval(['xdata=',fcts2val.TempPrallhz,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempFiberTube'
+        if ~isnan(col.TempFiberTube)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempFiberTube);
+            else
+                x=double(statusData(:,col.TempFiberTube)); eval(['xdata=',fcts2val.TempFiberTube,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
     case 'TempLaserPlateid'
         if ~isnan(col.TempLaserPlateid)
             if get(handles.toggleX,'Value')==0
@@ -1232,6 +1276,50 @@ switch char(xpar)
                 xdata=statusData(:,col.TempScrollContrid);
             else
                 x=uint16(statusData(:,col.TempScrollContrid)); eval(['xdata=',fcts2val.TempScrollContrid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempArmTempCardid'
+        if ~isnan(col.TempArmTempCardid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempArmTempCardid);
+            else
+                x=uint16(statusData(:,col.TempArmTempCardid)); eval(['xdata=',fcts2val.TempArmTempCardid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempPhotoOppid'
+        if ~isnan(col.TempPhotoOppid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPhotoOppid);
+            else
+                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['xdata=',fcts2val.TempPhotoOppid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempPhotoOppid'
+        if ~isnan(col.TempPhotoOppid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempPhotoOppid);
+            else
+                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['xdata=',fcts2val.TempPhotoOppid,';']);
+            end
+        else
+            xdata=statustime;
+            xdata(:)=NaN;
+        end
+    case 'TempFiberTubeid'
+        if ~isnan(col.TempFiberTubeid)
+            if get(handles.toggleX,'Value')==0
+                xdata=statusData(:,col.TempFiberTubeid);
+            else
+                x=uint16(statusData(:,col.TempFiberTubeid)); eval(['xdata=',fcts2val.TempFiberTubeid,';']);
             end
         else
             xdata=statustime;
@@ -2125,6 +2213,50 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
+    case 'TempArmTempCard'
+        if ~isnan(col.TempArmTempCard)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmTempCard);
+            else
+                x=double(statusData(:,col.TempArmTempCard)); eval(['ydata=',fcts2val.TempArmTempCard,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempPhotoOpp'
+        if ~isnan(col.TempPhotoOpp)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPhotoOpp);
+            else
+                x=double(statusData(:,col.TempPhotoOpp)); eval(['ydata=',fcts2val.TempPhotoOpp,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempPrallhz'
+        if ~isnan(col.TempPrallhz)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPrallhz);
+            else
+                x=double(statusData(:,col.TempPrallhz)); eval(['ydata=',fcts2val.TempPrallhz,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempFiberTube'
+        if ~isnan(col.TempFiberTube)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempFiberTube);
+            else
+                x=double(statusData(:,col.TempFiberTube)); eval(['ydata=',fcts2val.TempFiberTube,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
     case 'TempLaserPlateid'
         if ~isnan(col.TempLaserPlateid)
             if get(handles.toggleY,'Value')==0
@@ -2488,6 +2620,50 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
+    case 'TempArmTempCardid'
+        if ~isnan(col.TempArmTempCardid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempArmTempCardid);
+            else
+                x=uint16(statusData(:,col.TempArmTempCardid)); eval(['ydata=',fcts2val.TempArmTempCardid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempPhotoOppid'
+        if ~isnan(col.TempPhotoOppid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPhotoOppid);
+            else
+                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['ydata=',fcts2val.TempPhotoOppid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempPhotoOppid'
+        if ~isnan(col.TempPhotoOppid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempPhotoOppid);
+            else
+                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['ydata=',fcts2val.TempPhotoOppid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
+    case 'TempFiberTubeid'
+        if ~isnan(col.TempFiberTubeid)
+            if get(handles.toggleY,'Value')==0
+                ydata=statusData(:,col.TempFiberTubeid);
+            else
+                x=uint16(statusData(:,col.TempFiberTubeid)); eval(['ydata=',fcts2val.TempFiberTubeid,';']);
+            end
+        else
+            ydata=statustime;
+            ydata(:)=NaN;
+        end
     case 'EtalonAction'
         if ~isnan(col.EtalonAction)
             if get(handles.toggleX,'Value')==0
@@ -2678,13 +2854,14 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
     'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
     'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
-    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';...
+    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';'TempArmTempCard';'TempPhotoOpp';'TempPrallhz';'TempFiberTube';...
     'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
     'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
+    'TempPrallplid';'TempAxisid';'TempScrollMotorid';'TempScrollContrid';'TempArmTempCardid';'TempPhotoOppid';'TempPrallhzid';'TempFiberTubeid';...
+    'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
     'MirrorGr1XAxis';'MirrorGr1YAxis';'MirrorGr2XAxis';'MirrorGr2YAxis';'MirrorUV1XAxis';'MirrorUV1YAxis';'MirrorUV2XAxis';'MirrorUV2YAxis';...
     'MirrorRealigning';'MirrorMovingFlags';'MirrorMinUVDiffCts';'MirrorRealignMinutes'};
 set(hObject,'String',vars);
@@ -2728,13 +2905,14 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'TempPump';'TempPumpOil';'TempDiodeWZ1out';'TempAxisPlate';'TempArmPS';'TempDiodeWZ1in';...
     'TempDiodeWZ2in';'TempTMPSensCard';'TempLaserSync';'TempInverter';'TempArmBackWall';'TempBlower';...
     'TempDiodeWZ2out';'TempCalPlate';'TempHV';'TempKuvette';'TempPenray';'TempMCP1';'TempMCP2';'TempPreamp1';...
-    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';...
+    'TempPrallpl';'TempAxis';'TempScrollMotor';'TempScrollContr';'TempArmTempCard';'TempPhotoOpp';'TempPrallhz';'TempFiberTube';...
     'TempLaserPlateid';'TempDyelaserid';'TempRefCellid';'TempDiodeEtid';'Temp4Lid';...
     'TempDiodeUVid';'TempSensCardLiftid';'TempCPULiftid';'TempDiodeGrid';...
     'TempPumpid';'TempPumpOilid';'TempDiodeWZ1outid';'TempAxisPlateid';'TempArmPSid';'TempDiodeWZ1inid';...
     'TempDiodeWZ2inid';'TempTMPSensCardid';'TempLaserSyncid';'TempInverterid';'TempArmBackWallid';'TempBlowerid';...
     'TempDiodeWZ2outid';'TempCalPlateid';'TempHVid';'TempKuvetteid';'TempPenrayid';'TempMCP1id';'TempMCP2id';'TempPreamp1id';...
-    'TempPrallplid';'TempAxisid';'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
+    'TempPrallplid';'TempAxisid';'TempScrollMotorid';'TempScrollContrid';'TempArmTempCardid';'TempPhotoOppid';'TempPrallhzid';'TempFiberTubeid';...
+    'EtalonAction';'InstrumentAction';'ButterflyCurrentPosition';...
     'MirrorGr1XAxis';'MirrorGr1YAxis';'MirrorGr2XAxis';'MirrorGr2YAxis';'MirrorUV1XAxis';'MirrorUV1YAxis';'MirrorUV2XAxis';'MirrorUV2YAxis';...
     'MirrorRealigning';'MirrorMovingFlags';'MirrorMinUVDiffCts';'MirrorRealignMinutes'};
 set(hObject,'String',vars);
