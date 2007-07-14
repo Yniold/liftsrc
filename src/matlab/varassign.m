@@ -99,6 +99,10 @@ if exist('colTempSensCard')==0 colTempSensCard=NaN; end
 if exist('colTempWZ2out')==0 colTempWZ2out=NaN; end
 if exist('colTempScrollMotor')==0 colTempScrollMotor=NaN; end
 if exist('colTempScrollContr')==0 colTempScrollContr=NaN; end
+if exist('colTempArmTempCard')==0 colTempArmTempCard=NaN; end
+if exist('colTempPhotoOpp')==0 colTempPhotoOpp=NaN; end
+if exist('colTempPrallhz')==0 colTempPrallhz=NaN; end
+if exist('colTempFiberTube')==0 colTempFiberTube=NaN; end
 if exist('colTempWPUnknown')==0 colTempLUnknown=NaN; end
 
 statusDataCols=...
@@ -358,6 +362,18 @@ statusDataCols=...
 'TempScrollContr',colTempScrollContr,'x/100-273.15','C';
 'TempScrollContrStatus',colTempScrollContr+1,'x*NaN','';
 'TempScrollContrid',colTempScrollContr+2,'x*NaN','';
+'TempArmTempCard',colTempArmTempCard,'x/100-273.15','C';
+'TempArmTempCardStatus',colTempArmTempCard+1,'x*NaN','';
+'TempArmTempCardid',colTempArmTempCard+2,'x*NaN','';
+'TempPhotoOpp',colTempPhotoOpp,'x/100-273.15','C';
+'TempPhotoOppStatus',colTempPhotoOpp+1,'x*NaN','';
+'TempPhotoOppid',colTempPhotoOpp+2,'x*NaN','';
+'TempPrallhz',colTempPrallhz,'x/100-273.15','C';
+'TempPrallhzStatus',colTempPrallhz+1,'x*NaN','';
+'TempPrallhzid',colTempPrallhz+2,'x*NaN','';
+'TempPrallhz',colTempPrallhz,'x/100-273.15','C';
+'TempPrallhzStatus',colTempPrallhz+1,'x*NaN','';
+'TempPrallhzid',colTempPrallhz+2,'x*NaN','';
 'TempWPUnknown',colTempWPUnknown,'x/100-273.15','C';
 'TempWPUnknownStatus',colTempWPUnknown+1,'x*NaN','';
 'TempWPUnknownid',colTempWPUnknown+2,'dec2hex(x)','';
