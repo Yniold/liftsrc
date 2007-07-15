@@ -1,7 +1,10 @@
 /*
-* $RCSfile: udptools.c,v $ last changed on $Date: 2007-03-09 16:19:47 $ by $Author: rudolf $
+* $RCSfile: udptools.c,v $ last changed on $Date: 2007-07-15 11:06:50 $ by $Author: martinez $
 *
 * $Log: udptools.c,v $
+* Revision 1.9  2007-07-15 11:06:50  martinez
+* receiveUDPData uses now Select and waits max UDP_SERVER_TIMEOUT sec til timeout
+*
 * Revision 1.8  2007-03-09 16:19:47  rudolf
 * allow broadcast addresses for UDP_OUT
 *
@@ -207,11 +210,62 @@ int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg)
 
 /*********************************************************************************************************/
 /*                                                                                                       */
-/* Function to recieve Data, it will wait until all data is recieved                                     */
+/* Function to recieve Data, it will wait max 1 sec 
 /*                                                                                                       */
 /*********************************************************************************************************/
 
 int RecieveUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg)
+{
+
+   struct sockaddr_in their_addr;
+   int numbytes;
+   socklen_t addr_len;
+   fd_set fdsSelect;
+   struct timeval select_timeout;         // timeout
+   int fdMax;                             // max fd for select
+   int ret;
+
+   addr_len = sizeof(struct sockaddr);
+   
+   FD_ZERO(&fdsSelect);                            // prepare descriptor set and timeout for select
+   select_timeout.tv_sec = UDP_SERVER_TIMEOUT;
+   select_timeout.tv_usec = 0;
+   FD_SET(ptrMessagePort->fdSocket,&fdsSelect);
+
+
+   // printf("Start Select\n");
+   fdMax=ptrMessagePort->fdSocket;
+   ret=select(fdMax+1, &fdsSelect, NULL, NULL, &select_timeout);  // wait until incoming udp or Signal
+   //   printf("select : %d\n",ret);
+   
+   if (ret>0) {
+     if ((numbytes=recvfrom(ptrMessagePort->fdSocket, msg,nByte , 0,
+			    (struct sockaddr *)&their_addr, &addr_len)) == -1)
+       {
+	 perror("ReceiveUDPData, recvfrom: ");
+	 return(-2);
+       }
+     return(1);
+   } else {     
+     return(ret);
+   }
+
+
+#if DEBUGLEVEL>0
+   printf("[%s] receive %d bytes from %s:%d\n", ptrMessagePort->PortName,numbytes, inet_ntoa(their_addr.sin_addr),ptrMessagePort->PortNumber);
+#endif
+
+}
+   /* RecieveUDPData */
+
+
+/*********************************************************************************************************/
+/*                                                                                                       */
+/* Function to recieve Data, it will wait until all data is recieved                                     */
+/*                                                                                                       */
+/*********************************************************************************************************/
+
+int RecieveUDPDataWait4all(struct MessagePortType *ptrMessagePort, unsigned nByte, void *msg)
 {
 
    struct sockaddr_in their_addr;
