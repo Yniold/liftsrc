@@ -156,7 +156,7 @@ set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' scc
 set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,3),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 % warn with red background if values are off limits
-if CalFlag==2(lastrow) | CalFlag(lastrow)==6
+if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
     set(handles.pushflag,'String','Flag On','BackgroundColor','g')
 else
     set(handles.pushflag,'String','Flag Off','BackgroundColor','r')
@@ -360,13 +360,13 @@ if get(hObject,'Value')
     data.sumH2O=0;
     data.averaging=1;
     set(handles.txtStartTime,'String',strcat(datestr(statustime(lastrow),13)));
-    system(['/lift/bin/eCmd @lift s instrumentaction 6']);   
+    system(['/lift/bin/eCmd @lift s instrumentaction calmeasure']);   
 else
     set(hObject,'String','Start')
     % display system time
     data.averaging=0;
     set(handles.txtStopTime,'String',strcat(datestr(statustime(lastrow),13)));
-    system(['/lift/bin/eCmd @lift s instrumentaction 2']);   
+    system(['/lift/bin/eCmd @lift s instrumentaction cal']);   
 end
 
 setappdata(handles.output, 'Caldata', data);
@@ -701,9 +701,9 @@ function pushflag_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 if get(hObject,'BackgroundColor')=='r'
-    system(['/lift/bin/eCmd @lift s instrumentaction 2']);   
+    system(['/lift/bin/eCmd @lift s instrumentaction cal']);   
 else
-    system(['/lift/bin/eCmd @lift s instrumentaction 0']);   
+    system(['/lift/bin/eCmd @lift s instrumentaction nop']);   
 end
 
 
