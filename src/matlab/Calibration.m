@@ -145,7 +145,7 @@ x=double(calib.MFCCardCalib.ChannelData2.Flow); eval(['Flow2=',fcts2val.CalFlow2
 x=double(calib.MFCCardCalib.ChannelData3.Flow); eval(['Flow3=',fcts2val.CalFlow3,';']);
 
 Humid=Flow0./(Flow0+Flow1).*100;
-CalFlag=double(statusData(:,col.InstrumentAction));
+CalFlag=double(statusData(lastrow,col.InstrumentAction));
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
