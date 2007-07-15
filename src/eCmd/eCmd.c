@@ -1,9 +1,12 @@
 /************************************************************************/
 /*
-$RCSfile: eCmd.c,v $ $Revision: 1.46 $
-last change on $Date: 2007-07-13 12:21:00 $ by $Author: martinez $
+$RCSfile: eCmd.c,v $ $Revision: 1.47 $
+last change on $Date: 2007-07-15 17:05:35 $ by $Author: martinez $
 
 $Log: eCmd.c,v $
+Revision 1.47  2007-07-15 17:05:35  martinez
+added calmeasure to instrument actions
+
 Revision 1.46  2007-07-13 12:21:00  martinez
 included calmeasure flag
 
@@ -268,6 +271,7 @@ int FindInstrumentAction ( char *InstrumentAction)
     if (strcasecmp(InstrumentAction,"nop")==0) return (INSTRUMENT_ACTION_NOP);
     if (strcasecmp(InstrumentAction,"measure")==0) return (INSTRUMENT_ACTION_MEASURE);
     if (strcasecmp(InstrumentAction,"cal")==0) return (INSTRUMENT_ACTION_CAL);
+    if (strcasecmp(InstrumentAction,"calmeasure")==0) return (INSTRUMENT_ACTION_CAL_MEASURE);
     if (strcasecmp(InstrumentAction,"diag")==0) return (INSTRUMENT_ACTION_DIAG);
     if (strcasecmp(InstrumentAction,"powerup")==0) return (INSTRUMENT_ACTION_POWERUP);
     if (strcasecmp(InstrumentAction,"powerdown")==0) return (INSTRUMENT_ACTION_POWERDOWN);
@@ -307,7 +311,7 @@ int main(int argc, char *argv[])
 
     if (argc<2) {
 // greetings
-    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.46 2007-07-13 12:21:00 martinez Exp $) for i386\n");   
+    printf("This is eCmd Version (CVS: $Id: eCmd.c,v 1.47 2007-07-15 17:05:35 martinez Exp $) for i386\n");   
 	printf("Usage :\t%s  addr\n", argv[0]);
 	printf("eCmd @host r addr\n");
 	printf("eCmd @host w addr data\n");
