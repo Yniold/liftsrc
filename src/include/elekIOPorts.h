@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-06-12 12:08:01 $ by $Author: martinez $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-07-15 11:07:34 $ by $Author: martinez $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.23  2007-07-15 11:07:34  martinez
+* elekIOPorts updated for receiveUDPData
+*
 * Revision 1.22  2007-06-12 12:08:01  martinez
 * included eCmd commands set realignminutes and stoprealigning
 *
@@ -107,7 +110,7 @@
 #define UDP_ELEK_MIRROR_STATUS_OUTPORT 1270    // port for status (elekIO->etalon)
 #define UDP_AUX_STATUS_STATUS_OUTPORT  1280    // port for status (elekAux->elekIOMaster)
 
-#define UDP_SERVER_TIMEOUT               5     // timeout until elek server makes its round 
+#define UDP_SERVER_TIMEOUT               1     // timeout until elek server makes its round 
 
 
 #define UDP_IN_PORT                    0       // defines UDP incoming port
