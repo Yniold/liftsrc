@@ -58,8 +58,8 @@ echo MCP2: channel 1-70
 
 #PMT
 /lift/bin/eCmd @lift s setmask 0 0x0000
-/lift/bin/eCmd @lift s setmask 1 0x1FF0
-/lift/bin/eCmd @lift s setmask 2 0xFC00
+/lift/bin/eCmd @lift s setmask 1 0xFFF0
+/lift/bin/eCmd @lift s setmask 2 0xFC03
 /lift/bin/eCmd @lift s setmask 3 0x01FF
 /lift/bin/eCmd @lift s setmask 4 0xFFC0
 /lift/bin/eCmd @lift s setmask 5 0xFFFF
