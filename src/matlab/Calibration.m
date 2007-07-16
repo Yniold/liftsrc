@@ -166,7 +166,7 @@ if Flow2(lastrow)<250 | Flow2(lastrow)>350 | Flow3(lastrow)<250 | Flow3(lastrow)
 else
     set(handles.textFlowLicor,'BackgroundColor',[0.7,0.7,0.7]);
 end
-if (Flow0(lastrow)+Flow1(lastrow))<49500 | (Flow0(lastrow)+Flow1(lastrow))>50500
+if (Flow0(lastrow)+Flow1(lastrow))<49000 | (Flow0(lastrow)+Flow1(lastrow))>50500
     set(handles.textFlowCal,'BackgroundColor','r');
 else
     set(handles.textFlowCal,'BackgroundColor',[0.7,0.7,0.7]);
@@ -672,6 +672,9 @@ function pushSetHumid_Callback(hObject, eventdata, handles)
 % hObject    handle to pushSetHumid (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+horusdata = getappdata(handles.parenthandle, 'horusdata');
+col=horusdata.col;
+fcts2val=horusdata.fcts2val;
 Flow=str2double(get(handles.editFlowCal,'String'));
 Humid=str2double(get(handles.editHumid,'String'))/100;
 FlowOn=get(handles.tglAir,'Value');

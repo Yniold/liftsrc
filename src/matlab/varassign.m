@@ -12,7 +12,8 @@ function [col,fcts2val]=varassign(Data);
 
 colTemp0L=742;
 for i=0:39
-    x=median(uint16(Data(:,colTemp0L+3*i+2))); 
+  x=median(uint16(Data(:,colTemp0L+3*i+2))); 
+  if (x~=0) %no problem with temperature card
     eval(['Tempid(',num2str(i+1),',:)=','dec2hex(x);']);
     if strcmp('6B92',Tempid(i+1,:)) colTempLaserPlate=colTemp0L+3*i;
     elseif strcmp('3F36',Tempid(i+1,:)) colTempDyelaser=colTemp0L+3*i;
@@ -25,12 +26,15 @@ for i=0:39
     elseif strcmp('614B',Tempid(i+1,:)) colTempDiodeGr=colTemp0L+3*i;
     else colTempLUnknown=colTemp0L+3*i;
     end
+  else colTempLUnknown=colTemp0L+3*i;
+  end
 end
 clear Tempid;
 
 colTemp0WP=991;
 for i=0:39
-    x=median(uint16(Data(:,colTemp0WP+3*i+2))); 
+  x=median(uint16(Data(:,colTemp0WP+3*i+2))); 
+  if (x~=0) %no problem with temperature card
     eval(['Tempid(',num2str(i+1),',:)=','dec2hex(x);']);
     if strcmp('3E04',Tempid(i+1,:)) colTempKuvette=colTemp0WP+3*i;
     elseif strcmp('4DD7',Tempid(i+1,:)) colTempPenray=colTemp0WP+3*i;
@@ -62,6 +66,8 @@ for i=0:39
     elseif strcmp('7430',Tempid(i+1,:)) colTempFiberTube=colTemp0WP+3*i;
     else colTempWPUnknown=colTemp0WP+3*i;
     end
+  else colTempWPUnknown=colTemp0WP+3*i;
+  end
 end
 
 if exist('colTempLaserPlate')==0 colTempLaserPlate=NaN; end
