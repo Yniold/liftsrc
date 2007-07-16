@@ -145,7 +145,7 @@ x=double(calib.MFCCardCalib.ChannelData2.Flow); eval(['Flow2=',fcts2val.CalFlow2
 x=double(calib.MFCCardCalib.ChannelData3.Flow); eval(['Flow3=',fcts2val.CalFlow3,';']);
 
 Humid=Flow0./(Flow0+Flow1).*100;
-CalFlag=double(statusData(lastrow,col.InstrumentAction));
+CalFlag=double(statusData(:,col.InstrumentAction));
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
@@ -700,7 +700,7 @@ function pushflag_Callback(hObject, eventdata, handles)
 % hObject    handle to pushflag (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if get(hObject,'BackgroundColor')=='r'
+if get(hObject,'BackgroundColor')==[1 0 0]
     system(['/lift/bin/eCmd @lift s instrumentaction cal']);   
 else
     system(['/lift/bin/eCmd @lift s instrumentaction nop']);   

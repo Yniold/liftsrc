@@ -244,11 +244,11 @@ EtalonCurPos=EtalonCurPos*stepratio;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaEncoderPosHigh)),16);
 EtalonEncPos=double(statusData(:,col.etaEncoderPosHigh)).*65536+double(statusData(:,col.etaEncoderPosLow));
-EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32;
+EtalonEncPos(Etalonhelp==1)=bitset(floor(EtalonEncPos(Etalonhelp==1)),32,0)-2^32/2;
 
 Etalonhelp=bitget(uint16(statusData(:,col.etaOnlinePosHigh)),16);
 OnlinePos=double(statusData(:,col.etaOnlinePosHigh)).*65536+double(statusData(:,col.etaOnlinePosLow));
-OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32;
+OnlinePos(Etalonhelp==1)=bitset(floor(OnlinePos(Etalonhelp==1)),32,0)-2^32/2;
 
 EtalonSpeed=statusData(:,col.etaSetSpd);
 EtalonStatus=statusData(:,col.etaStatus);
