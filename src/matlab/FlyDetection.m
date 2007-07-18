@@ -2008,8 +2008,10 @@ if statusData(lastrow,col.ButterflyPositionValid)==0
     set(hObject,'Value',1);
 else
     if get(hObject,'Value')
-        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+27)]'); % open Butterfly 
+        system('/lift/bin/eCmd @armAxis s butterflyposition 2500'); % move to find index position
         set(hObject,'BackgroundColor','r','String','MOVING');
+        pause(2);
+        system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(625+27)]); % open Butterfly 
     else
         system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(27)]); % close Butterfly 
         set(hObject,'BackgroundColor','r','String','MOVING');
