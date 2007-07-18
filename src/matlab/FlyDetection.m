@@ -396,7 +396,7 @@ else
     set(handles.txtWZ1in,'BackgroundColor',[0.7 0.7 0.7]);
 end
 if DiodeWZ1out(lastrow)<0.6*DiodeWZ1in
-    set(handles.txtWZ1out,'BackgroundColor','r');
+    set(handles.txtWZ1out,'BackgroundColor','y');
 else 
     set(handles.txtWZ1out,'BackgroundColor',[0.7 0.7 0.7]);
 end
@@ -406,7 +406,7 @@ else
     set(handles.txtWZ2in,'BackgroundColor',[0.7 0.7 0.7]);
 end
 if DiodeWZ2out(lastrow)<0.6*DiodeWZ2in
-    set(handles.txtWZ2out,'BackgroundColor','r');
+    set(handles.txtWZ2out,'BackgroundColor','y');
 else 
     set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);
 end
@@ -799,13 +799,13 @@ if get(handles.chkMCP2,'Value')
     WhichPlot=get(handles.popMCP2Plot,'Value');
     switch WhichPlot
         case 1
-           plot(handles.axeCounts,statustime(iZeit),MCP2SumCounts(iZeit)); %statusData(iZeit,MCP2Base+204));
+           plot(handles.axeCounts,statustime(iZeit),MCP2SumCounts(iZeit),'r'); %statusData(iZeit,MCP2Base+204));
            hold(handles.axeCounts,'on');
         case 2           
-           plot(handles.axeCounts,statustime(30:end),MCP2Avg(30:end),'b');   
+           plot(handles.axeCounts,statustime(30:end),MCP2Avg(30:end),'r');   
            hold(handles.axeCounts,'on');
         case 3           
-           plot(handles.axeCounts,statustime(30:end),XHOx(30:end),'b');   
+           plot(handles.axeCounts,statustime(30:end),XHOx(30:end),'r');   
            hold(handles.axeCounts,'on');
     end
     hold(handles.axeCounts,'on');
@@ -1890,7 +1890,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),3,0);
-        set(hObject,'BackgroundColor','c');
+        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -1932,7 +1932,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),4,0);
-        set(hObject,'BackgroundColor','c');
+        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -1956,7 +1956,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
         set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),5,0);
-        set(hObject,'BackgroundColor','c');
+        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
