@@ -465,30 +465,54 @@ switch char(xpar)
         else
             x=double(statusData(:,col.ccPulses2)); eval(['xdata=',fcts2val.ccPulses2,';']);
         end
-    case 'GPSsecondsUTC'
-        xdata=statusData(:,col.GPSsecondsUTC);
-    case 'GPSLongitude'
-        xdata=double(statusData(:,col.GPSLongitude))/60-180 ...
-            +double(statusData(:,col.GPSLongitudeDecimals))/10000;
-    case 'GPSLatitude'
-        xdata=double(statusData(:,col.GPSLatitude))/60-90 ...
-            +double(statusData(:,col.GPSLatitudeDecimals))/10000;
-    case 'GPSAltitude'
-        xdata=statusData(:,col.GPSAltitude);
-    case 'GPSHDOP'
-        xdata=statusData(:,col.GPSHDOP);
-    case 'GPSnumSat'
-        xdata=statusData(:,col.GPSnumSat);
-    case 'GPSLastValidData'
+    case 'GPSMsecondsUTC'
+        xdata=statusData(:,col.GPSMsecondsUTC);
+    case 'GPSMLongitude'
+        xdata=double(statusData(:,col.GPSMLongitude))/60-180 ...
+            +double(statusData(:,col.GPSMLongitudeDecimals))/10000;
+    case 'GPSMLatitude'
+        xdata=double(statusData(:,col.GPSMLatitude))/60-90 ...
+            +double(statusData(:,col.GPSMLatitudeDecimals))/10000;
+    case 'GPSMAltitude'
+        xdata=statusData(:,col.GPSMAltitude);
+    case 'GPSMHDOP'
+        xdata=statusData(:,col.GPSMHDOP);
+    case 'GPSMnumSat'
+        xdata=statusData(:,col.GPSMnumSat);
+    case 'GPSMLastValidData'
         if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.GPSLastValidData);
+            xdata=statusData(:,col.GPSMLastValidData);
         else
-            x=double(statusData(:,col.GPSLastValidData)); eval(['xdata=',fcts2val.GPSLastValidData,';']);
+            x=double(statusData(:,col.GPSMLastValidData)); eval(['xdata=',fcts2val.GPSMLastValidData,';']);
         end
-    case 'GPSGroundSpeed'
-        xdata=double(statusData(:,col.GPSGroundSpeed))/100;
-    case 'GPSHeading'
-        xdata=double(statusData(:,col.GPSHeading))/10;
+    case 'GPSMGroundSpeed'
+        xdata=double(statusData(:,col.GPSMGroundSpeed))/100;
+    case 'GPSMHeading'
+        xdata=double(statusData(:,col.GPSMHeading))/10;
+    case 'GPSSsecondsUTC'
+        xdata=statusData(:,col.GPSSsecondsUTC);
+    case 'GPSSLongitude'
+        xdata=double(statusData(:,col.GPSSLongitude))/60-180 ...
+            +double(statusData(:,col.GPSSLongitudeDecimals))/10000;
+    case 'GPSSLatitude'
+        xdata=double(statusData(:,col.GPSSLatitude))/60-90 ...
+            +double(statusData(:,col.GPSSLatitudeDecimals))/10000;
+    case 'GPSSAltitude'
+        xdata=statusData(:,col.GPSSAltitude);
+    case 'GPSSHDOP'
+        xdata=statusData(:,col.GPSSHDOP);
+    case 'GPSSnumSat'
+        xdata=statusData(:,col.GPSSnumSat);
+    case 'GPSSLastValidData'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.GPSSLastValidData);
+        else
+            x=double(statusData(:,col.GPSSLastValidData)); eval(['xdata=',fcts2val.GPSSLastValidData,';']);
+        end
+    case 'GPSSGroundSpeed'
+        xdata=double(statusData(:,col.GPSSGroundSpeed))/100;
+    case 'GPSSHeading'
+        xdata=double(statusData(:,col.GPSSHeading))/10;
     case 'TDet'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.TDet);
@@ -1804,30 +1828,54 @@ switch char(ypar)
         else
             x=double(statusData(:,col.ccPulses2)); eval(['ydata=',fcts2val.ccPulses2,';']);
         end
-    case 'GPSsecondsUTC'
-        ydata=statusData(:,col.GPSsecondsUTC);
-    case 'GPSLongitude'
-        ydata=double(statusData(:,col.GPSLongitude))/60-180 ...
-            +double(statusData(:,col.GPSLongitudeDecimals))/10000;
-    case 'GPSLatitude'
-        ydata=double(statusData(:,col.GPSLatitude))/60-90 ...
-            +double(statusData(:,col.GPSLatitudeDecimals))/10000;
-    case 'GPSAltitude'
-        ydata=statusData(:,col.GPSAltitude);
-    case 'GPSHDOP'
-        ydata=statusData(:,col.GPSHDOP);
-    case 'GPSnumSat'
-        ydata=statusData(:,col.GPSnumSat);
-    case 'GPSLastValidData'
+    case 'GPSMsecondsUTC'
+        ydata=statusData(:,col.GPSMsecondsUTC);
+    case 'GPSMLongitude'
+        ydata=double(statusData(:,col.GPSMLongitude))/60-180 ...
+            +double(statusData(:,col.GPSMLongitudeDecimals))/10000;
+    case 'GPSMLatitude'
+        ydata=double(statusData(:,col.GPSMLatitude))/60-90 ...
+            +double(statusData(:,col.GPSMLatitudeDecimals))/10000;
+    case 'GPSMAltitude'
+        ydata=statusData(:,col.GPSMAltitude);
+    case 'GPSMHDOP'
+        ydata=statusData(:,col.GPSMHDOP);
+    case 'GPSMnumSat'
+        ydata=statusData(:,col.GPSMnumSat);
+    case 'GPSMLastValidData'
         if get(handles.toggleY,'Value')==0
-            ydata=statusData(:,col.GPSLastValidData);
+            ydata=statusData(:,col.GPSMLastValidData);
         else
-            x=double(statusData(:,col.GPSLastValidData)); eval(['ydata=',fcts2val.GPSLastValidData,';']);
+            x=double(statusData(:,col.GPSMLastValidData)); eval(['ydata=',fcts2val.GPSMLastValidData,';']);
         end
-    case 'GPSGroundSpeed'
-        ydata=double(statusData(:,col.GPSGroundSpeed))/100;
-    case 'GPSHeading'
-        ydata=double(statusData(:,col.GPSHeading))/10;
+    case 'GPSMGroundSpeed'
+        ydata=double(statusData(:,col.GPSMGroundSpeed))/100;
+    case 'GPSMHeading'
+        ydata=double(statusData(:,col.GPSMHeading))/10;
+    case 'GPSSsecondsUTC'
+        ydata=statusData(:,col.GPSSsecondsUTC);
+    case 'GPSSLongitude'
+        ydata=double(statusData(:,col.GPSSLongitude))/60-180 ...
+            +double(statusData(:,col.GPSSLongitudeDecimals))/10000;
+    case 'GPSSLatitude'
+        ydata=double(statusData(:,col.GPSSLatitude))/60-90 ...
+            +double(statusData(:,col.GPSSLatitudeDecimals))/10000;
+    case 'GPSSAltitude'
+        ydata=statusData(:,col.GPSSAltitude);
+    case 'GPSSHDOP'
+        ydata=statusData(:,col.GPSSHDOP);
+    case 'GPSSnumSat'
+        ydata=statusData(:,col.GPSSnumSat);
+    case 'GPSSLastValidData'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.GPSSLastValidData);
+        else
+            x=double(statusData(:,col.GPSSLastValidData)); eval(['ydata=',fcts2val.GPSSLastValidData,';']);
+        end
+    case 'GPSSGroundSpeed'
+        ydata=double(statusData(:,col.GPSSGroundSpeed))/100;
+    case 'GPSSHeading'
+        ydata=double(statusData(:,col.GPSSHeading))/10;
     case 'TDet'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.TDet);
@@ -2845,9 +2893,11 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
     'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
     'ccGateWidth2';'ccCounts2';'ccPulses2';
-    'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
-    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
-    'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
+    'GPSMsecondsUTC';'GPSMLongitude';'GPSMLatitude';'GPSMAltitude';'GPSMHDOP';'GPSMnumSat';...
+    'GPSMLastValidData';'GPSMGroundSpeed';'GPSMHeading';...
+    'GPSSsecondsUTC';'GPSSLongitude';'GPSSLatitude';'GPSSAltitude';'GPSSHDOP';'GPSSnumSat';...
+    'GPSSLastValidData';'GPSSGroundSpeed';'GPSSHeading';...
+    'TDet';'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
     'TempLaserPlate';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';...
     'TempDiodeUV';'TempSensCardLift';'TempCPULift';'TempDiodeGr';...
     'TempMissedarmAxis';'TempNumberarmAxis';'TempErrCRCarmAxis';'TempNoResponsearmAxis';
@@ -2896,9 +2946,11 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
     'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
     'ccGateWidth2';'ccCounts2';'ccPulses2';
-    'GPSsecondsUTC';'GPSLongitude';'GPSLatitude';'GPSAltitude';'GPSHDOP';'GPSnumSat';...
-    'GPSLastValidData';'GPSGroundSpeed';'GPSHeading';'TDet';...
-    'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
+    'GPSMsecondsUTC';'GPSMLongitude';'GPSMLatitude';'GPSMAltitude';'GPSMHDOP';'GPSMnumSat';...
+    'GPSMLastValidData';'GPSMGroundSpeed';'GPSMHeading';...
+    'GPSSsecondsUTC';'GPSSLongitude';'GPSSLatitude';'GPSSAltitude';'GPSSHDOP';'GPSSnumSat';...
+    'GPSSLastValidData';'GPSSGroundSpeed';'GPSSHeading';...
+    'TDet';'TempMissedLift';'TempNumberLift';'TempErrCRCLift';'TempNoResponseLift';...
     'TempLaserPlate';'TempDyelaser';'TempRefCell';'TempDiodeEt';'Temp4L';...
     'TempDiodeUV';'TempSensCardLift';'TempCPULift';'TempDiodeGr';...
     'TempMissedarmAxis';'TempNumberarmAxis';'TempErrCRCarmAxis';'TempNoResponsearmAxis';
