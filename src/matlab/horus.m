@@ -75,7 +75,7 @@ data.ActTimer=handles.ActTimer;
 
 % call function varassign.m to create structures containing column numbers
 % and conversion functions for the parameters in the data files
-[data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',50,80);
+[data.statusData,data.AvgData]=ReadDataAvg('/lift/ramdisk/status.bin',25,1);
 [data.col,data.fcts2val]=varassign(data.statusData);
 
 % open tcpip port for communication with Blower
