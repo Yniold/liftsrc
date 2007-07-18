@@ -155,8 +155,8 @@ set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
 set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
 set(handles.textFlowCalHum,'String',[num2str(Flow0(lastrow),5),' sccm']);
 set(handles.textFlowCalDry,'String',[num2str(Flow1(lastrow),5),' sccm']);
-set(handles.textFlowLicorHum,'String',[num2str(Flow2(lastrow),3),' sccm']);
-set(handles.textFlowLicorDry,'String',[num2str(Flow3(lastrow),3),' sccm']);
+set(handles.textFlowLicorHum,'String',[num2str(Flow3(lastrow),3),' sccm']);
+set(handles.textFlowLicorDry,'String',[num2str(Flow2(lastrow),3),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 % warn with red background if values are off limits
 if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
@@ -164,12 +164,12 @@ if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
 else
     set(handles.pushflag,'String','Flag Off','BackgroundColor','r')
 end
-if Flow2(lastrow)<250 | Flow2(lastrow)>550
+if Flow3(lastrow)<250 | Flow2(lastrow)>550
     set(handles.textFlowLicorHum,'BackgroundColor','r');
 else
     set(handles.textFlowLicorHum,'BackgroundColor',[0.7,0.7,0.7]);
 end
-if Flow3(lastrow)<250 | Flow3(lastrow)>550
+if Flow2(lastrow)<250 | Flow3(lastrow)>550
     set(handles.textFlowLicorDry,'BackgroundColor','r');
 else
     set(handles.textFlowLicorDry,'BackgroundColor',[0.7,0.7,0.7]);
@@ -223,12 +223,12 @@ if get(handles.chkFlowCalDry,'Value')
 end
 
 if get(handles.chkFlowLicorHum,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow2(iZeit),'b');
+    plot(handles.axes1,statustime(iZeit),Flow3(iZeit),'b');
     hold(handles.axes1,'on');
 end 
 
 if get(handles.chkFlowLicorDry,'Value')
-    plot(handles.axes1,statustime(iZeit),Flow3(iZeit),'r');
+    plot(handles.axes1,statustime(iZeit),Flow2(iZeit),'r');
     hold(handles.axes1,'on');
 end
 
