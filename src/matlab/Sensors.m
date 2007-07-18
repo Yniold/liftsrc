@@ -469,10 +469,10 @@ switch char(xpar)
         xdata=statusData(:,col.GPSMsecondsUTC);
     case 'GPSMLongitude'
         xdata=double(statusData(:,col.GPSMLongitude))/60-180 ...
-            +double(statusData(:,col.GPSMLongitudeDecimals))/10000;
+            +double(statusData(:,col.GPSMLongitudeDecimals))/600000;
     case 'GPSMLatitude'
         xdata=double(statusData(:,col.GPSMLatitude))/60-90 ...
-            +double(statusData(:,col.GPSMLatitudeDecimals))/10000;
+            +double(statusData(:,col.GPSMLatitudeDecimals))/600000;
     case 'GPSMAltitude'
         xdata=statusData(:,col.GPSMAltitude);
     case 'GPSMHDOP'
@@ -493,10 +493,10 @@ switch char(xpar)
         xdata=statusData(:,col.GPSSsecondsUTC);
     case 'GPSSLongitude'
         xdata=double(statusData(:,col.GPSSLongitude))/60-180 ...
-            +double(statusData(:,col.GPSSLongitudeDecimals))/10000;
+            +double(statusData(:,col.GPSSLongitudeDecimals))/600000;
     case 'GPSSLatitude'
         xdata=double(statusData(:,col.GPSSLatitude))/60-90 ...
-            +double(statusData(:,col.GPSSLatitudeDecimals))/10000;
+            +double(statusData(:,col.GPSSLatitudeDecimals))/600000;
     case 'GPSSAltitude'
         xdata=statusData(:,col.GPSSAltitude);
     case 'GPSSHDOP'
@@ -1832,10 +1832,10 @@ switch char(ypar)
         ydata=statusData(:,col.GPSMsecondsUTC);
     case 'GPSMLongitude'
         ydata=double(statusData(:,col.GPSMLongitude))/60-180 ...
-            +double(statusData(:,col.GPSMLongitudeDecimals))/10000;
+            +double(statusData(:,col.GPSMLongitudeDecimals))/600000;
     case 'GPSMLatitude'
         ydata=double(statusData(:,col.GPSMLatitude))/60-90 ...
-            +double(statusData(:,col.GPSMLatitudeDecimals))/10000;
+            +double(statusData(:,col.GPSMLatitudeDecimals))/600000;
     case 'GPSMAltitude'
         ydata=statusData(:,col.GPSMAltitude);
     case 'GPSMHDOP'
@@ -1856,10 +1856,10 @@ switch char(ypar)
         ydata=statusData(:,col.GPSSsecondsUTC);
     case 'GPSSLongitude'
         ydata=double(statusData(:,col.GPSSLongitude))/60-180 ...
-            +double(statusData(:,col.GPSSLongitudeDecimals))/10000;
+            +double(statusData(:,col.GPSSLongitudeDecimals))/600000;
     case 'GPSSLatitude'
         ydata=double(statusData(:,col.GPSSLatitude))/60-90 ...
-            +double(statusData(:,col.GPSSLatitudeDecimals))/10000;
+            +double(statusData(:,col.GPSSLatitudeDecimals))/600000;
     case 'GPSSAltitude'
         ydata=statusData(:,col.GPSSAltitude);
     case 'GPSSHDOP'
