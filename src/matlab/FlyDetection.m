@@ -395,7 +395,7 @@ if DiodeWZ1in(lastrow)<2
 else 
     set(handles.txtWZ1in,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if DiodeWZ1out(lastrow)<0.7*DiodeWZ1in
+if DiodeWZ1out(lastrow)<0.6*DiodeWZ1in
     set(handles.txtWZ1out,'BackgroundColor','r');
 else 
     set(handles.txtWZ1out,'BackgroundColor',[0.7 0.7 0.7]);
@@ -405,7 +405,7 @@ if DiodeWZ2in(lastrow)<0.4
 else 
     set(handles.txtWZ2in,'BackgroundColor',[0.7 0.7 0.7]);
 end
-if DiodeWZ2out(lastrow)<0.7*DiodeWZ2in
+if DiodeWZ2out(lastrow)<0.6*DiodeWZ2in
     set(handles.txtWZ2out,'BackgroundColor','r');
 else 
     set(handles.txtWZ2out,'BackgroundColor',[0.7 0.7 0.7]);

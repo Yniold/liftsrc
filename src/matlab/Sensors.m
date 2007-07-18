@@ -1303,12 +1303,12 @@ switch char(xpar)
             xdata=statustime;
             xdata(:)=NaN;
         end
-    case 'TempPhotoOppid'
-        if ~isnan(col.TempPhotoOppid)
+    case 'TempPrallhzid'
+        if ~isnan(col.TempPrallhzid)
             if get(handles.toggleX,'Value')==0
-                xdata=statusData(:,col.TempPhotoOppid);
+                xdata=statusData(:,col.TempPrallhzid);
             else
-                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['xdata=',fcts2val.TempPhotoOppid,';']);
+                x=uint16(statusData(:,col.TempPrallhzid)); eval(['xdata=',fcts2val.TempPrallhzid,';']);
             end
         else
             xdata=statustime;
@@ -2642,12 +2642,12 @@ switch char(ypar)
             ydata=statustime;
             ydata(:)=NaN;
         end
-    case 'TempPhotoOppid'
-        if ~isnan(col.TempPhotoOppid)
+    case 'TempPrallhzid'
+        if ~isnan(col.TempPrallhzid)
             if get(handles.toggleY,'Value')==0
-                ydata=statusData(:,col.TempPhotoOppid);
+                ydata=statusData(:,col.TempPrallhzid);
             else
-                x=uint16(statusData(:,col.TempPhotoOppid)); eval(['ydata=',fcts2val.TempPhotoOppid,';']);
+                x=uint16(statusData(:,col.TempPrallhzid)); eval(['ydata=',fcts2val.TempPrallhzid,';']);
             end
         else
             ydata=statustime;
