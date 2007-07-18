@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 13-Jul-2007 12:07:16
+% Last Modified by GUIDE v2.5 18-Jul-2007 11:07:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -153,7 +153,10 @@ set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
 set(handles.textFlowCal,'String',[num2str(Flow0(lastrow)+Flow1(lastrow),5),' sccm']);
-set(handles.textFlowLicor,'String',[num2str((Flow2(lastrow)+Flow3(lastrow))/2,3),' sccm']);
+set(handles.textFlowCalHum,'String',[num2str(Flow0(lastrow),5),' sccm']);
+set(handles.textFlowCalDry,'String',[num2str(Flow1(lastrow),5),' sccm']);
+set(handles.textFlowLicorHum,'String',[num2str(Flow2(lastrow),3),' sccm']);
+set(handles.textFlowLicorDry,'String',[num2str(Flow3(lastrow),3),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
 % warn with red background if values are off limits
 if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
@@ -161,10 +164,15 @@ if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
 else
     set(handles.pushflag,'String','Flag Off','BackgroundColor','r')
 end
-if Flow2(lastrow)<250 | Flow2(lastrow)>350 | Flow3(lastrow)<250 | Flow3(lastrow)>350
-    set(handles.textFlowLicor,'BackgroundColor','r');
+if Flow2(lastrow)<250 | Flow2(lastrow)>550
+    set(handles.textFlowLicorHum,'BackgroundColor','r');
 else
-    set(handles.textFlowLicor,'BackgroundColor',[0.7,0.7,0.7]);
+    set(handles.textFlowLicorHum,'BackgroundColor',[0.7,0.7,0.7]);
+end
+if Flow3(lastrow)<250 | Flow3(lastrow)>550
+    set(handles.textFlowLicorDry,'BackgroundColor','r');
+else
+    set(handles.textFlowLicorDry,'BackgroundColor',[0.7,0.7,0.7]);
 end
 if (Flow0(lastrow)+Flow1(lastrow))<49000 | (Flow0(lastrow)+Flow1(lastrow))>50500
     set(handles.textFlowCal,'BackgroundColor','r');
@@ -204,10 +212,25 @@ if get(handles.chkFlowCal,'Value')
     hold(handles.axes1,'on');
 end 
 
-if get(handles.chkFlowLicor,'Value')
-    plot(handles.axes1,statustime(iZeit),(Flow2(iZeit)+Flow3(iZeit))/2,'r');
+if get(handles.chkFlowCalHum,'Value')
+    plot(handles.axes1,statustime(iZeit),Flow0(iZeit),'b');
+    hold(handles.axes1,'on');
+end
+
+if get(handles.chkFlowCalDry,'Value')
+    plot(handles.axes1,statustime(iZeit),Flow1(iZeit),'r');
+    hold(handles.axes1,'on');
+end
+
+if get(handles.chkFlowLicorHum,'Value')
+    plot(handles.axes1,statustime(iZeit),Flow2(iZeit),'b');
     hold(handles.axes1,'on');
 end 
+
+if get(handles.chkFlowLicorDry,'Value')
+    plot(handles.axes1,statustime(iZeit),Flow3(iZeit),'r');
+    hold(handles.axes1,'on');
+end
 
 if get(handles.chkHumid,'Value')
     plot(handles.axes1,statustime(iZeit),Humid(iZeit),'r');
@@ -399,13 +422,13 @@ function chkFlowCal_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of chkFlowCal
 
 
-% --- Executes on button press in chkFlowLicor.
-function chkFlowLicor_Callback(hObject, eventdata, handles)
-% hObject    handle to chkFlowLicor (see GCBO)
+% --- Executes on button press in chkFlowLicorHum.
+function chkFlowLicorHum_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowLicorHum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of chkFlowLicor
+% Hint: get(hObject,'Value') returns toggle state of chkFlowLicorHum
 
 
 % --- Executes on button press in chkTLicor.
@@ -708,5 +731,34 @@ if get(hObject,'BackgroundColor')==[1 0 0]
 else
     system(['/lift/bin/eCmd @lift s instrumentaction nop']);   
 end
+
+
+
+
+% --- Executes on button press in chkFlowLicorDry.
+function chkFlowLicorDry_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowLicorDry (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkFlowLicorDry
+
+
+% --- Executes on button press in chkFlowCalHum.
+function chkFlowCalHum_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowCalHum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkFlowCalHum
+
+
+% --- Executes on button press in chkFlowCalDry.
+function chkFlowCalDry_Callback(hObject, eventdata, handles)
+% hObject    handle to chkFlowCalDry (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkFlowCalDry
 
 
