@@ -188,19 +188,19 @@ end
 if bitget(statusData(lastrow,col.Valve2armAxis),3)
     set(handles.tglHeatLamp,'BackgroundColor','g','Value',1);
 else
-    set(handles.tglHeatLamp,'BackgroundColor','c','Value',0);
+    set(handles.tglHeatLamp,'BackgroundColor','r','Value',0);
 end
 % Heater Prallplatte
 if bitget(statusData(lastrow,col.Valve2armAxis),4)
     set(handles.tglHeatPrall,'BackgroundColor','g','Value',1);
 else
-    set(handles.tglHeatPrall,'BackgroundColor','c','Value',0);
+    set(handles.tglHeatPrall,'BackgroundColor','r','Value',0);
 end
 % Heater Phototube 2
 if bitget(statusData(lastrow,col.Valve2armAxis),5)
     set(handles.tglHeatPhoto2,'BackgroundColor','g','Value',1);
 else
-    set(handles.tglHeatPhoto2,'BackgroundColor','c','Value',0);
+    set(handles.tglHeatPhoto2,'BackgroundColor','r','Value',0);
 end
 
 % check solenoids
@@ -573,13 +573,13 @@ end
 MCP2SumCounts=statusData(:,col.ccCounts2);
 
 % display counts and pulses
-set(handles.txtPMTCounts,'String',statusData(lastrow,col.ccCounts0));
-set(handles.txtMCP1Counts,'String',statusData(lastrow,col.ccCounts1));
-set(handles.txtMCP2Counts,'String',statusData(lastrow,col.ccCounts2));
+set(handles.txtPMTCounts,'String',num2str(statusData(lastrow,col.ccCounts0),3));
+set(handles.txtMCP1Counts,'String',num2str(statusData(lastrow,col.ccCounts1),2));
+set(handles.txtMCP2Counts,'String',num2str(statusData(lastrow,col.ccCounts2),2));
 
-set(handles.txtPMTPulses,'String',statusData(lastrow,col.ccPulses0));
-set(handles.txtMCP1Pulses,'String',statusData(lastrow,col.ccPulses1));
-set(handles.txtMCP2Pulses,'String',statusData(lastrow,col.ccPulses2));
+set(handles.txtPMTPulses,'String',num2str(statusData(lastrow,col.ccPulses0),4));
+set(handles.txtMCP1Pulses,'String',num2str(statusData(lastrow,col.ccPulses1),4));
+set(handles.txtMCP2Pulses,'String',num2str(statusData(lastrow,col.ccPulses2),4));
 
 % calculate running averages for online and both offlines
 PMTOnlineAvg=AvgData(:,1);  
@@ -625,12 +625,12 @@ MCP2Avg(statusData(:,col.RAvgOnOffFlag)==1)=MCP2OfflineRightAvg(statusData(:,col
 MCP2Avg(statusData(:,col.RAvgOnOffFlag)==0)=NaN;
 
 % display offline and online averages
-set(handles.txtPMTOffline,'String',PMTOfflineAvg(lastrow));
-set(handles.txtMCP1Offline,'String',MCP1OfflineAvg(lastrow));
-set(handles.txtMCP2Offline,'String',MCP2OfflineAvg(lastrow));
-set(handles.txtPMTOnline,'String',PMTOnlineAvg(lastrow));
-set(handles.txtMCP1Online,'String',MCP1OnlineAvg(lastrow));
-set(handles.txtMCP2Online,'String',MCP2OnlineAvg(lastrow));
+set(handles.txtPMTOffline,'String',num2str(PMTOfflineAvg(lastrow),3));
+set(handles.txtMCP1Offline,'String',num2str(MCP1OfflineAvg(lastrow),2));
+set(handles.txtMCP2Offline,'String',num2str(MCP2OfflineAvg(lastrow),2));
+set(handles.txtPMTOnline,'String',num2str(PMTOnlineAvg(lastrow),4));
+set(handles.txtMCP1Online,'String',num2str(MCP1OnlineAvg(lastrow),4));
+set(handles.txtMCP2Online,'String',num2str(MCP2OnlineAvg(lastrow),4));
 
 % warn if Offline Signals are zero, possible problem with MCPs
 if MCP1OnlineAvg(lastrow)==0
@@ -900,19 +900,19 @@ end
 if bitget(statusData(lastrow,col.Valve2armAxis),3)
     set(handles.tglHeatLamp,'BackgroundColor','g');
 else
-    set(handles.tglHeatLamp,'BackgroundColor','c');
+    set(handles.tglHeatLamp,'BackgroundColor','r');
 end
 % Heater Prallplatte
 if bitget(statusData(lastrow,col.Valve2armAxis),4)
     set(handles.tglHeatPrall,'BackgroundColor','g');
 else
-    set(handles.tglHeatPrall,'BackgroundColor','c');
+    set(handles.tglHeatPrall,'BackgroundColor','r');
 end
 % Heater Phototube 2
 if bitget(statusData(lastrow,col.Valve2armAxis),5)
     set(handles.tglHeatPhoto2,'BackgroundColor','g');
 else
-    set(handles.tglHeatPhoto2,'BackgroundColor','c');
+    set(handles.tglHeatPhoto2,'BackgroundColor','r');
 end
 
 % check solenoids
