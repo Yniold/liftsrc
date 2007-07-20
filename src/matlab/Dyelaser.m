@@ -24,7 +24,7 @@ function varargout = Dyelaser(varargin)
 
 % Edit the above text to modify the response to help Dyelaser
 
-% Last Modified by GUIDE v2.5 25-May-2007 13:31:59
+% Last Modified by GUIDE v2.5 20-Jul-2007 10:23:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -99,62 +99,6 @@ data.toggleDyelaser=handles.toggleDyelaser;
 data.toggleVacuum=handles.toggleVacuum;
 data.toggleN2=handles.toggleN2;
 
-horusdata = getappdata(handles.parenthandle, 'horusdata');
-statusData=horusdata.statusData;
-AvgData=horusdata.AvgData;
-col=horusdata.col;
-fcts2val=horusdata.fcts2val;
-
-statustime=double(statusData(:,2))./1.0+ ...
-           double(statusData(:,3))./24.0+...
-           double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0+...
-           double(statusData(:,6))./86400000.0;
-
-[SortZeit,indexZeit]=sort(statustime);
-maxLen=size(statustime,1);
-lastrow=indexZeit(maxLen);
-
-% check filament status (e.g. if it was swiched off by horus)
-if bitget(statusData(lastrow,col.ValveLift),14)==0;
-    set(handles.toggleFilament,'Value',0,'string','Filament is OFF');
-    set(handles.toggleFilament,'BackgroundColor','c');
-else 
-    set(handles.toggleFilament,'Value',1,'string','Filament is ON');
-    set(handles.toggleFilament,'BackgroundColor','g');
-end
-
-% check shutter status
-if bitget(statusData(lastrow,col.ValveLift),13)==0;
-    set(handles.toggleShutter,'Value',0,'string','Shutter is OPEN');
-    set(handles.toggleShutter,'BackgroundColor','g');
-else 
-    set(handles.toggleShutter,'Value',1,'string','Shutter is CLOSED');
-    set(handles.toggleShutter,'BackgroundColor','c');
-end
-
-% check solenoids
-if bitget(statusData(lastrow,col.ValveLift),11)==0
-    set(handles.toggleVacuum,'BackgroundColor','c','Value',0);
-else 
-    set(handles.toggleVacuum,'BackgroundColor','g','Value',1);
-end
-if bitget(statusData(lastrow,col.ValveLift),8)==0
-    set(handles.toggleDyelaser,'BackgroundColor','c','Value',0);
-else 
-    set(handles.toggleDyelaser,'BackgroundColor','g','Value',1);
-end
-if bitget(statusData(lastrow,col.ValveLift),9)==0
-    set(handles.toggleN2,'BackgroundColor','c','Value',0);
-else 
-    set(handles.toggleN2,'BackgroundColor','g','Value',1);
-end
-if bitget(statusData(lastrow,col.ValveLift),10)==0
-    set(handles.toggleAmbient,'BackgroundColor','c','Value',0);
-else 
-    set(handles.toggleAmbient,'BackgroundColor','g','Value',1);
-end
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -201,6 +145,11 @@ if ~isnan(col.TempDyelaser)
 else
     TDyelaser=statustime; TDyelaser(:)=NaN;
 end
+if ~isnan(col.TempLaserPlate)
+    x=double(statusData(:,col.TempLaserPlate)); eval(['TLaserplate=',fcts2val.TempLaserPlate,';']);
+else
+    TLaserplate=statustime; TLaserplate(:)=NaN;
+end
 
 set(handles.txtDiodeGr,'String',[num2str(DiodeGr(lastrow),2),' W']);
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
@@ -210,6 +159,7 @@ set(handles.txtPVent,'String',[num2str(PVent(lastrow),4),' mbar']);
 set(handles.txtIFilament,'String',statusData(lastrow,col.IFilament));
 set(handles.txtPRef,'String',[num2str(PRef(lastrow),4),' mbar']);
 set(handles.txtTDyelaser,'String',[num2str(TDyelaser(lastrow),3),' C']);
+set(handles.txtTLaserplate,'String',[num2str(TLaserplate(lastrow),3),' C']);
 
 % warn with red background if values are off limits
 if statusData(lastrow,col.PRef)>10500
@@ -1237,3 +1187,14 @@ else
     set(hObject,'BackgroundColor','white');
 end
 system(['/lift/bin/eCmd s mirrorrealignmin ', num2str(Minutes)]);   
+
+
+% --- Executes on button press in chkTLaserplate.
+function chkTLaserplate_Callback(hObject, eventdata, handles)
+% hObject    handle to chkTLaserplate (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkTLaserplate
+
+
