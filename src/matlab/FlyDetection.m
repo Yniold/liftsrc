@@ -1699,10 +1699,8 @@ col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),3);
-        set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),3,0);
-        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -1741,10 +1739,8 @@ col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),4);
-        set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),4,0);
-        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -1765,10 +1761,8 @@ col=horusdata.col;
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),5);
-        set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve2armAxis),5,0);
-        set(hObject,'BackgroundColor','r');
     end
     system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(18*140))]); % 18V needed to switch
     system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
