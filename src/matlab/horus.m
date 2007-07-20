@@ -393,7 +393,7 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
     end
 elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
     if data.dlpreslow==0
-        data.dlpreslow=1;
+        data.dlpreslow=1; % to remember on next ReadStatus Call that switching already took place once
         Valveword=bitset(statusData(lastrow,col.ValveLift),11,0); % make sure vacuum is switched off
         Valveword=bitset(Valveword,9); % switch air on
         system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
@@ -427,7 +427,7 @@ elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
                 set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
             end
         end
-    else
+    else % N2 Valve was already switched to increase PDyelaser and was not effective
         set(handles.edPset,'String','0','BackgroundColor','r');
         Pset=PDyelaser(lastrow);
         disp('Zero Air is OFF !!!');
