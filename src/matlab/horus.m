@@ -356,7 +356,7 @@ if Pset==0
 end
 set(handles.txtPset,'String',num2str(Pset));
 % warning if PDyelaser differs too much from Pset
-if PDyelaser(lastrow)>=Pset+5 | PDyelaser(lastrow)<=Pset-5
+if PDyelaser(lastrow)>Pset+1 | PDyelaser(lastrow)<Pset-2
     set(handles.txtPset,'BackgroundColor','r')
 else
     set(handles.txtPset,'BackgroundColor',[0.7 0.7 0.7])
