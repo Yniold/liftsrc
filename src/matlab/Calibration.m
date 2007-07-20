@@ -61,7 +61,8 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
-%setup Timer function
+%setup Timer function, has to be one second, as each step the last 5 values
+%are averaged
 handles.Timer = timer('ExecutionMode','fixedDelay',...
       'Period',1.0,...    
       'BusyMode','drop',...
