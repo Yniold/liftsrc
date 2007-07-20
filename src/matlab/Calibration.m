@@ -103,7 +103,11 @@ AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
 
-calib=ReadCalibData('/lift/ramdisk/status.cal');
+if exist('/lift/ramdisk/status.cal','file')
+    calib=ReadCalibData('/lift/ramdisk/status.cal');
+else
+    disp('status.cal not found');
+end
 
 % Calculate time as sum of day, hour, min, etc.
 statustime=double(statusData(:,2))./1.0+ ...
