@@ -134,6 +134,8 @@ end
 
 data.txtBlower=handles.txtBlower;
 
+data.dlpreslow=0; %needed for Dyelaser pressure adjustement
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -390,39 +392,48 @@ if PDyelaser(lastrow)>=Pset+1; % PDyelaser too high
         end
     end
 elseif PDyelaser(lastrow)<=Pset-2; % PDyelaser too low
-    Valveword=bitset(statusData(lastrow,col.ValveLift),11,0); % make sure vacuum is switched off
-    Valveword=bitset(Valveword,9); % switch air on
-    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-    if isfield(data,'hDyelaser')
-        if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
-            set(Dyelaserdata.toggleN2,'BackgroundColor','g','String','Valve N2 ON');
+    if data.dlpreslow==0
+        data.dlpreslow=1;
+        Valveword=bitset(statusData(lastrow,col.ValveLift),11,0); % make sure vacuum is switched off
+        Valveword=bitset(Valveword,9); % switch air on
+        system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+        system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+        if isfield(data,'hDyelaser')
+            if ishandle(data.hDyelaser), 
+                Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
+                set(Dyelaserdata.toggleN2,'BackgroundColor','g','String','Valve N2 ON');
+            end
         end
-    end
-    pause(0.5);
-    Valveword=bitset(Valveword,9,0); % switch air off 
-    Valveword=bitset(Valveword,8); % switch Dyelaser valve on
-    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-    if isfield(data,'hDyelaser')
-        if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
-            set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
-            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
+        pause(0.5);
+        Valveword=bitset(Valveword,9,0); % switch air off 
+        Valveword=bitset(Valveword,8); % switch Dyelaser valve on
+        system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+        if isfield(data,'hDyelaser')
+            if ishandle(data.hDyelaser), 
+                Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
+                set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
+                set(Dyelaserdata.toggleDyelaser,'BackgroundColor','g','String','Valve Dyelaser ON');
+            end
         end
-    end
-    pause(0.5);
-    Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
-    Valveword=bitset(Valveword,9,0); % switch air off 
-    system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-    system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
-    if isfield(data,'hDyelaser')
-        if ishandle(data.hDyelaser), 
-            Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
-            set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
-            set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
+        pause(0.5);
+        Valveword=bitset(Valveword,8,0); % switch Dyelaser valve off
+        Valveword=bitset(Valveword,9,0); % switch air off 
+        system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+        system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
+        if isfield(data,'hDyelaser')
+            if ishandle(data.hDyelaser), 
+                Dyelaserdata = getappdata(data.hDyelaser, 'Dyelaserdata');
+                set(Dyelaserdata.toggleDyelaser,'BackgroundColor','c','String','Valve Dyelaser OFF');
+                set(Dyelaserdata.toggleN2,'BackgroundColor','c','String','Valve N2 OFF');
+            end
         end
+    else
+        set(handles.edPset,'String','0','BackgroundColor','r');
+        Pset=PDyelaser(lastrow);
+        disp('Zero Air is OFF !!!');
     end
+else 
+    data.dlpreslow=0;
 end
 
 % calculate ADC values needed for warnings
@@ -851,7 +862,7 @@ function edPset_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edPset as text
 %        str2double(get(hObject,'String')) returns contents of edPset as a double
 Pset=uint16(str2double(get(hObject,'String')));
-if isnan(Pset) 
+if isnan(Pset) | Pset==0 
     set(hObject,'BackgroundColor','red');
 else 
     set(hObject,'BackgroundColor','white');
