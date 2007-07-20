@@ -106,7 +106,7 @@ fcts2val=horusdata.fcts2val;
 if exist('/lift/ramdisk/status.cal','file')
     calib=ReadCalibData('/lift/ramdisk/status.cal');
 else
-    disp('status.cal not found');
+    disp('File "status.cal" not found !');
 end
 
 % Calculate time as sum of day, hour, min, etc.
