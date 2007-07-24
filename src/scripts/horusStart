@@ -1,9 +1,8 @@
 #!/bin/sh
-pid='pidof spectrometerServer'
-if [ -n "$pid" ] ; then
+if pidof spectrometerServer > /dev/null ; then
   echo "Spectrometer Server already running"
 else
-  xterm +wf -geometry 40x10+574+0 -title 'spectrometer' -e nice spectrometerServer &
+  xterm +wf -geometry 131x5+320+168 -title 'spectrometer' -e nice spectrometerServer &
 fi
 
 mke2fs /dev/ram0
@@ -11,10 +10,10 @@ mount /dev/ram0 /lift/ramdisk
 cd /lift
 xterm +wf -geometry 50x55+0+0 -title 'DebugMon' -e 'nice debugMon 1300' &
 sleep 2
-xterm +wf -geometry 456x26+316+150 -title 'elekStatus' -e nice elekStatus &
+xterm +wf -geometry 456x26+323+280 -title 'elekStatus' -e nice elekStatus &
 # start parameter of etalon : <online position> <offline step left&right> <dither step> 
 xterm +wf -geometry 40x10+574+0 -title 'etalon' -e etalon 20000 1000 32  &
-xterm +wf -geometry 40x10+574+200 -title 'Mirror' -e nice mirrors  &
+xterm +wf -geometry 40x10+835+3 -title 'Mirror' -e nice mirrors  &
 xterm +wf -geometry 40x10+316+0 -title 'elekIOServ' -e nice -n-20 elekIOServ m &
 
 sleep 3
