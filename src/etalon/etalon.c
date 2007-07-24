@@ -1,7 +1,10 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2007-06-11 16:55:57 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2007-07-24 08:43:21 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
+* Revision 1.28  2007-07-24 08:43:21  martinez
+* made integer position variables to long, deleted superfluous variables
+*
 * Revision 1.27  2007-06-11 16:55:57  martinez
 * etalon controller changes
 *
@@ -395,14 +398,10 @@ int main(int argc, char *argv[])
     int MessagePort;
     int numbytes;
     
-    int ActSpeed;
-    int SetSpeed;
-    int64_t ActPosition;
-    int64_t SetPosition;
-    int64_t StepPosOnline=ETALON_STEP_POS_ONLINE;
-    int64_t StepPosOffline=ETALON_STEP_OFFLINE;
-    int64_t SavePos;
-    int64_t EtalonScanPos;
+    long SetPosition;
+    long StepPosOnline=ETALON_STEP_POS_ONLINE;
+    long SavePos;
+    long EtalonScanPos;
      
 
     unsigned DeltaStep=FALSE;
@@ -525,8 +524,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.27 2007-06-11 16:55:57 martinez Exp $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.27 2007-06-11 16:55:57 martinez Exp $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.28 2007-07-24 08:43:21 martinez Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.28 2007-07-24 08:43:21 martinez Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
@@ -847,3 +846,4 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 
 }
+
