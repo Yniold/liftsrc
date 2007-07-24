@@ -55,7 +55,7 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C mirrors
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C broadcastClient
-	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
 
 install:
@@ -99,10 +99,13 @@ clean:
 	rm -f ./elekIO/*.o
 	rm -f ./eCmd/eCmd
 	rm -f ./bin/eCmd
+	rm -f ./bin/eRead
 	rm -f ./elekIOServ/elekIOServ
 	rm -f ./elekIOServ/*.o
+	rm -f ./bin/elekIOcalib
 	rm -f ./elekIOcalib/elekIOcalib
 	rm -f ./elekIOcalib/*.o
+	rm -f ./bin/elekIOaux
 	rm -f ./elekIOaux/elekIOaux
 	rm -f ./elekIOaux/*.o
 	rm -f ./bin/elekIOServ
@@ -116,8 +119,10 @@ clean:
 	rm -f ./bin/mirrors
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
+	rm -f ./bin/spectrometerServer
 	rm -f ./spectrumAnalyzer/spectrometerServer
 	rm -f ./spectrumAnalyzer/*.o
+	rm -f ./bin/broadcastClient
 	rm -f ./broadcastClient/broadcastClient
 	rm -f ./broadcastClient/*.o
 	
