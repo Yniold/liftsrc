@@ -20,7 +20,6 @@ ifneq ($(ARMBUILD),1)
 CC := $(CROSS_COMPILE)gcc
 export CC
 
-LDFLAGS+=-static
 LDFLAGS+=-ggdb
 LDFLAGS+=-lusb
 LDFLAGS+=-lm
