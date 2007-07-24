@@ -55,7 +55,7 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C mirrors
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C broadcastClient
-#	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
 
 install:
@@ -116,8 +116,7 @@ clean:
 	rm -f ./bin/mirrors
 	rm -f ./debugMon/debugMon
 	rm -f ./bin/debugMon
-#	rm -f ./spectrumAnalyzer/spectrometerServer
-# don't delete static build version in CVS until commpilation works again
+	rm -f ./spectrumAnalyzer/spectrometerServer
 	rm -f ./spectrumAnalyzer/*.o
 	rm -f ./broadcastClient/broadcastClient
 	rm -f ./broadcastClient/*.o
