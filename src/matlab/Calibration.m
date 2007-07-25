@@ -22,7 +22,7 @@ function varargout = Calibration(varargin)
 
 % Edit the above text to modify the response to help Calibration
 
-% Last Modified by GUIDE v2.5 18-Jul-2007 11:07:17
+% Last Modified by GUIDE v2.5 24-Jul-2007 13:16:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -140,6 +140,12 @@ ctsMCP2=double(statusData(:,col.ccCounts2));
 OnOffFlag=statusData(:,col.RAvgOnOffFlag);
 
 H2O=double(calib.LicorCalib.H2OB);
+H2OMean=NaN;
+H2OStd=NaN;
+if (lastrow>50)
+   H2OMean=(mean(H2O(1:30))-mean(H2O(lastrow-30:lastrow)))/mean(H2O);
+   H2OStd=H2OMean/std(H2O);
+end
 Pamb=double(calib.LicorCalib.AmbientPressure)./10;
 TLicor=double(calib.LicorCalib.LicorTemperature)/100-273.15;
 TH2O=double(calib.PIDRegulator.ActualValueH2O)/100-273.15;
@@ -163,6 +169,11 @@ set(handles.textFlowCalDry,'String',[num2str(Flow1(lastrow),5),' sccm']);
 set(handles.textFlowLicorHum,'String',[num2str(Flow3(lastrow),3),' sccm']);
 set(handles.textFlowLicorDry,'String',[num2str(Flow2(lastrow),3),' sccm']);
 set(handles.textHumid,'String',[num2str(Humid(lastrow),3),' %']);
+
+set(handles.textH2OMean,'String',[num2str(H2OMean,3),' ppm']);
+set(handles.textH2OStd,'String',num2str(H2OStd,3));
+
+
 % warn with red background if values are off limits
 if CalFlag(lastrow)==2 | CalFlag(lastrow)==6
     set(handles.pushflag,'String','Flag On','BackgroundColor','g')
