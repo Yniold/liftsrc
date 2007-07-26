@@ -87,23 +87,15 @@ statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
+statustime=horusdata.statustime;
+maxLen=horusdata.maxLen;
+lastrow=horusdata.lastrow;
+indexZeit=horusdata.indexZeit;
 horustxtBlower=horusdata.txtBlower;
 if ~isequal(get(horustxtBlower,'BackgroundColor'),[0 1 1])
     tcpBlower=horusdata.tcpBlower;
 end
 
-
-% Calculate time as sum of day, hour, min, etc.
-statustime=double(statusData(:,2))./1.0+ ...
-           double(statusData(:,3))./24.0+...
-           double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0+...
-           double(statusData(:,6))./86400000.0;
-
-       
-[SortZeit,indexZeit]=sort(statustime);
-maxLen=size(statustime,1);
-lastrow=indexZeit(maxLen);
 PlotWidth=maxLen;
 stopPlot=maxLen;
 startPlot=1;

@@ -103,23 +103,16 @@ statusData=horusdata.statusData;
 AvgData=horusdata.AvgData;
 col=horusdata.col;
 fcts2val=horusdata.fcts2val;
+statustime=horusdata.statustime;
+maxLen=horusdata.maxLen;
+lastrow=horusdata.lastrow;
+indexZeit=horusdata.indexZeit;
 
 if exist('/lift/ramdisk/status.cal','file')
     calib=ReadCalibData('/lift/ramdisk/status.cal');
 else
     disp('File "status.cal" not found !');
 end
-
-% Calculate time as sum of day, hour, min, etc.
-statustime=double(statusData(:,2))./1.0+ ...
-           double(statusData(:,3))./24.0+...
-           double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0+...
-           double(statusData(:,6))./86400000.0;
-
-[SortZeit,indexZeit]=sort(statustime);
-maxLen=size(statustime,1);
-lastrow=indexZeit(maxLen);
 
 PlotWidth=maxLen;
 stopPlot=maxLen;
@@ -368,16 +361,8 @@ function tglStart_Callback(hObject, eventdata, handles)
 data = getappdata(handles.output, 'Caldata');
 horusdata = getappdata(handles.parenthandle, 'horusdata');
 statusData=horusdata.statusData;
-
-% Calculate time as sum of day, hour, min, etc.
-statustime=double(statusData(:,2))./1.0+ ...
-           double(statusData(:,3))./24.0+...
-           double(statusData(:,4))./1440.0+...
-           double(statusData(:,5))./86400.0;
-
-[SortZeit,indexZeit]=sort(statustime);
-maxLen=size(statustime,1);
-lastrow=indexZeit(maxLen);
+statustime=horusdata.statustime;
+lastrow=horusdata.lastrow;
 
 if get(hObject,'Value')
     set(hObject,'String','Stop')

@@ -186,9 +186,12 @@ statustime=double(statusData(:,2))./1.0+ ...
            double(statusData(:,5))./86400.0+...
            double(statusData(:,6))./86400000.0;
 
-[SortZeit,indexZeit]=sort(statustime);
-maxLen=size(statustime,1);
-lastrow=indexZeit(maxLen);
+data.statustime=statustime;       
+
+[SortZeit,data.indexZeit]=sort(statustime);
+data.maxLen=size(statustime,1);
+lastrow=data.indexZeit(data.maxLen);
+data.lastrow=lastrow;
 
 if isfield(handles,'tcpBlower')
     tcpBlower=handles.tcpBlower;
