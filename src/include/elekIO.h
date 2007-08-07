@@ -1,8 +1,11 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-07-13 07:52:09 $ by $Author: martinez $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-08-07 12:35:22 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
+* Revision 1.57  2007-08-07 12:35:22  rudolf
+* preparations for recording spectral data as well
+*
 * Revision 1.56  2007-07-13 07:52:09  martinez
 * instrument flag cal_measure
 *
@@ -247,6 +250,7 @@ struct timeval {
 
 #define MAX_LICORS_CALIB               1       /* number of LICORs on Calibrator Unit */
 
+#define MAXSPECTRALLINES               3840    /* number of spectrum lines for HR4000 */
 
 #ifndef DEBUG_NOHARDWARE
 #define ELK_TIMEOUT (unsigned) 0x1000
@@ -808,6 +812,11 @@ struct ShipWaterType
    double   dWaterTemp;               /* water temp in degrees celsius */
 };
 
+struct SpectralLineType
+{
+   uint16_t uiWaveLength;             /* Wavelength in 0.01 nm e.g. 65000 -> 650.00nm */
+   uint16_t uiCounts;                 /* Counts for each spectral line */
+};
 /*************************************************************************************************************/
 
 enum InstrumentActionType { /* update also in instrument.c */
@@ -1034,6 +1043,19 @@ struct auxStatusType     /* structure for the meteo box and ship's auxilliary da
   struct AuxDataValidType    Status;
 };
 
+struct spectralStatusType     /* structure for the spectrometer data*/ 
+{
+  /* data structures for the spectrometer*/
+  struct timeval             TimeOfDaySpectra;                      /* timestamp */
+  uint16_t                   uiMinWaveLength;                       /* minimal Wavelength, to speed up plotting */
+  uint16_t                   uiMaxWaveLength;                       /* maximum Wavelength, to speed up plotting */
+  uint16_t                   uiLineCount;                           /* valid lines in this spectrum (may vary between HR2000 and HR4000 */
+  struct SpectralLineType    SpectralData[MAXSPECTRALLINES];        /* spectral data (wavelength / count pairs) */
+  union PositionType         Set;                                   /* etalon set position */
+  union PositionType         Current;                               /* etalon current position */
+  union PositionType         Encoder;                               /* etalon encoder position */
+  uint16_t                   uiIsOnline;                            /* flag for online offline */
+};
 
 
 extern int elkInit(void);

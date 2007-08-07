@@ -1,8 +1,11 @@
 
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-03-11 17:06:55 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-08-07 12:35:09 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.37  2007-08-07 12:35:09  rudolf
+ * preparations for recording spectral data as well
+ *
  * Revision 1.36  2007-03-11 17:06:55  rudolf
  * fixed typo
  *
@@ -154,6 +157,7 @@ enum InPortListEnum {  // this list has to be coherent with MessageInPortList
   ELEK_ELEKIO_IN,
   CALIB_IN,
   AUX_IN,
+  SPECTRA_IN,
   MAX_MESSAGE_INPORTS }; 
 
 enum OutPortListEnum {  // this list has to be coherent with MessageOutPortList
@@ -168,7 +172,8 @@ static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]={   // orde
   {"StatusReq",    UDP_ELEK_STATUS_REQ_INPORT,      UDP_ELEK_STATUS_REQ_OUTPORT, IP_LOCALHOST, -1, 1,  UDP_IN_PORT},
   {"ElekIOIn"     ,UDP_ELEK_STATUS_STATUS_OUTPORT,  -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ (instrument data)
   {"CalibIn "     ,UDP_CALIB_STATUS_STATUS_OUTPORT, -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ (calibration data)
-  {"AuxIn"        ,UDP_ELEK_AUX_INPORT,             -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}  // status inport from elekIOServ (aux/meteo data)
+  {"AuxIn"        ,UDP_ELEK_AUX_INPORT,             -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}, // status inport from elekIOServ (aux/meteo data)
+  {"SpectraIn"    ,UDP_ELEK_SPECTRA_INPORT,         -1                         , IP_LOCALHOST, -1, 1,  UDP_IN_PORT}  // status inport from spectrometerServer (spectral data)
                                                                                                                      // uses same portnumber as elekIOaux uses to send	
 };                                                                                                                   // the data to elekIOServ to simplify direct connection
                                                                                                                      // elekIOaux->elekStatus if needed
@@ -183,6 +188,7 @@ static struct MessagePortType MessageOutPortList[MAX_MESSAGE_OUTPORTS]={        
 static long LastElekStatusNumber;
 static long LastCalibStatusNumber;
 static long LastAuxStatusNumber;
+static long LastSpectraStatusNumber;
 
 void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize) 
 {
@@ -860,6 +866,75 @@ int WriteCalibStatus(char *PathToRamDisk, char *FileName, struct calibStatusType
 	
 } /*WriteCalibStatus*/
 
+int WriteSpectraStatus(char *PathToRamDisk, char *FileName, struct spectralStatusType *ptrSpectraStatus) 
+{
+	
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+	
+  extern long LastSpectraStatusNumber;
+	
+  FILE *fp;
+  int i;
+  int ret;
+  long len;
+  int nelements;
+  char buf[GENERIC_BUF_LEN];
+		
+  if ((fp=fopen(FileName,"a"))==NULL)
+    {
+      sprintf(buf,"ElekStatus: can't open %s",FileName);
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+    }
+  else
+    {
+      // write data. may return with 1 even if disk is full.
+      ret=fwrite(ptrSpectraStatus,sizeof (struct spectralStatusType),1,fp);
+      if (ret!=1)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: SPECTRALDATA NOT WRITTEN, fwrite() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+		
+      // flush buffer to check if disk is full an to prevent data loss
+      ret=fflush(fp);
+      if (ret == EOF)
+	{
+	  char* pErrorMessage = strerror(errno);
+	  sprintf(buf,"ElekStatus: SPECTRALDATA NOT WRITTEN, fflush() returned with error %d: ",ret);
+	  strcat(buf,pErrorMessage);
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	};
+      fclose(fp);
+    } // if fopen
+
+   strncpy(buf,PathToRamDisk,GENERIC_BUF_LEN);
+  strcat(buf,"/status.spc");
+	
+  if ((fp=fopen(buf,"r+"))==NULL) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: status.spc does not exist");
+      if ((fp=fopen(buf,"w+"))==NULL) 
+	{
+	  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't create status.spc");
+	  return (-1);
+	}
+    } /* if open */
+  //go to the next entry position
+  ret=fseek(fp,LastSpectraStatusNumber*sizeof (struct spectralStatusType),SEEK_SET);
+  ret=fwrite(ptrSpectraStatus,sizeof (struct spectralStatusType),1,fp);
+	
+  if (ret!=1) 
+    {
+      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"ElekStatus: can't write status.spc");
+    }
+  LastSpectraStatusNumber=(LastSpectraStatusNumber+1) % STATUSFILE_RING_LEN;	    
+  fclose(fp);
+	
+} /*WriteSpectraStatus*/
+
 void GenerateFileName(char *Path, char *FileName, struct tm *ReqTime, char *Extension) {
   struct tm DateNow;
   time_t SecondsNow;
@@ -1051,6 +1126,60 @@ int InitAuxStatusFile(char *Path) {
 
 } /* Init Aux Status File */
 
+/******************************************************************************************/
+/* search Spectra Status file for last entry and set global variable accordingly          */
+/******************************************************************************************/
+
+
+int InitSpectraStatusFile(char *Path) {
+
+  extern struct MessagePortType MessageOutPortList[];
+  extern struct MessagePortType MessageInPortList[];
+  extern long LastSpectraStatusNumber;
+
+
+  FILE *fp;
+  struct tm tmZeit;
+  time_t    Seconds;
+  char buf[GENERIC_BUF_LEN];
+  struct spectralStatusType spectraStatus;
+  long RecordNo;
+  struct timeval LastTime;
+  int ret;
+    
+  strncpy(buf,Path,GENERIC_BUF_LEN);
+  strcat(buf,"/status.spc");
+  if ((fp=fopen(buf,"r"))==NULL) {
+    // file does not exist yet, so we set LastSpectraStatusNumber to 0
+    LastSpectraStatusNumber=0;
+    return (0);
+  }
+ 
+  // find out what the last entry is
+  LastSpectraStatusNumber=0;
+  RecordNo=0;
+  LastTime.tv_sec=0;
+  LastTime.tv_usec=0;
+   
+  while (!feof(fp)) {
+      
+    ret=fread(&spectraStatus,sizeof (struct spectralStatusType),1,fp);
+	    
+    if ((LastTime.tv_sec<spectraStatus.TimeOfDaySpectra.tv_sec) && 
+	(LastTime.tv_sec<spectraStatus.TimeOfDaySpectra.tv_sec)) {
+	
+      LastSpectraStatusNumber=RecordNo;
+      LastTime=spectraStatus.TimeOfDaySpectra;
+    }/* if time */
+      
+    RecordNo++;
+  } /* while feof */
+    
+  fclose(fp);
+    
+
+
+} /* Init Spectra Status File */
 
 
 void EvaluateKeyboard(void)
@@ -1196,6 +1325,7 @@ int main()
 {
   long CalibStatusCount;
   long AuxStatusCount;
+  long SpectraStatusCount;
    
   extern int errno;
   extern struct MessagePortType MessageOutPortList[];
@@ -1204,6 +1334,7 @@ int main()
   struct elekStatusType ElekStatus;
   struct calibStatusType CalibStatus;
   struct auxStatusType AuxStatus;
+  struct spectralStatusType SpectraStatus;
    
   int MessagePort;
   int fdMax;                      // max fd for select
@@ -1216,7 +1347,7 @@ int main()
   struct timespec RealTime;         // Real time clock 
   struct sockaddr_in my_addr;     // my address information
   struct sockaddr_in their_addr;  // connector's address information
-  int    ElekStatus_len, CalibStatus_len,AuxStatus_len,numbytes;
+  int    ElekStatus_len, CalibStatus_len,AuxStatus_len,SpectraStatus_len,numbytes;
   socklen_t addr_len;
   bool   EndOfSession;  
 
@@ -1225,6 +1356,7 @@ int main()
   char StatusFileName[MAX_FILENAME_LEN]; 
   char CalibStatusFileName[MAX_FILENAME_LEN]; 
   char AuxStatusFileName[MAX_FILENAME_LEN];  
+  char SpectraStatusFileName[MAX_FILENAME_LEN];  
   
    if(cbreak(STDIN_FILENO) == -1) 
     {
@@ -1264,12 +1396,13 @@ int main()
   ElekStatus_len=sizeof(struct elekStatusType);
   CalibStatus_len=sizeof(struct calibStatusType);
   AuxStatus_len=sizeof(struct auxStatusType);
+  SpectraStatus_len=sizeof(struct spectralStatusType);
    
   //    refresh();
 #ifdef RUNONARM
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.36 2007-03-11 17:06:55 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.37 2007-08-07 12:35:09 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.36 2007-03-11 17:06:55 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len);
+  sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.37 2007-08-07 12:35:09 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1280,6 +1413,8 @@ int main()
   // Check Status ringfile buffer and initialize the pointer to the appropriate position
   InitElekStatusFile(RAMDISKPATH);
   InitCalibStatusFile(RAMDISKPATH);
+  InitSpectraStatusFile(RAMDISKPATH);
+   
   EndOfSession=FALSE;
   while (!EndOfSession) {
     //        printf("wait for data ....\n");
@@ -1389,11 +1524,33 @@ int main()
 			    
 	    break;
 
+	   case SPECTRA_IN:
+	    if ((numbytes=recvfrom(MessageInPortList[MessagePort].fdSocket, 
+				   &SpectraStatus,SpectraStatus_len , MSG_WAITALL,
+				   (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+	      perror("recvfrom");
+	      SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"elekStatus : Problem with receive");
+	    }
+	    sprintf(buf,"elekStatus : SPECTRA_IN: Got %d from spectrometerServer",numbytes);
+	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+	    SpectraStatusCount++;
+	    EvaluateKeyboard();
+	    //if ((SpectraStatusCount % 5)==0) { 
+	    //  PrintSpectraStatus(&SpectraStatus, numbytes); 
+	    //}
+	    
+	    GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+	    WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus);
+	    break;
+	     
 	   case ELEK_STATUS_REQ_IN:
 	    break;
+	     
 	  default :
 	    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],"Unknown MessagPort");
 	    break;
+	     
 	  } /* switch */
 		    
 	} /* if fd_isset */		

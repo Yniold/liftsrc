@@ -1,6 +1,9 @@
 /*
-* $RCSfile: elekStatus.h,v $ last changed on $Date: 2007-03-09 13:09:21 $ by $Author: rudolf $
+* $RCSfile: elekStatus.h,v $ last changed on $Date: 2007-08-07 12:35:09 $ by $Author: rudolf $
 * $Log: elekStatus.h,v $
+* Revision 1.11  2007-08-07 12:35:09  rudolf
+* preparations for recording spectral data as well
+*
 * Revision 1.10  2007-03-09 13:09:21  rudolf
 * added new port for aux data, recording of aux data and dumping of aux data
 *
@@ -41,6 +44,7 @@
 
 #define GROUP_CALIBDATA         (1<<10)
 #define GROUP_AUXDATA           (1<<11)
+#define GROUP_SPECTRADATA       (1<<12)
 // GLOBALS
 
 // our keyboard scan routine

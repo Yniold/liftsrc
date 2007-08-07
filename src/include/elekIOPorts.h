@@ -1,7 +1,10 @@
 /*
-* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-07-15 11:07:34 $ by $Author: martinez $
+* $RCSfile: elekIOPorts.h,v $ last changed on $Date: 2007-08-07 12:35:22 $ by $Author: rudolf $
 *
 * $Log: elekIOPorts.h,v $
+* Revision 1.24  2007-08-07 12:35:22  rudolf
+* preparations for recording spectral data as well
+*
 * Revision 1.23  2007-07-15 11:07:34  martinez
 * elekIOPorts updated for receiveUDPData
 *
@@ -95,6 +98,7 @@
 #define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
 #define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task
 #define UDP_ELEK_AUX_INPORT            1180    // port for Aux Data (weather, ship etc.)
+#define UDP_ELEK_SPECTRA_INPORT        4711    // port for spectral data from spectrometerServer
 
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
