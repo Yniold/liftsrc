@@ -1,8 +1,11 @@
 /*
-* $RCSfile: elekIOTest.c,v $ last changed on $Date: 2007-02-13 17:19:25 $ by $Author: martinez $
+* $RCSfile: elekIOTest.c,v $ last changed on $Date: 2007-09-11 13:28:06 $ by $Author: rudolf $
 *
 * $Log: elekIOTest.c,v $
-* Revision 1.1  2007-02-13 17:19:25  martinez
+* Revision 1.2  2007-09-11 13:28:06  rudolf
+* added AT96 test software
+*
+* Revision 1.1  2007/02/13 17:19:25  martinez
 * added AT96 Test program
 *
 * Revision 1.4  2006-09-04 11:40:36  rudolf
@@ -127,48 +130,7 @@ int elkWriteData(uint16_t Adress, uint16_t Data)
 
     outw(Adress, ELK_ADR);
     outw(Data, ELK_DATA);
-
-#if (DEBUGLEVEL > 5)
-    printf("ElkTodo ");
-#endif
-
-    while (ElkQToDo && Counter) {
-	Counter--;
-	ElkQStatus = inw(ELK_TODO);
-	ElkQReady  = ElkQStatus & 0x000f;
-	ElkQToDo   = ElkQStatus>>8;
-#if (DEBUGLEVEL > 5)
-	printf(":%2x %2x",ElkQToDo,ElkQReady);
-#endif
-    }
-#if (DEBUGLEVEL > 5)
-    printf("\n");
-#endif
-
-    if ((unsigned)0==Counter) { // did we run into a timeout ?
-	ret=ELK_STAT_TIMEOUT;
-	return(ret);
-    }
-
-    // in the case of a write command to the ELK we remove the command from the
-    // ELK Queue as soon as it is processed
-
-    ElkReadData  = inw(ELK_DATA);                        // read on data increase Tailptr
-    ElkQStatus   = inw(ELK_TODO);                        // let see if it worked
-    ElkQReadyNew = ElkQStatus & 0x000f;
-    ElkQToDo     = ElkQStatus>>8;
-
-#if (DEBUGLEVEL > 0)
-	printf("QStat %04x QReady %x QReadyNew %x\n",ElkQStatus,ElkQReady,ElkQReadyNew);
-#endif
-
-    if (((ElkQReady-1) % ELK_QSIZE)!=ElkQReadyNew ) { // we have a problem with the Q
-
-#if (DEBUGLEVEL > 0)
-	printf("Problem in ELKQueue, QReady QReadyNew \n");
-#endif
-
-    }
+   sleep(1);
 } // end elkWriteData(uint16_t Adress, uint16_t Data)
 
 //=====================================================================================================
@@ -191,65 +153,14 @@ int elkReadData(uint16_t Adress) {
 
     ElkReadData = (uint16_t) 0;                  // init ElkReadData to something
 
-#if (DEBUGLEVEL > 0)
-    printf("Write adr %x to port %x and data %x to adr %x\n",Adress,ELK_ADR,ElkReadData,ELK_DATA);
-#endif
+//    outw(Adress, ELK_ADR);                      // Adress we want the data from
+//    outw(ElkReadData, ELK_DATA);                       // write to Dataport to submit request
 
-    outw(Adress, ELK_ADR);                      // Adress we want the data from
-    outw(ElkReadData, ELK_DATA);                       // write to Dataport to submit request
-
-#if (DEBUGLEVEL > 5)
-    printf("ElkTodo ");
-#endif
-
-    while (ElkQToDo && Counter) {
-	Counter--;
-	ElkQStatus = inw(ELK_TODO);
-	ElkQReady  = ElkQStatus & 0x000f;
-	ElkQToDo   = ElkQStatus>>8;
-#if (DEBUGLEVEL > 5)
-	printf(":TD%2x Rdy%2x",ElkQToDo,ElkQReady);
-#endif
-    }
-#if (DEBUGLEVEL > 5)
-    printf("\n");
-#endif
-
-    if ((unsigned)0==Counter) { // did we run into a timeout ?
-	ret=ELK_STAT_TIMEOUT;
-	return(ret);
-    } 
-    
-    // in the case of a read command to the ELK we read back the adress for consistency check 
-    // and the Data of course ;)
-
-    ElkReadAdress = inw(ELK_ADR);                         // get the address
+//    ElkReadAdress = inw(ELK_ADR);                         // get the address
     ElkReadData   = inw(ELK_DATA);                        // read on data and increase Tailptr
 
 //	printf("Problem in ELKQueue, expected Adress %x, Read Address %x \n",Adress,ElkReadAdress);
 
-    if (ElkReadAdress!=Adress) {                          // did we get the same adress back ?
-#if (DEBUGLEVEL > 0)
-	printf("Problem in ELKQueue, expected Adress %x, Read Address %x \n",Adress,ElkReadAdress);
-#endif
-    }
-
-    ElkQStatus    = inw(ELK_TODO);                        // let see if it worked
-    ElkQReadyNew  = ElkQStatus & 0x000f;
-    ElkQToDo      = ElkQStatus>>8;
-    
-#if (DEBUGLEVEL > 0)
-	printf("QStat %04x QReady %x QReadyNew %x\n",ElkQStatus,ElkQReady,ElkQReadyNew);
-#endif
-
-
-    if (((ElkQReady-1) % ELK_QSIZE)!=ElkQReadyNew ) { // we have a problem with the Q
-
-#if (DEBUGLEVEL > 0)
-	printf("Problem in ELKQueue, QReady %x QReadyNew %x\n",ElkQReady,ElkQReadyNew);
-#endif
-	
-    }
 
     return(ElkReadData);
 
@@ -289,11 +200,11 @@ int main ()
   for (i=0;i<LOOPCOUNT ;i++) {
     printf(" write 0x%04x to address 0x%04x\n",TESTWORD,TESTADR);
     ret=elkWriteData(TESTADR, TESTWORD);
-    printf(" ..result : 0x%04x\n",ret);
-    
-    printf(" read from address 0x%04x\n",TESTADR);
+
+     printf(" read from address 0x%04x\n",TESTADR);
     ret=elkReadData(TESTADR);
-    printf(" ..result : 0x%04x\n",ret);
+    
+     printf(" got: 0x%04x\n",ret);
   } /* for */
 
 
@@ -305,3 +216,7 @@ int main ()
 
 } /* main */
     
+
+
+
+
