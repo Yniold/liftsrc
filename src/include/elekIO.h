@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-08-07 12:35:22 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-09-28 11:25:45 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.57  2007-08-07 12:35:22  rudolf
+* Revision 1.58  2007-09-28 11:25:45  rudolf
+* added timestamp to structure
+*
+* Revision 1.57  2007/08/07 12:35:22  rudolf
 * preparations for recording spectral data as well
 *
 * Revision 1.56  2007-07-13 07:52:09  martinez
@@ -1046,7 +1049,8 @@ struct auxStatusType     /* structure for the meteo box and ship's auxilliary da
 struct spectralStatusType     /* structure for the spectrometer data*/ 
 {
   /* data structures for the spectrometer*/
-  struct timeval             TimeOfDaySpectra;                      /* timestamp */
+  struct timeval             TimeOfDaySpectra;                      /* timestamp when the spectrum was aquired */
+  struct timeval             TimeOfDayStatus;                       /* timestamp of the matching status dataset used for on-offline calculations */ 
   uint16_t                   uiMinWaveLength;                       /* minimal Wavelength, to speed up plotting */
   uint16_t                   uiMaxWaveLength;                       /* maximum Wavelength, to speed up plotting */
   uint16_t                   uiLineCount;                           /* valid lines in this spectrum (may vary between HR2000 and HR4000 */
