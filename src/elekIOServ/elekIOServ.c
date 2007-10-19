@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-06-12 12:08:00 $ by $Author: martinez $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-19 13:37:29 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.78  2007-06-12 12:08:00  martinez
+ * Revision 1.79  2007-10-19 13:37:29  rudolf
+ * added commandline switch to allow localhost as target status IP adress for debugging purposes
+ *
+ * Revision 1.78  2007/06/12 12:08:00  martinez
  * included eCmd commands set realignminutes and stoprealigning
  *
  * Revision 1.77  2007-03-21 06:53:42  martinez
@@ -2866,7 +2869,7 @@ int main(int argc, char *argv[])
    extern enum TimerSignalStateEnum TimerState;
 
    int IsMaster = 1;
-
+   int DebugEnabled = 0;
    extern struct MessagePortType MessageInPortList[];
    extern struct MessagePortType MessageOutPortList[];
 
@@ -2938,7 +2941,7 @@ int main(int argc, char *argv[])
 
    if (argc<2)
      {
-        printf("Usage :\t%s m/s\n", argv[0]);
+        printf("Usage :\t%s m/s [debug]\n", argv[0]);
         exit(EXIT_FAILURE);
      };
 
@@ -2948,6 +2951,14 @@ int main(int argc, char *argv[])
    else
      IsMaster = 0;
 
+   if (argc == 3)
+     {
+	if(strcmp("debug",argv[2]) == 0)
+ 	  DebugEnabled = 1;
+	else
+	  DebugEnabled = 0;
+     }
+   
    if (elkInit())
      {
 	// grant IO access
@@ -2955,6 +2966,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
      }
 
+   // redirect status data output (LIFT-IP Address) to localhost for debugging
+   // so we can run the status on localhost for debugging
+
+   if(DebugEnabled == 1)
+     {
+	memcpy(&(MessageOutPortList[0].IPAddr[0]),"127.0.0.1",sizeof("127.0.0.1"));
+     };
+        
    // setup master fd
    FD_ZERO(&fdsMaster);              // clear the master and temp sets
    FD_ZERO(&fdsSelect);
@@ -2965,13 +2984,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.78 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -2981,8 +3000,16 @@ int main(int argc, char *argv[])
    sprintf(buf,"working in %s-Mode\n", IsMaster ?"MASTER" : "SLAVE");
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
+   if(DebugEnabled == 1)
+     {
+	printf("*** DEBUG MODE IS ENABLED, GENERATING DUMMY DATA ***\n");
+	sprintf(buf,"*** DEBUG MODE IS ENABLED, GENERATING DUMMY DATA ***");
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+     }
+   
     /* init all modules */
-   InitModules(&ElekStatus,IsMaster);
+   if(DebugEnabled == 0)
+     InitModules(&ElekStatus,IsMaster);
 
     /* set up signal haendler */
 
@@ -3143,7 +3170,8 @@ int main(int argc, char *argv[])
 				 memset(pDest,0,numBytes);
 
 				 gettimeofday(&GetStatusStartTime, NULL);
-				 GetElekStatus(&ElekStatus,IsMaster);
+				 if(DebugEnabled == 0)
+				   GetElekStatus(&ElekStatus,IsMaster);
 				 gettimeofday(&GetStatusStopTime, NULL);
 				 // printf("elekIOServ(m): Data aquisition took: %02d.%03ds\n\r",
 				 //                                   GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
@@ -3264,7 +3292,10 @@ int main(int argc, char *argv[])
 				 // printf("ElekIOServ(s): gathering Data...\n\r");
 #endif
 				 gettimeofday(&GetStatusStartTime, NULL);
-				 GetElekStatus(&ElekStatus,IsMaster);
+				 
+				 // fetch data from HW if not running in debug mode
+				 if(DebugEnabled == 0)
+				   GetElekStatus(&ElekStatus,IsMaster);
 
 				 gettimeofday(&GetStatusStopTime, NULL);
 #ifdef DEBUG_SLAVECOM
