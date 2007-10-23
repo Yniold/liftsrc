@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-19 13:37:29 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-23 12:36:18 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.79  2007-10-19 13:37:29  rudolf
+ * Revision 1.80  2007-10-23 12:36:18  rudolf
+ * at least fill TimeOfDay into struct when simulating
+ *
+ * Revision 1.79  2007/10/19 13:37:29  rudolf
  * added commandline switch to allow localhost as target status IP adress for debugging purposes
  *
  * Revision 1.78  2007/06/12 12:08:00  martinez
@@ -2984,13 +2987,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.79 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3172,6 +3175,9 @@ int main(int argc, char *argv[])
 				 gettimeofday(&GetStatusStartTime, NULL);
 				 if(DebugEnabled == 0)
 				   GetElekStatus(&ElekStatus,IsMaster);
+				 else
+				   gettimeofday(&(ElekStatus.TimeOfDayMaster), NULL); // if simulating data, at least return TimeOfDay
+
 				 gettimeofday(&GetStatusStopTime, NULL);
 				 // printf("elekIOServ(m): Data aquisition took: %02d.%03ds\n\r",
 				 //                                   GetStatusStopTime.tv_sec-GetStatusStartTime.tv_sec,
