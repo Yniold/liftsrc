@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-24 15:14:57 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-24 15:35:55 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.39  2007-10-24 15:14:57  rudolf
+ * Revision 1.40  2007-10-24 15:35:55  rudolf
+ * added plain text output for mode
+ *
+ * Revision 1.39  2007/10/24 15:14:57  rudolf
  * added debug output for etalon mode
  *
  * Revision 1.38  2007/10/24 14:23:02  rudolf
@@ -178,6 +181,24 @@ enum OutPortListEnum
      ELEK_DEBUG_OUT,
      ELEK_CLIENT_OUT,
      MAX_MESSAGE_OUTPORTS
+};
+
+static char aEtalonActions[13][64]=
+{
+   "ETALON_ACTION_TOGGLE_ONLINE_LEFT",          /* etalon is on the left ONLINE Position */
+     "ETALON_ACTION_TOGGLE_ONLINE_RIGHT",         /* etalon is on the right ONLINE Position */
+     "ETALON_ACTION_TOGGLE",                      /* etalon is toggling between on and offline */
+     "ETALON_ACTION_TOGGLE_OFFLINE_LEFT",         /* etalon is on the left OFFLINE Position */
+     "ETALON_ACTION_TOGGLE_OFFLINE_RIGHT",        /* etalon is on the right OFFLINE Position */
+     "ETALON_ACTION_NOP",                         /* etalon is doing no automated operation */
+     "ETALON_ACTION_DITHER_ONLINE",               /* stay online and dither */
+     "ETALON_ACTION_DITHER_ONLINE_LEFT",          /* stay online and dither left side */
+     "ETALON_ACTION_DITHER_ONLINE_RIGHT",         /* stay online and dither right side */
+     "ETALON_ACTION_SCAN",                        /* etalon is scanning */
+     "ETALON_ACTION_HOME",                        /* etalon is on a home run */
+     "ETALON_ACTION_FIND_ONLINE",       /* etalon sets ONLINE Position to largest recent ref. signal */
+
+     " ETALON_ACTION_MAX"
 };
 
 static struct MessagePortType MessageInPortList[MAX_MESSAGE_INPORTS]=
@@ -934,7 +955,7 @@ int WriteSpectraStatus(char *PathToRamDisk, char *FileName, struct spectralStatu
    // spectral data are very large and theirefore only recorded in large intervals
    // this flag indicates that only the "live data" in the ramdisk should be updated
    // during this write cycle
-   
+   //
    if(!ucRingbufferOnly)
      {
 
@@ -1528,9 +1549,9 @@ int main()
 
    //    refresh();
 #ifdef RUNONARM
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.39 2007-10-24 15:14:57 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.40 2007-10-24 15:35:55 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.39 2007-10-24 15:14:57 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.40 2007-10-24 15:35:55 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1789,14 +1810,14 @@ int main()
 					timeval_subtract(&tvDelta, &tvCurrentTime, &tvTimeOfLastSpectrum);
 					timeval_subtract(&tvDeltaLiveData, &tvCurrentTime, &tvTimeOfLastLiveSpectrum);
 
-#ifdef DEBUG_SPECTROMETER					
-     					sprintf(buf,"elekStatus : SPECTRA_IN: DeltaStatus(save) %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
+#ifdef DEBUG_SPECTROMETER
+					sprintf(buf,"elekStatus : SPECTRA_IN: DeltaStatus(save) %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-					
+
 					sprintf(buf,"elekStatus : SPECTRA_IN: DeltaStatus(live) %ld.%06lds",tvDeltaLiveData.tv_sec, tvDeltaLiveData.tv_usec);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 #endif
-					
+
 					// save timestamps in structure
 					memcpy(&(SpectraStatus.TimeOfDaySpectra),&tvCurrentTime,sizeof(struct timeval));
 					memcpy(&(SpectraStatus.TimeOfDayStatus),&(ElekStatus.TimeOfDayMaster),sizeof(struct timeval));
@@ -1811,18 +1832,18 @@ int main()
 
 					sprintf(buf,"elekStatus : Etalon is dated   %ld.%06lds",ElekStatus.TimeOfDayMaster.tv_sec, ElekStatus.TimeOfDayMaster.tv_usec);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-					
+
 					sprintf(buf,"elekStatus : Etalon: SET(%07d) CUR(%07d) ENC(%07d)",SpectraStatus.Set.Position,SpectraStatus.Current.Position,SpectraStatus.Encoder.Position);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-					sprintf(buf,"elekStatus : Etalon Mode: %02d",ElekStatus.InstrumentFlags.EtalonAction);
+					sprintf(buf,"elekStatus : Etalon Mode: %02d (%s)",ElekStatus.InstrumentFlags.EtalonAction,aEtalonActions[ElekStatus.InstrumentFlags.EtalonAction]);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
 #endif					// check if we have reached 10 secs between spectra for saving
 					if(tvDelta.tv_sec >= 10)
 					  {
 					     // write ringbuffer and statusfile
-       					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
 					     WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
 
 					     // print delta
@@ -1842,7 +1863,7 @@ int main()
 					else if(tvDeltaLiveData.tv_sec >= 1)
 					  {
 					     // write only ringbuffer
-       					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
 					     WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,1);
 
 					     // print delta
