@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-23 12:36:18 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 09:41:53 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.80  2007-10-23 12:36:18  rudolf
+ * Revision 1.81  2007-10-24 09:41:53  rudolf
+ * turned off warning message when in DEBUG MODE
+ *
+ * Revision 1.80  2007/10/23 12:36:18  rudolf
  * at least fill TimeOfDay into struct when simulating
  *
  * Revision 1.79  2007/10/19 13:37:29  rudolf
@@ -2987,13 +2990,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.80 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3006,7 +3009,7 @@ int main(int argc, char *argv[])
    if(DebugEnabled == 1)
      {
 	printf("*** DEBUG MODE IS ENABLED, GENERATING DUMMY DATA ***\n");
-	sprintf(buf,"*** DEBUG MODE IS ENABLED, GENERATING DUMMY DATA ***");
+	sprintf(buf,"elekIOServ: *** DEBUG MODE IS ENABLED, GENERATING DUMMY DATA ***");
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
      }
    
@@ -3207,7 +3210,7 @@ int main(int argc, char *argv[])
 		  else
 		    {
 		       // lets see whether there is still an open data request
-		       if (RequestDataFlag)
+		       if (RequestDataFlag && (DebugEnabled == 0))
 			 {
 			    sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
 				    RequestDataFlag);
