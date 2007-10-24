@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-24 14:23:02 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-24 15:14:57 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.38  2007-10-24 14:23:02  rudolf
+ * Revision 1.39  2007-10-24 15:14:57  rudolf
+ * added debug output for etalon mode
+ *
+ * Revision 1.38  2007/10/24 14:23:02  rudolf
  * integration of spectra data recording every 10 sec and 100 sec live data at 1Hz
  *
  * Revision 1.37  2007/08/07 12:35:09  rudolf
@@ -1525,9 +1528,9 @@ int main()
 
    //    refresh();
 #ifdef RUNONARM
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.38 2007-10-24 14:23:02 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.39 2007-10-24 15:14:57 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.38 2007-10-24 14:23:02 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.39 2007-10-24 15:14:57 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1811,7 +1814,10 @@ int main()
 					
 					sprintf(buf,"elekStatus : Etalon: SET(%07d) CUR(%07d) ENC(%07d)",SpectraStatus.Set.Position,SpectraStatus.Current.Position,SpectraStatus.Encoder.Position);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
-					
+
+					sprintf(buf,"elekStatus : Etalon Mode: %02d",ElekStatus.InstrumentFlags.EtalonAction);
+					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
 #endif					// check if we have reached 10 secs between spectra for saving
 					if(tvDelta.tv_sec >= 10)
 					  {
