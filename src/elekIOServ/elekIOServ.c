@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 09:41:53 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 11:42:33 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.81  2007-10-24 09:41:53  rudolf
+ * Revision 1.82  2007-10-24 11:42:33  rudolf
+ * fixed packets not send any longer...
+ *
+ * Revision 1.81  2007/10/24 09:41:53  rudolf
  * turned off warning message when in DEBUG MODE
  *
  * Revision 1.80  2007/10/23 12:36:18  rudolf
@@ -2990,13 +2993,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.81 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3210,11 +3213,14 @@ int main(int argc, char *argv[])
 		  else
 		    {
 		       // lets see whether there is still an open data request
-		       if (RequestDataFlag && (DebugEnabled == 0))
+		       if (RequestDataFlag)
 			 {
-			    sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
+			    if(DebugEnabled)
+			    {
+			       sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
 				    RequestDataFlag);
-			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+			    };
 			    // Send Status to Status process
 			    SendUDPData(&MessageOutPortList[ELEK_STATUS_OUT],
 					sizeof(struct elekStatusType), &ElekStatus);
