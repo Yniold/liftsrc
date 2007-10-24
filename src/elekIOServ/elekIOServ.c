@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 11:42:33 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 11:43:54 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.82  2007-10-24 11:42:33  rudolf
+ * Revision 1.83  2007-10-24 11:43:54  rudolf
+ * fixed typo
+ *
+ * Revision 1.82  2007/10/24 11:42:33  rudolf
  * fixed packets not send any longer...
  *
  * Revision 1.81  2007/10/24 09:41:53  rudolf
@@ -2993,13 +2996,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.82 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
@@ -3215,7 +3218,7 @@ int main(int argc, char *argv[])
 		       // lets see whether there is still an open data request
 		       if (RequestDataFlag)
 			 {
-			    if(DebugEnabled)
+			    if(!DebugEnabled)
 			    {
 			       sprintf(buf,"[ElekIOServ] still missing %d data set BUT send flagged data",
 				    RequestDataFlag);
