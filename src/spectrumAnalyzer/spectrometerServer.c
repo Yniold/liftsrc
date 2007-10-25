@@ -1,9 +1,12 @@
 /*
 *
-* $RCSfile: spectrometerServer.c,v $ last changed on $Date: 2007-03-03 12:09:51 $ by $Author: rudolf $
+* $RCSfile: spectrometerServer.c,v $ last changed on $Date: 2007-10-25 13:59:18 $ by $Author: rudolf $
 *
 * $Log: spectrometerServer.c,v $
-* Revision 1.5  2007-03-03 12:09:51  rudolf
+* Revision 1.6  2007-10-25 13:59:18  rudolf
+* removed sleeps() again because plotting spectra will be done by reading status.spc
+*
+* Revision 1.5  2007/03/03 12:09:51  rudolf
 * added two sleeps to allow for slow MATLAB to keep up with the packet rate
 *
 * Revision 1.4  2007-02-19 19:05:47  rudolf
@@ -72,7 +75,7 @@ int iStatus;
 // main()
 int main()
 {
-   printf("Spectrometer Server $Id: spectrometerServer.c,v 1.5 2007-03-03 12:09:51 rudolf Exp $ for i386\n\r");
+   printf("Spectrometer Server $Id: spectrometerServer.c,v 1.6 2007-10-25 13:59:18 rudolf Exp $ for i386\n\r");
    printf("Initialising UDP socket for sending to port %05d locally:", UDPPORTNUMBER);
    // open debug udp socket
    if ((fdSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
@@ -578,7 +581,7 @@ int HR4000_GetSpectrum(struct usb_dev_handle *hdev)
    RECEIVERIP,\
    UDPPORTNUMBER);
    SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
-   sleep(1);
+//   sleep(1);
    // ======================
    // assemble second buffer
    // ======================
@@ -632,7 +635,7 @@ int HR4000_GetSpectrum(struct usb_dev_handle *hdev)
    RECEIVERIP,\
    UDPPORTNUMBER);
    SendUDPDataToIP(RECEIVERIP,size+8, usUDPBuffer);
-   sleep(1);
+//   sleep(1);
    return 0;
 }
 //***********************************
