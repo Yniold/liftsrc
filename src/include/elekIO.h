@@ -1,9 +1,12 @@
 /* $RCSfile: elekIO.h,v $ header file for elekIO
 *
-* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-09-28 11:25:45 $ by $Author: rudolf $
+* $RCSfile: elekIO.h,v $ last edit on $Date: 2007-10-25 13:33:14 $ by $Author: rudolf $
 *
 * $Log: elekIO.h,v $
-* Revision 1.58  2007-09-28 11:25:45  rudolf
+* Revision 1.59  2007-10-25 13:33:14  rudolf
+* changed field in spectra status to reflect etalon state when sampling was done
+*
+* Revision 1.58  2007/09/28 11:25:45  rudolf
 * added timestamp to structure
 *
 * Revision 1.57  2007/08/07 12:35:22  rudolf
@@ -1058,7 +1061,7 @@ struct spectralStatusType     /* structure for the spectrometer data*/
   union PositionType         Set;                                   /* etalon set position */
   union PositionType         Current;                               /* etalon current position */
   union PositionType         Encoder;                               /* etalon encoder position */
-  uint16_t                   uiIsOnline;                            /* flag for online offline */
+  enum  EtalonActionType     CurrentEtalonAction;                   /* what the etalon was doing during spectra sampling */
 };
 
 
