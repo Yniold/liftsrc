@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-24 15:35:55 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-25 13:47:09 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.40  2007-10-24 15:35:55  rudolf
+ * Revision 1.41  2007-10-25 13:47:09  rudolf
+ * recording of online-offline spectra added, one spectrum for each (left offline, online, right offline)
+ *
+ * Revision 1.40  2007/10/24 15:35:55  rudolf
  * added plain text output for mode
  *
  * Revision 1.39  2007/10/24 15:14:57  rudolf
@@ -155,7 +158,7 @@
 #define DEBUGLEVEL 1
 
 #undef DEBUG_SPECTROMETER
-#define DEBUG_SPECT_ON_OFFLINE
+#undef DEBUG_SPECT_ON_OFFLINE
 
 // define which groups are shown on startup of elekStatus
 unsigned int uiGroupFlags = GROUP_DATASETDATA | GROUP_ADCDATA | GROUP_TIMEDATA;
@@ -1479,6 +1482,10 @@ int main()
    struct timeval tvTimeOfLastLiveSpectrum;// time when last live spectrum was written to ramdisk
    struct timeval tvCurrentTime;           // current time
 
+   // flags for writing only 1 spectrum during on or offline cycles
+   int iWroteOfflineFlag = 0;
+   int iWroteOnlineFlag = 0;
+
    int MessagePort;
    int fdMax;                      // max fd for select
    int i;                          // loop counter
@@ -1549,9 +1556,9 @@ int main()
 
    //    refresh();
 #ifdef RUNONARM
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.40 2007-10-24 15:35:55 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.41 2007-10-25 13:47:09 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.40 2007-10-24 15:35:55 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.41 2007-10-25 13:47:09 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1826,6 +1833,8 @@ int main()
 					SpectraStatus.Set.Position = ElekStatus.EtalonData.Set.Position;
 					SpectraStatus.Current.Position = ElekStatus.EtalonData.Current.Position;
 					SpectraStatus.Encoder.Position = ElekStatus.EtalonData.Encoder.Position;
+					SpectraStatus.CurrentEtalonAction = ElekStatus.InstrumentFlags.EtalonAction;
+
 #ifdef DEBUG_SPECT_ON_OFFLINE
 					sprintf(buf,"elekStatus : Spectrum is dated %ld.%06lds",tvCurrentTime.tv_sec, tvDeltaLiveData.tv_usec);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1838,28 +1847,98 @@ int main()
 
 					sprintf(buf,"elekStatus : Etalon Mode: %02d (%s)",ElekStatus.InstrumentFlags.EtalonAction,aEtalonActions[ElekStatus.InstrumentFlags.EtalonAction]);
 					SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif
 
-#endif					// check if we have reached 10 secs between spectra for saving
-					if(tvDelta.tv_sec >= 10)
+					// check if we changed to online state
+					if((ElekStatus.InstrumentFlags.EtalonAction == ETALON_ACTION_TOGGLE_ONLINE_RIGHT)||
+					   (ElekStatus.InstrumentFlags.EtalonAction == ETALON_ACTION_TOGGLE_ONLINE_LEFT))
 					  {
-					     // write ringbuffer and statusfile
-					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
-					     WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
+					     if((ElekStatus.EtalonData.Current.Position == ElekStatus.EtalonData.Set.Position)&&
+						(iWroteOnlineFlag == 0))
+					       {
+						  // set flag so we record only 1 spetrum even if we hit this multiple times
+						  // due to dithering and "line hopping"
+						  iWroteOnlineFlag = 1;
 
-					     // print delta
-					     sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata after  %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
-					     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+						  // we are online, so unlock writing of offline spectra next time
+						  iWroteOfflineFlag = 0;
 
-					     // increment status count
-					     SpectraStatusCount++;
+						  sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for ONLINE POSITION");
+						  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-					     // save time is current time(NOW)
-					     memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
-
-					     // save time is current time(NOW)
-					     memcpy(&tvTimeOfLastLiveSpectrum,&tvCurrentTime,sizeof(struct timeval));
-
+						  // increment status count
+						  SpectraStatusCount++;
+					       }
 					  }
+					else
+
+					  if(ElekStatus.InstrumentFlags.EtalonAction == ETALON_ACTION_TOGGLE_OFFLINE_RIGHT)
+					    {
+					       if((ElekStatus.EtalonData.Current.Position == ElekStatus.EtalonData.Set.Position)&&
+						  (iWroteOfflineFlag == 0))
+						 {
+						    // set flag so we record only 1 spetrum even if we hit this multiple times
+						    iWroteOfflineFlag = 1;
+
+						    // we are offline, so unlock writing of online spectra next time
+						    iWroteOnlineFlag = 0;
+
+						    // write ringbuffer and statusfile
+						    GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+						    WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
+
+						    sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for OFFLINE RIGHT POSITION");
+						    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+						    // increment status count
+						    SpectraStatusCount++;
+						 }
+					    }
+					else
+
+					  if(ElekStatus.InstrumentFlags.EtalonAction == ETALON_ACTION_TOGGLE_OFFLINE_LEFT)
+					    {
+					       if((ElekStatus.EtalonData.Current.Position == ElekStatus.EtalonData.Set.Position)&&
+						  (iWroteOfflineFlag == 0))
+						 {
+						    // set flag so we record only 1 spetrum even if we hit this multiple times
+						    iWroteOfflineFlag = 1;
+
+						    // we are offline, so unlock writing of online spectra next time
+						    iWroteOnlineFlag = 0;
+
+						    // write ringbuffer and statusfile
+						    GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+						    WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
+
+						    sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for OFFLINE LEFT POSITION");
+						    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+						    // increment status count
+						    SpectraStatusCount++;
+						 }
+					    }
+					  // check if we have reached 10 secs between spectra for saving
+					  if(tvDelta.tv_sec >= 10)
+					    {
+					       // write ringbuffer and statusfile
+					       GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+					       WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
+
+					       // print delta
+					       sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata after  %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
+					       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+					       // increment status count
+					       SpectraStatusCount++;
+
+					       // save time is current time(NOW)
+					       memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
+
+					       // save time is current time(NOW)
+					       memcpy(&tvTimeOfLastLiveSpectrum,&tvCurrentTime,sizeof(struct timeval));
+
+					    }
 					else if(tvDeltaLiveData.tv_sec >= 1)
 					  {
 					     // write only ringbuffer
