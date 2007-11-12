@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-10-25 13:47:09 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-11-12 17:43:58 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
- * Revision 1.41  2007-10-25 13:47:09  rudolf
+ * Revision 1.42  2007-11-12 17:43:58  rudolf
+ * fixed double writing of spectrum when on/offline and forced write timeout occured, increased interval to 60s
+ *
+ * Revision 1.41  2007/10/25 13:47:09  rudolf
  * recording of online-offline spectra added, one spectrum for each (left offline, online, right offline)
  *
  * Revision 1.40  2007/10/24 15:35:55  rudolf
@@ -1556,9 +1559,9 @@ int main()
 
    //    refresh();
 #ifdef RUNONARM
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.41 2007-10-25 13:47:09 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.42 2007-11-12 17:43:58 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.41 2007-10-25 13:47:09 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.42 2007-11-12 17:43:58 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1866,6 +1869,9 @@ int main()
 						  sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for ONLINE POSITION");
 						  SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
+						  // save time is current time(NOW)
+						  memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
+
 						  // increment status count
 						  SpectraStatusCount++;
 					       }
@@ -1889,6 +1895,9 @@ int main()
 
 						    sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for OFFLINE RIGHT POSITION");
 						    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+
+						    // save time is current time(NOW)
+						    memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
 
 						    // increment status count
 						    SpectraStatusCount++;
@@ -1914,31 +1923,35 @@ int main()
 						    sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata for OFFLINE LEFT POSITION");
 						    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
+						    // save time is current time(NOW)
+						    memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
+
 						    // increment status count
 						    SpectraStatusCount++;
 						 }
 					    }
-					  // check if we have reached 10 secs between spectra for saving
-					  if(tvDelta.tv_sec >= 10)
-					    {
-					       // write ringbuffer and statusfile
-					       GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
-					       WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
 
-					       // print delta
-					       sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata after  %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
-					       SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+					// check if we have reached 60 secs between spectra for saving
+					if(tvDelta.tv_sec >= 60)
+					  {
+					     // write ringbuffer and statusfile
+					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
+					     WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,0);
 
-					       // increment status count
-					       SpectraStatusCount++;
+					     // print delta
+					     sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata and statusdata after  %ld.%06lds",tvDelta.tv_sec, tvDelta.tv_usec);
+					     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-					       // save time is current time(NOW)
-					       memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
+					     // increment status count
+					     SpectraStatusCount++;
 
-					       // save time is current time(NOW)
-					       memcpy(&tvTimeOfLastLiveSpectrum,&tvCurrentTime,sizeof(struct timeval));
+					     // save time is current time(NOW)
+					     memcpy(&tvTimeOfLastSpectrum,&tvCurrentTime,sizeof(struct timeval));
 
-					    }
+					     // save time is current time(NOW)
+					     memcpy(&tvTimeOfLastLiveSpectrum,&tvCurrentTime,sizeof(struct timeval));
+
+					  }
 					else if(tvDeltaLiveData.tv_sec >= 1)
 					  {
 					     // write only ringbuffer
