@@ -93,13 +93,13 @@ set(handles.txtTime,'String',strcat(datestr(disptime,13),'.',num2str(specdata(la
 etaction=double(specdata(lastrow,16));
 switch etaction
     case {0,1}
-        set(handles.txtEtalonAction,'String','Online','BackgroundColor','c');
+        set(handles.txtEtalonAction,'String','Online','BackgroundColor','g');
     case 3
-        set(handles.txtEtalonAction,'String','Offline Left','BackgroundColor','g');
+        set(handles.txtEtalonAction,'String','Offline Left','BackgroundColor','c');
     case 4
-        set(handles.txtEtalonAction,'String','Offline Right','BackgroundColor','r');
+        set(handles.txtEtalonAction,'String','Offline Right','BackgroundColor','b');
     otherwise
-        set(handles.txtEtalonAction,'String','ERROR','BackgroundColor','m');
+        set(handles.txtEtalonAction,'String','Offline','BackgroundColor','r');
 end
 
 xdata=double(specdata(lastrow,17:3856))./50;
