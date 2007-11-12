@@ -648,10 +648,10 @@ if isfield(data,'hDyelaser')
             stop(Dyelaserdata.ActTimer);
             delete(Dyelaserdata.ActTimer);
         end
-        if isvalid(Dyelaserdata.serport)
-            fclose(Dyelaserdata.serport);
-            delete(Dyelaserdata.serport);
-        end;
+%        if isvalid(Dyelaserdata.serport)
+%            fclose(Dyelaserdata.serport);
+%            delete(Dyelaserdata.serport);
+%        end;
         if isfield(Dyelaserdata,'picotport')
             fclose(Dyelaserdata.picotport);
             delete(Dyelaserdata.picotport);
