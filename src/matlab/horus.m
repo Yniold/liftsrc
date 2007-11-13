@@ -65,6 +65,9 @@ function horus_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for horus
 handles.output = hObject;
 
+% choose Text size
+%set(double(get(handles.horus,'Children')),'FontSize',8)
+
 %setup Timer function
 handles.ActTimer = timer('ExecutionMode','fixedDelay',...
       'Period',0.7,...    
