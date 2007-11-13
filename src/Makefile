@@ -48,14 +48,20 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOcalib
+# don't built cross elekIOaux
+ifneq ($(ARMBUILD),1)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOaux
+endif
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekStatus
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C statView
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C etalon
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C mirrors
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C debugMon
+# don't built cross broadcastClient and spectrometerServer
+ifneq ($(ARMBUILD),1)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C broadcastClient
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
+endif	
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
 
 install:
