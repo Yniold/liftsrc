@@ -1,8 +1,11 @@
 /*
- * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-10-24 11:43:54 $ by $Author: rudolf $
+ * $RCSfile: elekIOServ.c,v $ last changed on $Date: 2007-11-13 14:32:46 $ by $Author: rudolf $
  *
  * $Log: elekIOServ.c,v $
- * Revision 1.83  2007-10-24 11:43:54  rudolf
+ * Revision 1.84  2007-11-13 14:32:46  rudolf
+ * changed CPUFREQ to 1.8Ghz for timeout calculations
+ *
+ * Revision 1.83  2007/10/24 11:43:54  rudolf
  * fixed typo
  *
  * Revision 1.82  2007/10/24 11:42:33  rudolf
@@ -300,8 +303,9 @@
 // #define DEBUG_TIMER 1                  // Debug timers
 //
 //#define DEBUG_SLAVECOM        	// debug communication between master and slave
-//#define CPUCLOCK 2171939000UL 	// CPU clock of Markus' Athlon XP
-#define CPUCLOCK 500000000UL 	// CPU clock of Markus' Athlon XP
+
+//#define CPUCLOCK 500000000UL 	// CPU clock old LIFT CPU (500Mhz)
+#define CPUCLOCK  1800000000UL 	// CPU clock new LIFT CPU (1800Mhz)
 
 enum InPortListEnum
 {
@@ -2996,13 +3000,13 @@ int main(int argc, char *argv[])
    // output version info on debugMon and Console
    //
 #ifdef RUNONARM
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for ARM\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.84 $) for ARM\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for ARM\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.84 $) for ARM\n",VERSION);
 #else
-   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for i386\n",VERSION);
+   printf("This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.84 $) for i386\n",VERSION);
 
-   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.83 $) for i386\n",VERSION);
+   sprintf(buf,"This is elekIOServ Version %3.2f (CVS: $RCSfile: elekIOServ.c,v $ $Revision: 1.84 $) for i386\n",VERSION);
 #endif
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
