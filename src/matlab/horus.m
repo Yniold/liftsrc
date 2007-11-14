@@ -66,7 +66,7 @@ function horus_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % choose Text size
-%set(double(get(handles.horus,'Children')),'FontSize',8)
+set(double(get(handles.horus,'Children')),'FontSize',8)
 
 %setup Timer function
 handles.ActTimer = timer('ExecutionMode','fixedDelay',...
@@ -362,7 +362,7 @@ Pset=uint16(str2double(get(handles.edPset,'String')));
 if Pset==0
    Pset=PDyelaser(lastrow);
 end
-set(handles.txtPset,'String',num2str(Pset));
+set(handles.txtPset,'String',num2str(Pset,5));
 % warning if PDyelaser differs too much from Pset
 if PDyelaser(lastrow)>Pset+1 | PDyelaser(lastrow)<Pset-2
     set(handles.txtPset,'BackgroundColor','r')

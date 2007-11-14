@@ -57,6 +57,9 @@ function Dyelaser_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Dyelaser
 handles.output = hObject;
 
+% choose Text size
+set(double(get(handles.figure1,'Children')),'FontSize',8)
+
 % get horus handle
 if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
