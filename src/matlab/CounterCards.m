@@ -63,6 +63,9 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
+% choose Text size
+set(double(get(handles.CounterCards,'Children')),'FontSize',8)
+
 % initialize device to be the PMT
 set(handles.device,'Value',1);
 % setup Timer function

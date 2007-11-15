@@ -69,6 +69,9 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
+% choose Text size
+set(double(get(handles.figure1,'Children')),'FontSize',8)
+
 % open tcpip port for communication with Laser
 tport=tcpip('xpLaser',10001);
 set(tport,'ReadAsyncMode','continuous');
