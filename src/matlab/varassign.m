@@ -393,7 +393,7 @@ statusDataCols=...
 'GPSMLongitudeDecimals',869,'x/10000','min';
 'GPSMLatitude',870,'x/60-90','deg';
 'GPSMLatitudeDecimals',871,'x/10000','min';
-'GPSMAltitude',872,'x*3.28084','ft';
+'GPSMAltitude',872,'x','m';
 'GPSMHDOP',873,'x','';
 'GPSMnumSat',874,'x','';
 'GPSMLastValidData',875,'x*5','s';
@@ -404,7 +404,7 @@ statusDataCols=...
 'GPSSLongitudeDecimals',1113,'x/10000','min';
 'GPSSLatitude',1114,'x/60-90','deg';
 'GPSSLatitudeDecimals',1115,'x/10000','min';
-'GPSSAltitude',1116,'x*3.28084','ft';
+'GPSSAltitude',1116,'x','m';
 'GPSSHDOP',1117,'x','';
 'GPSSnumSat',1118,'x','';
 'GPSSLastValidData',1119,'x*5','s';
