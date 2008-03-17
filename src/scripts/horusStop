@@ -1,5 +1,17 @@
 #!/bin/sh
 
+
+echo home etalon
+eCmd @Lift s etalonnop
+eCmd @Lift s etalonhome
+
+
+echo switch off Filament
+FilamentOff
+
+echo close all solenoids
+SolenoidsOff
+
 echo check whether ArmAxis is online
 ping armAxis -c 1 -w 1 -q
 ArmOn=$?
@@ -9,13 +21,6 @@ else
    echo found him
 fi
 
-echo home etalon
-eCmd @Lift s etalonnop
-eCmd @Lift s etalonhome
-
-
-echo switch off Filament
-FilamentOff
 
 if [ $ArmOn -eq 0 ]; then
      
@@ -28,11 +33,6 @@ if [ $ArmOn -eq 0 ]; then
 
 fi
 
-
-
-echo close all solenoids
-SolenoidsOff
-
 killall etalon     
 #cp /mnt/magera/etalon ./bin
 killall elekIOServ 
@@ -44,3 +44,4 @@ killall debugMon
 killall mirrors
 killall spectrometerServer
 # cp /mnt/magera/eRead ./bin
+
