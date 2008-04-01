@@ -209,16 +209,16 @@ statusDataCols=...
 'TDet',930,'1./(3.3540154E-3+2.5627725E-4.*log(220000./3000./(4.094.*1550./(x-9999)-1))+2.082921E-6.*(log(220000./3000./(4.094.*1550./(x-9999)-1))).^2+7.30003206E-8.*(log(220000./3000./(4.094.*1550./(x-9999)-1))).^3)-273.15','C';
 'TDetSumDat',931,'x*NaN','C';
 'TDetSumSqr',932,'x*NaN','C';
-'DiodeWZ1out',933,'(x-10007.0)./(10650-10007).*6.1','mW';
+'DiodeWZ1out',933,'(x-10002)/83.7','mW'; %calibrated by Mark, 7th March 2008
 'DiodeWZ1outSumDat',934,'x*NaN','mW';
 'DiodeWZ1outSumSqr',935,'x*NaN','mW';
-'DiodeWZ2out',936,'(x-10003.0)./(10164-10003).*1.05','mW';
+'DiodeWZ2out',936,'(x-10002)/171','mW'; %calibrated by Mark, 7th March 2008
 'DiodeWZ2outSumDat',937,'x*NaN','mW';
 'DiodeWZ2outSumSqr',938,'x*NaN','mW';
-'DiodeWZ1in',939,'(x-10004.0)./(10925-10004).*7.2','mW';
+'DiodeWZ1in',939,'(x-10000)./134','mW'; %calibrated by Mark, 7th March 2008
 'DiodeWZ1inSumDat',940,'x*NaN','mW';
 'DiodeWZ1inSumSqr',941,'x*NaN','mW';
-'DiodeWZ2in',891,'(x-10000.0)./(10145-10000).*1.3','mW';
+'DiodeWZ2in',891,'(x-9999)/98.9','mW'; %calibrated by Mark, 7th March 2008
 'DiodeWZ2inSumDat',892,'x*NaN','mW';
 'DiodeWZ2inSumSqr',893,'x*NaN','mW';
 'PitotAbs',897,'(x-10000-3030/5).*1500./3030-15.8','mbar';
