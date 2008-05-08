@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-07 16:42:17 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-08 16:55:22 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.2  2008-05-07 16:42:17  rudolf
+ * Revision 1.3  2008-05-08 16:55:22  rudolf
+ * more work on driver
+ *
+ * Revision 1.2  2008/05/07 16:42:17  rudolf
  * added kernelthread to write in 1s interval to PCI address
  *
  * Revision 1.1  2008/05/07 08:26:15  rudolf
@@ -26,8 +29,23 @@ static int thread_id=0;
 static wait_queue_head_t wq;
 static DECLARE_COMPLETION(on_exit);
 
+/* structure for the mem ranges */
+typedef struct sIORanges 
+{
+   unsigned long ulSRAMStart; 
+   unsigned long ulSRAMLen;
+   unsigned long ulPort80Start; 
+   unsigned long ulPort80Len;
+   unsigned long ulSerbusPort; 
+   unsigned long ulSerbusLen; 
+} sIORanges;
+
+static struct sIORanges sIORange = 
+{
+   0UL,0UL,0UL,0UL,0UL,0UL
+};
+
 int iLoop;
-unsigned long ulMyIOPort = 0L, ulMyIOLen = 0L, ulMyMemStart = 0L, ulMyMemLen = 0L;
 
 static struct pci_device_id ids[] =
 {
@@ -40,20 +58,53 @@ MODULE_DEVICE_TABLE(pci, ids);
 static int thread_code( void *data )
 {
    unsigned long timeout;
-
-   daemonize("MyKThread");
+   unsigned char ucBuffer[4];
+   volatile unsigned short usDummy;
+   volatile unsigned long  ulDummy;
+   void* pAddress;
+   sIORanges* sStruct = (sIORanges*)data;
+   
+   daemonize("DebugThread");
    allow_signal( SIGTERM );
    while(1)
      {
 	timeout=HZ; // wait 1 second
 	timeout=wait_event_interruptible_timeout(wq, (timeout==0), timeout);
 
-	outb(*((unsigned long*)data),0xA5);
+	/* test write bytes on consecutive addresses to test CBEN[0..3] on bridge */
+	outb(0xA5,sStruct->ulSerbusPort);
+	outb(0x5A,sStruct->ulSerbusPort+1);
+	outb(0xAA,sStruct->ulSerbusPort+2);
+	outb(0x55,sStruct->ulSerbusPort+3);
 
-	printk("thread_code: woke up ...\n");
+	/* test write words on consecutive addresses to test CBEN[0..3] on bridge */
+	outw(0x0123,sStruct->ulSerbusPort);
+	outw(0x5678,sStruct->ulSerbusPort+1);
+
+	/* test read bytes on consecutive addresses to test CBEN[0..3] on bridge */
+	ucBuffer[0] = inb(sStruct->ulSerbusPort);
+	ucBuffer[1] = inb(sStruct->ulSerbusPort+1);
+	ucBuffer[2] = inb(sStruct->ulSerbusPort+2);
+	ucBuffer[3] = inb(sStruct->ulSerbusPort+3);
+
+	/* test read words on consecutive addresses to test CBEN[0..3] on bridge */
+	usDummy = inw(sStruct->ulSerbusPort);
+	usDummy = inw(sStruct->ulSerbusPort+1);
+
+	/* test write on memory */
+	pAddress = sStruct->ulSRAMStart;
+	
+	writel(0xAA550123,pAddress);
+	writel(0x00000000,pAddress+4);
+	
+	/* test read on memory */
+	ulDummy = readl(pAddress);
+	ulDummy = readl(pAddress+4);
+	
+	printk("Read %02x:%02x:%02x:%02x from PCI bus\n",ucBuffer[0],ucBuffer[1],ucBuffer[2],ucBuffer[3]);
 	if( timeout==-ERESTARTSYS )
 	  {
-	     printk("got signal, break\n");
+	     printk("got signal, break.\n");
 	     break;
 	  }
      }
@@ -77,7 +128,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.2 2008-05-07 16:42:17 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.3 2008-05-08 16:55:22 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
@@ -93,23 +144,34 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
 	  }
      };
 
-   /* request IO region for BAR2 (serbus)*/
-   ulMyIOPort = pci_resource_start(dev,2);
-   ulMyIOLen  = pci_resource_len(dev,2);
+   /* request MEM region for BAR0 (SRAM)*/
+   sIORange.ulSRAMStart = pci_resource_start(dev,0);
+   sIORange.ulSRAMLen   = pci_resource_len(dev,0);
    
-   if(request_region(ulMyIOPort,ulMyIOLen,dev->dev.kobj.name) == NULL)
+   /* request IO region for BAR2 (serbus)*/
+   sIORange.ulSerbusPort = pci_resource_start(dev,2);
+   sIORange.ulSerbusLen  = pci_resource_len(dev,2);
+
+   /* check if we have successfully requested the IO region for BAR0 */
+   if(request_mem_region(sIORange.ulSRAMStart,sIORange.ulSRAMLen,dev->dev.kobj.name) == NULL)
      {
-	release_region(ulMyIOPort,ulMyIOLen);
+	release_mem_region(sIORange.ulSRAMStart,sIORange.ulSRAMLen);
+	printk(KERN_ERR "BPD: can't request region for BAR0.\n");
 	return -EIO;
      };
    
-   /* do a test write on BAR2 */
-   
-   outb(ulMyIOPort,0xA5);
-   
-   /* create kernelthread */
+   /* check if we have successfully requested the IO region for BAR2 */
+   if(request_region(sIORange.ulSerbusPort,sIORange.ulSerbusLen,dev->dev.kobj.name) == NULL)
+     {
+	release_region(sIORange.ulSerbusPort,sIORange.ulSerbusLen);
+	printk(KERN_ERR "BPD: can't request region for BAR2.\n");
+	return -EIO;
+     };
+      
+   /* create kernelthread, pass pointer to structure to make mem areas */
+   /* available to thread as well */
    init_waitqueue_head(&wq);
-   thread_id = kernel_thread(thread_code, &ulMyIOPort, CLONE_KERNEL);
+   thread_id = kernel_thread(thread_code, &sIORange, CLONE_KERNEL);
 
    if(thread_id == 0)
      return -EIO;
@@ -122,10 +184,14 @@ static void remove(struct pci_dev *dev)
    if(thread_id)
      kill_proc(thread_id, SIGTERM, 1);
    wait_for_completion(&on_exit);
+
+   /* check for requested IO space and release it*/
+   if(sIORange.ulSRAMStart)
+     release_mem_region(sIORange.ulSRAMStart,sIORange.ulSRAMLen);
    
    /* check for requested IO space and release it*/
-   if(ulMyIOPort)
-     release_region(ulMyIOPort,ulMyIOLen);
+   if(sIORange.ulSerbusPort)
+     release_region(sIORange.ulSerbusPort,sIORange.ulSerbusLen);
 }
 
 static struct pci_driver backplane_driver =
