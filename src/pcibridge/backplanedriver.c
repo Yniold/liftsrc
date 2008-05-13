@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-08 16:55:22 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-13 16:32:29 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.3  2008-05-08 16:55:22  rudolf
+ * Revision 1.4  2008-05-13 16:32:29  rudolf
+ * added offsets for serbus registers
+ *
+ * Revision 1.3  2008/05/08 16:55:22  rudolf
  * more work on driver
  *
  * Revision 1.2  2008/05/07 16:42:17  rudolf
@@ -25,22 +28,37 @@
 #define PCI_DEVICE_ID_BACKPLANE  (0x4711)
 #define MAXBAR                   (6)
 
+/* we do not decode the lane enables, so all adress offsets are multiples of ALIGNMENT */
+#define ALIGNMENT                (4)
+
+/* register for serial address on SERBUS, */
+/* bit0 determines if it is a SERBUS read or write */
+#define OFF_SER_ADDRESSREG       (0)
+
+/* register for serial data on SERBUS, */
+#define OFF_SER_DATAREG          (2)
+
+/* register with serbus signature */
+#define OFF_SER_STATUS           (4)
+#define SERBUS_SIG               (0x4711)
+
 static int thread_id=0;
 static wait_queue_head_t wq;
 static DECLARE_COMPLETION(on_exit);
 
 /* structure for the mem ranges */
-typedef struct sIORanges 
+typedef struct sIORanges
 {
-   unsigned long ulSRAMStart; 
+   unsigned long ulSRAMStart;
    unsigned long ulSRAMLen;
-   unsigned long ulPort80Start; 
+   unsigned long ulPort80Start;
    unsigned long ulPort80Len;
-   unsigned long ulSerbusPort; 
-   unsigned long ulSerbusLen; 
-} sIORanges;
+   unsigned long ulSerbusPort;
+   unsigned long ulSerbusLen;
+}
+sIORanges;
 
-static struct sIORanges sIORange = 
+static struct sIORanges sIORange =
 {
    0UL,0UL,0UL,0UL,0UL,0UL
 };
@@ -59,11 +77,13 @@ static int thread_code( void *data )
 {
    unsigned long timeout;
    unsigned char ucBuffer[4];
-   volatile unsigned short usDummy;
+   volatile unsigned short usDummy1;
+   volatile unsigned short usDummy2;
+
    volatile unsigned long  ulDummy;
    void* pAddress;
    sIORanges* sStruct = (sIORanges*)data;
-   
+
    daemonize("DebugThread");
    allow_signal( SIGTERM );
    while(1)
@@ -71,37 +91,17 @@ static int thread_code( void *data )
 	timeout=HZ; // wait 1 second
 	timeout=wait_event_interruptible_timeout(wq, (timeout==0), timeout);
 
-	/* test write bytes on consecutive addresses to test CBEN[0..3] on bridge */
-	outb(0xA5,sStruct->ulSerbusPort);
-	outb(0x5A,sStruct->ulSerbusPort+1);
-	outb(0xAA,sStruct->ulSerbusPort+2);
-	outb(0x55,sStruct->ulSerbusPort+3);
-
 	/* test write words on consecutive addresses to test CBEN[0..3] on bridge */
-	outw(0x0123,sStruct->ulSerbusPort);
-	outw(0x5678,sStruct->ulSerbusPort+1);
-
-	/* test read bytes on consecutive addresses to test CBEN[0..3] on bridge */
-	ucBuffer[0] = inb(sStruct->ulSerbusPort);
-	ucBuffer[1] = inb(sStruct->ulSerbusPort+1);
-	ucBuffer[2] = inb(sStruct->ulSerbusPort+2);
-	ucBuffer[3] = inb(sStruct->ulSerbusPort+3);
+	outw(0x0123,sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
+	outw(0x5678,sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
 	/* test read words on consecutive addresses to test CBEN[0..3] on bridge */
-	usDummy = inw(sStruct->ulSerbusPort);
-	usDummy = inw(sStruct->ulSerbusPort+1);
+	usDummy1 = inw(sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
+	usDummy2 = inw(sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
-	/* test write on memory */
-	pAddress = sStruct->ulSRAMStart;
-	
-	writel(0xAA550123,pAddress);
-	writel(0x00000000,pAddress+4);
-	
-	/* test read on memory */
-	ulDummy = readl(pAddress);
-	ulDummy = readl(pAddress+4);
-	
-	printk("Read %02x:%02x:%02x:%02x from PCI bus\n",ucBuffer[0],ucBuffer[1],ucBuffer[2],ucBuffer[3]);
+	printk("Read %04x from PCI bus @0x0\n",usDummy1);
+	printk("Read %04x from PCI bus @0x2\n",usDummy2);
+
 	if( timeout==-ERESTARTSYS )
 	  {
 	     printk("got signal, break.\n");
@@ -128,7 +128,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.3 2008-05-08 16:55:22 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.4 2008-05-13 16:32:29 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
@@ -147,7 +147,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    /* request MEM region for BAR0 (SRAM)*/
    sIORange.ulSRAMStart = pci_resource_start(dev,0);
    sIORange.ulSRAMLen   = pci_resource_len(dev,0);
-   
+
    /* request IO region for BAR2 (serbus)*/
    sIORange.ulSerbusPort = pci_resource_start(dev,2);
    sIORange.ulSerbusLen  = pci_resource_len(dev,2);
@@ -159,7 +159,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
 	printk(KERN_ERR "BPD: can't request region for BAR0.\n");
 	return -EIO;
      };
-   
+
    /* check if we have successfully requested the IO region for BAR2 */
    if(request_region(sIORange.ulSerbusPort,sIORange.ulSerbusLen,dev->dev.kobj.name) == NULL)
      {
@@ -167,7 +167,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
 	printk(KERN_ERR "BPD: can't request region for BAR2.\n");
 	return -EIO;
      };
-      
+
    /* create kernelthread, pass pointer to structure to make mem areas */
    /* available to thread as well */
    init_waitqueue_head(&wq);
@@ -188,7 +188,7 @@ static void remove(struct pci_dev *dev)
    /* check for requested IO space and release it*/
    if(sIORange.ulSRAMStart)
      release_mem_region(sIORange.ulSRAMStart,sIORange.ulSRAMLen);
-   
+
    /* check for requested IO space and release it*/
    if(sIORange.ulSerbusPort)
      release_region(sIORange.ulSerbusPort,sIORange.ulSerbusLen);
