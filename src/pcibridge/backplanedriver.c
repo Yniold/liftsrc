@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-27 15:13:29 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-27 19:50:58 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.5  2008-05-27 15:13:29  rudolf
+ * Revision 1.6  2008-05-27 19:50:58  rudolf
+ * added read and write IOCTLs
+ *
+ * Revision 1.5  2008/05/27 15:13:29  rudolf
  * integrated SYSFS and hotplug support
  *
  * Revision 1.4  2008/05/13 16:32:29  rudolf
@@ -29,6 +32,8 @@
 #include <linux/kdev_t.h>
 #include <linux/version.h>
 #include <linux/fs.h>
+#include <linux/io.h>
+#include <asm/uaccess.h>
 
 #include "backplanedriver.h"
 
@@ -87,6 +92,57 @@ static struct pci_device_id ids[] =
 };
 MODULE_DEVICE_TABLE(pci, ids);
 
+unsigned short SerBusDoRead(unsigned short Address)
+{
+
+   unsigned short usOldStatus = 0;
+   unsigned short usNewStatus = 0;
+
+   if(showDebug)
+     {
+
+	printk("\n\rReading from Address 0x%04X\n\r",Address);
+	printk("Addressregister: @Offset 0x00 wrote:         0x%04X\n\r",Address | (unsigned short)(0x0001));
+	printk("Dataregister:    @Offset 0x02 wrote (dummy): 0x%04X\n\r",0x0000);
+     }
+   ;
+
+   // get Status Word befor doing the Read Access
+   usOldStatus = readw(pIOMemory+4);
+
+   // initiate the read access
+   writew((Address | (unsigned short)(0x0001)),pIOMemory);
+   udelay(1);
+   writew((unsigned short)0x0000,pIOMemory+2);  // A0 doesn't seem to be used by AT96
+   udelay(10);
+
+   // get Status Word after the Read Access
+   usNewStatus = readw(pIOMemory+4);
+   udelay(1);
+
+   // read back the received address and the actual data
+   usReadAddress = readw(pIOMemory);
+   udelay(1);
+   usReadData = readw(pIOMemory+2);
+   udelay(1);
+
+   if(showDebug)
+     {
+	printk("\n\rStatusregister:  @Offset 0x04 reads 0x%04X before Cycle\n\r", usOldStatus);
+	printk("Statusregister:  @Offset 0x04 reads 0x%04X after Cycle\n\r", usNewStatus);
+	printk("Got Data from Address 0X%04X\n\r",usReadAddress);
+	printk("Data was %04X\n\r\n\r",usReadData);
+     };
+
+   if(usReadAddress != (Address + 1))
+     uiAddressErrors++;
+
+   if(showDebug)
+     printk("AddressErrors: %04d\n\r", uiAddressErrors);
+
+   return(usReadData);
+}
+
 // open() device
 int Serbus_Open(struct inode *inode, struct file *filp)
 {
@@ -127,9 +183,83 @@ static ssize_t Serbus_Write(struct file *filp, const char *buff, size_t count, l
 // ioctl() device
 static int Serbus_IOCtl(struct inode *inode, struct file *filp, unsigned int uiCommand, unsigned long ulParam)
 {
+   static unsigned int uiSerbusAddress = 0;
+   static unsigned int uiSerbusData = 0;
+
+   // do some sanity checks
+   int err=0;
+   int size= _IOC_SIZE(uiCommand);
+
    if(showDebug)
      printk("\n\rSerbus_IOCtl() called, uiCommand: 0x%08X ulParam: 0x%08lX", uiCommand, ulParam);
 
+   if (_IOC_TYPE(uiCommand) != SERBUS_IOC_MAGIC) // check for our magic byte
+     return -EINVAL;
+
+   if (_IOC_NR(uiCommand) > SERBUS_IOC_MAXNR)// check for greatest IOCTL code
+     return -EINVAL;
+
+   if (_IOC_DIR(uiCommand) & _IOC_READ)// check userspace buffers
+     err = access_ok(VERIFY_WRITE, (void *)ulParam, size);
+   else
+     // check kernelspace buffers
+     if (_IOC_DIR(uiCommand) & _IOC_WRITE)
+       err =  access_ok(VERIFY_READ, (void *)ulParam, size);
+
+   // any trouble so far ?
+   if (err)
+     return err;
+
+   // command processing
+   //
+   switch(uiCommand)
+     {
+      case  SERBUS_IOCSDEBUGON:
+	printk("\n\rioctl(SERBUS_IOCSDEBUGON)");
+	showDebug = 1;
+	break;
+
+      case SERBUS_IOCSDEBUGOFF:
+	printk("\n\rioctl(SERBUS_IOCSDEBUGOFF)");
+	showDebug = 0;
+	break;
+
+      case SERBUS_IOCTWRITEWORD:
+	if(showDebug)
+	  printk("\n\rioctl(SERBUS_IOCTWRITEWORD)");
+	uiSerbusData    = (unsigned int)(ulParam >> 16);
+	uiSerbusAddress = (unsigned int)(ulParam & (unsigned long)(0x0000FFFF));
+
+	SerBusDoWrite(uiSerbusAddress, uiSerbusData);
+
+	// debug data
+	if(showDebug)
+	  {
+	     printk("\n\rAddress: 0x%08X",uiSerbusAddress);
+	     printk("\n\rData:    0x%08X",uiSerbusData);
+	  };
+	break;
+
+      case SERBUS_IOCHREADWORD:
+	if(showDebug)
+	  printk("\n\rioctl(SERBUS_IOCHREADWORD)");
+	uiSerbusAddress = (unsigned int)(ulParam & (unsigned long)(0x0000FFFF));
+
+	// debug data
+	if(showDebug)
+	  printk("\n\rAddress: 0x%08X",uiSerbusAddress);
+
+	uiSerbusData = (unsigned int) SerBusDoRead((unsigned short) uiSerbusAddress);
+
+	if(showDebug)
+	  printk("\n\rData:    0x%08X",uiSerbusData);
+
+	return (unsigned long) uiSerbusData;
+	break;
+
+      default:
+	return -ENOTTY;
+     }
    return (0);
 };
 
@@ -203,7 +333,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.5 2008-05-27 15:13:29 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.6 2008-05-27 19:50:58 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
