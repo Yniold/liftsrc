@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-13 16:32:29 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-27 15:13:29 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.4  2008-05-13 16:32:29  rudolf
+ * Revision 1.5  2008-05-27 15:13:29  rudolf
+ * integrated SYSFS and hotplug support
+ *
+ * Revision 1.4  2008/05/13 16:32:29  rudolf
  * added offsets for serbus registers
  *
  * Revision 1.3  2008/05/08 16:55:22  rudolf
@@ -23,6 +26,11 @@
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/init.h>
+#include <linux/kdev_t.h>
+#include <linux/version.h>
+#include <linux/fs.h>
+
+#include "backplanedriver.h"
 
 #define PCI_VENDOR_ID_ALTERA     (0x1172)
 #define PCI_DEVICE_ID_BACKPLANE  (0x4711)
@@ -42,9 +50,16 @@
 #define OFF_SER_STATUS           (4)
 #define SERBUS_SIG               (0x4711)
 
+// device major number
+//
+unsigned int serbus_major = 0;
+int showDebug = 1;
+
 static int thread_id=0;
 static wait_queue_head_t wq;
 static DECLARE_COMPLETION(on_exit);
+
+static struct class *serbus_class;
 
 /* structure for the mem ranges */
 typedef struct sIORanges
@@ -72,16 +87,72 @@ static struct pci_device_id ids[] =
 };
 MODULE_DEVICE_TABLE(pci, ids);
 
+// open() device
+int Serbus_Open(struct inode *inode, struct file *filp)
+{
+   if(showDebug)
+     {
+	printk("\n\rSerbus_Open() called...");
+     };
+
+   return 0;   // success
+};
+
+// close() device
+int Serbus_Release(struct inode *inode, struct file *filp)
+{
+   if(showDebug)
+     printk("\n\rSerbus_Release() called...");
+
+   return 0;
+};
+
+// read() device
+static ssize_t Serbus_Read(struct file *filp, char *buff, size_t count, loff_t *offp)
+{
+   if(showDebug)
+     printk("\n\rSerbus_Read() called...");
+   return (-EINVAL);
+};
+
+// write() device
+static ssize_t Serbus_Write(struct file *filp, const char *buff, size_t count, loff_t *offp)
+{
+   if(showDebug)
+     printk("\n\rSerbus_Write() called...");
+
+   return (-EINVAL);
+};
+
+// ioctl() device
+static int Serbus_IOCtl(struct inode *inode, struct file *filp, unsigned int uiCommand, unsigned long ulParam)
+{
+   if(showDebug)
+     printk("\n\rSerbus_IOCtl() called, uiCommand: 0x%08X ulParam: 0x%08lX", uiCommand, ulParam);
+
+   return (0);
+};
+
+static struct file_operations serbus_fops =
+{
+
+   .owner   = THIS_MODULE,
+     .write   = Serbus_Write,
+     .read    = Serbus_Read,
+     .ioctl   = Serbus_IOCtl,
+     .open    = Serbus_Open,
+     .release = Serbus_Release,
+}
+;
+
 /* Kernel Thread for writing testdata periodically to PCI bus */
 static int thread_code( void *data )
 {
    unsigned long timeout;
-   unsigned char ucBuffer[4];
    volatile unsigned short usDummy1;
    volatile unsigned short usDummy2;
+   volatile unsigned short usDummy3;
 
-   volatile unsigned long  ulDummy;
-   void* pAddress;
    sIORanges* sStruct = (sIORanges*)data;
 
    daemonize("DebugThread");
@@ -92,15 +163,19 @@ static int thread_code( void *data )
 	timeout=wait_event_interruptible_timeout(wq, (timeout==0), timeout);
 
 	/* test write words on consecutive addresses to test CBEN[0..3] on bridge */
-	outw(0x0123,sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
+	outw(0xC1ff,sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
 	outw(0x5678,sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
 	/* test read words on consecutive addresses to test CBEN[0..3] on bridge */
 	usDummy1 = inw(sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
 	usDummy2 = inw(sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
+	/* try reading signature from serbus */
+	usDummy3 = inw(sStruct->ulSerbusPort+(OFF_SER_STATUS*ALIGNMENT));
+
 	printk("Read %04x from PCI bus @0x0\n",usDummy1);
 	printk("Read %04x from PCI bus @0x2\n",usDummy2);
+	printk("Read %04x as Signature\n",usDummy3);
 
 	if( timeout==-ERESTARTSYS )
 	  {
@@ -128,7 +203,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.4 2008-05-13 16:32:29 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.5 2008-05-27 15:13:29 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
@@ -204,17 +279,55 @@ static struct pci_driver backplane_driver =
 
 static int __init pci_backplane_init(void)
 {
+   int iRetVal;
    printk(KERN_NOTICE "BPD: init()\n");
-   return pci_register_driver(&backplane_driver);
+
+   /* returns number of found PCI boards */
+   iRetVal = pci_register_driver(&backplane_driver);
+
+   /* check if one board found */
+   if(iRetVal == 0)
+     {
+	/* try to register a character device */
+	iRetVal = register_chrdev(serbus_major,"backplanedriver",&serbus_fops);
+
+	if(iRetVal)
+	  {
+	     /* save our new assigned major number we got from the kernel */
+	     serbus_major = iRetVal;
+	     printk(KERN_NOTICE "BPD: successfully registered chardev. Got major 0x%02X from kernel.\n",serbus_major);
+
+	     /* create a simple class to be able to use udev for creating the devnodes automagically */
+	     serbus_class = class_create(THIS_MODULE, "serbus");
+	     if(IS_ERR(serbus_class))
+	       {
+		  printk(KERN_ERR "BPD: Error creating serbus class.\n");
+	       }
+	     else
+	       {
+		  printk(KERN_NOTICE "BPD: created serbus class in SYSFS.\n");
+		  class_device_create(serbus_class, NULL , MKDEV(serbus_major,0), NULL, "serbus");
+	       };
+	  }
+	else
+	  {
+	     printk(KERN_NOTICE "BPD: register_chrdev() failed with %d\n",iRetVal);
+	  }
+     }
+   return iRetVal;
 }
 
 static void __exit pci_backplane_exit(void)
 {
    printk(KERN_NOTICE "BPD: exit()\n");
+   class_device_destroy(serbus_class,MKDEV(serbus_major,0));
+   class_destroy(serbus_class);
+   unregister_chrdev(serbus_major,"serbus");
    pci_unregister_driver(&backplane_driver);
 }
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Markus Rudolf");
+MODULE_DESCRIPTION("MPI for Chemistry SERBUS Access Driver for the cPCI Interface Board");
 module_init(pci_backplane_init);
 module_exit(pci_backplane_exit);
