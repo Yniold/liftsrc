@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-28 10:55:32 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-28 11:15:20 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.7  2008-05-28 10:55:32  rudolf
+ * Revision 1.8  2008-05-28 11:15:20  rudolf
+ * increased udelay due to slow serbus reading old value instead of current
+ *
+ * Revision 1.7  2008/05/28 10:55:32  rudolf
  * fixed compiler warnings, cosmetics
  *
  * Revision 1.6  2008/05/27 19:50:58  rudolf
@@ -117,7 +120,7 @@ unsigned short SerBusDoRead(unsigned short Address)
 
    /* serbus is slow so wait an usec (has to be investigated if it's
     * really neccessary to wait here) */
-   udelay(1);
+   udelay(5);
 
    usReadData = inw(sIORange.ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
@@ -326,7 +329,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.7 2008-05-28 10:55:32 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.8 2008-05-28 11:15:20 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
