@@ -1,8 +1,11 @@
 /*
- * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-27 19:50:58 $ by $Author: rudolf $
+ * $RCSfile: backplanedriver.c,v $ last changed on $Date: 2008-05-28 10:55:32 $ by $Author: rudolf $
  *
  * $Log: backplanedriver.c,v $
- * Revision 1.6  2008-05-27 19:50:58  rudolf
+ * Revision 1.7  2008-05-28 10:55:32  rudolf
+ * fixed compiler warnings, cosmetics
+ *
+ * Revision 1.6  2008/05/27 19:50:58  rudolf
  * added read and write IOCTLs
  *
  * Revision 1.5  2008/05/27 15:13:29  rudolf
@@ -33,6 +36,7 @@
 #include <linux/version.h>
 #include <linux/fs.h>
 #include <linux/io.h>
+#include <linux/delay.h>
 #include <asm/uaccess.h>
 
 #include "backplanedriver.h"
@@ -94,51 +98,28 @@ MODULE_DEVICE_TABLE(pci, ids);
 
 unsigned short SerBusDoRead(unsigned short Address)
 {
-
-   unsigned short usOldStatus = 0;
-   unsigned short usNewStatus = 0;
+   unsigned short usReadData;
 
    if(showDebug)
      {
 
-	printk("\n\rReading from Address 0x%04X\n\r",Address);
-	printk("Addressregister: @Offset 0x00 wrote:         0x%04X\n\r",Address | (unsigned short)(0x0001));
-	printk("Dataregister:    @Offset 0x02 wrote (dummy): 0x%04X\n\r",0x0000);
-     }
-   ;
-
-   // get Status Word befor doing the Read Access
-   usOldStatus = readw(pIOMemory+4);
-
-   // initiate the read access
-   writew((Address | (unsigned short)(0x0001)),pIOMemory);
-   udelay(1);
-   writew((unsigned short)0x0000,pIOMemory+2);  // A0 doesn't seem to be used by AT96
-   udelay(10);
-
-   // get Status Word after the Read Access
-   usNewStatus = readw(pIOMemory+4);
-   udelay(1);
-
-   // read back the received address and the actual data
-   usReadAddress = readw(pIOMemory);
-   udelay(1);
-   usReadData = readw(pIOMemory+2);
-   udelay(1);
-
-   if(showDebug)
-     {
-	printk("\n\rStatusregister:  @Offset 0x04 reads 0x%04X before Cycle\n\r", usOldStatus);
-	printk("Statusregister:  @Offset 0x04 reads 0x%04X after Cycle\n\r", usNewStatus);
-	printk("Got Data from Address 0X%04X\n\r",usReadAddress);
-	printk("Data was %04X\n\r\n\r",usReadData);
+	printk("BPD: Reading from Address 0x%04X\n",Address);
+	printk("BPD: Addressregister: @Offset 0x00 wrote:         0x%04X\n",Address | (unsigned short)(0x0001));
+	printk("BPD: Dataregister:    @Offset 0x02 wrote (dummy): 0x%04X\n",0x0000);
      };
 
-   if(usReadAddress != (Address + 1))
-     uiAddressErrors++;
+   /* initiate the read access
+    * read access is characterized by setting the LSB to 1 */
+   outw((Address | (unsigned short)(0x0001)),sIORange.ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
 
-   if(showDebug)
-     printk("AddressErrors: %04d\n\r", uiAddressErrors);
+   /* dummy access to trigger the FPGA statemachine */
+   outw(0x0000,sIORange.ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
+
+   /* serbus is slow so wait an usec (has to be investigated if it's
+    * really neccessary to wait here) */
+   udelay(1);
+
+   usReadData = inw(sIORange.ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
 
    return(usReadData);
 }
@@ -148,17 +129,39 @@ int Serbus_Open(struct inode *inode, struct file *filp)
 {
    if(showDebug)
      {
-	printk("\n\rSerbus_Open() called...");
+	printk("BPD: Serbus_Open() called...\n");
      };
 
    return 0;   // success
+};
+
+/* SERBUS WRITE SUBROUTINE
+ * actual hardware access is done here */
+void SerBusDoWrite(unsigned short Address, unsigned short Data)
+{
+   if(showDebug)
+     {
+	printk("BPD: Writing to Address 0x%04X\n",Address);
+	printk("BPD: Addressregister: @Offset 0x00 wrote:         0x%04X\n",Address & 0xFFFE);
+	printk("BPD: Dataregister:    @Offset 0x02 wrote:         0x%04X\n",Data);
+     };
+
+   /* initiate the read access
+    * by clearing the MSB of  the address */
+
+   outw((Address & 0xFFFE),sIORange.ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
+   outw((Data),sIORange.ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
+
+   /* serbus is slow so wait an usec (has to be investigated if it's
+    * really neccessary to wait here) */
+   udelay(1);
 };
 
 // close() device
 int Serbus_Release(struct inode *inode, struct file *filp)
 {
    if(showDebug)
-     printk("\n\rSerbus_Release() called...");
+     printk("BPD: Serbus_Release() called...\n");
 
    return 0;
 };
@@ -167,7 +170,7 @@ int Serbus_Release(struct inode *inode, struct file *filp)
 static ssize_t Serbus_Read(struct file *filp, char *buff, size_t count, loff_t *offp)
 {
    if(showDebug)
-     printk("\n\rSerbus_Read() called...");
+     printk("BPD: Serbus_Read() called...\n");
    return (-EINVAL);
 };
 
@@ -175,7 +178,7 @@ static ssize_t Serbus_Read(struct file *filp, char *buff, size_t count, loff_t *
 static ssize_t Serbus_Write(struct file *filp, const char *buff, size_t count, loff_t *offp)
 {
    if(showDebug)
-     printk("\n\rSerbus_Write() called...");
+     printk("BPD: Serbus_Write() called...\n");
 
    return (-EINVAL);
 };
@@ -191,42 +194,49 @@ static int Serbus_IOCtl(struct inode *inode, struct file *filp, unsigned int uiC
    int size= _IOC_SIZE(uiCommand);
 
    if(showDebug)
-     printk("\n\rSerbus_IOCtl() called, uiCommand: 0x%08X ulParam: 0x%08lX", uiCommand, ulParam);
+     printk("BPD: Serbus_IOCtl() called, uiCommand: 0x%08X ulParam: 0x%08lX\n", uiCommand, ulParam);
 
    if (_IOC_TYPE(uiCommand) != SERBUS_IOC_MAGIC) // check for our magic byte
-     return -EINVAL;
+     {
+	printk("BPD: IOCTL: magic byte mismatch\n");
+	return -EINVAL;
+     }
 
    if (_IOC_NR(uiCommand) > SERBUS_IOC_MAXNR)// check for greatest IOCTL code
-     return -EINVAL;
-
+     {
+	printk("BPD: IOCTL: max number exceeded\n");
+	return -EINVAL;
+     }
    if (_IOC_DIR(uiCommand) & _IOC_READ)// check userspace buffers
-     err = access_ok(VERIFY_WRITE, (void *)ulParam, size);
+     err = !access_ok(VERIFY_WRITE, (void *)ulParam, size);
    else
      // check kernelspace buffers
      if (_IOC_DIR(uiCommand) & _IOC_WRITE)
-       err =  access_ok(VERIFY_READ, (void *)ulParam, size);
+       err =  !access_ok(VERIFY_READ, (void *)ulParam, size);
 
    // any trouble so far ?
    if (err)
-     return err;
-
+     {
+	printk("BPD: IOCTL: trouble with userspace buffers\n");
+	return err;
+     };
    // command processing
    //
    switch(uiCommand)
      {
       case  SERBUS_IOCSDEBUGON:
-	printk("\n\rioctl(SERBUS_IOCSDEBUGON)");
+	printk("BPD: ioctl(SERBUS_IOCSDEBUGON) called.\n");
 	showDebug = 1;
 	break;
 
       case SERBUS_IOCSDEBUGOFF:
-	printk("\n\rioctl(SERBUS_IOCSDEBUGOFF)");
+	printk("BPD: ioctl(SERBUS_IOCSDEBUGOFF) called.\n");
 	showDebug = 0;
 	break;
 
       case SERBUS_IOCTWRITEWORD:
 	if(showDebug)
-	  printk("\n\rioctl(SERBUS_IOCTWRITEWORD)");
+	  printk("BPD: ioctl(SERBUS_IOCTWRITEWORD) called.\n");
 	uiSerbusData    = (unsigned int)(ulParam >> 16);
 	uiSerbusAddress = (unsigned int)(ulParam & (unsigned long)(0x0000FFFF));
 
@@ -235,24 +245,24 @@ static int Serbus_IOCtl(struct inode *inode, struct file *filp, unsigned int uiC
 	// debug data
 	if(showDebug)
 	  {
-	     printk("\n\rAddress: 0x%08X",uiSerbusAddress);
-	     printk("\n\rData:    0x%08X",uiSerbusData);
+	     printk("BPD: Address: 0x%08X\n",uiSerbusAddress);
+	     printk("BPD: Data:    0x%08X\n",uiSerbusData);
 	  };
 	break;
 
       case SERBUS_IOCHREADWORD:
 	if(showDebug)
-	  printk("\n\rioctl(SERBUS_IOCHREADWORD)");
+	  printk("BPD: ioctl(SERBUS_IOCHREADWORD) called.\n");
 	uiSerbusAddress = (unsigned int)(ulParam & (unsigned long)(0x0000FFFF));
 
 	// debug data
 	if(showDebug)
-	  printk("\n\rAddress: 0x%08X",uiSerbusAddress);
+	  printk("BDP: Address: 0x%08X\n",uiSerbusAddress);
 
 	uiSerbusData = (unsigned int) SerBusDoRead((unsigned short) uiSerbusAddress);
 
 	if(showDebug)
-	  printk("\n\rData:    0x%08X",uiSerbusData);
+	  printk("BPD: Data:    0x%08X\n",uiSerbusData);
 
 	return (unsigned long) uiSerbusData;
 	break;
@@ -279,37 +289,20 @@ static struct file_operations serbus_fops =
 static int thread_code( void *data )
 {
    unsigned long timeout;
-   volatile unsigned short usDummy1;
-   volatile unsigned short usDummy2;
-   volatile unsigned short usDummy3;
 
    sIORanges* sStruct = (sIORanges*)data;
 
-   daemonize("DebugThread");
+   daemonize("BPDDebugThread");
    allow_signal( SIGTERM );
    while(1)
      {
 	timeout=HZ; // wait 1 second
 	timeout=wait_event_interruptible_timeout(wq, (timeout==0), timeout);
 
-	/* test write words on consecutive addresses to test CBEN[0..3] on bridge */
-	outw(0xC1ff,sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
-	outw(0x5678,sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
-
-	/* test read words on consecutive addresses to test CBEN[0..3] on bridge */
-	usDummy1 = inw(sStruct->ulSerbusPort+(OFF_SER_ADDRESSREG*ALIGNMENT));
-	usDummy2 = inw(sStruct->ulSerbusPort+(OFF_SER_DATAREG*ALIGNMENT));
-
-	/* try reading signature from serbus */
-	usDummy3 = inw(sStruct->ulSerbusPort+(OFF_SER_STATUS*ALIGNMENT));
-
-	printk("Read %04x from PCI bus @0x0\n",usDummy1);
-	printk("Read %04x from PCI bus @0x2\n",usDummy2);
-	printk("Read %04x as Signature\n",usDummy3);
 
 	if( timeout==-ERESTARTSYS )
 	  {
-	     printk("got signal, break.\n");
+	     printk("BPD: Kernelthread got SIGRESTARTSYS, terminating.\n");
 	     break;
 	  }
      }
@@ -333,7 +326,7 @@ static int probe(struct pci_dev *dev, const struct pci_device_id *id)
    if (backplane_get_revision(dev) != 0x01)
      return -ENODEV;
 
-   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.6 2008-05-27 19:50:58 rudolf Exp $ initialising\n");
+   printk(KERN_NOTICE "$Id: backplanedriver.c,v 1.7 2008-05-28 10:55:32 rudolf Exp $ initialising\n");
    printk(KERN_NOTICE "BPD: cPCI2Serbus Bridge HW Revision %d found.\n",backplane_get_revision(dev));
 
    /* iterate through all BARs an print informations */
@@ -410,8 +403,6 @@ static struct pci_driver backplane_driver =
 static int __init pci_backplane_init(void)
 {
    int iRetVal;
-   printk(KERN_NOTICE "BPD: init()\n");
-
    /* returns number of found PCI boards */
    iRetVal = pci_register_driver(&backplane_driver);
 
@@ -425,7 +416,7 @@ static int __init pci_backplane_init(void)
 	  {
 	     /* save our new assigned major number we got from the kernel */
 	     serbus_major = iRetVal;
-	     printk(KERN_NOTICE "BPD: successfully registered chardev. Got major 0x%02X from kernel.\n",serbus_major);
+	     printk(KERN_NOTICE "BPD: successfully registered chardev. Got major number 0x%02X from kernel.\n",serbus_major);
 
 	     /* create a simple class to be able to use udev for creating the devnodes automagically */
 	     serbus_class = class_create(THIS_MODULE, "serbus");
@@ -449,7 +440,7 @@ static int __init pci_backplane_init(void)
 
 static void __exit pci_backplane_exit(void)
 {
-   printk(KERN_NOTICE "BPD: exit()\n");
+   printk(KERN_NOTICE "BPD: cleaning up...\n");
    class_device_destroy(serbus_class,MKDEV(serbus_major,0));
    class_destroy(serbus_class);
    unregister_chrdev(serbus_major,"serbus");

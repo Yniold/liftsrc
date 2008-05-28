@@ -1,8 +1,11 @@
 /*
-* $RCSfile: backplanedriver.h,v $ last changed on $Date: 2008-05-27 15:13:29 $ by $Author: rudolf $
+* $RCSfile: backplanedriver.h,v $ last changed on $Date: 2008-05-28 10:55:32 $ by $Author: rudolf $
 *
 * $Log: backplanedriver.h,v $
-* Revision 1.2  2008-05-27 15:13:29  rudolf
+* Revision 1.3  2008-05-28 10:55:32  rudolf
+* fixed compiler warnings, cosmetics
+*
+* Revision 1.2  2008/05/27 15:13:29  rudolf
 * integrated SYSFS and hotplug support
 *
 * Revision 1.1  2008/05/26 15:01:41  rudolf
@@ -14,6 +17,9 @@
 
 #ifndef __SERIALBUS_H__
 #define __SERIALBUS_H__
+
+// needed for _IOW() macro
+#include <linux/fs.h>
 
 //ioctl() defines
 
@@ -33,10 +39,10 @@
 * X means "eXchange": G and S atomically
 * H means "sHift": T and Q atomically
 */
-#define SERBUS_IOCSDEBUGON   _IOW(SERBUS_IOC_MAGIC, 1, SERBUS_SETDEBUGON)
-#define SERBUS_IOCSDEBUGOFF  _IOW(SERBUS_IOC_MAGIC, 2, SERBUS_SETDEBUGOFF)
-#define SERBUS_IOCTWRITEWORD _IOW(SERBUS_IOC_MAGIC, 3, SERBUS_WRITEWORD)
-#define SERBUS_IOCHREADWORD  _IOW(SERBUS_IOC_MAGIC, 4, SERBUS_READWORD)
+#define SERBUS_IOCSDEBUGON   _IOW(SERBUS_IOC_MAGIC, SERBUS_SETDEBUGON,int)
+#define SERBUS_IOCSDEBUGOFF  _IOW(SERBUS_IOC_MAGIC, SERBUS_SETDEBUGOFF,int)
+#define SERBUS_IOCTWRITEWORD _IOW(SERBUS_IOC_MAGIC, SERBUS_WRITEWORD,int)
+#define SERBUS_IOCHREADWORD  _IOW(SERBUS_IOC_MAGIC, SERBUS_READWORD,int)
 
 #define SERBUS_IOC_MAXNR 4
 
