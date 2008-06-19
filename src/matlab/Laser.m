@@ -209,7 +209,7 @@ tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -217,7 +217,7 @@ if PSSN(1:6)=='120865'
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -401,7 +401,7 @@ tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -409,7 +409,7 @@ if PSSN(1:6)=='120865'
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -556,7 +556,7 @@ tport.UserData=[];
 if PSSN(1:6)=='120865'
     if str2double(DiodeCurrentSet)==35.4
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -564,7 +564,7 @@ if PSSN(1:6)=='120865'
 elseif PSSN(1:6)=='120881'
     if str2double(DiodeCurrentSet)==36.0
         set(handles.togglePower,'Value',1,'String','FULL Power','BackgroundColor','g');
-    elseif str2double(DiodeCurrentSet)==15.5
+    elseif str2double(DiodeCurrentSet)==17.0
         set(handles.togglePower,'Value',0,'String','LOW Power','BackgroundColor','c');
     else
         set(handles.togglePower,'Value',0,'String','medium Power','BackgroundColor','c');
@@ -652,13 +652,13 @@ if PSSN(1:6)=='120865'
     if get(hObject,'Value')
         fprintf(tport,'C1:35.4'); % full power
     else
-        fprintf(tport,'C1:15.5'); % lowest green power 
+        fprintf(tport,'C1:17.0'); % lowest green power 
     end    
 elseif PSSN(1:6)=='120881'
     if get(hObject,'Value')
         fprintf(tport,'C1:36.0'); % full power
     else
-        fprintf(tport,'C1:15.5'); % lowest green power 
+        fprintf(tport,'C1:17.0'); % lowest green power 
     end    
 end
 
@@ -678,7 +678,7 @@ else
     set(handles.togglePower,'Value',0)
     set(handles.togglePower,'BackgroundColor','c');
     set(handles.togglePower,'String','LOW Power')
-    if str2double(DiodeCurrentSet)~=15.5
+    if str2double(DiodeCurrentSet)~=17.0
         set(handles.togglePower,'String','medium Power')
     end
 end
