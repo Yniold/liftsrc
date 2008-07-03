@@ -128,6 +128,8 @@ guidata(hObject, handles);
 
 if isfield(handles,'tport')
     Update_Callback(hObject, eventdata, handles);
+    data.tport=tport;
+    setappdata(handles.output, 'Laserdata', data);
 end
 
 

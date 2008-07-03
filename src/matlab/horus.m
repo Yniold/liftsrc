@@ -678,7 +678,7 @@ end
 if isfield(data,'hLaser')
     hLaser=data.hLaser;
     if ishandle(hLaser), 
-        Laserdata = getappdata(hLaser, 'tcpdata');
+        Laserdata = getappdata(hLaser, 'Laserdata');
         fclose(Laserdata.tport);
         delete(Laserdata.tport);
         echotcpip('off');
