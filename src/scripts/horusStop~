@@ -33,9 +33,6 @@ if [ $ArmOn -eq 0 ]; then
 
 fi
 
-<<<<<<< horusStop
-
-
 echo close all solenoids
 SolenoidsOff
 
@@ -44,7 +41,6 @@ sleep 10
 
 echo killall
 =======
->>>>>>> 1.9
 killall etalon     
 #cp /mnt/magera/etalon ./bin
 killall elekIOServ 
