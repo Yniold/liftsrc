@@ -363,7 +363,7 @@ if bitget(statusData(lastrow,col.ValveLift),13)==0;
     set(handles.toggleShutter,'BackgroundColor','g');
 else 
     set(handles.toggleShutter,'string','Shutter is CLOSED');
-    set(handles.toggleShutter,'BackgroundColor','c');
+    set(handles.toggleShutter,'BackgroundColor','r');
 end
 
 % check solenoids
@@ -887,7 +887,7 @@ if get(hObject,'Value')
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(20*140))]);% 20V needed to close shutter
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
     set(hObject,'String','Shutter is CLOSED');
-    set(hObject,'BackgroundColor','c');
+    set(hObject,'BackgroundColor','r');
     system('sleep 1');
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 else    
