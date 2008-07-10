@@ -213,7 +213,7 @@ statusDataCols=...
 'TDet',930,'1./(3.3540154E-3+2.5627725E-4.*log(220000./3000./(4.094.*1550./(x-9999)-1))+2.082921E-6.*(log(220000./3000./(4.094.*1550./(x-9999)-1))).^2+7.30003206E-8.*(log(220000./3000./(4.094.*1550./(x-9999)-1))).^3)-273.15','C';
 'TDetSumDat',931,'x*NaN','C';
 'TDetSumSqr',932,'x*NaN','C';
-'DiodeWZ1out',933,'(x-10002)/83.7','mW'; %calibrated by Mark, 7th March 2008
+'DiodeWZ1out',933,'(x-10001)/23.9','mW'; %calibrated by Mark, 8th July 2008
 'DiodeWZ1outSumDat',934,'x*NaN','mW';
 'DiodeWZ1outSumSqr',935,'x*NaN','mW';
 'DiodeWZ2out',936,'(x-10002)/171','mW'; %calibrated by Mark, 7th March 2008
