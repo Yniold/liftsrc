@@ -67,7 +67,7 @@ end
 guidata(hObject, handles);
 
 % open tcpip port for communication with Laser,
- picotport=tcpip('10.111.111.28',9000);
+ picotport=tcpip('10.111.111.28',8100);
  set(picotport,'ReadAsyncMode','continuous');
  set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
  set(picotport,'Terminator','CR/LF');
@@ -77,7 +77,7 @@ guidata(hObject, handles);
  fopen(picotport);
  handles.picotport=picotport;
  data.picotport=handles.picotport;
- %set(handles.txttport,'String','communication INITIALIZED','BackgroundColor','g');
+ set(handles.txtmirrors,'String','communication INITIALIZED','BackgroundColor','g');
  %set(handles.pb_Exit,'backgroundcolor','g');
  
 catch  
@@ -85,7 +85,7 @@ catch
     fclose(picotport);
     delete(picotport);
     clear('picotport');
- %   set(handles.txttport,'String','communication FAILED','BackgroundColor','r');
+    set(handles.txtmirrors,'String','communication FAILED','BackgroundColor','r');
  %   set(handles.pb_Exit,'backgroundcolor','r');
  end
 
@@ -218,15 +218,17 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-stop(handles.ActTimer);
-delete(handles.ActTimer);
+%stop(handles.ActTimer);
+%delete(handles.ActTimer);
 %if isvalid(handles.serport)
 %    fclose(handles.serport);
 %    delete(handles.serport);
 %end;
+picotport=handles.picotport;
 if isfield(handles,'picotport')
     fclose(handles.picotport);
     delete(handles.picotport);
+    set(handles.txtmirrors,'String','communication STOPPED','BackgroundColor','r');
 end;
 
 
@@ -256,30 +258,30 @@ if forw==0
     steps=-steps;
 end
 
-system(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
-disp(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
+%system(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
+%disp(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
 
-switch mirror
-    case 0
-        if axis==0
-            mirrorstr='Hi1X';%higher Picomotor
-        else
-            mirrorstr='Hi1Y';
-        end            
-    case 1
-        if axis==0
-            mirrorstr='Lo2X';%lower Picomotor
-        else
-            mirrorstr='Lo2Y';
-        end            
+%switch mirror
+%    case 0
+%        if axis==0
+%            mirrorstr='Hi1X';%higher Picomotor
+%        else
+%            mirrorstr='Hi1Y';
+%        end            
+%    case 1
+%        if axis==0
+%            mirrorstr='Lo2X';%lower Picomotor
+%        else
+%            mirrorstr='Lo2Y';
+%        end            
      
-end
+%end
 
-eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
-eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
-if Mirrorhelp==1
-    currpos=bitset(floor(currpos),32,0)-2^32/2;
-end
+%eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
+%eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
+%if Mirrorhelp==1
+%    currpos=bitset(floor(currpos),32,0)-2^32/2;
+%end
 % check if motor is still moving
 %while double(statusData(lastrow,col.MirrorMovingFlags))~=0
 %    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
@@ -294,44 +296,44 @@ function pushbuttonstop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-system(['/gollum/bin/eCmd @gollum s mirrorstop']);
-disp(['/gollum/bin/eCmd @gollum s mirrorstop']);
+%system(['/gollum/bin/eCmd @gollum s mirrorstop']);
+%disp(['/gollum/bin/eCmd @gollum s mirrorstop']);
 
-gandalfdata = getappdata(handles.parenthandle, 'gandalfdatadata');
-statusData=gandalfdata.statusData;
-col=horusdata.col;
-data = getappdata(handles.output, 'mirror_diode_Ldata');
-lastrow=data.lastrow;
+%gandalfdata = getappdata(handles.parenthandle, 'gandalfdatadata');
+%statusData=gandalfdata.statusData;
+%col=horusdata.col;
+%data = getappdata(handles.output, 'mirror_diode_Ldata');
+%lastrow=data.lastrow;
 
-mirror=get(handles.popupmirror,'Value')-1;
-axis=get(handles.radiover,'Value');
+%mirror=get(handles.popupmirror,'Value')-1;
+%axis=get(handles.radiover,'Value');
 
-switch mirror
-    case 0
-        if axis==0
-            mirrorstr='Hi1X';%higher picomotor
-        else
-            mirrorstr='Hi1Y';
-        end            
-    case 1
-        if axis==0
-            mirrorstr='Lo2X';%lower picomotor
-        else
-            mirrorstr='Lo2Y';
-        end            
-end
+%switch mirror
+%    case 0
+%        if axis==0
+%            mirrorstr='Hi1X';%higher picomotor
+%        else
+%            mirrorstr='Hi1Y';
+%        end            
+%    case 1
+%        if axis==0
+%            mirrorstr='Lo2X';%lower picomotor
+%        else
+%            mirrorstr='Lo2Y';
+%        end            
+%end
 
-eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
-eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
-if Mirrorhelp==1
-    currpos=bitset(floor(currpos),32,0)-2^32/2;
-end
+%eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
+%eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
+%if Mirrorhelp==1
+%    currpos=bitset(floor(currpos),32,0)-2^32/2;
+%end
 % check if motor is still moving
-while double(statusData(lastrow,col.MirrorMovingFlags))~=0
-    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
-end
-set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
-set(handles.pushgo,'BackgroundColor','w');
+%while double(statusData(lastrow,col.MirrorMovingFlags))~=0
+%    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
+%end
+%set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
+%set(handles.pushgo,'BackgroundColor','w');
 
 
 
@@ -343,6 +345,18 @@ function editmirrorcommand_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editmirrorcommand as text
 %        str2double(get(hObject,'String')) returns contents of editmirrorcommand as a double
 
+
+picotport=handles.picotport;
+%ll=handles.ll;
+MirrorCmd=get(hObject,'String');
+MirrorCmd=char(MirrorCmd);
+set(handles.txtmirrors,'String',MirrorCmd);
+fprintf(picotport,MirrorCmd);
+pause(1);
+L_Answer=picotport.UserData;
+L_Answer=char(L_Answer);
+tport.UserData=[];
+set(handles.txtmirrors,'String',L_Answer);
 
 % --- Executes during object creation, after setting all properties.
 function editmirrorcommand_CreateFcn(hObject, eventdata, handles)
