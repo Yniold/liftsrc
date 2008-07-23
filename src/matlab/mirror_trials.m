@@ -69,25 +69,37 @@ end
 % uiwait(handles.figure1);
 % open tcpip port for communication with Laser,
 
- picotport=tcpip('10.111.111.28',8100);
- set(picotport,'ReadAsyncMode','continuous');
- set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
- set(picotport,'Terminator','CR');
- set(picotport,'BytesAvailableFcnMode','Terminator');
+% open communication with picomotors
+
+handles.serport=serial('/dev/ttyS0','BaudRate',19200,'Terminator','CR');
+set(handles.serport,'BytesAvailableFcn',{'serialdatacallback'});
+try fopen(handles.serport);
+    data.serport=handles.serport;
+catch 
+    delete(handles.serport);
+    rmfield(handles,'serport');
+    set(handles.textPos,'String','FAILED','BackgroundColor','r');
+end;
+
+% picotport=tcpip('10.111.111.28',8100);
+% set(picotport,'ReadAsyncMode','continuous');
+% set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
+% set(picotport,'Terminator','CR');
+% set(picotport,'BytesAvailableFcnMode','Terminator');
  
- try
- fopen(picotport);
- handles.picotport=picotport;
- data.picotport=handles.picotport;
- set(handles.txtpicotport,'String','communication INITIALIZED','BackgroundColor','g');
+% try
+% fopen(picotport);
+% handles.picotport=picotport;
+% data.picotport=handles.picotport;
+% set(handles.txtpicotport,'String','communication INITIALIZED','BackgroundColor','g');
   
-catch  
+%catch  
  % if communication with laser did not work
-    fclose(picotport);
-    delete(picotport);
-    clear('picotport');
-    set(handles.txtpicotport,'String','communication FAILED','BackgroundColor','r');
-end
+%    fclose(picotport);
+%    delete(picotport);
+%    clear('picotport');
+%    set(handles.txtpicotport,'String','communication FAILED','BackgroundColor','r');
+%end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -110,16 +122,16 @@ function editmirror_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editmirror as text
 %        str2double(get(hObject,'String')) returns contents of editmirror as a double
 
-picotport=handles.picotport;
+serport=handles.serport;
 MirrorCmd=get(hObject,'String');
 MirrorCmd=char(MirrorCmd);
 set(handles.txtmirror,'String',MirrorCmd);
-fprintf(picotport,MirrorCmd);
+fprintf(serport,MirrorCmd);
     pause(1);
-M_Answer=picotport.UserData;
-M_Answer=char(L_Answer);
-picotport.UserData=[];
-set(handles.txtmirror,'String',M_Answer);
+%M_Answer=picotport.UserData;
+%M_Answer=char(L_Answer);
+%picotport.UserData=[];
+%set(handles.txtmirror,'String',M_Answer);
 
 % --- Executes during object creation, after setting all properties.
 function editmirror_CreateFcn(hObject, eventdata, handles)
