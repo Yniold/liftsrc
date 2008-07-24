@@ -22,7 +22,7 @@ function varargout = mirror_diode_L(varargin)
 
 % Edit the above text to modify the response to help mirror_diode_L
 
-% Last Modified by GUIDE v2.5 21-Jul-2008 14:02:06
+% Last Modified by GUIDE v2.5 24-Jul-2008 10:31:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,27 +67,27 @@ end
 guidata(hObject, handles);
 
 % open tcpip port for communication with Laser,
- picotport=tcpip('10.111.111.28',8100);
- set(picotport,'ReadAsyncMode','continuous');
- set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
- set(picotport,'Terminator','CR/LF');
- set(picotport,'BytesAvailableFcnMode','Terminator');
+ %picotport=tcpip('10.111.111.28',8100);
+ %set(picotport,'ReadAsyncMode','continuous');
+ %set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
+ %set(picotport,'Terminator','CR/LF');
+ %set(picotport,'BytesAvailableFcnMode','Terminator');
  
- try
- fopen(picotport);
- handles.picotport=picotport;
- data.picotport=handles.picotport;
- set(handles.txtmirrors,'String','communication INITIALIZED','BackgroundColor','g');
+ %try
+ %fopen(picotport);
+ %handles.picotport=picotport;
+ %data.picotport=handles.picotport;
+ %set(handles.txtmirrors,'String','communication INITIALIZED','BackgroundColor','g');
  %set(handles.pb_Exit,'backgroundcolor','g');
  
-catch  
+%catch  
  % if communication with laser did not work
-    fclose(picotport);
-    delete(picotport);
-    clear('picotport');
-    set(handles.txtmirrors,'String','communication FAILED','BackgroundColor','r');
+%    fclose(picotport);
+%    delete(picotport);
+%    clear('picotport');
+%    set(handles.txtmirrors,'String','communication FAILED','BackgroundColor','r');
  %   set(handles.pb_Exit,'backgroundcolor','r');
- end
+% end
 
 
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
@@ -113,7 +113,13 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 
 % Hints: contents = get(hObject,'String') returns menu_mirrorselect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
+driver=get(hObject,'string');
 
+%if strcmp(driver,'high')
+%    handles.driver=0;
+%else
+%    handles.driver=1;
+%end
 
 % --- Executes during object creation, after setting all properties.
 function menu_mirrorselect_CreateFcn(hObject, eventdata, handles)
@@ -141,7 +147,7 @@ function radiohor_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiover,'Value',0);
 end
-set(handles.textpos,'String','0');
+%set(handles.textpos,'String','0');
 
 % --- Executes on button press in radiover.
 function radiover_Callback(hObject, eventdata, handles)
@@ -154,7 +160,7 @@ function radiover_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiohor,'Value',0);
 end
-set(handles.textpos,'String','0');
+%set(handles.textpos,'String','0');
 
 % --- Executes on button press in radiofor.
 function radiofor_Callback(hObject, eventdata, handles)
@@ -196,6 +202,7 @@ else
     set(hObject,'BackgroundColor','white');
     set(hObject,'string',num2str(steps));
 end
+handles.steps=steps;
 
 % --- Executes during object creation, after setting all properties.
 function txtsteps_CreateFcn(hObject, eventdata, handles)
@@ -224,12 +231,14 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 %    fclose(handles.serport);
 %    delete(handles.serport);
 %end;
-picotport=handles.picotport;
-if isfield(handles,'picotport')
-    fclose(handles.picotport);
-    delete(handles.picotport);
-    set(handles.txtmirrors,'String','communication STOPPED','BackgroundColor','r');
-end;
+
+%picotport=handles.picotport;
+
+%if isfield(handles,'picotport')
+%    fclose(handles.picotport);
+%    delete(handles.picotport);
+%    set(handles.txtmirrors,'String','communication STOPPED','BackgroundColor','r');
+%end;
 
 
 % --- Executes on button press in pushbuttongo.
@@ -238,56 +247,34 @@ function pushbuttongo_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%gandalfdata = getappdata(handles.parenthandle, 'gandalfdata');
-%statusData=gandalfdata.statusData;
-%col=gandalfdata.col;
-%data = getappdata(handles.output, 'diodelaserdata');
-%lastrow=data.lastrow;
+serport=handles.serport;
 
-set(handles.textPos,'BackgroundColor','r');
-set(handles.pushgo,'BackgroundColor','r');
-
-%serport=handles.serport;
-picotport=handles.picotport;
-mirror=get(handles.popupmirror,'Value')-1;
-axis=get(handles.radiover,'Value');
+mirror=get(handles.popupmirror,'Value');
+%axis=get(handles.radiohor,'Value');
 
 steps=str2num(get(handles.editsteps,'String'));
 forw=get(handles.radiofor,'Value');
+
 if forw==0 
     steps=-steps;
 end
 
-%system(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
-%disp(['/gollum/bin/eCmd @gollum s mirrorgoto ',num2str(mirror),' ',num2str(axis),' ',num2str(steps)]);
+if handles.radiover==0
+    MirrorCmd=['chl a',mirror,'=1'];
+    MirrorCmd=char(MirrorCmd);
+    fprintf(serport,MirrorCmd);
+else
+    MirrorCmd=['chl a',mirror,'=2'];
+    MirrorCmd=char(MirrorCmd);
+    fprintf(serport,MirrorCmd);
+end
 
-%switch mirror
-%    case 0
-%        if axis==0
-%            mirrorstr='Hi1X';%higher Picomotor
-%        else
-%            mirrorstr='Hi1Y';
-%        end            
-%    case 1
-%        if axis==0
-%            mirrorstr='Lo2X';%lower Picomotor
-%        else
-%            mirrorstr='Lo2Y';
-%        end            
-     
-%end
-
-%eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
-%eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
-%if Mirrorhelp==1
-%    currpos=bitset(floor(currpos),32,0)-2^32/2;
-%end
-% check if motor is still moving
-%while double(statusData(lastrow,col.MirrorMovingFlags))~=0
-%    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
-%end
-set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
+%set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
 set(handles.pushgo,'BackgroundColor','w');
+
+MotorCmd=['REL a',mirror,' ',steps,' g'];
+MotorCmd=char(MotorCmd);
+fprintf(serport,MotorCmd);
 
 
 % --- Executes on button press in pushbuttonstop.
@@ -296,47 +283,15 @@ function pushbuttonstop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%system(['/gollum/bin/eCmd @gollum s mirrorstop']);
-%disp(['/gollum/bin/eCmd @gollum s mirrorstop']);
+serport=handlesserport;
+get(hObject,'Value'):
+Input='hal';
+Input=char(Input);
+set(handles.txtmirror,'String',Input);
+fprintf(serport,Input);
+pause(1)
 
-%gandalfdata = getappdata(handles.parenthandle, 'gandalfdatadata');
-%statusData=gandalfdata.statusData;
-%col=horusdata.col;
-%data = getappdata(handles.output, 'mirror_diode_Ldata');
-%lastrow=data.lastrow;
-
-%mirror=get(handles.popupmirror,'Value')-1;
-%axis=get(handles.radiover,'Value');
-
-%switch mirror
-%    case 0
-%        if axis==0
-%            mirrorstr='Hi1X';%higher picomotor
-%        else
-%            mirrorstr='Hi1Y';
-%        end            
-%    case 1
-%        if axis==0
-%            mirrorstr='Lo2X';%lower picomotor
-%        else
-%            mirrorstr='Lo2Y';
-%        end            
-%end
-
-%eval(['Mirrorhelp=bitget(uint16(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)),16);']);
-%eval(['currpos=double(statusData(lastrow,col.Mirror',mirrorstr,'AxisHi)).*65536+double(statusData(lastrow,col.Mirror',mirrorstr,'AxisLo));']);
-%if Mirrorhelp==1
-%    currpos=bitset(floor(currpos),32,0)-2^32/2;
-%end
-% check if motor is still moving
-%while double(statusData(lastrow,col.MirrorMovingFlags))~=0
-%    set(handles.textPos,'String',num2str(currpos),'BackgroundColor','r');
-%end
-%set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
-%set(handles.pushgo,'BackgroundColor','w');
-
-
-
+ 
 function editmirrorcommand_Callback(hObject, eventdata, handles)
 % hObject    handle to editmirrorcommand (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -346,17 +301,16 @@ function editmirrorcommand_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of editmirrorcommand as a double
 
 
-picotport=handles.picotport;
-%ll=handles.ll;
+serport=handles.serport;
 MirrorCmd=get(hObject,'String');
 MirrorCmd=char(MirrorCmd);
-set(handles.txtmirrors,'String',MirrorCmd);
-fprintf(picotport,MirrorCmd);
+set(handles.txtmirror,'String',MirrorCmd);
+fprintf(serport,MirrorCmd);
 pause(1);
-L_Answer=picotport.UserData;
-L_Answer=char(L_Answer);
+Mirror_Answer=serport.UserData;
+Mirror_Answer=char(Mirror_Answer);
 tport.UserData=[];
-set(handles.txtmirrors,'String',L_Answer);
+set(handles.txtmirror,'String',Mirror_Answer);
 
 % --- Executes during object creation, after setting all properties.
 function editmirrorcommand_CreateFcn(hObject, eventdata, handles)
