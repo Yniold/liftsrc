@@ -66,28 +66,27 @@ end
 % Update handles structure
 guidata(hObject, handles);
 
+serport=serial('COM1','BaudRate',19200,'Terminator','CR');
+set(serport,'BytesAvailableFcn',{'serialdatacallback'});
+
+try fopen(serport);
+    handles.serport=serport;
+    set(handles.txtmirrors,'String','OPENED','BackgroundColor','r');
+catch 
+    fclose(serport);
+    delete(serport);
+    %rmfield(handles,'serport');
+    set(handles.txtmirrors,'String','FAILED','BackgroundColor','r');
+end;
+
 % open tcpip port for communication with Laser,
  %picotport=tcpip('10.111.111.28',8100);
  %set(picotport,'ReadAsyncMode','continuous');
  %set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
- %set(picotport,'Terminator','CR/LF');
+ %set(picotport,'Terminator','CR');
  %set(picotport,'BytesAvailableFcnMode','Terminator');
  
  %try
- %fopen(picotport);
- %handles.picotport=picotport;
- %data.picotport=handles.picotport;
- %set(handles.txtmirrors,'String','communication INITIALIZED','BackgroundColor','g');
- %set(handles.pb_Exit,'backgroundcolor','g');
- 
-%catch  
- % if communication with laser did not work
-%    fclose(picotport);
-%    delete(picotport);
-%    clear('picotport');
-%    set(handles.txtmirrors,'String','communication FAILED','BackgroundColor','r');
- %   set(handles.pb_Exit,'backgroundcolor','r');
-% end
 
 
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
@@ -233,11 +232,11 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 %end;
 
 %picotport=handles.picotport;
-
-%if isfield(handles,'picotport')
-%    fclose(handles.picotport);
-%    delete(handles.picotport);
-%    set(handles.txtmirrors,'String','communication STOPPED','BackgroundColor','r');
+serport=handles.serport;
+%if isfield(handles,'serport')
+    fclose(serport);
+    delete(serport);
+    set(handles.txtmirrors,'String','communication STOPPED','BackgroundColor','r');
 %end;
 
 
@@ -283,8 +282,7 @@ function pushbuttonstop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-serport=handlesserport;
-get(hObject,'Value'):
+serport=handles.serport;
 Input='hal';
 Input=char(Input);
 set(handles.txtmirror,'String',Input);
