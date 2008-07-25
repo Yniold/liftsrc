@@ -79,16 +79,6 @@ catch
     set(handles.txtmirrors,'String','FAILED','BackgroundColor','r');
 end;
 
-% open tcpip port for communication with Laser,
- %picotport=tcpip('10.111.111.28',8100);
- %set(picotport,'ReadAsyncMode','continuous');
- %set(picotport,'BytesAvailableFcn',{'tcpipdatacallback'});
- %set(picotport,'Terminator','CR');
- %set(picotport,'BytesAvailableFcnMode','Terminator');
- 
- %try
-
-
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -113,6 +103,7 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 % Hints: contents = get(hObject,'String') returns menu_mirrorselect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
 driver=get(hObject,'string');
+handles.driver=driver;
 
 %if strcmp(driver,'high')
 %    handles.driver=0;
@@ -197,11 +188,13 @@ function txtsteps_Callback(hObject, eventdata, handles)
 steps=uint16(str2double(get(hObject,'String')));
 if isnan(steps)
     set(hObject,'BackgroundColor','red');
+    set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
 else 
     set(hObject,'BackgroundColor','white');
     set(hObject,'string',num2str(steps));
+    handles.steps=steps;
 end
-handles.steps=steps;
+
 
 % --- Executes during object creation, after setting all properties.
 function txtsteps_CreateFcn(hObject, eventdata, handles)
@@ -248,7 +241,7 @@ function pushbuttongo_Callback(hObject, eventdata, handles)
 
 serport=handles.serport;
 
-mirror=get(handles.popupmirror,'Value');
+mirror=get(handles.menu_mirrorselect,'Value');
 %axis=get(handles.radiohor,'Value');
 
 steps=str2num(get(handles.editsteps,'String'));
