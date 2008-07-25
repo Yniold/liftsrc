@@ -71,7 +71,8 @@ set(serport,'BytesAvailableFcn',{'serialdatacallback'});
 
 try fopen(serport);
     handles.serport=serport;
-    set(handles.txtmirrors,'String','OPENED','BackgroundColor','r');
+    data.serport=handles.serport;
+    set(handles.txtmirrors,'String','OPENED','BackgroundColor','g');
 catch 
     fclose(serport);
     delete(serport);
@@ -185,11 +186,13 @@ function txtsteps_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of txtsteps as text
 %        str2double(get(hObject,'String')) returns contents of txtsteps as a double
 
-steps=uint16(str2double(get(hObject,'String')));
+steps=get(hObject,'String');
+
 if isnan(steps)
     set(hObject,'BackgroundColor','red');
     set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
-else 
+else
+    steps=uint16(str2double(steps));
     set(hObject,'BackgroundColor','white');
     set(hObject,'string',num2str(steps));
     handles.steps=steps;
@@ -225,6 +228,7 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 %end;
 
 %picotport=handles.picotport;
+handles.serport=data.serport;
 serport=handles.serport;
 %if isfield(handles,'serport')
     fclose(serport);
@@ -239,6 +243,7 @@ function pushbuttongo_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.serport=data.serport;
 serport=handles.serport;
 
 mirror=get(handles.menu_mirrorselect,'Value');
@@ -275,6 +280,7 @@ function pushbuttonstop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.serport=data.serport;
 serport=handles.serport;
 Input='hal';
 Input=char(Input);
@@ -291,7 +297,7 @@ function editmirrorcommand_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editmirrorcommand as text
 %        str2double(get(hObject,'String')) returns contents of editmirrorcommand as a double
 
-
+handles.serport=data.serport;
 serport=handles.serport;
 MirrorCmd=get(hObject,'String');
 MirrorCmd=char(MirrorCmd);
