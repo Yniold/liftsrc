@@ -64,7 +64,7 @@ if length(varargin)==2 & varargin{1}=='handle'
 end
 
 % Update handles structure
-guidata(hObject, handles);
+
 
 serport=serial('COM1','BaudRate',19200,'Terminator','CR');
 set(serport,'BytesAvailableFcn',{'serialdatacallback'});
@@ -79,7 +79,7 @@ catch
     %rmfield(handles,'serport');
     set(handles.txtmirrors,'String','FAILED','BackgroundColor','r');
 end;
-
+guidata(hObject, handles);
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
