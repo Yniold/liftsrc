@@ -22,7 +22,7 @@ function varargout = mirror_diode_L(varargin)
 
 % Edit the above text to modify the response to help mirror_diode_L
 
-% Last Modified by GUIDE v2.5 24-Jul-2008 10:31:32
+% Last Modified by GUIDE v2.5 28-Jul-2008 11:07:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,7 +63,7 @@ if length(varargin)==2 & varargin{1}=='handle'
     handles.parenthandle=str2double(varargin{2});
 end
 
-% Update handles structure
+
 
 
 serport=serial('COM1','BaudRate',19200,'Terminator','CR');
@@ -71,7 +71,7 @@ set(serport,'BytesAvailableFcn',{'serialdatacallback'});
 
 try fopen(serport);
     handles.serport=serport;
-    data.serport=handles.serport;
+    %data.serport=handles.serport;
     set(handles.txtmirrors,'String','OPENED','BackgroundColor','g');
 catch 
     fclose(serport);
@@ -79,6 +79,8 @@ catch
     %rmfield(handles,'serport');
     set(handles.txtmirrors,'String','FAILED','BackgroundColor','r');
 end;
+
+% Update handles structure
 guidata(hObject, handles);
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -104,8 +106,8 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 % Hints: contents = get(hObject,'String') returns menu_mirrorselect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
 driver=get(hObject,'string');
-handles.driver=driver;
-
+%handles.driver=driver;
+%guidata(hObject, handles);
 %if strcmp(driver,'high')
 %    handles.driver=0;
 %else
@@ -178,13 +180,13 @@ if get(hObject,'Value')
     set(handles.radiofor,'Value',0);
 end
 
-function txtsteps_Callback(hObject, eventdata, handles)
-% hObject    handle to txtsteps (see GCBO)
+function editsteps_Callback(hObject, eventdata, handles)
+% hObject    handle to editsteps (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txtsteps as text
-%        str2double(get(hObject,'String')) returns contents of txtsteps as a double
+% Hints: get(hObject,'String') returns contents of editsteps as text
+%        str2double(get(hObject,'String')) returns contents of editsteps as a double
 
 steps=get(hObject,'String');
 
@@ -196,12 +198,13 @@ else
     set(hObject,'BackgroundColor','white');
     set(hObject,'string',num2str(steps));
     handles.steps=steps;
+    %guidata(hObject, handles);
 end
 
 
 % --- Executes during object creation, after setting all properties.
-function txtsteps_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtsteps (see GCBO)
+function editsteps_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editsteps (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -228,7 +231,7 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 %end;
 
 %picotport=handles.picotport;
-handles.serport=data.serport;
+%handles.serport=data.serport;
 serport=handles.serport;
 %if isfield(handles,'serport')
     fclose(serport);
@@ -237,19 +240,19 @@ serport=handles.serport;
 %end;
 
 
-% --- Executes on button press in pushbuttongo.
-function pushbuttongo_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbuttongo (see GCBO)
+% --- Executes on button press in pushgo.
+function pushgo_Callback(hObject, eventdata, handles)
+% hObject    handle to pushgo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.serport=data.serport;
+%handles.serport=data.serport;
 serport=handles.serport;
 
 mirror=get(handles.menu_mirrorselect,'Value');
 %axis=get(handles.radiohor,'Value');
 
-steps=str2num(get(handles.editsteps,'String'));
+steps=str2double(get(handles.editsteps,'String'));
 forw=get(handles.radiofor,'Value');
 
 if forw==0 
@@ -257,13 +260,28 @@ if forw==0
 end
 
 if handles.radiover==0
+    MirrorCmd=['chl a',mirror,'=0'];
+    MirrorCmd=char(MirrorCmd);
+    set(handles.txtmirrors,'String',MirrorCmd);
+    fprintf(serport,MirrorCmd);
+    pause(1);
+    set(handles.pushgo,'BackgroundColor','w');
+    MotorCmd=['REL a',mirror,' ',steps,' g'];
+    MotorCmd=char(MotorCmd);
+    set(handles.txtmirrors,'String',MotorCmd);
+    fprintf(serport,MotorCmd);
+    
+else
     MirrorCmd=['chl a',mirror,'=1'];
     MirrorCmd=char(MirrorCmd);
+    set(handles.txtmirrors,'String',MirrorCmd);
     fprintf(serport,MirrorCmd);
-else
-    MirrorCmd=['chl a',mirror,'=2'];
-    MirrorCmd=char(MirrorCmd);
-    fprintf(serport,MirrorCmd);
+    pause(1);
+    set(handles.pushgo,'BackgroundColor','w');
+    MotorCmd=['REL a',mirror,' ',steps,' g'];
+    MotorCmd=char(MotorCmd);
+    set(handles.txtmirrors,'String',MotorCmd);
+    fprintf(serport,MotorCmd);
 end
 
 %set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
@@ -280,11 +298,11 @@ function pushbuttonstop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.serport=data.serport;
+%handles.serport=data.serport;
 serport=handles.serport;
 Input='hal';
 Input=char(Input);
-set(handles.txtmirror,'String',Input);
+set(handles.txtmirrors,'String',Input);
 fprintf(serport,Input);
 pause(1)
 
@@ -297,7 +315,7 @@ function editmirrorcommand_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editmirrorcommand as text
 %        str2double(get(hObject,'String')) returns contents of editmirrorcommand as a double
 
-handles.serport=data.serport;
+%handles.serport=data.serport;
 serport=handles.serport;
 MirrorCmd=get(hObject,'String');
 MirrorCmd=char(MirrorCmd);
