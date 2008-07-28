@@ -250,9 +250,11 @@ function pushgo_Callback(hObject, eventdata, handles)
 serport=handles.serport;
 
 mirror=get(handles.menu_mirrorselect,'Value');
+mirror=mirror+1;
+mirror=char(mirror);
 %axis=get(handles.radiohor,'Value');
 
-steps=str2double(get(handles.editsteps,'String'));
+steps=get(handles.editsteps,'Value');
 forw=get(handles.radiofor,'Value');
 
 if forw==0 
@@ -260,6 +262,7 @@ if forw==0
 end
 
 if handles.radiover==0
+    steps=char(steps);
     MirrorCmd=['chl a',mirror,'=0'];
     MirrorCmd=char(MirrorCmd);
     set(handles.txtmirrors,'String',MirrorCmd);
@@ -273,6 +276,7 @@ if handles.radiover==0
     
 else
     MirrorCmd=['chl a',mirror,'=1'];
+    steps=char(steps);
     MirrorCmd=char(MirrorCmd);
     set(handles.txtmirrors,'String',MirrorCmd);
     fprintf(serport,MirrorCmd);
