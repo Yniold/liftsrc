@@ -80,6 +80,10 @@ catch
     set(handles.txtmirrors,'String','FAILED','BackgroundColor','r');
 end;
 
+handles.steps=0;
+handles.mirror=1;
+handles.forw=1;
+
 % Update handles structure
 guidata(hObject, handles);
 % UIWAIT makes mirror_diode_L wait for user response (see UIRESUME)
@@ -106,6 +110,13 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 % Hints: contents = get(hObject,'String') returns menu_mirrorselect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
 driver=get(hObject,'string');
+
+if strcmp (driver,'high')
+    handles.mirror='1';
+elseif strcmp (driver,'low')
+    handles.mirror='2';
+guidata(hObject, handles);
+end
 %handles.driver=driver;
 %guidata(hObject, handles);
 %if strcmp(driver,'high')
@@ -124,9 +135,29 @@ function menu_mirrorselect_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
-set(hObject,'Value',0);
+set(hObject,'Value',1);
 
 end
+
+function radiofor_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_mirrorselect (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+
+set(hObject,'Value',1);
+
+function radiover_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_mirrorselect (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+
+set(hObject,'Value',0);
 
 
 % --- Executes on button press in radiohor.
@@ -167,6 +198,9 @@ if get(hObject,'Value')
     set(handles.radiorev,'Value',0);
 end
 
+handles.forw=1;
+guidata(hObject, handles);
+
 
 % --- Executes on button press in radiorev.
 function radiorev_Callback(hObject, eventdata, handles)
@@ -179,6 +213,8 @@ function radiorev_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiofor,'Value',0);
 end
+handles.forw=0;
+guidata(hObject, handles);
 
 function editsteps_Callback(hObject, eventdata, handles)
 % hObject    handle to editsteps (see GCBO)
@@ -190,16 +226,16 @@ function editsteps_Callback(hObject, eventdata, handles)
 
 steps=get(hObject,'String');
 
-if isnan(steps)
-    set(hObject,'BackgroundColor','red');
-    set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
-else
-    steps=uint16(str2double(steps));
-    set(hObject,'BackgroundColor','white');
-    set(hObject,'string',num2str(steps));
+%if isnan(steps)
+%    set(hObject,'BackgroundColor','red');
+%    set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
+%else
+%    steps=uint16(str2double(steps));
+%    set(hObject,'BackgroundColor','white');
+%    set(hObject,'string',num2str(steps));
     handles.steps=steps;
-    %guidata(hObject, handles);
-end
+    guidata(hObject, handles);
+%end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -249,28 +285,39 @@ function pushgo_Callback(hObject, eventdata, handles)
 %handles.serport=data.serport;
 serport=handles.serport;
 
-mirror=get(handles.menu_mirrorselect,'Value');
-mirror=mirror+1;
-mirror=char(mirror);
+mirror=handles.mirror;
+%mirror=char(mirror);
+set(handles.txtmirrors,'String','mirror modified =');
+pause (1);
+set(handles.txtmirrors,'string',mirror);
+pause (1);
+
+%mirror=char(mirror);
 %axis=get(handles.radiohor,'Value');
 
-steps=get(handles.editsteps,'Value');
-forw=get(handles.radiofor,'Value');
+steps=handles.steps;
 
-if forw==0 
-    steps=-steps;
+set(handles.txtmirrors,'String','# of steps =');
+pause (1);
+set(handles.txtmirrors,'String',steps);
+pause (1);
+
+
+
+if handles.forw==0 
+    steps=['-',steps];
 end
 
 if handles.radiover==0
-    steps=char(steps);
+    %steps=char(steps);
     MirrorCmd=['chl a',mirror,'=0'];
-    MirrorCmd=char(MirrorCmd);
+    %MirrorCmd=char(MirrorCmd);
     set(handles.txtmirrors,'String',MirrorCmd);
     fprintf(serport,MirrorCmd);
     pause(1);
     set(handles.pushgo,'BackgroundColor','w');
     MotorCmd=['REL a',mirror,' ',steps,' g'];
-    MotorCmd=char(MotorCmd);
+    %MotorCmd=char(MotorCmd);
     set(handles.txtmirrors,'String',MotorCmd);
     fprintf(serport,MotorCmd);
     
@@ -323,13 +370,13 @@ function editmirrorcommand_Callback(hObject, eventdata, handles)
 serport=handles.serport;
 MirrorCmd=get(hObject,'String');
 MirrorCmd=char(MirrorCmd);
-set(handles.txtmirror,'String',MirrorCmd);
+set(handles.txtmirrors,'String',MirrorCmd);
 fprintf(serport,MirrorCmd);
 pause(1);
 Mirror_Answer=serport.UserData;
 Mirror_Answer=char(Mirror_Answer);
 tport.UserData=[];
-set(handles.txtmirror,'String',Mirror_Answer);
+set(handles.txtmirrors,'String',Mirror_Answer);
 
 % --- Executes during object creation, after setting all properties.
 function editmirrorcommand_CreateFcn(hObject, eventdata, handles)
