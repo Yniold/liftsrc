@@ -73,6 +73,9 @@ try fopen(serport);
     handles.serport=serport;
     %data.serport=handles.serport;
     set(handles.txtmirrors,'String','OPENED','BackgroundColor','g');
+    fprintf(serport,'chl a1=1');
+    pause(1);
+    fprintf(serport,'chl a2=1');
 catch 
     fclose(serport);
     delete(serport);
@@ -83,6 +86,7 @@ end;
 handles.steps=0;
 handles.mirror=1;
 handles.forw=1;
+handles.radiover=1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -109,11 +113,11 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 
 % Hints: contents = get(hObject,'String') returns menu_mirrorselect contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
-driver=get(hObject,'string');
 
-if strcmp (driver,'high')
+driver=get(hObject,'value');
+if driver==1
     handles.mirror='1';
-elseif strcmp (driver,'low')
+elseif driver==2
     handles.mirror='2';
 guidata(hObject, handles);
 end
@@ -149,7 +153,7 @@ function radiofor_CreateFcn(hObject, eventdata, handles)
 
 set(hObject,'Value',1);
 
-function radiover_CreateFcn(hObject, eventdata, handles)
+function radiorev_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to menu_mirrorselect (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -159,6 +163,25 @@ function radiover_CreateFcn(hObject, eventdata, handles)
 
 set(hObject,'Value',0);
 
+function radiohor_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_mirrorselect (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+
+set(hObject,'Value',1);
+
+function radiover_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_mirrorselect (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+
+set(hObject,'Value',0);
 
 % --- Executes on button press in radiohor.
 function radiohor_Callback(hObject, eventdata, handles)
@@ -284,63 +307,81 @@ function pushgo_Callback(hObject, eventdata, handles)
 
 %handles.serport=data.serport;
 serport=handles.serport;
-
 mirror=handles.mirror;
-%mirror=char(mirror);
-set(handles.txtmirrors,'String','mirror modified =');
-pause (1);
-set(handles.txtmirrors,'string',mirror);
-pause (1);
-
-%mirror=char(mirror);
-%axis=get(handles.radiohor,'Value');
-
 steps=handles.steps;
-
-set(handles.txtmirrors,'String','# of steps =');
-pause (1);
-set(handles.txtmirrors,'String',steps);
-pause (1);
-
-
 
 if handles.forw==0 
     steps=['-',steps];
 end
 
-if handles.radiover==0
-    %steps=char(steps);
-    MirrorCmd=['chl a',mirror,'=0'];
-    %MirrorCmd=char(MirrorCmd);
-    set(handles.txtmirrors,'String',MirrorCmd);
-    fprintf(serport,MirrorCmd);
-    pause(1);
-    set(handles.pushgo,'BackgroundColor','w');
-    MotorCmd=['REL a',mirror,' ',steps,' g'];
-    %MotorCmd=char(MotorCmd);
-    set(handles.txtmirrors,'String',MotorCmd);
-    fprintf(serport,MotorCmd);
+if mirror==1
+    if handles.radiover==0
+        %steps=char(steps);
+        MirrorCmd='chl a1=0';
+        %MirrorCmd=char(MirrorCmd);
+        set(handles.txtmirrors,'String',MirrorCmd);
+        fprintf(serport,MirrorCmd);
+        pause(1);
+        set(handles.pushgo,'BackgroundColor','w');
+        %mirror=handles.mirror;
+        MotorCmd=['REL a1 ',steps,' g'];
+        pause(1);
+        %MotorCmd=char(MotorCmd);
+        set(handles.txtmirrors,'String',MotorCmd);
+        fprintf(serport,MotorCmd);
     
-else
-    MirrorCmd=['chl a',mirror,'=1'];
-    steps=char(steps);
-    MirrorCmd=char(MirrorCmd);
-    set(handles.txtmirrors,'String',MirrorCmd);
-    fprintf(serport,MirrorCmd);
-    pause(1);
-    set(handles.pushgo,'BackgroundColor','w');
-    MotorCmd=['REL a',mirror,' ',steps,' g'];
-    MotorCmd=char(MotorCmd);
-    set(handles.txtmirrors,'String',MotorCmd);
-    fprintf(serport,MotorCmd);
+    else
+        MirrorCmd='chl a1=1';
+        %steps=char(steps);
+        %MirrorCmd=char(MirrorCmd);
+        set(handles.txtmirrors,'String',MirrorCmd);
+        fprintf(serport,MirrorCmd);
+        pause(1);
+        set(handles.pushgo,'BackgroundColor','w');
+        %mirror=handles.mirror;
+        MotorCmd=['REL a1 ',steps,' g'];
+        pause(1);
+        %MotorCmd=char(MotorCmd);
+        set(handles.txtmirrors,'String',MotorCmd);
+        fprintf(serport,MotorCmd);
+    end
+elseif mirror==2
+    if handles.radiover==0
+        %steps=char(steps);
+        MirrorCmd='chl a2=0';
+        %MirrorCmd=char(MirrorCmd);
+        set(handles.txtmirrors,'String',MirrorCmd);
+        fprintf(serport,MirrorCmd);
+        pause(1);
+        set(handles.pushgo,'BackgroundColor','w');
+        %mirror=handles.mirror;
+        MotorCmd=['REL a2 ',steps,' g'];
+        pause(1);
+        %MotorCmd=char(MotorCmd);
+        set(handles.txtmirrors,'String',MotorCmd);
+        fprintf(serport,MotorCmd);
+    
+    else
+        MirrorCmd='chl a2=1';
+        %steps=char(steps);
+        %MirrorCmd=char(MirrorCmd);
+        set(handles.txtmirrors,'String',MirrorCmd);
+        fprintf(serport,MirrorCmd);
+        pause(1);
+        set(handles.pushgo,'BackgroundColor','w');
+        %mirror=handles.mirror;
+        MotorCmd=['REL a2 ',steps,' g'];
+        %MotorCmd=char(MotorCmd);
+        set(handles.txtmirrors,'String',MotorCmd);
+        fprintf(serport,MotorCmd);
+    end
+else    
+    set(handles.txtmirrors,'String','severe exceptional error','backgroundcolor','r');
 end
-
 %set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
 set(handles.pushgo,'BackgroundColor','w');
 
-MotorCmd=['REL a',mirror,' ',steps,' g'];
-MotorCmd=char(MotorCmd);
-fprintf(serport,MotorCmd);
+
 
 
 % --- Executes on button press in pushbuttonstop.
