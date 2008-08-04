@@ -117,12 +117,13 @@ function menu_mirrorselect_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from menu_mirrorselect
 
 driver=get(hObject,'value');
-if driver==1
-    handles.mirror='1';
-elseif driver==2
-    handles.mirror='2';
+handles.mirror=driver;
+%if driver==1
+%    handles.mirror=1;
+%elseif driver==2
+%    handles.mirror=2;
 guidata(hObject, handles);
-end
+%end
 %handles.driver=driver;
 %guidata(hObject, handles);
 %if strcmp(driver,'high')
@@ -197,7 +198,7 @@ if get(hObject,'Value')
     set(handles.radiover,'Value',0);
 end
 
-set(handles.textpos,'String','0');
+set(handles.txtpos,'String','0');
 axis=get(hObject,'value');
 if axis==1
     handles.axis=1;
@@ -220,7 +221,7 @@ if get(hObject,'Value')
     set(handles.radiohor,'Value',0);
 end
 
-set(handles.textpos,'String','0');
+set(handles.txtpos,'String','0');
 axis=get(hObject,'value');
 if axis==1
     handles.axis=0;
@@ -248,7 +249,7 @@ if forward==1
 elseif forward==0
     handles.forward=0;
 end
-%set(handles.textpos,'String','0');
+%set(handles.txtpos,'String','0');
 guidata(hObject, handles);
 
 
@@ -281,8 +282,9 @@ function editsteps_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editsteps as text
 %        str2double(get(hObject,'String')) returns contents of editsteps as a double
 
-steps=get(hObject,'value');
-handles.move=steps;
+steps=get(hObject,'string');
+handles.move=str2double(steps);
+steps=handles.move;
 
 if isnan(steps)
     set(hObject,'BackgroundColor','red');
@@ -292,9 +294,8 @@ else
     set(hObject,'BackgroundColor','white');
     %set(hObject,'string',num2str(steps));
     handles.steps=steps;
-    guidata(hObject,handles);
 end
-
+guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
 function editsteps_CreateFcn(hObject, eventdata, handles)
@@ -354,64 +355,48 @@ if handles.forw==0
     steps=['-',steps];
 end
 
-if strcmp(mirror,'1')
-    if handles.radiover==0
-        %steps=char(steps);
+if mirror==1
+    if handles.axis==0
         MirrorCmd='chl a1=0';
-        %MirrorCmd=char(MirrorCmd);
         set(handles.txtmirrors,'String',MirrorCmd);
         fprintf(serport,MirrorCmd);
         pause(1);
         set(handles.pushgo,'BackgroundColor','w');
-        %mirror=handles.mirror;
         MotorCmd=['REL a1 ',steps,' g'];
         pause(1);
-        %MotorCmd=char(MotorCmd);
         set(handles.txtmirrors,'String',MotorCmd);
         fprintf(serport,MotorCmd);
     
     else
         MirrorCmd='chl a1=1';
-        %steps=char(steps);
-        %MirrorCmd=char(MirrorCmd);
         set(handles.txtmirrors,'String',MirrorCmd);
         fprintf(serport,MirrorCmd);
         pause(1);
         set(handles.pushgo,'BackgroundColor','w');
-        %mirror=handles.mirror;
         MotorCmd=['REL a1 ',steps,' g'];
         pause(1);
-        %MotorCmd=char(MotorCmd);
         set(handles.txtmirrors,'String',MotorCmd);
         fprintf(serport,MotorCmd);
     end
 elseif mirror==2
-    if handles.radiover==0
-        %steps=char(steps);
+    if handles.axis==0
         MirrorCmd='chl a2=0';
-        %MirrorCmd=char(MirrorCmd);
         set(handles.txtmirrors,'String',MirrorCmd);
         fprintf(serport,MirrorCmd);
         pause(1);
         set(handles.pushgo,'BackgroundColor','w');
-        %mirror=handles.mirror;
         MotorCmd=['REL a2 ',steps,' g'];
         pause(1);
-        %MotorCmd=char(MotorCmd);
         set(handles.txtmirrors,'String',MotorCmd);
         fprintf(serport,MotorCmd);
     
     else
         MirrorCmd='chl a2=1';
-        %steps=char(steps);
-        %MirrorCmd=char(MirrorCmd);
         set(handles.txtmirrors,'String',MirrorCmd);
         fprintf(serport,MirrorCmd);
         pause(1);
         set(handles.pushgo,'BackgroundColor','w');
-        %mirror=handles.mirror;
         MotorCmd=['REL a2 ',steps,' g'];
-        %MotorCmd=char(MotorCmd);
         set(handles.txtmirrors,'String',MotorCmd);
         fprintf(serport,MotorCmd);
     end
@@ -419,7 +404,7 @@ else
     set(handles.txtmirrors,'String','severe exceptional error','backgroundcolor','r');
 end
 
-%set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
+%set(handles.txtpos,'String',num2str(currpos),'BackgroundColor','w');
 set(handles.pushgo,'BackgroundColor','w');
 
 
