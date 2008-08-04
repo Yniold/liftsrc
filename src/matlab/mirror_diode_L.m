@@ -86,7 +86,9 @@ end;
 handles.steps=0;
 handles.mirror=1;
 handles.forw=1;
-handles.radiover=1;
+handles.axis=1;
+handles.move=0;
+set(handles.txtpos,'string','0');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -151,7 +153,7 @@ function radiofor_CreateFcn(hObject, eventdata, handles)
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 
-set(hObject,'Value',1);
+%set(hObject,'Value',1);
 
 function radiorev_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to menu_mirrorselect (see GCBO)
@@ -161,7 +163,7 @@ function radiorev_CreateFcn(hObject, eventdata, handles)
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 
-set(hObject,'Value',0);
+%set(hObject,'Value',0);
 
 function radiohor_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to menu_mirrorselect (see GCBO)
@@ -171,7 +173,7 @@ function radiohor_CreateFcn(hObject, eventdata, handles)
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 
-set(hObject,'Value',1);
+%set(hObject,'Value',1);
 
 function radiover_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to menu_mirrorselect (see GCBO)
@@ -181,7 +183,7 @@ function radiover_CreateFcn(hObject, eventdata, handles)
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 
-set(hObject,'Value',0);
+%set(hObject,'Value',0);
 
 % --- Executes on button press in radiohor.
 function radiohor_Callback(hObject, eventdata, handles)
@@ -194,7 +196,17 @@ function radiohor_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiover,'Value',0);
 end
-%set(handles.textpos,'String','0');
+
+set(handles.textpos,'String','0');
+axis=get(hObject,'value');
+if axis==1
+    handles.axis=1;
+elseif axis==0
+    handles.axis=0;
+end
+
+set(handles.txtpos,'String','0');
+guidata(hObject, handles);
 
 % --- Executes on button press in radiover.
 function radiover_Callback(hObject, eventdata, handles)
@@ -207,7 +219,16 @@ function radiover_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiohor,'Value',0);
 end
-%set(handles.textpos,'String','0');
+
+set(handles.textpos,'String','0');
+axis=get(hObject,'value');
+if axis==1
+    handles.axis=0;
+elseif axis==0
+    handles.axis=1;
+end
+set(handles.txtpos,'string','0');
+guidata(hObject, handles);
 
 % --- Executes on button press in radiofor.
 function radiofor_Callback(hObject, eventdata, handles)
@@ -221,8 +242,15 @@ if get(hObject,'Value')
     set(handles.radiorev,'Value',0);
 end
 
-handles.forw=1;
+forward=get(hObject,'value');
+if forward==1
+    handles.forward=1;
+elseif forward==0
+    handles.forward=0;
+end
+%set(handles.textpos,'String','0');
 guidata(hObject, handles);
+
 
 
 % --- Executes on button press in radiorev.
@@ -236,7 +264,13 @@ function radiorev_Callback(hObject, eventdata, handles)
 if get(hObject,'Value')
     set(handles.radiofor,'Value',0);
 end
-handles.forw=0;
+
+forward=get(hObject,'value');
+if forward==1
+    handles.forward=0;
+elseif forward==0
+    handles.forward=1;
+end
 guidata(hObject, handles);
 
 function editsteps_Callback(hObject, eventdata, handles)
@@ -247,18 +281,19 @@ function editsteps_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editsteps as text
 %        str2double(get(hObject,'String')) returns contents of editsteps as a double
 
-steps=get(hObject,'String');
+steps=get(hObject,'value');
+handles.move=steps;
 
-%if isnan(steps)
-%    set(hObject,'BackgroundColor','red');
-%    set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
-%else
-%    steps=uint16(str2double(steps));
-%    set(hObject,'BackgroundColor','white');
-%    set(hObject,'string',num2str(steps));
+if isnan(steps)
+    set(hObject,'BackgroundColor','red');
+    set(handles.txtmirrors,'String','Invalid Input','BackgroundColor','r');
+else
+    steps=num2str(steps);
+    set(hObject,'BackgroundColor','white');
+    %set(hObject,'string',num2str(steps));
     handles.steps=steps;
-    guidata(hObject, handles);
-%end
+    guidata(hObject,handles);
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -310,11 +345,16 @@ serport=handles.serport;
 mirror=handles.mirror;
 steps=handles.steps;
 
+history=get(handles.txtpos,'value');
+move=history+handles.move;
+
+set(handles.txtpos,'string',move);
+
 if handles.forw==0 
     steps=['-',steps];
 end
 
-if mirror==1
+if strcmp(mirror,'1')
     if handles.radiover==0
         %steps=char(steps);
         MirrorCmd='chl a1=0';
@@ -378,6 +418,7 @@ elseif mirror==2
 else    
     set(handles.txtmirrors,'String','severe exceptional error','backgroundcolor','r');
 end
+
 %set(handles.textPos,'String',num2str(currpos),'BackgroundColor','w');
 set(handles.pushgo,'BackgroundColor','w');
 
