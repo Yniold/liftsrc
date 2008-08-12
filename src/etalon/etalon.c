@@ -1,8 +1,14 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2007-07-24 08:43:21 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2008-08-12 14:59:18 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.28  2007-07-24 08:43:21  martinez
+* Revision 1.29  2008-08-12 14:59:18  martinez
+* equal time on dither left and right
+* harder try to exclude spike at startup
+* corrected error leading to omitted offline left when online finished on dither left
+* corrected error blocking change to dither_online
+*
+* Revision 1.28  2007/07/24 08:43:21  martinez
 * made integer position variables to long, deleted superfluous variables
 *
 * Revision 1.27  2007-06-11 16:55:57  martinez
@@ -140,7 +146,7 @@ struct AverageDataType {
 };
 
 #define DITHER_LEFT_TIME   2
-#define DITHER_RIGHT_TIME  3
+#define DITHER_RIGHT_TIME  2
 #define OFFLINE_LEFT_TIME  25
 #define OFFLINE_RIGHT_TIME 25
 #define ONLINE_TIME        25
@@ -524,8 +530,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.28 2007-07-24 08:43:21 martinez Exp $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.28 2007-07-24 08:43:21 martinez Exp $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.29 2008-08-12 14:59:18 martinez Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.29 2008-08-12 14:59:18 martinez Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
@@ -604,7 +610,7 @@ int main(int argc, char *argv[])
 		  // record size and position of max. ref. signals as a tool to define online position
 		  RefSignal=ElekStatus.CounterCardMaster.Channel[ElekStatus.EtalonData.Status.StatusField.RefChannel].Counts;
 		  RefSignalPos=ElekStatus.EtalonData.Encoder.Position;
-		  if (RefSignal<10000){ // exclude spike at startup
+		  if (RefSignal<9000){ // exclude spike at startup
 			  if (RefSignal>maxRefSignal) { // if the actual ref. signal is greater than previously recorded
 				maxRefSignal=RefSignal;  //set new max. signal value and position
 				maxRefSignalPos=RefSignalPos;
@@ -657,7 +663,7 @@ int main(int argc, char *argv[])
 			  State=ETALON_OFFLINE_LEFT; 			
 			  SetAction(ETALON_ACTION_TOGGLE_OFFLINE_LEFT);
 		        } else { 
-			  OfflineLeftTime=OFFLINE_LEFT_TIME; 
+			  OfflineRightTime=OFFLINE_RIGHT_TIME; 
 			  State=ETALON_OFFLINE_RIGHT; 
 			  SetAction(ETALON_ACTION_TOGGLE_OFFLINE_RIGHT);
 		        } /* if Offline Counter */
@@ -709,15 +715,22 @@ int main(int argc, char *argv[])
 		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
 		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
 		    
-		      if (OfflineLeftTime--<1) { 
-		        OnlineTime=ONLINE_TIME; 
-		        DitherLeftTime=DITHER_LEFT_TIME; 
-		        State=ETALON_DITHER_LEFT;
-		        SetAction(ETALON_ACTION_TOGGLE_ONLINE_LEFT);
-		        // lets see if we should change the online position
-		        //AdjustOnline(&OnlineLeftCounts,&OnlineRightCounts,&ElekStatus);
+			  if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE){
+				if (OfflineLeftTime--<1) { 
+					OnlineTime=ONLINE_TIME; 
+			        DitherLeftTime=DITHER_LEFT_TIME; 
+			        State=ETALON_DITHER_LEFT;
+			        SetAction(ETALON_ACTION_TOGGLE_ONLINE_LEFT);
+				    // lets see if we should change the online position
+					//AdjustOnline(&OnlineLeftCounts,&OnlineRightCounts,&ElekStatus);
 
-		        //ResetAverageStruct(&OnlineLeftCounts);
+					//ResetAverageStruct(&OnlineLeftCounts);
+				}
+			  } else {
+		        DitherLeftTime=DITHER_LEFT_TIME; 
+				State=ETALON_DITHER_LEFT;
+			  }
+
 		      }
 		      break; /* ETALON_OFFLINE_LEFT */
 		    
@@ -725,15 +738,22 @@ int main(int argc, char *argv[])
 		      SetPosition=(ElekStatus.EtalonData.Online.Position+ElekStatus.EtalonData.OfflineStepRight+
 		    	  ElekStatus.EtalonData.Current.Position*ETALON_STEPRATIO_ENCODER_MOTOR-ElekStatus.EtalonData.Encoder.Position)
 		    	  /ETALON_STEPRATIO_ENCODER_MOTOR;
-		      if (OfflineRightTime--<1) { 
-		        OnlineTime=ONLINE_TIME; 
-		        DitherRightTime=DITHER_RIGHT_TIME; 
-		        State=ETALON_DITHER_RIGHT;
-		        SetAction(ETALON_ACTION_TOGGLE_ONLINE_RIGHT);
+			  if (ElekStatus.InstrumentFlags.EtalonAction!=ETALON_ACTION_DITHER_ONLINE){
+			      if (OfflineRightTime--<1) { 
+			        OnlineTime=ONLINE_TIME; 
+			        DitherRightTime=DITHER_RIGHT_TIME; 
+				    State=ETALON_DITHER_RIGHT;
+					SetAction(ETALON_ACTION_TOGGLE_ONLINE_RIGHT);
 		      
-		        // lets see if we should change the online position
-		        //AdjustOnline(&OnlineLeftCounts,&OnlineRightCounts,&ElekStatus);		      
-		        // ResetAverageStruct(&OnlineRightCounts);
+			        // lets see if we should change the online position
+			        //AdjustOnline(&OnlineLeftCounts,&OnlineRightCounts,&ElekStatus);		      
+			        // ResetAverageStruct(&OnlineRightCounts);
+				}
+			  } else {
+		        DitherRightTime=DITHER_RIGHT_TIME; 
+				State=ETALON_DITHER_RIGHT;
+			  }
+
 		      }
 		      break; /* ETALON_OFFLINE_RIGHT */
 		    
