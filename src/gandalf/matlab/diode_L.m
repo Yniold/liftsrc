@@ -7,7 +7,10 @@ function varargout = diode_L(varargin)
 %
 %{
    $Log: diode_L.m,v $
-   Revision 1.1  2008-07-08 13:21:24  pollmann
+   Revision 1.1  2008-08-12 10:53:28  pollmann
+   restructured directories
+
+   Revision 1.1  2008/07/08 13:21:24  pollmann
    initial checkin of Laser Controller GUi for the blue diode Laser
 
    
