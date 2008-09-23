@@ -1,8 +1,11 @@
 /*
-* $RCSfile: etalon.c,v $ last changed on $Date: 2008-08-12 14:59:18 $ by $Author: martinez $
+* $RCSfile: etalon.c,v $ last changed on $Date: 2008-09-23 16:41:09 $ by $Author: martinez $
 *
 * $Log: etalon.c,v $
-* Revision 1.29  2008-08-12 14:59:18  martinez
+* Revision 1.30  2008-09-23 16:41:09  martinez
+* corrected syntax errors
+*
+* Revision 1.29  2008/08/12 14:59:18  martinez
 * equal time on dither left and right
 * harder try to exclude spike at startup
 * corrected error leading to omitted offline left when online finished on dither left
@@ -530,8 +533,8 @@ int main(int argc, char *argv[])
 
 
 // greetings
-    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.29 2008-08-12 14:59:18 martinez Exp $) for i386\n");
-    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.29 2008-08-12 14:59:18 martinez Exp $) for i386\n");
+    printf("This is Etalon Version (CVS: $Id: etalon.c,v 1.30 2008-09-23 16:41:09 martinez Exp $) for i386\n");
+    sprintf(buf,"Etalon : This is Etalon (CVS: $Id: etalon.c,v 1.30 2008-09-23 16:41:09 martinez Exp $) for i386\n");
     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);   
    
 
@@ -730,8 +733,6 @@ int main(int argc, char *argv[])
 		        DitherLeftTime=DITHER_LEFT_TIME; 
 				State=ETALON_DITHER_LEFT;
 			  }
-
-		      }
 		      break; /* ETALON_OFFLINE_LEFT */
 		    
 		    case ETALON_OFFLINE_RIGHT:
@@ -753,8 +754,6 @@ int main(int argc, char *argv[])
 		        DitherRightTime=DITHER_RIGHT_TIME; 
 				State=ETALON_DITHER_RIGHT;
 			  }
-
-		      }
 		      break; /* ETALON_OFFLINE_RIGHT */
 		    
 		    default :
