@@ -1,8 +1,11 @@
 /*
- * $RCSfile: testccram.c,v $ last changed on $Date: 2008-10-07 18:08:01 $ by $Author: rudolf $
+ * $RCSfile: testccram.c,v $ last changed on $Date: 2008-10-07 20:25:36 $ by $Author: harder $
  *
  * $Log: testccram.c,v $
- * Revision 1.1  2008-10-07 18:08:01  rudolf
+ * Revision 1.2  2008-10-07 20:25:36  harder
+ * CC not in deb mode, wait msleep(1), reset counter
+ *
+ * Revision 1.1  2008/10/07 18:08:01  rudolf
  * added basic testsoft for CC2
  *
  *
@@ -16,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -76,16 +80,29 @@ double dChannelScaleFactors[8]=
 
 int retval = 0;
 
+// wrapper for nanosleep to continue in case we get an early wakeup
+int msleep(unsigned long milisec)
+{
+  struct timespec req={0};
+  time_t sec=(int)(milisec/1000);
+  milisec=milisec-(sec*1000);
+  req.tv_sec=sec;
+  req.tv_nsec=milisec*1000000L;
+  while(nanosleep(&req,&req)==-1)
+    continue;
+  return 1;
+}
+
 int main()
 {
-   int iLoop = 0;
+  int iLoop = 0;
 
-   if (elkInit())
-     {
-	// grant IO access
-        printf("Error: failed to grant IO access rights\n");
-        exit(EXIT_FAILURE);
-     }
+  if (elkInit())
+    {
+      // grant IO access
+      printf("Error: failed to grant IO access rights\n");
+      exit(EXIT_FAILURE);
+    }
 
    if(elkReadData(CC_BASE + 2* OFF_CC2_SIG) != CC2_SIGNATURE)
      {
@@ -126,34 +143,38 @@ int main()
 
    for(iLoop = 0; iLoop < 256; iLoop++)
      {
-	retval = elkReadData(CC_BASE + 2*iLoop);
-
-	printf("0x%04X ",retval);
-
-	if(iLoop % 8 == 7)
-	  printf("\n\r");
+       retval = elkReadData(CC_BASE + 2*iLoop);
+       
+       printf("0x%04X ",retval);
+       
+       if(iLoop % 8 == 7)
+	 printf("\n\r");
      };
    sleep(1);
-
+   
    while(1)
      {
-	printf("Starting Shiftreg Debugmode and copy cycle\n");
-	elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x0003);
-	
-	printf("\n\rCyclone II CC: Dumping FPGA Memory:\n\r");
-	printf("====================================\n\r");
+       printf("Starting Shiftreg Debugmode and copy cycle\n");
+       elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x0001);
+       msleep(1); // wait 1ms before reading memory
 
-	for(iLoop = 0; iLoop < 256; iLoop++)
-	  {
-	     retval = elkReadData(CC_BASE + 2*iLoop);
+       printf("\n\rCyclone II CC: Dumping FPGA Memory:\n\r");
+       printf("====================================\n\r");
+       
+       for(iLoop = 0; iLoop < 256; iLoop++)
+	 {
+	   retval = elkReadData(CC_BASE + 2*iLoop);
+	   
+	   printf("0x%04X ",retval);
+	   
+	   if(iLoop % 8 == 7)
+	     printf("\n\r");
+	 };
+       printf("Reset and continue...\n");
+       elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x8000);
 
-	     printf("0x%04X ",retval);
-
-	     if(iLoop % 8 == 7)
-	       printf("\n\r");
-	  };
-	sleep(1);
-
+       sleep(1);
+       
      };
    /*
 	printf("\n\rCyclone II CC: Writing Testpattern:\n\r");

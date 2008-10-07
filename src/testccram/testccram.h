@@ -1,8 +1,11 @@
  /*
- * $RCSfile: testccram.h,v $ last changed on $Date: 2008-10-07 18:08:01 $ by $Author: rudolf $
+ * $RCSfile: testccram.h,v $ last changed on $Date: 2008-10-07 20:25:36 $ by $Author: harder $
  *
  * $Log: testccram.h,v $
- * Revision 1.1  2008-10-07 18:08:01  rudolf
+ * Revision 1.2  2008-10-07 20:25:36  harder
+ * CC not in deb mode, wait msleep(1), reset counter
+ *
+ * Revision 1.1  2008/10/07 18:08:01  rudolf
  * added basic testsoft for CC2
  *
  *
