@@ -61,6 +61,7 @@ endif
 ifneq ($(ARMBUILD),1)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C broadcastClient
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) INSTDIR=$(INSTDIR) $(flags) -C spectrumAnalyzer
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) INSTDIR=$(INSTDIR) $(flags) -C testccram
 endif	
 #	$(MAKE) CC=$(CC) CFLAGS=$(CFLAGS) DESTDIR=$(DESTDIR) $(flags) -C instServer
 
@@ -94,6 +95,7 @@ else
 	cp $(DESTDIR)/mirrors ../bin
 	cp $(DESTDIR)/debugMon ../bin
 	cp $(DESTDIR)/spectrometerServer ../bin
+	cp $(DESTDIR)/testccram ../bin
 	chmod +x $(DESTDIR)*
 	chmod +x ./scripts/*
 endif
@@ -131,6 +133,8 @@ clean:
 	rm -f ./bin/broadcastClient
 	rm -f ./broadcastClient/broadcastClient
 	rm -f ./broadcastClient/*.o
+	rm -f ./testccram/testccram
+	rm -f ./testccram/*.o
 	
 # test if there is a directory called 'bin' in '../' before trying to delete its contents
 	if [ -d ../bin ]; then rm -f ../bin/debugMon; fi
@@ -142,6 +146,7 @@ clean:
 	if [ -d ../bin ]; then rm -f ../bin/etalon; fi
 	if [ -d ../bin ]; then rm -f ../bin/mirrors; fi
 	if [ -d ../bin ]; then rm -f ../bin/spectrometerServer; fi
+	if [ -d ../bin ]; then rm -f ../bin/testccram; fi
 	
 #	$(MAKE) DESTDIR=$(DESTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o
