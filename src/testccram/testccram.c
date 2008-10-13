@@ -1,8 +1,11 @@
 /*
- * $RCSfile: testccram.c,v $ last changed on $Date: 2008-10-07 20:25:36 $ by $Author: harder $
+ * $RCSfile: testccram.c,v $ last changed on $Date: 2008-10-13 16:03:46 $ by $Author: harder $
  *
  * $Log: testccram.c,v $
- * Revision 1.2  2008-10-07 20:25:36  harder
+ * Revision 1.3  2008-10-13 16:03:46  harder
+ * print results to file
+ *
+ * Revision 1.2  2008/10/07 20:25:36  harder
  * CC not in deb mode, wait msleep(1), reset counter
  *
  * Revision 1.1  2008/10/07 18:08:01  rudolf
@@ -93,9 +96,20 @@ int msleep(unsigned long milisec)
   return 1;
 }
 
-int main()
+int main(int argc, char **argv)
 {
   int iLoop = 0;
+  int iIntTime = 1;
+  FILE *fp;
+  char strFname[80]="Gandalf.asc";
+
+  if (argc>0) 
+    { 
+      iIntTime=atoi(argv[1]);
+      if (argc>1)
+	strncpy(strFname,argv[2],80);
+    };
+  printf("Integrating %d seconds. Using filename %s\n",iIntTime, strFname);
 
   if (elkInit())
     {
@@ -127,10 +141,10 @@ int main()
 
      };
    printf("Setting Pulse width to 500 ns\n");
-   elkWriteData(CC_BASE + 2 * OFF_CC2_PULSEW, 247);
+   elkWriteData(CC_BASE + 2 * OFF_CC2_PULSEW, 0x7a);
 
    printf("Setting Pause width to 500 ns\n");
-   elkWriteData(CC_BASE + 2 * OFF_CC2_PAUSEW, 248);
+   elkWriteData(CC_BASE + 2 * OFF_CC2_PAUSEW, 0x7b);
 
    printf("Setting Count Delay to 4  ns\n");
    elkWriteData(CC_BASE + 2 * OFF_CC2_CNTDEL, 2);
@@ -167,14 +181,26 @@ int main()
 	   
 	   printf("0x%04X ",retval);
 	   
-	   if(iLoop % 8 == 7)
+	   if(iLoop % 10 == 7)
 	     printf("\n\r");
 	 };
        printf("Reset and continue...\n");
-       elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x8000);
+//       elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x8000);
 
-       sleep(1);
+       msleep(1000*iIntTime);
        
+       fp=fopen(strFname,"a+");
+       for(iLoop = 0; iLoop < 256; iLoop++)
+	 {
+	   retval = elkReadData(CC_BASE + 2*iLoop);
+	   
+	   fprintf(fp,"0%d ",retval);
+	   
+	   //	   if(iLoop % 10 == 7)
+//	     fprintf(fp,"\n");
+	 };
+       fprintf(fp,"\n");
+       fclose(fp);       
      };
    /*
 	printf("\n\rCyclone II CC: Writing Testpattern:\n\r");
