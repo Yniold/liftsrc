@@ -556,11 +556,11 @@ if isfield(data,'hSensors')
     if ishandle(data.hSensors)
         set(handles.Sensors,'BackgroundColor','g');
     else
-        if double(statusData(lastrow,col.GPSMnumSat))==0
-            set(handles.Sensors,'BackgroundColor','r');
-        else
+%        if double(statusData(lastrow,col.GPSMnumSat))==0
+%            set(handles.Sensors,'BackgroundColor','r');
+%        else
             set(handles.Sensors,'BackgroundColor','c');
-        end
+%        end
     end
 end
 if isfield(data,'hCalibration')
