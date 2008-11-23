@@ -1,0 +1,6 @@
+#!/bin/sh
+umount /mnt/seth_data/
+smbmount //172.30.12.207/horus /mnt/seth_data -ousername=horus,password=horus2006
+nice -20 rsync -avv /lift/data/ /mnt/seth_data/data/
+umount /mnt/seth_data/
+ 
