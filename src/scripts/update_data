@@ -1,6 +1,11 @@
 #!/bin/sh
 umount /mnt/seth_data/
 smbmount //172.30.12.207/horus /mnt/seth_data -ousername=horus,password=horus2006
-nice -20 rsync -avv /lift/data/ /mnt/seth_data/data/
+if test -f /mnt/seth_data/seth_I_am.id
+then
+   nice -20 rsync -avv /lift/data/ /mnt/seth_data/data/
+else
+   echo "no connection to server"
+fi
 umount /mnt/seth_data/
  
