@@ -1,0 +1,20 @@
+#!/bin/bash
+echo NO titration test
+echo "set instrument action to diagnostic mode..."
+/lift/bin/eCmd s instrumentaction diag
+
+NO=0
+while [ "$NO" -le 255 ]
+do 
+echo "NO setting : "$NO 
+/lift/bin/eCmd @10.111.111.10 w 0xa440 $NO
+sleep 120
+let "NO+=20"
+done
+
+NO=77
+echo "NO back to Measure setting : "$NO 
+/lift/bin/eCmd @10.111.111.10 w 0xa440 $NO
+
+echo "set instrument action to measurement mode..."
+/lift/bin/eCmd s instrumentaction measure
