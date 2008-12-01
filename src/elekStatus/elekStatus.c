@@ -1,7 +1,10 @@
 /*
- * $RCSfile: elekStatus.c,v $ last changed on $Date: 2007-11-12 17:43:58 $ by $Author: rudolf $
+ * $RCSfile: elekStatus.c,v $ last changed on $Date: 2008-12-01 12:26:18 $ by $Author: rudolf $
  *
  * $Log: elekStatus.c,v $
+ * Revision 1.43  2008-12-01 12:26:18  rudolf
+ * removed one of the 'update livedata' msg to debugmon'
+ *
  * Revision 1.42  2007-11-12 17:43:58  rudolf
  * fixed double writing of spectrum when on/offline and forced write timeout occured, increased interval to 60s
  *
@@ -1559,9 +1562,9 @@ int main()
 
    //    refresh();
 #ifdef RUNONARM
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.42 2007-11-12 17:43:58 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.43 2008-12-01 12:26:18 rudolf Exp $) for ARM\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #else
-   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.42 2007-11-12 17:43:58 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
+   sprintf(buf,"This is elekStatus Version %3.2f ($Id: elekStatus.c,v 1.43 2008-12-01 12:26:18 rudolf Exp $) for i386\nexpected StatusLen\nfor elekStatus:%d\nfor calibStatus:%d\nfor auxStatus:%d\nfor spectraStatus:%d\n",VERSION,ElekStatus_len,CalibStatus_len,AuxStatus_len,SpectraStatus_len);
 #endif
 
    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1957,10 +1960,12 @@ int main()
 					     // write only ringbuffer
 					     GenerateFileName(DATAPATH,SpectraStatusFileName,NULL,"spc");
 					     WriteSpectraStatus(RAMDISKPATH, SpectraStatusFileName,&SpectraStatus,1);
-
+#ifdef DEBUG_SPECTROMETER
 					     // print delta
-					     sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata after %ld.%06lds",tvDeltaLiveData.tv_sec, tvDeltaLiveData.tv_usec);
+					     sprintf(buf,"elekStatus : SPECTRA_IN: wrote livedata after %ld.%06lds",
+						     tvDeltaLiveData.tv_sec, tvDeltaLiveData.tv_usec);
 					     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+#endif
 
 					     // increment status count
 					     SpectraStatusCount++;
