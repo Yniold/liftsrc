@@ -1,8 +1,11 @@
 /*
- * $RCSfile: testccram.c,v $ last changed on $Date: 2008-10-13 16:03:46 $ by $Author: harder $
+ * $RCSfile: testccram.c,v $ last changed on $Date: 2008-12-09 20:12:33 $ by $Author: harder $
  *
  * $Log: testccram.c,v $
- * Revision 1.3  2008-10-13 16:03:46  harder
+ * Revision 1.4  2008-12-09 20:12:33  harder
+ * add time to output in JD and XLS time
+ *
+ * Revision 1.3  2008/10/13 16:03:46  harder
  * print results to file
  *
  * Revision 1.2  2008/10/07 20:25:36  harder
@@ -38,6 +41,7 @@
 #undef DEBUG_CC_ADC
 
 #define CC_BASE (0xD000)
+#define XL1JAN 39448
 
 // plain text name of each ADC channel
 //
@@ -101,8 +105,14 @@ int main(int argc, char **argv)
   int iLoop = 0;
   int iIntTime = 1;
   FILE *fp;
+  float fStartDay,fEndDay;
   char strFname[80]="Gandalf.asc";
-
+  struct timeval tvStartTime;
+  struct timeval tvEndTime;
+  struct tm tmStartTime;
+  struct tm tmEndTime;
+    
+  
   if (argc>0) 
     { 
       iIntTime=atoi(argv[1]);
@@ -171,7 +181,7 @@ int main(int argc, char **argv)
        printf("Starting Shiftreg Debugmode and copy cycle\n");
        elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x0001);
        msleep(1); // wait 1ms before reading memory
-
+       
        printf("\n\rCyclone II CC: Dumping FPGA Memory:\n\r");
        printf("====================================\n\r");
        
@@ -186,8 +196,9 @@ int main(int argc, char **argv)
 	 };
        printf("Reset and continue...\n");
 //       elkWriteData(CC_BASE + 2 * OFF_CC2_CTRL, 0x8000);
-
+       gettimeofday(&tvStartTime,NULL);
        msleep(1000*iIntTime);
+       gettimeofday(&tvEndTime,NULL);
        
        fp=fopen(strFname,"a+");
        for(iLoop = 0; iLoop < 256; iLoop++)
@@ -199,7 +210,14 @@ int main(int argc, char **argv)
 	   //	   if(iLoop % 10 == 7)
 //	     fprintf(fp,"\n");
 	 };
-       fprintf(fp,"\n");
+	 gmtime_r(&tvStartTime.tv_sec,&tmStartTime);
+	 gmtime_r(&tvEndTime.tv_sec,&tmEndTime);
+	 fStartDay=tmStartTime.tm_sec/86400.0+tmStartTime.tm_min/1440.0+
+	    tmStartTime.tm_hour/24.0+tmStartTime.tm_yday+1;
+	 fEndDay=tmEndTime.tm_sec/86640.0+tmEndTime.tm_min/1440.0+
+	    tmEndTime.tm_hour/24.0+tmEndTime.tm_yday+1;
+       fprintf(fp,"%f %f %f %f\n",fStartDay,fEndDay,
+         fStartDay+XL1JAN,fEndDay+XL1JAN);
        fclose(fp);       
      };
    /*
