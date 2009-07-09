@@ -1,3 +1,0 @@
-echo switch filament OFF
-eCmd w 0xa408 0x0000
-

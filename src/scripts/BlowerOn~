@@ -1,2 +1,0 @@
-echo switch HV On
-./bin/eCmd w 0xa464 1800

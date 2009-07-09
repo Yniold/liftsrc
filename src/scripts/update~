@@ -1,9 +1,0 @@
-set -x
-horusStop
-#rm data/*
-cd src
-cp -r /mnt/magera/v08/src/* .
-make clean
-make all
-cd ..
-# horusStart
