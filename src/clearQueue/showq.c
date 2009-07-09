@@ -37,7 +37,7 @@ int elkReadQueue() {
     do {
 	QAdr=inw(ELK_ADR);
 	QData=inw(ELK_DATA);
-	printf("%4x - %4x. %4x %4x\n",ElkQBasePtr,ElkQPtr,QAdr,QData);
+	printf("%04x - %04x. %04x %04x\n",ElkQBasePtr,ElkQPtr,QAdr,QData);
 	ElkQPtr=inw(ELK_TODO) & 0x000f;
 	Counter++;
     } while (ElkQPtr!=ElkQBasePtr);
