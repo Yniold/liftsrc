@@ -14,7 +14,7 @@ fi
      
 
 MasterLift=133
-MasterarmAxis=150
+MasterarmAxis=165
 
 PMTCounts=100
 MCP1Counts=50
