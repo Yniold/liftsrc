@@ -1,4 +1,8 @@
 #!/bin/sh
+
+exit
+
+
 if test -f /var/run/update_data.pid
 then
    logger -i update_data already running
