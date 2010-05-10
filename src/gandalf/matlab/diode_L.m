@@ -7,7 +7,7 @@ function varargout = diode_L(varargin)
 %
 %{
    $Log: diode_L.m,v $
-   Revision 1.1  2008-08-12 10:53:28  pollmann
+   Revision 1.1  2008/08/12 10:53:28  pollmann
    restructured directories
 
    Revision 1.1  2008/07/08 13:21:24  pollmann
@@ -97,11 +97,13 @@ end
 %connected=0;
 
 ll='off';
-handles.ll=ll;    %Laser variable describes Laser Status on = 2 (7 byte mode), off = 1 (16 byte mode); ll=laser light
+handles.ll=ll;    
+%Laser variable describes Laser Status on = 2 (7 byte mode), off = 1 (16 byte mode); ll=laser light
 % open tcpip port for communication with Laser,
-tport=tcpip('10.111.111.28',8000);
+%tport=tcpip('10.111.111.28',8000);
+ tport = serial ('/dev/ttyS0','BaudRate',9600);
  set(tport,'ReadAsyncMode','continuous');
- set(tport,'BytesAvailableFcn',{'tcpipdatacallback'});
+ set(tport,'BytesAvailableFcn',{'serialdatacallback'});
  set(tport,'Terminator','CR/LF');
  set(tport,'BytesAvailableFcnMode','Terminator');
  
