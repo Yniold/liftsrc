@@ -1,0 +1,35 @@
+#!/bin/sh
+
+exit
+
+
+if test -f /var/run/update_data.pid
+then
+   logger -i update_data already running
+   echo "already running"
+   exit
+fi
+echo "update_data" > /var/run/update_data.pid   
+umount /mnt/seth_data/
+smbmount //172.30.12.207/horus /mnt/seth_data -ousername=horus,password=horus2006
+if test -f /mnt/seth_data/seth_I_am.id
+then
+   
+   let minute=`date +"%M"`
+   let hour=`date +"%H"`
+   let jd=`date +"%j"`
+#   let jd=jd+1
+   if [ "$minute" -gt "5" ]
+   then
+     fname="/lift/data/8"$jd$hour"*"
+   else
+     fname="/lift/data/"
+   fi
+   echo $fname
+   nice -20 rsync -avv $fname /mnt/seth_data/data/
+else
+   echo "no connection to server"
+fi
+umount /mnt/seth_data/
+rm /var/run/update_data.pid
+ 

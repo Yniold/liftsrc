@@ -1,0 +1,29 @@
+#!/bin/sh
+if pidof spectrometerServer > /dev/null ; then
+  echo "Spectrometer Server already running"
+else
+  xterm +wf -geometry 131x3+316+164 -title 'spectrometer' -e nice spectrometerServer &
+fi
+
+mke2fs /dev/ram0
+mount /dev/ram0 /lift/ramdisk
+cd /lift
+xterm +wf -geometry 50x55+0+0 -title 'DebugMon' -e 'nice debugMon 1300' &
+sleep 2
+xterm +wf -geometry 456x26+316+239 -title 'elekStatus' -e nice elekStatus &
+# start parameter of etalon : <online position> <offline step left&right> <dither step> 
+xterm +wf -geometry 40x10+574+0 -title 'etalon' -e etalon 20000 1000 32  &
+xterm +wf -geometry 40x10+830+0 -title 'Mirror' -e nice mirrors  &
+xterm +wf -geometry 40x10+316+0 -title 'elekIOServ' -e nice -n-15 elekIOServ m &
+
+sleep 3
+echo set etalon online to 20000
+eCmd @lift s etalononline 20000
+echo set etalon offline step to 1000
+eCmd @Lift s etalonofflineleft 1000
+eCmd @Lift s etalonofflineright 1000
+echo set ditherstep to 16
+eCmd @lift s etalondither 16
+eCmd @Lift s etalonhome
+GateSet
+echo done

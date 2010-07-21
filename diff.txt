@@ -1,0 +1,48 @@
+? diff.txt
+? bin/broadcastClient
+? bin/elekIOaux
+? bin/elekIOcalib
+? bin/mirrors
+? bin/spectrometerServer
+? broadcastClient/broadcastClient
+? elekIO/testAT96
+? elekIOServ/butterflytest
+? elekIOaux/elekIOaux
+? matlab/ReadCalibData.mexglx
+? matlab/ReadDataAvg.mexglx
+? matlab/ReadSpec.mexglx
+? matlab/perpetuumetalon.m
+? mirrors/mirrors
+? scripts/GateSetCurrent
+? scripts/horusStartTest
+? scripts/test
+Index: bin/eCmd
+===================================================================
+RCS file: /horus/horuscvs/lift/src/bin/eCmd,v
+retrieving revision 1.20
+diff -r1.20 eCmd
+Binary files C:\WINDOWS\TEMP\cvs82D.tmp and eCmd differ
+Index: bin/elekIOServ
+===================================================================
+RCS file: /horus/horuscvs/lift/src/bin/elekIOServ,v
+retrieving revision 1.28
+diff -r1.28 elekIOServ
+Binary files C:\WINDOWS\TEMP\cvs82E.tmp and elekIOServ differ
+Index: bin/elekStatus
+===================================================================
+RCS file: /horus/horuscvs/lift/src/bin/elekStatus,v
+retrieving revision 1.26
+diff -r1.26 elekStatus
+Binary files C:\WINDOWS\TEMP\cvs82F.tmp and elekStatus differ
+Index: bin/etalon
+===================================================================
+RCS file: /horus/horuscvs/lift/src/bin/etalon,v
+retrieving revision 1.26
+diff -r1.26 etalon
+Binary files C:\WINDOWS\TEMP\cvs830.tmp and etalon differ
+Index: clearQueue/showq
+===================================================================
+RCS file: /horus/horuscvs/lift/src/clearQueue/showq,v
+retrieving revision 1.1.1.1
+diff -r1.1.1.1 showq
+Binary files C:\WINDOWS\TEMP\cvs831.tmp and showq differ

@@ -1,0 +1,98 @@
+#!/bin/sh
+echo set gate timings and delays
+echo settings for DOMINO
+
+echo check whether ArmAxis is online
+ping armAxis -c 1 -w 1 -q
+ArmOn=$?
+if [ $ArmOn -gt 0 ]; then
+   echo !!!!!!!!!!! ArmAxis not responding !!!!!!!
+   echo only init lift
+else
+   echo found him
+fi
+     
+
+MasterLift=133
+MasterarmAxis=80
+
+PMTCounts=100
+MCP1Counts=128
+MCP2Counts=128
+
+# add 0x8000 to MCP?Gain to activate gain switching
+MCP1Gain=122
+MCP1GainWidth=1000
+
+MCP2Gain=127
+MCP2GainWidth=1000
+
+
+eCmd @lift w 0xa310 $PMTCounts
+eCmd @lift w 0xa316 $MasterLift
+
+echo ArmOn : $ArmOn
+if [ $ArmOn -eq 0 ]; then
+     
+   echo init Arm
+   eCmd @armAxis w 0xa312 $MCP1Counts
+   eCmd @armAxis w 0xa314 $MCP2Counts
+   eCmd @armAxis w 0xa316 $MasterarmAxis
+
+   eCmd @armAxis w 0xa318 $MCP1Gain
+   eCmd @armAxis w 0xa31a $MCP1GainWidth
+   eCmd @armAxis w 0xa31c $MCP2Gain
+   eCmd @armAxis w 0xa31e $MCP2GainWidth
+fi
+
+
+echo MasterLift $MasterLift 
+echo Shift counter delays PMT $PMTCounts MCP1 $MCP1Counts MCP2 $MCP2Counts
+echo Gain delay MCP1 $MCP1Gain MCP2 $MCP2Gain
+echo Gain width MCP1 $MCP1GainWidth MCP2 $MCP2GainWidth
+
+#set Counter Masks
+echo set counter masks
+echo PMT: channel 1-20, 30-40, 50-70
+echo MCP1: channel 1-30
+echo MCP2: channel 1-35
+
+#PMT
+/lift/bin/eCmd @lift s setmask 0 0x0000
+/lift/bin/eCmd @lift s setmask 1 0xFFF0
+/lift/bin/eCmd @lift s setmask 2 0xFC03
+/lift/bin/eCmd @lift s setmask 3 0x01FF
+/lift/bin/eCmd @lift s setmask 4 0xFFC0
+/lift/bin/eCmd @lift s setmask 5 0xFFFF
+/lift/bin/eCmd @lift s setmask 6 0x3FFF
+/lift/bin/eCmd @lift s setmask 7 0x0000
+/lift/bin/eCmd @lift s setmask 8 0x0000
+/lift/bin/eCmd @lift s setmask 9 0x0000
+
+if [ $ArmOn -eq 0 ]; then
+     
+#MCP1
+   /lift/bin/eCmd @armAxis s setmask 10 0x0000
+   /lift/bin/eCmd @armAxis s setmask 11 0xC000
+   /lift/bin/eCmd @armAxis s setmask 12 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 13 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 14 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 15 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 16 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 17 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 18 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 19 0xFFFF   
+
+#MCP2
+   /lift/bin/eCmd @armAxis s setmask 20 0x0000
+   /lift/bin/eCmd @armAxis s setmask 21 0x0000
+   /lift/bin/eCmd @armAxis s setmask 22 0xFFF8
+   /lift/bin/eCmd @armAxis s setmask 23 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 24 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 25 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 26 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 27 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 28 0xFFFF
+   /lift/bin/eCmd @armAxis s setmask 29 0xFFFF
+fi
+

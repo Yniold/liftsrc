@@ -1,0 +1,3 @@
+echo switch filament and laser valves OFF
+eCmd @lift w 0xa408 0x0000
+

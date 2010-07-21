@@ -1,0 +1,6 @@
+set -x
+eCmd s etalononline 28000
+eCmd s etalonofflineleft 1000
+eCmd s etalonofflineright 1000
+eCmd s etalondither 8
+eCmd s etalontoggle

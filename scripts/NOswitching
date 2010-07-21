@@ -1,0 +1,26 @@
+#!/bin/bash
+echo NO switching test
+%echo "set instrument action to diagnostic mode..."
+%/lift/bin/eCmd s instrumentaction diag
+
+while [ 1 ]
+do 
+echo "switch on valves"
+/lift/bin/eCmd @armAxis w 0xa460 3360
+/lift/bin/eCmd @armAxis w 0xa408 34
+/lift/bin/eCmd @armAxis w 0xa460 2100
+echo "set MFC to 6 sccm"
+/lift/bin/eCmd @armAxis w 0xa440 76
+
+sleep 60
+
+echo "switch off valves"
+/lift/bin/eCmd @armAxis w 0xa460 3360
+/lift/bin/eCmd @armAxis w 0xa408 0
+/lift/bin/eCmd @armAxis w 0xa460 2100
+echo "set MFC to 0 sccm"
+/lift/bin/eCmd @armAxis w 0xa440 0
+
+sleep 60
+done
+

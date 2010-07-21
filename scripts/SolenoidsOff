@@ -1,0 +1,13 @@
+#!/bin/sh
+
+ping armAxis -c 1 -w 1 -q
+ArmOn=$?
+if [ $ArmOn -gt 0 ]; then
+   echo !!!!!!!!!!! ArmAxis not responding !!!!!!!
+else
+   echo found him
+fi
+if [ $ArmOn -eq 0 ]; then
+   /lift/bin/eCmd @armAxis w 0xa408 0x0000
+fi
+

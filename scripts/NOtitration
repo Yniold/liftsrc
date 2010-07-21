@@ -1,0 +1,20 @@
+#!/bin/bash
+echo NO titration test
+echo "set instrument action to diagnostic mode..."
+/lift/bin/eCmd s instrumentaction diag
+
+for NO in 0 6 3 6 10 6 15 6 20
+do 
+   Valve=`echo "$NO*255/20"|bc`
+   echo "NO setting : "$NO" / Valve :"$Valve
+/lift/bin/eCmd @10.111.111.10 w 0xa440 $Valve
+sleep 120
+done
+
+NO=6
+Valve=`echo "$NO*255/20"|bc`
+echo "NO back to Measure setting : "$NO" "$Valve 
+/lift/bin/eCmd @10.111.111.10 w 0xa440 $Valve
+
+echo "set instrument action to measurement mode..."
+/lift/bin/eCmd s instrumentaction measure
