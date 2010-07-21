@@ -37,7 +37,7 @@ echo "The ValveWord was $ValveWord before..."
 
 
 # calculate new ValveWord
-NewValveWord=$(($ValveWord & 57343)  
+NewValveWord=$(($ValveWord & 57343))  
 
 # 4 test only:
 echo "...now the new ValveWord is $NewValveWord!" 
