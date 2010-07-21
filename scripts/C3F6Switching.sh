@@ -6,7 +6,7 @@ do
 echo "switch on valve"
 
 # read ValveWord 
-let ValveWord = $(/lift/bin/eCmd @armAxis r 0xa408 | tail -1) 
+let ValveWord=$(/lift/bin/eCmd @armAxis r 0xa408 | tail -1) 
 
 # 4 test only:
 echo "The ValveWord was $ValveWord before..."
