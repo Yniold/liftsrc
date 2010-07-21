@@ -13,7 +13,7 @@ echo "The ValveWord was $ValveWord before..."
 
 
 # calculate new ValveWord
-let NewValveWord = $((ValveWord|4096))  
+let NewValveWord=$(($ValveWord | 4096))  
 
 # 4 test only:
 echo "...now the new ValveWord is $NewValveWord!" 
@@ -30,14 +30,14 @@ sleep 30
 echo "switch off valve"
 
 # read ValveWord 
-ValveWord = $(/lift/bin/eCmd @armAxis r 0xa408 | tail -1) 
+ValveWord=$(/lift/bin/eCmd @armAxis r 0xa408 | tail -1) 
 
 # 4 test only:
 echo "The ValveWord was $ValveWord before..."
 
 
 # calculate new ValveWord
-NewValveWord = $((ValveWord&61439))  
+NewValveWord=$(($ValveWord & 61439))  
 
 # 4 test only:
 echo "...now the new ValveWord is $NewValveWord!" 
