@@ -13,7 +13,7 @@ echo "The ValveWord was $ValveWord before..."
 
 
 # calculate new ValveWord
-let NewValveWord=$(($ValveWord | 4096))  
+let NewValveWord=$(($ValveWord | 8192))  
 
 # 4 test only:
 echo "...now the new ValveWord is $NewValveWord!" 
@@ -23,7 +23,7 @@ echo "...now the new ValveWord is $NewValveWord!"
 /lift/bin/eCmd @armAxis w 0xa460 2100 # 15V needed to keep Pitot Zero open
 
 echo "set MFC to 50 sccm"
-/lift/bin/eCmd @armAxis w 0xa444 26
+/lift/bin/eCmd @armAxis w 0xa440 26
 
 sleep 30
 
@@ -37,7 +37,7 @@ echo "The ValveWord was $ValveWord before..."
 
 
 # calculate new ValveWord
-NewValveWord=$(($ValveWord & 61439))  
+NewValveWord=$(($ValveWord & 57343))  
 
 # 4 test only:
 echo "...now the new ValveWord is $NewValveWord!" 
@@ -47,7 +47,7 @@ echo "...now the new ValveWord is $NewValveWord!"
 /lift/bin/eCmd @armAxis w 0xa460 2100 # 15V needed to keep Pitot Zero open
 
 echo "set MFC to 0 sccm"
-/lift/bin/eCmd @armAxis w 0xa444 0
+/lift/bin/eCmd @armAxis w 0xa44 0
 
 sleep 30
 
