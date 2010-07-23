@@ -315,7 +315,8 @@ if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minut
         %disp 'want to open valve if...'
         if (~bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still closed
             disp 'valve was closed, -> now OPEN' 
-            system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*50/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
+            system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*50/200))]); % set scale 50 sccm Propene flow of 200 sccm MFC to 255
+%            system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*100/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
@@ -326,7 +327,8 @@ if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minut
         %disp 'want to close Valve if...'
         if (bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still open
             disp 'Valve was open -> now CLOSED'
-            system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+%           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+           system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC
             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
