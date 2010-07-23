@@ -319,6 +319,7 @@ if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minut
             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+	    Pause(0.5) %wait 4 power up 	
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
         end
     else % we are in the second half of the 4 minute interval
@@ -328,7 +329,8 @@ if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minut
             system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+	    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            Pause(0.5) % wait...
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
         end
     end

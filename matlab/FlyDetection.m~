@@ -324,11 +324,11 @@ if get(handles.chkMFCC3F6,'Value')
     hold(handles.axes1,'on');
 end 
 if get(handles.chkMFCProp,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PhototubeLamp1),'r');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.MFCPropFlow),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkMFCShower,'Value')
-    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.PhototubeLamp2),'r');
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.MFCShowerFlow),'r');
     hold(handles.axes1,'on');
 end 
 xlim(handles.axes1,[limTime1 limTime2]);

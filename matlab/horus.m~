@@ -238,7 +238,13 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
         end
         if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
             if strcmp(handles.txtBlower,'Blower ON') %check if blower is on (ground configuration)
+% Butterfly with stepper motor
                 system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly 
+% end Butterfly with stepper motor
+% Butterfly with relay
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,1); % close Butterfly
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+% end Butterfly with relay
                 %switch off Blower
                 fprintf(handles.tcpBlower,'ramp off'); 
                 tcpBlower.UserData=[];
@@ -280,7 +286,13 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
             end
         else % blower connected directly to armaxis (air configuration)
             if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(43)]); % close Butterfly 
+% Butterfly with stepper motor
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly 
+% end Butterfly with stepper motor
+% Butterfly with relay
+                Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,1); % close Butterfly
+                system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
+% end Butterfly with relay
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -293,6 +305,38 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
             end
         end
     end
+
+
+% periodic C3F6 addition synced to laser going offline
+if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minute
+        (statusData(lastrow,col.EtalonAction)==3 | statusData(lastrow,col.EtalonAction)==4) ) %first 10 sec period of every two min if offline
+    
+    if (mod(double(statusData(lastrow,4)),4)<2) % in the first 2 minutes of a 4 minute interval
+        %disp 'want to open valve if...'
+        if (~bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still closed
+            disp 'valve was closed, -> now OPEN' 
+            system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*50/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
+            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+	    Pause(0.5) %wait 4 power up 	
+            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+        end
+    else % we are in the second half of the 4 minute interval
+        %disp 'want to close Valve if...'
+        if (bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still open
+            disp 'Valve was open -> now CLOSED'
+            system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+            Pause(0.5) % wait...
+	    system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+        end
+    end
+end
+
+
 
 % zero pitot every 5 min for 10 s if lamp is off
     if bitget(statusData(lastrow,col.Valve2armAxis),11)==0 % lamp off ?
@@ -487,14 +531,14 @@ if isfield(data,'hCounterCards')
         set(handles.CounterCards,'BackgroundColor','c');
     end
 end
-data.TDyelaserset=33; % define temperature Dye Laser heating is set to
-%data.TDyelaserset=35; % define temperature Dye Laser heating is set to
+%data.TDyelaserset=33; % define temperature Dye Laser heating is set to
+data.TDyelaserset=38; % define temperature Dye Laser heating is set to
 if isfield(data,'hDyelaser')
     if ishandle(data.hDyelaser)
         set(handles.Dyelaser,'BackgroundColor','g');
     else
         if statusData(lastrow,col.PRef)>10500 | TDyelaser(lastrow)>data.TDyelaserset+1.5 | TDyelaser(lastrow)<data.TDyelaserset-1.5 |statusData(lastrow,col.IFilament)<10100 | abs(EtalonCurPos(lastrow)-EtalonEncPos(lastrow))>5000
-            set(handles.Dyelaser,'BackgroundColor','r');
+            set(handles.Dyelaser,'BackgroundColor','y');
         elseif double(statusData(lastrow,col.MirrorRealigning))==1 | double(statusData(lastrow,col.MirrorRealignMinutes))==0 | double(statusData(lastrow,col.MirrorRealignMinutes))>30
             set(handles.Dyelaser,'BackgroundColor','y');
         else
@@ -556,11 +600,11 @@ if isfield(data,'hSensors')
     if ishandle(data.hSensors)
         set(handles.Sensors,'BackgroundColor','g');
     else
-        if double(statusData(lastrow,col.GPSMnumSat))==0
-            set(handles.Sensors,'BackgroundColor','r');
-        else
+%        if double(statusData(lastrow,col.GPSMnumSat))==0
+%            set(handles.Sensors,'BackgroundColor','r');
+%        else
             set(handles.Sensors,'BackgroundColor','c');
-        end
+%        end
     end
 end
 if isfield(data,'hCalibration')
