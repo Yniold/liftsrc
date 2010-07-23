@@ -1576,7 +1576,7 @@ lastrow=data.lastrow;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
         set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0);
