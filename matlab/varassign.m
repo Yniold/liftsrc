@@ -256,8 +256,8 @@ statusDataCols=...
 'MFCPropFlow',1124,'200*(x-10010)/(11461-10010)','sccm';
 'MFCC3F6SetFlow',1125,'500*x/255','sccm';
 'MFCC3F6Flow',1126,'500*(x-10010)/(11461-10010)','sccm';
-'MFCShowerSetFlow',1127,'5000*x/255','sccm';
-'MFCShowerFlow',1128,'5000*(x-10010)/(11461-10010)','sccm';
+'MFCShowerSetFlow',1127,'20000*x/255','sccm';
+'MFCShowerFlow',1128,'20000*(x-10010)/(11461-10010)','sccm';
 'ValveVoltLift',732,'x/140','V';
 'ValveLift',733,'x*NaN','';
 'Valve1VoltarmAxis',983,'x/140','V';
