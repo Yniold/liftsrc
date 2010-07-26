@@ -250,8 +250,8 @@ statusDataCols=...
 'PitotDiffConfig',914,'x*NaN','';
 'IFilamentConfig',728,'x*NaN','';
 'OphirConfig',729,'x*NaN','';
-'MFCSetFlow',730,'20*x/255','sccm';
-'MFCFlow',731,'20*(x-10010)/(11461-10010)','sccm';
+'MFCSetFlow',730,'34.18*x/255','sccm';
+'MFCFlow',731,'34.18*(x-10010)/(11461-10010)','sccm';
 'MFCPropSetFlow',1123,'200*x/255','sccm';
 'MFCPropFlow',1124,'200*(x-10010)/(11461-10010)','sccm';
 'MFCC3F6SetFlow',1125,'500*x/255','sccm';
