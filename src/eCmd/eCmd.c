@@ -354,6 +354,9 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s mirrorstop\n");
 	printf("eCmd @host s mirrorrealignmin data\n");
 	printf("eCmd @host s mirrorstoprealign\n");
+	printf("eCmd @host s gsbflow number[0-2] [Flowrate in sccm]\n");
+	printf("eCmd @host s gsbvalve valveword [Bits0-4 are valid]\n");
+	printf("eCmd @host s gsblight intensity [0..255]\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -710,6 +713,44 @@ int main(int argc, char *argv[])
     		Value=0;
     		MsgType=MSG_TYPE_MIRROR_FLAG_REALIGN;
     	    };	  
+
+            if (strcasecmp(argv[ArgCount],"gsbflow")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    MsgType=MSG_TYPE_GSB_SETFLOW;
+    		    Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+
+            if (strcasecmp(argv[ArgCount],"gsbvalve")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    
+    		    // mask lower 5bits, because we only use these
+    		    Value = Value & 0x1F;
+    		    MsgType=MSG_TYPE_GSB_SETVALVE;
+    		    Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+
+            if (strcasecmp(argv[ArgCount],"gsblight")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    if(Value > 255)
+    		    {
+    		    	printf("only 0-255 allowed, truncating\n");
+    		    	Value = 255;
+    		    }
+    		    MsgType=MSG_TYPE_GSB_SETLIGHT;
+    		    Addr=0;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
     
     	    // if we got a valid Msg send it
     	    if (MsgType<MAX_MSG_TYPE) {

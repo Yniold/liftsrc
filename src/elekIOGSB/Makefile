@@ -4,7 +4,7 @@
 #
 
 VERSION=0.1
-PROJECT=elekIOGSB
+PROJECT=elekIOGSB_
 
 SHELL=/bin/sh
 
