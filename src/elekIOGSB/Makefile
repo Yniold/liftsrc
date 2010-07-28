@@ -27,7 +27,7 @@ LDFLAGS+=-ggdb
 
 modules=../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o
 
-headers=elekIOcalib.h ../include/elekIO.h ../include/elekIOPorts.h
+headers=elekIOGSB.h ../include/elekIO.h ../include/elekIOPorts.h
 
 .SUFFIXES:
 .SUFFIXES: .c .o

@@ -345,7 +345,7 @@ void MeteoBoxParseBuffer(char* pBuffer, int iBuffLen, struct sMeteoBoxType* sDat
 
 	printf("Wind Speed: %05.3f m/s\r\n",sDataStructure->dWindSpeed);
 	printf("Air Temp:   %05.3f °C\r\n",sDataStructure->dAirTemp);
-	printf("Rel. Hum.:  %05.3f %\r\n",sDataStructure->dRelHum);
+	printf("Rel. Hum.:  %05.3f \%\r\n",sDataStructure->dRelHum);
 	printf("Wind Dir.:  %03d °\r\n"   ,sDataStructure->uiWindDirection);
 	printf("Gas Sensor: %05.3f V\r\n\r\n",sDataStructure->dGasSensorVoltage);
      }
