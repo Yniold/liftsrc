@@ -1,4 +1,2 @@
-bitop.o
-cfgnear.o
-elekIO.o
-udptools.o
+*.o
+*~
