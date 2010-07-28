@@ -1,4 +1,4 @@
 elekIOServ
-NMEAParser.o
-serial.o
+butterflytest
 elekIOServ_v08.c
+*.o
