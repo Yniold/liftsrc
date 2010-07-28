@@ -13,7 +13,14 @@
 #include <time.h>
 
 #ifdef RUNONPC
-# include <asm/msr.h>
+#define rdtsc(low,high) \
+__asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
+
+#define rdtscl(low) \
+__asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
+
+#define rdtscll(val) \
+__asm__ __volatile__("rdtsc" : "=A" (val)) 
 #endif
 
 #include "../include/elekGeneral.h"

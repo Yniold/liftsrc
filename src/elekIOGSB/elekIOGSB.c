@@ -1,3 +1,5 @@
+#include "../include/elekIO.h"
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -7,59 +9,43 @@
 #include <string.h>
 #include <unistd.h>
 
-#define SHMSZ     27
+volatile struct GSBStatusType sGSBStatus;
+struct GSBStatusType* pGSBStatus;
 
 int main()
 {
 	struct timeval tvLocalTime;
     char c;
-    int shmid;
-    key_t key; // is an int actually
+    int iShmHandle;
+    key_t ShmKey; // is an int actually
     char *shm, *s;
 
-    /*
-     * We'll name our shared memory segment
-     * "5678".
-     */
-    key = 5678;
+	// shared memory unique key
+    ShmKey = GSB_SHMKEY;
 
-    /*
-     * Create the segment.
-     */
-    if ((shmid = shmget(key, SHMSZ, IPC_CREAT | 0666)) < 0) {
-        perror("shmget");
+	// create a shared memory segment
+    if ((iShmHandle = shmget(ShmKey, sizeof(struct GSBStatusType), IPC_CREAT | 0666)) < 0) 
+    {
+        perror("Error calling shmget()");
+        exit(1);
+    };
+
+	// attach SHM to my process addressspace
+    if ((shm = shmat(iShmHandle, NULL, 0)) == (char *) -1) 
+    {
+        perror("Error calling shmat()");
         exit(1);
     }
 
-    /*
-     * Now we attach the segment to our data space.
-     */
-    if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) {
-        perror("shmat");
-        exit(1);
-    }
-
-    /*
-     * Now put some things into the memory for the
-     * other process to read.
-     */
-    s = shm;
-
-    for (c = 'a'; c <= 'z'; c++)
-        *s++ = c;
-    *s = '\0';
-
-    /*
-     * Finally, we wait until the other process 
-     * changes the first character of our memory
-     * to '*', indicating that it has read what 
-     * we put there.
-     */
+	// pointer now is a pointer to struct
+	pGSBStatus = (struct GSBStatusType*) shm;
+	
+	// up to now, only update time struct
     while (1)
 	{
 		// get GMT Time
 		gettimeofday(&tvLocalTime,0);
-		memcpy((void*)shm,(void*)&tvLocalTime,sizeof(struct timeval));
+		memcpy((void*)&pGSBStatus->TimeOfDayGSB,(void*)&tvLocalTime,sizeof(struct timeval));
         sleep(1);
 	};
 

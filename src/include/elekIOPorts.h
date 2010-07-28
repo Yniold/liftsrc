@@ -87,9 +87,10 @@
 #define IP_LOCALHOST                "127.0.0.1"
 #define IP_ARMAXIS                  "10.111.111.10" // wingpod IP 
 #define IP_ARMCALIBRATOR            "10.111.111.13" // calibrator IP
+#define IP_GSB_MPI					"10.111.111.15" // GSB
 #define LEN_IP_ADDR                 16
 
-
+// listening ports on lift side
 #define UDP_ELEK_STATUS_REQ_INPORT     1110    // port for status
 #define UDP_ELEK_MANUAL_INPORT         1120    // port for incoming manual commands to ElekServer 
 #define UDP_ELEK_ETALON_INPORT         1130    // port for Etalon Task
@@ -98,14 +99,17 @@
 #define UDP_ELEK_CALIB_DATA_INPORT     1160    // port for reception of calibrator data in MasterMode
 #define UDP_ELEK_MIRROR_INPORT         1170    // port for Mirror Task
 #define UDP_ELEK_AUX_INPORT            1180    // port for Aux Data (weather, ship etc.)
+#define UDP_ELEK_GSB_DATA_INPORT       1190	   // port for GSB Data in MasterMode
 #define UDP_ELEK_SPECTRA_INPORT        4711    // port for spectral data from spectrometerServer
 
+// reply ports from lift side
 #define UDP_ELEK_STATUS_REQ_OUTPORT    1111    // port for status messages
 #define UDP_ELEK_MANUAL_OUTPORT        1121    // port for answers to manual
 #define UDP_ELEK_ETALON_OUTPORT        1131    // port for answer to Etalon Task
 #define UDP_ELEK_SCRIPT_OUTPORT        1141    // port for answer to Script Task
 #define UDP_ELEK_MIRROR_OUTPORT        1171    // port for answer to Etalon Task
 
+// outgoing port numbers from clients
 #define UDP_ELEK_STATUS_STATUS_OUTPORT 1200    // port for status (elekIO->Status)
 #define UDP_ELEK_ETALON_STATUS_OUTPORT 1210    // port for status (elekIO->etalon)
 #define UDP_ELEK_ELEKIO_STATUS_OUTPORT 1220    // port for status (elekIOSlave->elekIOMaster)
@@ -113,6 +117,7 @@
 #define UDP_CALIB_STATUS_STATUS_OUTPORT 1400    // port for status (Calib->Status)
 #define UDP_ELEK_MIRROR_STATUS_OUTPORT 1270    // port for status (elekIO->etalon)
 #define UDP_AUX_STATUS_STATUS_OUTPORT  1280    // port for status (elekAux->elekIOMaster)
+#define UDP_GSB_STATUS_STATUS_OUTPORT  1290    // port for status (elekIOGSB->elekIOMaster)
 
 #define UDP_SERVER_TIMEOUT               1     // timeout until elek server makes its round 
 
@@ -126,7 +131,7 @@
 enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_READ_DATA,
     MSG_TYPE_WRITE_DATA,
-    MSG_TYPE_ACK,                              // ACKNOLEDGE of execution
+    MSG_TYPE_ACK,                              // ACKNOWLEDGE of execution
     MSG_TYPE_SIGNAL,                           // signals action
     MSG_TYPE_CHANGE_FLAG_STATUS_QUERY,         // change StatusQueryFlag
     MSG_TYPE_CHANGE_FLAG_STATUS_SAVE,          // change StatusSave
@@ -148,7 +153,11 @@ enum MsgTypeListEnum {                   // the list of available Message Types
     MSG_TYPE_CALIB_SETTEMP,                    // set calibrator water temperature
     MSG_TYPE_CALIB_SETFLOW,                    // set calibrator cumulated flow
     MSG_TYPE_CALIB_SETHUMID,                   // set calibrator humidity mixing ratio
-     
+
+	// GSB
+	MSG_TYPE_GSB_SETFLOW,					// set GSB flow
+	MSG_TYPE_GSB_SETVALVE,					// set GSB set valves
+	MSG_TYPE_GSB_SETLIGHT,					// set GSB interior light     
     MAX_MSG_TYPE }; 
 
 enum SysParameterListEnum {                 // list of System Parameters

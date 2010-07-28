@@ -1064,6 +1064,70 @@ struct spectralStatusType     /* structure for the spectrometer data*/
   enum  EtalonActionType     CurrentEtalonAction;                   /* what the etalon was doing during spectra sampling */
 };
 
+/* unique key for shared mem access between cgi and elekIOGSB */
+#define GSB_SHMKEY			(0x23072010)
+
+struct GSBStatusType     /* structure for the GasflaschenSicherheitsBehaelter */ 
+{
+  /* data structures for the GasflaschenSicherheitsBehaelter */
+  /* a.k.a. Secondary Containment */
+  
+  struct timeval             TimeOfDayMaster;
+  struct timeval             TimeOfDayGSB;
+  
+  /* LTC DACs via I2C on ARM9 module*/
+  /* 24 bit ADC#0 raw data */
+  /* raw flow numbers MFCs (NO variant) */
+  int32_t					 iRawFlowMFC1;
+  int32_t					 iRawFlowMFC2;
+  int32_t					 iRawFlowMFC3;
+  
+  /* raw pressure readings (NO variant) */
+  int32_t					 iRawPressureNO1;
+  int32_t					 iRawPressureNO2;
+  int32_t					 iRawPressureNO3;
+  
+  /* raw PT100 voltages (NO variant) */
+  int32_t					 iRawPT100NO1;
+  int32_t					 iRawPT100NO2;
+  
+  /* 24 bit ADC#1 raw data */
+  /* raw pressure numbers (CO ex version) */
+  int32_t 					 iRawPressureCO1;
+  int32_t					 iRawPressureCO2;
+  int32_t					 iRawPressureCO3;
+  
+  /* raw PT100 voltages (CO ex version) */
+  int32_t					 iRawPT100CO1;
+
+  /* spare channels */
+  int32_t					 iSpare0;
+  int32_t					 iSpare1;
+  int32_t					 iSpare2;
+  int32_t					 iSpare3;
+  
+  /* setpoints for flow controllers */
+  /* 16bit DAC on I2C bus of ARM9 module */
+  
+  uint16_t					 uiSetPointMFC0;		/* 0-5V setpoint, 0 to MAXINT */
+  uint16_t					 uiSetPointMFC1;
+  uint16_t					 uiSetPointMFC2;
+  uint16_t					 uiSetPointMFC3;
+  
+  /* valve control word, 5 lowermost bits used */
+  /* controlled via ATmega644 on upper PCB */
+  uint32_t					 uiAVRFirwareRevision;	/* current AVR firmware */
+  uint16_t					 uiValveControlWord;	/* bitwise used */
+  uint16_t					 uiValveVoltageSwitch;	/* should be around 24V, e.g. 24000 */
+  uint16_t					 uiValveVoltageHold;	/* T.B.D., ~16V */
+  uint16_t					 uiValveVoltageRead;	/* actual voltage readback from AVR */
+  uint16_t					 uiValveCurrent;		/* sum of current through valves */
+  
+  /* LED interior light */
+  uint16_t					 uiLEDCurrentSet;		/* setpoint for LED current */
+  uint16_t					 uiLEDCurrentIs;		/* reading of LED current */
+  uint16_t					 uiLEDVoltage;			/* reading of LED voltage */    
+};
 
 extern int elkInit(void);
 extern int elkExit(void);

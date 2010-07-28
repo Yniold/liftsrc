@@ -140,7 +140,19 @@ update file description
 #include <netdb.h>
 
 #ifdef RUNONPC
-#include <asm/msr.h>
+
+// newer 2.6 kernel don't provide the header file for rtscll() any longer,
+// so we define it here by ourselves
+
+#define rdtsc(low,high) \
+__asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
+
+#define rdtscl(low) \
+__asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
+
+#define rdtscll(val) \
+__asm__ __volatile__("rdtsc" : "=A" (val))
+
 #endif
 
 #include "../include/elekIOPorts.h"
