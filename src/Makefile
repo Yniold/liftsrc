@@ -48,6 +48,8 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOcalib
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOGSB
+	
 # don't built cross elekIOaux
 ifneq ($(ARMBUILD),1)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOaux
