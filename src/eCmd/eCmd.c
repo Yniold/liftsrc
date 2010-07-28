@@ -234,9 +234,9 @@ int WriteCommand(uint16_t Addr, uint16_t Value) {
     Message.Value=Value;
 	
     SendUDPData(&MessageOutPortList[ELEK_ELEKIO_OUT],sizeof(struct ElekMessageType), &Message);
-    printf("ID: %d send req on %4x wait for data....", Message.MsgID, Addr);
+    printf("ID: %lld send req on %4x wait for data....", Message.MsgID, Addr);
     RecieveUDPData(&MessageInPortList[ELEK_ELEKIO_IN], sizeof(struct ElekMessageType), &Message);    
-    printf("ID: %d %4x %d\n",Message.MsgID,Message.Value, Message.MsgType);
+    printf("ID: %lld %4llx %d\n",Message.MsgID,Message.Value, Message.MsgType);
 
     return(Message.Value);
 	
@@ -262,9 +262,9 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value) {
     Message.Value=Value;
 	
     SendUDPData(&MessageOutPortList[ELEK_ELEKIO_OUT],sizeof(struct ElekMessageType), &Message);
-    printf("ID: %d send %d on %4x wait for data....", Message.MsgID, Value, Addr);
+    printf("ID: %lld send %lld on %4x wait for data....", Message.MsgID, Value, Addr);
     RecieveUDPData(&MessageInPortList[ELEK_ELEKIO_IN], sizeof(struct ElekMessageType), &Message);    
-    printf("ID: %d %4x %d\n",Message.MsgID,Message.Value, Message.MsgType);
+    printf("ID: %lld %4llx %d\n",Message.MsgID,Message.Value, Message.MsgType);
 
     return(Message.Value);
 	
@@ -429,8 +429,8 @@ int main(int argc, char *argv[])
 	    Addr=strtol(argv[ArgCount],NULL,0);
 	    ArgCount++;
 	    Value=ReadCommand(Addr);
-	    printf("Read %4x(%5d) : %4x(%5d)\n",Addr,Addr, Value, Value);
-	    printf("%d\n",Value);
+	    printf("Read %4x(%5d) : %4llx(%5lld)\n",Addr,Addr, Value, Value);
+	    printf("%lld\n",Value);
 	    break;
 
 	case 'w':
@@ -442,7 +442,7 @@ int main(int argc, char *argv[])
 		Value=strtol(argv[ArgCount],NULL,0);
 		ArgCount++;
 		ret=WriteCommand(Addr,Value);
-		printf("Wrote %4x=%4x(%5d) : %4x(%5d)\n",ret,Addr,Addr,Value,Value);
+		printf("Wrote %4x=%4x(%5d) : %4llx(%5lld)\n",ret,Addr,Addr,Value,Value);
 	    }
 	    else
 		printf("Usage :\t%s w addr data\n", argv[0]);
@@ -628,7 +628,7 @@ int main(int argc, char *argv[])
     		            Value=strtol(argv[ArgCount+2],NULL,0);
     		            if (ptr) Addr=Addr+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
     		        } else {
-            		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
+            		    printf("Error : %lld is too high, range of MFC for Calib is [0..%d]\n",
             		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
             		    exit(EXIT_FAILURE);
     		        }            

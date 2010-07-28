@@ -1061,7 +1061,7 @@ int SetMFCCardData ( struct calibStatusType *ptrCalibStatus, int SetChannel, uin
             return(CALIB_SETFLOW_FAIL);
         } 
       if (SetFlow>MFCConfig[SetChannel].MaxFlow) {
-        sprintf(buf,"SetMFCFlow : flow rate %ul for channel number %d out of range\n",SetFlow, SetChannel);
+        sprintf(buf,"SetMFCFlow : flow rate %llul for channel number %d out of range\n",SetFlow, SetChannel);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
         return(CALIB_SETFLOW_FAIL);
       }   
@@ -1479,7 +1479,7 @@ int main(int argc, char *argv[])
 		 
 		 if (MessagePort!=ELEK_ETALON_IN)
 		   {
-		     sprintf(buf,"elekIOcalib : ReadCmd from %05d Port %04x Value %d (%04x)",
+		     sprintf(buf,"elekIOcalib : ReadCmd from %05d Port %04x Value %lld (%04llx)",
 			     MessageInPortList[MessagePort].PortNumber,
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1495,7 +1495,7 @@ int main(int argc, char *argv[])
 	       case MSG_TYPE_WRITE_DATA:
 		 if (MessagePort!=ELEK_ETALON_IN)
 		   {
-		     sprintf(buf,"elekIOcalib : WriteCmd from %05d Port %04x Value %d (%04x)",
+		     sprintf(buf,"elekIOcalib : WriteCmd from %05d Port %04x Value %lld (%04llx)",
 			     MessageInPortList[MessagePort].PortNumber,
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1511,7 +1511,7 @@ int main(int argc, char *argv[])
 	       case MSG_TYPE_CALIB_SETTEMP:
 		 if (MessagePort!=ELEK_ETALON_IN)
 		   {
-		     sprintf(buf,"elekIOcalib : SET_TEMP from %05d Port %04x Value %d (%04x)",
+		     sprintf(buf,"elekIOcalib : SET_TEMP from %05d Port %04x Value %lld (%04llx)",
 			     MessageInPortList[MessagePort].PortNumber,
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1527,7 +1527,7 @@ int main(int argc, char *argv[])
 	       case MSG_TYPE_CALIB_SETFLOW:
 		 if (MessagePort!=ELEK_ETALON_IN)
 		   {
-		     sprintf(buf,"elekIOcalib : SET_FLOW from %05d Port %04x Value %d (%04x)",
+		     sprintf(buf,"elekIOcalib : SET_FLOW from %05d Port %04x Value %lld (%04llx)",
 			     MessageInPortList[MessagePort].PortNumber,
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -1542,7 +1542,7 @@ int main(int argc, char *argv[])
 	       case MSG_TYPE_CALIB_SETHUMID:
 		 if (MessagePort!=ELEK_ETALON_IN)
 		   {
-		     sprintf(buf,"elekIOcalib : SET_HUM from %05d Port %04x Value %d (%04x)",
+		     sprintf(buf,"elekIOcalib : SET_HUM from %05d Port %04x Value %lld (%04llx)",
 			     MessageInPortList[MessagePort].PortNumber,
 			     Message.Addr,Message.Value,Message.Value);
 		     SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);

@@ -195,7 +195,7 @@ int SendUDPMsg(struct MessagePortType *ptrMessagePort, void *msg)
    memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
 
    if (DEBUGDEBUGMESSAGES)
-     printf("%s\n\r", msg);
+     printf("%s\n\r",(char*) msg);
 
    if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, strlen(msg), 0,
 			(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1)
