@@ -2,6 +2,7 @@
 #define CGIGATEWAY_H
 
 typedef enum {E_PAGE_STATUS,E_PAGE_DEBUG,E_UNKNOWN} ePages;
+typedef enum {CMD_SETFLOW,CMD_SETVALVE,CMD_SETLIGHT,CMD_UNKNOWN} eCGICmd;
 
 #ifdef RUNONPC
 

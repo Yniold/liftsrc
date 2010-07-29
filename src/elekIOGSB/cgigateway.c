@@ -50,8 +50,12 @@ static uint64_t MessageNumber=0;
 
 struct GSBStatusType * pGSBStatus;
 
- ePages ePageToDisplay = E_UNKNOWN;
-
+ePages ePageToDisplay = E_UNKNOWN;
+eCGICmd eCGICommand = CMD_UNKNOWN;
+int32_t iSetFlow;
+int32_t iMFCNumber;
+char* pArgument;
+ 
 int main()
 {
     int iShmHandle;
@@ -90,6 +94,7 @@ int main()
 		exit(0) ;
     }
     else
+    // extract subpage to display
     {
     	if(strstr(aBuffer,"status") != NULL)
     		ePageToDisplay = E_PAGE_STATUS;
@@ -99,6 +104,51 @@ int main()
     	else
     		ePageToDisplay = E_UNKNOWN;
     };
+
+	// check for a command
+	if(ePageToDisplay != E_UNKNOWN)
+	{
+		// command is in passed environment
+		if(strstr(aBuffer,"cmd=") != NULL)
+		{
+			// handle setflow command
+			if(strstr(aBuffer,"cmd=setflow") != NULL)
+			{
+				// check for setflow1 in environment
+				eCGICommand = CMD_SETFLOW;
+				if((pArgument = strstr(aBuffer,"setflow1=")) != NULL)
+				{
+					// parse setflow argument
+					if(sscanf(pArgument,"setflow1=%d",&iSetFlow) == 1)
+					{
+						iMFCNumber = 1;
+						SetStatusCommand(MSG_TYPE_GSB_SETFLOW, iMFCNumber, iSetFlow);
+					}					
+				}
+				else
+				if((pArgument = strstr(aBuffer,"setflow2=")) != NULL)
+				{
+					// parse setflow argument
+					if(sscanf(pArgument,"setflow2=%d",&iSetFlow) == 1)
+					{
+						iMFCNumber = 2;
+						SetStatusCommand(MSG_TYPE_GSB_SETFLOW, iMFCNumber, iSetFlow);
+					}					
+				}
+				else
+				if((pArgument = strstr(aBuffer,"setflow3=")) != NULL)
+				{
+					// parse setflow argument
+					if(sscanf(pArgument,"setflow3=%d",&iSetFlow) == 1)
+					{
+						iMFCNumber = 3;
+						SetStatusCommand(MSG_TYPE_GSB_SETFLOW, iMFCNumber, iSetFlow);
+					}					
+				}
+			}
+		}
+	
+	}
 
 	// helpers for time functions
 	struct tm sBrokenUpTime;
