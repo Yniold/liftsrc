@@ -37,6 +37,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <errno.h>
 
 #ifdef RUNONPC
 # include <asm/msr.h>
@@ -133,8 +134,10 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
    if ((numbytes=sendto(ptrMessagePort->fdSocket, msg, nByte, 0,
 			(struct sockaddr *)&their_addr, sizeof(struct sockaddr_in))) == -1)
      {
-	printf("\nproblem with sendto MsgPort: %d %s\n",
+     int lastError = errno;
+	printf("\nproblem with sendto MsgPort: %d %s LINUX claims:",
 	       ptrMessagePort->PortNumber,ptrMessagePort->PortName);
+	printf("%s\n",strerror(lastError));
 	perror("sendto");
 	exit(1);
      }

@@ -36,4 +36,9 @@ $(PROJECT) : $(PROJECT).c $(modules) $(headers)
 	     echo $(PROJECT) $(VERSION)
 	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) $(PROJECT).c $(modules) -o $(PROJECT) $(LDFLAGS)
 	     cp $(PROJECT) $(INSTDIR)
+	     
+cgigateway : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigateway.h ../include/elekIO.h ../include/elekIOPorts.h
+	     echo CGI-Gateway
+	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o -o cgigateway.cgi $(LDFLAGS)
+	     cp cgigateway.cgi $(INSTDIR)
 

@@ -42,7 +42,7 @@ struct SlaveListType {
   char *SlaveIP;                  /* IP Address */
 };
 
-struct calibStatusType CalibStatus;
+struct GSBStatusType GSBStatus;
 
 // ========================
 // External UDP Tools
