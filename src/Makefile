@@ -136,6 +136,7 @@ clean:
 	rm -f ./broadcastClient/broadcastClient
 	rm -f ./broadcastClient/*.o
 	rm -f ./testccram/testccram
+	rm -f ./elekIOGSB/cgigateway.cgi
 	rm -f ./testccram/*.o
 	
 # test if there is a directory called 'bin' in '../' before trying to delete its contents

@@ -135,8 +135,8 @@ int SendUDPData(struct MessagePortType *ptrMessagePort, unsigned nByte, void *ms
 			(struct sockaddr *)&their_addr, sizeof(struct sockaddr_in))) == -1)
      {
      int lastError = errno;
-	printf("\nproblem with sendto MsgPort: %d %s LINUX claims:",
-	       ptrMessagePort->PortNumber,ptrMessagePort->PortName);
+	printf("\nproblem with sendto,Port# 0x%08X 0d%d Name:'%s',LINUX claims:",
+	       ptrMessagePort->PortNumber,ptrMessagePort->PortNumber,ptrMessagePort->PortName);
 	printf("%s\n",strerror(lastError));
 	perror("sendto");
 	exit(1);

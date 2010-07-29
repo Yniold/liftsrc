@@ -260,11 +260,10 @@ int main()
 
 int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value) 
 {
+	// elekIOGSB runs on localhost
     char DestAddress[LEN_IP_ADDR]={"127.0.0.1"};
     
     extern int errno;
-    extern struct MessagePortType MessageOutPortList[];
-    extern struct MessagePortType MessageInPortList[];
     
     fd_set fdsMaster;               // master file descriptor list
     fd_set fdsSelect;               // temp file descriptor list for select()
@@ -273,13 +272,7 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value)
     int addr_len;
     int MessagePort;
 
-//    uint16_t Addr;
-//    int64_t Value;
-//    uint16_t MsgType;
-
 	extern uint64_t MessageNumber;
-	extern struct MessagePortType MessageOutPortList[];
-	extern struct MessagePortType MessageInPortList[];
 
 	uint64_t TSC;
 	struct ElekMessageType Message;
@@ -290,6 +283,9 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value)
     // setup master fd
     FD_ZERO(&fdsMaster);              // clear the master and temp sets
     FD_ZERO(&fdsSelect);
+
+	// copy destination IP address to structure
+    strncpy(MessageOutPortList[ELEK_ELEKIO_OUT].IPAddr,DestAddress,LEN_IP_ADDR);
         
     // init inports
     for (MessagePort=0; MessagePort<MAX_MESSAGE_INPORTS;MessagePort++) 
@@ -310,12 +306,10 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value)
     {
 		printf("opening OUT Port %s on Port %d<br>\n",
 		MessageOutPortList[MessagePort].PortName,MessageOutPortList[MessagePort].PortNumber);
-		MessageOutPortList[MessagePort].fdSocket=InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);	
+		MessageOutPortList[MessagePort].fdSocket = InitUDPOutSocket(MessageOutPortList[MessagePort].PortNumber);	
     } /* for MessageOutPort */
     
 	printf("done init ports<br>\n");
-
-    strncpy(MessageOutPortList[ELEK_ELEKIO_OUT].IPAddr,DestAddress,LEN_IP_ADDR);
     
 	Message.MsgID=MessageNumber++;
 	Message.MsgTime=TSC;
@@ -325,7 +319,9 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value)
 
 	// debugging MessageOutPortList
 	printf("MessageOutPortList[ELEK_ELEKIO_OUT].PortName = %s<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].PortName);   				// Port Name
-	printf("MessageOutPortList[ELEK_ELEKIO_OUT].PortNumber = %05d<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].PortNumber);			// Port Number
+	printf("MessageOutPortList[ELEK_ELEKIO_OUT].PortNumber = %05d (0x%08X)<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].PortNumber,\
+	MessageOutPortList[ELEK_ELEKIO_OUT].PortNumber);			// Port Number
+	
 	printf("MessageOutPortList[ELEK_ELEKIO_OUT].RevMessagePort = %05d<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].RevMessagePort);   // RevMessagePort
 	printf("MessageOutPortList[ELEK_ELEKIO_OUT].IPAddr = %s<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].IPAddr);   					// IPAddress
 	printf("MessageOutPortList[ELEK_ELEKIO_OUT].fdSocket = %05d<br>\n",MessageOutPortList[ELEK_ELEKIO_OUT].fdSocket);   			// fdSocket
