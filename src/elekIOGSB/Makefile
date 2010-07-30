@@ -32,19 +32,16 @@ headers=elekIOGSB.h ../include/elekIO.h ../include/elekIOPorts.h
 .SUFFIXES:
 .SUFFIXES: .c .o
 
+all : elekIOGSB
+
 elekIOGSB: subbuild1 subbuild2 subbuild3
 
 subbuild1 : elekIOGSB.c $(modules) $(headers)
 	     echo elekIOGSB $(VERSION)
 	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) elekIOGSB.c $(modules) -o elekIOGSB $(LDFLAGS)
 	     cp elekIOGSB $(INSTDIR)
-
-subbuild2 : elekIOGSB_.c $(modules) $(headers)
-	     echo elekIOGSB_ $(VERSION)
-	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) elekIOGSB_.c $(modules) -o elekIOGSB_ $(LDFLAGS)
-	     cp elekIOGSB_ $(INSTDIR)
 	     
-subbuild3 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigateway.h ../include/elekIO.h ../include/elekIOPorts.h
+subbuild2 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigateway.h ../include/elekIO.h ../include/elekIOPorts.h
 	     echo CGI-Gateway
 	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o -o cgigateway.cgi $(LDFLAGS)
 	     cp cgigateway.cgi $(INSTDIR)
@@ -52,6 +49,5 @@ subbuild3 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigat
 clean:		
 		rm cgigateway.cgi
 		rm elekIOGSB
-		rm elekIOGSB_
 		
-.PHONY: elekIOGSB clean
+.PHONY: elekIOGSB clean all
