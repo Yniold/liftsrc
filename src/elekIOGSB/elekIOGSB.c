@@ -450,8 +450,9 @@ int main(int argc, char *argv[])
 					// received either from eCmd or cgigateway.cgi: MSG_TYPE_GSB_SETFLOW for one certain flowcontroller
 					case MSG_TYPE_GSB_SETFLOW:
 				 		// send this debugmessage message to debugmon
-				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETFLOW from Port: %05d, MFC#:%02d, SetFlow: %05lld",
-					 	MessageInPortList[MessagePort].PortNumber,
+				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETFLOW from %s Port: %05d, MFC#:%02d, SetFlow: %05lld",\
+					 	inet_ntoa(their_addr.sin_addr),\
+					 	MessageInPortList[MessagePort].PortNumber,\
 					 	Message.Addr,Message.Value);
 				 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 				 		
@@ -485,7 +486,8 @@ int main(int argc, char *argv[])
 					// received either from eCmd or cgigateway.cgi: MSG_TYPE_GSB_SETVALVE for certain valve
 					case MSG_TYPE_GSB_SETVALVE:
 				 		// send this debugmessage message to debugmon
-				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETVALVE from Port: %05d Valves: %s %s %s %s %s",
+				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETVALVE from %s Port: %05d Valves: %s %s %s %s %s",\
+					 	inet_ntoa(their_addr.sin_addr),\
 					 	MessageInPortList[MessagePort].PortNumber,\
 					 	Message.Addr & 0x01?"V1:opn":"V1:cls",\
 					 	Message.Addr & 0x02?"V2:opn":"V2:cls",\
@@ -509,8 +511,9 @@ int main(int argc, char *argv[])
 					// received either from eCmd or cgigateway.cgi: MSG_TYPE_GSB_SETLIGHT for interior LED light
 					case MSG_TYPE_GSB_SETLIGHT:
 				 		// send this debugmessage message to debugmon
-				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETLIGHT from Port: %05d",
-					 	MessageInPortList[MessagePort].PortNumber,
+				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETLIGHT from %s Port: %05d",\
+					 	inet_ntoa(their_addr.sin_addr),\
+					 	MessageInPortList[MessagePort].PortNumber,\
 					 	Message.Addr,Message.Value,Message.Value);
 				 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 

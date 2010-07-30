@@ -271,8 +271,51 @@ int main()
 		printf("<body>\n") ;
 		printf("<h1>Status Page</h1>\n") ;
 		
+		printf("<table border=\"0\">\n") ;
+
+		// ROW with headers
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("</td>\n") ;
+
+		printf("<td>\n") ;
+		printf("Raw Reading\n") ;		
+		printf("</td>\n") ;
+
+		printf("<td>\n") ;
+		printf("Cal. Reading\n") ;		
+		printf("</td>\n") ;
+
+		printf("<td>\n") ;
+		printf("Description\n") ;		
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+
+		// ROW MFC#1
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("MFC1 Flow:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawFlowMFC1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f sccm\n",9.24f); // test val
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("Outgoing NO flow HORUS\n") ;		
+		printf("</td>\n") ;
+
 		// edit fields & submit buttons for MFC Setpoint1
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Set Flow MFC1:\n",getenv("SERVER_NAME"));
+		printf("<td>\n") ;		
+		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"><DIV>Setpoint MFC1:\n",getenv("SERVER_NAME"));
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
@@ -281,22 +324,71 @@ int main()
 		else
 			printf("<INPUT NAME=\"setflow1\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC0);
 			
-		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
+		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM>\n");	
+		printf("</td>\n") ;
+
+		printf("</tr>\n") ;
+
+		// ROW MFC#2
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("MFC2 Flow:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawFlowMFC2);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f sccm\n",9.24f); // test val
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("Outgoing NO flow AIRLIF\n") ;		
+		printf("</td>\n") ;
 
 		// edit fields & submit buttons for MFC Setpoint2
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Set Flow MFC2:\n",getenv("SERVER_NAME"));
+		printf("<td>\n") ;		
+		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC2:\n",getenv("SERVER_NAME"));
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
+
 	
 		if(!pGSBStatus)
 			printf("<INPUT NAME=\"setflow2\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
 		else
 			printf("<INPUT NAME=\"setflow2\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC1);
 
-		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
+		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM>\n");	
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+
+		// ROW MFC#3
+		printf("<tr valign=\"baseline\">\n") ;
+		printf("<td>\n") ;
+		printf("MFC3 Flow:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawFlowMFC3);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f sccm\n",9.24f); // test val
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("total outgoing NO flow\n") ;		
+		printf("</td>\n") ;
 
 		// edit fields & submit buttons for MFC Setpoint3
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Set Flow MFC3:\n",getenv("SERVER_NAME"));
+		printf("<td>\n") ;
+		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC3:\n",getenv("SERVER_NAME"));
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
@@ -305,13 +397,74 @@ int main()
 		else
 			printf("<INPUT NAME=\"setflow3\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC2);
 
-		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
+		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM>\n");	
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+		
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("NO Pressure 1:\n") ;
+		printf("</td>\n") ;
 
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawPressureNO1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f bar(abs)\n",0.89f); // test val
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("NO Pressure 2:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawPressureNO1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f bar(abs)\n",1.07f); // test val
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("NO Pressure 3:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawPressureNO1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%5.2f bar(abs)\n",3.14f); // test val
+		printf("</td>\n") ;
+		printf("</tr>\n") ;
+
+		printf("</table>\n");
+		
+		// =====================================================================================================
 		// check boxes for Valve1
 		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\">\n",getenv("SERVER_NAME"));
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setvalve\">\n");
 	
+
+		
 		// check if we have the shared structure available
 		if(!pGSBStatus)
 		{
