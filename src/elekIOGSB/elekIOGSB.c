@@ -23,6 +23,9 @@
 #include <sched.h>
 #include <pthread.h>
 
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
 #include "../include/elekGeneral.h"
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
@@ -261,6 +264,7 @@ int main(int argc, char *argv[])
    struct SyncFlagType SyncFlag;
    int RequestDataFlag;
 
+	struct GSBStatusType* pGSBStatus;
 	struct timeval tvLocalTime;
 	char c;
 	int iShmHandle;

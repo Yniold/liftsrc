@@ -34,7 +34,7 @@ headers=elekIOGSB.h ../include/elekIO.h ../include/elekIOPorts.h
 
 all : elekIOGSB
 
-elekIOGSB: subbuild1 subbuild2 subbuild3
+elekIOGSB: subbuild1 subbuild2
 
 subbuild1 : elekIOGSB.c $(modules) $(headers)
 	     echo elekIOGSB $(VERSION)
