@@ -54,6 +54,7 @@ ePages ePageToDisplay = E_UNKNOWN;
 eCGICmd eCGICommand = CMD_UNKNOWN;
 int32_t iSetFlow;
 int32_t iMFCNumber;
+int32_t iValveWord;
 char* pArgument;
  
 int main()
@@ -145,6 +146,36 @@ int main()
 						SetStatusCommand(MSG_TYPE_GSB_SETFLOW, iMFCNumber, iSetFlow);
 					}					
 				}
+			}
+			// handle setvalve command
+			if(strstr(aBuffer,"cmd=setvalve") != NULL)
+			{
+				// set word zero, we assemble the valve word below
+				iValveWord = 0;				
+				eCGICommand = CMD_SETVALVE;
+
+				// check for setvalve in environment
+				if((pArgument = strstr(aBuffer,"valve1=on")) != NULL)
+				{
+					iValveWord = iValveWord | (1<<0);			
+				}
+				if((pArgument = strstr(aBuffer,"valve2=on")) != NULL)
+				{
+					iValveWord = iValveWord | (1<<1);			
+				}
+				if((pArgument = strstr(aBuffer,"valve3=on")) != NULL)
+				{
+					iValveWord = iValveWord | (1<<2);			
+				}
+				if((pArgument = strstr(aBuffer,"valve4=on")) != NULL)
+				{
+					iValveWord = iValveWord | (1<<3);			
+				}
+				if((pArgument = strstr(aBuffer,"valve5=on")) != NULL)
+				{
+					iValveWord = iValveWord | (1<<4);			
+				}
+				SetStatusCommand(MSG_TYPE_GSB_SETVALVE, iValveWord,0);
 			}
 		}
 	
@@ -245,7 +276,11 @@ int main()
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
-		printf("<INPUT NAME=\"setflow1\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		if(!pGSBStatus)
+			printf("<INPUT NAME=\"setflow1\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		else
+			printf("<INPUT NAME=\"setflow1\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC0);
+			
 		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
 
 		// edit fields & submit buttons for MFC Setpoint2
@@ -253,7 +288,11 @@ int main()
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
-		printf("<INPUT NAME=\"setflow2\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		if(!pGSBStatus)
+			printf("<INPUT NAME=\"setflow2\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		else
+			printf("<INPUT NAME=\"setflow2\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC1);
+
 		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
 
 		// edit fields & submit buttons for MFC Setpoint3
@@ -261,7 +300,11 @@ int main()
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
-		printf("<INPUT NAME=\"setflow3\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		if(!pGSBStatus)
+			printf("<INPUT NAME=\"setflow3\" SIZE=\"5\" MAXLENGTH=\"5\">sccm\n");
+		else
+			printf("<INPUT NAME=\"setflow3\" SIZE=\"5\" MAXLENGTH=\"5\" VALUE=%d>sccm\n",pGSBStatus->uiSetPointMFC2);
+
 		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set\"></DIV></FORM><br>\n");	
 
 		// check boxes for Valve1
@@ -269,13 +312,32 @@ int main()
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setvalve\">\n");
 	
-		printf("Valve 1:<INPUT NAME=\"valve1\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
-		printf("Valve 2:<INPUT NAME=\"valve2\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
-		printf("Valve 3:<INPUT NAME=\"valve3\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
-		printf("Valve 4:<INPUT NAME=\"valve4\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
-		printf("Valve 5:<INPUT NAME=\"valve5\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
-		printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set Valves\"></FORM><br>\n");	
-
+		// check if we have the shared structure available
+		if(!pGSBStatus)
+		{
+			printf("Valve 1:<INPUT NAME=\"valve1\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
+			printf("Valve 2:<INPUT NAME=\"valve2\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
+			printf("Valve 3:<INPUT NAME=\"valve3\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
+			printf("Valve 4:<INPUT NAME=\"valve4\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
+			printf("Valve 5:<INPUT NAME=\"valve5\" TYPE=\"checkbox\" VALUE=\"on\"><br>\n");
+			printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set Valves\"></FORM><br>\n");	
+		}
+		else
+		{
+			// set the CHECKED attribute if the corresponding valve is marked as on
+			printf("Valve 1:<INPUT NAME=\"valve1\" TYPE=\"checkbox\" VALUE=\"on\" %s><br>\n",\
+			pGSBStatus->uiValveControlWord & 0x01?"CHECKED":"");
+			printf("Valve 2:<INPUT NAME=\"valve2\" TYPE=\"checkbox\" VALUE=\"on\" %s><br>\n",\
+			pGSBStatus->uiValveControlWord & 0x02?"CHECKED":"");
+			printf("Valve 3:<INPUT NAME=\"valve3\" TYPE=\"checkbox\" VALUE=\"on\" %s><br>\n",\
+			pGSBStatus->uiValveControlWord & 0x04?"CHECKED":"");
+			printf("Valve 4:<INPUT NAME=\"valve4\" TYPE=\"checkbox\" VALUE=\"on\" %s><br>\n",\
+			pGSBStatus->uiValveControlWord & 0x08?"CHECKED":"");
+			printf("Valve 5:<INPUT NAME=\"valve5\" TYPE=\"checkbox\" VALUE=\"on\" %s><br>\n",\
+			pGSBStatus->uiValveControlWord & 0x10?"CHECKED":"");
+			printf("<INPUT TYPE=\"SUBMIT\" VALUE=\"Set Valves\"></FORM><br>\n");	
+		}
+		
 		printf("<a href=\"cgigateway.cgi?page=status\">Statuspage</a><br>\n");
 		printf("<a href=\"cgigateway.cgi?page=debug\">Debugpage</a><br>\n");
 

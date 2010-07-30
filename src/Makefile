@@ -97,7 +97,7 @@ else
 	cp $(DESTDIR)/mirrors ../bin
 	cp $(DESTDIR)/debugMon ../bin
 	cp $(DESTDIR)/spectrometerServer ../bin
-	cp $(DESTDIR)/testccram ../bin
+#	cp $(DESTDIR)/testccram ../bin
 	chmod +x $(DESTDIR)*
 	chmod +x ./scripts/*
 endif
@@ -149,7 +149,7 @@ clean:
 	if [ -d ../bin ]; then rm -f ../bin/etalon; fi
 	if [ -d ../bin ]; then rm -f ../bin/mirrors; fi
 	if [ -d ../bin ]; then rm -f ../bin/spectrometerServer; fi
-	if [ -d ../bin ]; then rm -f ../bin/testccram; fi
+#	if [ -d ../bin ]; then rm -f ../bin/testccram; fi
 	
 #	$(MAKE) DESTDIR=$(DESTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o

@@ -450,10 +450,29 @@ int main(int argc, char *argv[])
 					// received either from eCmd or cgigateway.cgi: MSG_TYPE_GSB_SETFLOW for one certain flowcontroller
 					case MSG_TYPE_GSB_SETFLOW:
 				 		// send this debugmessage message to debugmon
-				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETFLOW from Port: %05d",
+				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETFLOW from Port: %05d, MFC#:%02d, SetFlow: %05lld",
 					 	MessageInPortList[MessagePort].PortNumber,
-					 	Message.Addr,Message.Value,Message.Value);
+					 	Message.Addr,Message.Value);
 				 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				 		
+		 				// save in structure for now
+				 		switch(Message.Addr)
+				 		{
+				 			case 1:
+				 				pGSBStatus->uiSetPointMFC0 = Message.Value & 0xFFFF;
+				 				break;
+				 				
+				 			case 2:
+				 				pGSBStatus->uiSetPointMFC1 = Message.Value & 0xFFFF;
+				 				break;
+				 				
+				 			case 3:
+				 				pGSBStatus->uiSetPointMFC2 = Message.Value & 0xFFFF;
+				 				break;
+				 				
+				 			default:
+				 				break;	
+				 		}
 				 		
 						// reply with an ACK	
 						Message.Status = Message.Value;
@@ -466,10 +485,18 @@ int main(int argc, char *argv[])
 					// received either from eCmd or cgigateway.cgi: MSG_TYPE_GSB_SETVALVE for certain valve
 					case MSG_TYPE_GSB_SETVALVE:
 				 		// send this debugmessage message to debugmon
-				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETVALVE from Port: %05d",
-					 	MessageInPortList[MessagePort].PortNumber,
-					 	Message.Addr,Message.Value,Message.Value);
+				 		sprintf(buf,"elekIOGSB : got MSG_TYPE_GSB_SETVALVE from Port: %05d Valves: %s %s %s %s %s",
+					 	MessageInPortList[MessagePort].PortNumber,\
+					 	Message.Addr & 0x01?"V1:opn":"V1:cls",\
+					 	Message.Addr & 0x02?"V2:opn":"V2:cls",\
+					 	Message.Addr & 0x04?"V3:opn":"V3:cls",\
+					 	Message.Addr & 0x08?"V4:opn":"V4:cls",\
+					 	Message.Addr & 0x10?"V5:opn":"V5:cls"\
+					 	);
 				 		SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+				 		
+				 		// save in structure for now
+				 		pGSBStatus->uiValveControlWord = Message.Addr & 0x1F;
 
 						// reply with an ACK	
 						Message.Status = Message.Value;
