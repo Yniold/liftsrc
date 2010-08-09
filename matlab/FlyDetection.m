@@ -2012,7 +2012,7 @@ function editMFCShower_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editMFCShower as text
 %        str2double(get(hObject,'String')) returns contents of editMFCShower as a double
-MaxFlow=20000;
+MaxFlow=5000;
 setMFC=str2double(get(hObject,'String'));
 if setMFC<0 | isnan(setMFC) setMFC=0; end
 if setMFC>MaxFlow setMFC=MaxFlow; end
