@@ -230,7 +230,7 @@ end
 if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
     if statusData(lastrow,col.P1000)>10300; %if cell pressure too high
         Valveword=statusData(lastrow,col.Valve1armAxis);
-        if any(bitget(Valveword,1:7)) % check solenoids to cell         
+        if any(bitget(Valveword,1:7)) % check solenoids to cell
             Valveword=bitand(Valveword,65408); %set all solenoids to cell to 0
             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch
             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
@@ -238,22 +238,22 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
         end
         if ~isequal(get(handles.txtBlower,'BackgroundColor'),[0 1 1]) % blower connected via tcpip (ground configuration)
             if strcmp(handles.txtBlower,'Blower ON') %check if blower is on (ground configuration)
-% Butterfly with stepper motor
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly 
-% end Butterfly with stepper motor
-% Butterfly with relay
+                % Butterfly with stepper motor
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly
+                % end Butterfly with stepper motor
+                % Butterfly with relay
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,1); % close Butterfly
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-% end Butterfly with relay
+                % end Butterfly with relay
                 %switch off Blower
-                fprintf(handles.tcpBlower,'ramp off'); 
+                fprintf(handles.tcpBlower,'ramp off');
                 tcpBlower.UserData=[];
-                fprintf(handles.tcpBlower,'inverter off'); 
+                fprintf(handles.tcpBlower,'inverter off');
                 % check and display Blower status
                 pause(0.5);
                 BlowerStatus=tcpBlower.UserData;
                 tcpBlower.UserData=[];
-
+                
                 if BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='f'
                     PumpSwitch=0;
                 elseif BlowerStatus(strfind(BlowerStatus,'Pump')+7)=='n'
@@ -272,7 +272,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
                     RampSwitch=1;
                 else RampSwitch=-1;
                 end
-    
+                
                 if PumpSwitch==0
                     set(handles.txtBlower,'String','Pump OFF');
                 elseif (RampSwitch==0 | InverterSwitch==0)
@@ -282,17 +282,17 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
                 end
                 if (PumpSwitch==-1 | RampSwitch==-1 | InverterSwitch==-1)
                     set(handles.txtBlower,'String','Blower ERROR','BackgroundColor','r');
-                end                
+                end
             end
         else % blower connected directly to armaxis (air configuration)
             if bitget(statusData(lastrow,col.Valve2armAxis),1)==1 % check if blower is on (air configuration)
-% Butterfly with stepper motor
-                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly 
-% end Butterfly with stepper motor
-% Butterfly with relay
+                % Butterfly with stepper motor
+                system(['/lift/bin/eCmd @armAxis s butterflyposition ',num2str(42)]); % close Butterfly
+                % end Butterfly with stepper motor
+                % Butterfly with relay
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),2,1); % close Butterfly
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
-% end Butterfly with relay
+                % end Butterfly with relay
                 Valveword=bitset(statusData(lastrow,col.Valve2armAxis),1,0); % ramp blower down
                 system(['/lift/bin/eCmd @armAxis w 0xa462 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
                 system(['/lift/bin/eCmd @armAxis w 0xa40a ', num2str(Valveword)]);
@@ -305,42 +305,82 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
             end
         end
     end
-
-
-% periodic C3F6 addition synced to laser going offline
-if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minute
-        (statusData(lastrow,col.EtalonAction)==3 | statusData(lastrow,col.EtalonAction)==4) ) %first 10 sec period of every two min if offline
     
-    if (mod(double(statusData(lastrow,4)),4)<2) % in the first 2 minutes of a 4 minute interval
-        %disp 'want to open valve if...'
-        if (~bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still closed
-            disp 'valve was closed, -> now OPEN' 
-            system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*50/200))]); % set scale 50 sccm Propene flow of 200 sccm MFC to 255
-%            system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*100/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
-            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-            pause(0.5); %wait 4 power up 	
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
-        end
-    else % we are in the second half of the 4 minute interval
-        %disp 'want to close Valve if...'
-        if (bitget(statusData(lastrow,col.Valve1armAxis),14)) % Valve still open
-            disp 'Valve was open -> now CLOSED'
-%           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
-           system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC
-            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
-            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-            pause(0.5); % wait...
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+    
+    % periodic C3F6 addition synced to laser going offline
+    if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minute
+            (statusData(lastrow,col.EtalonAction)==3 | statusData(lastrow,col.EtalonAction)==4) ) %first 10 sec period of every two min if offline
+        
+        if ((mod(double(statusData(lastrow,4)),8)<4) & (mod(double(statusData(lastrow,4)),4)<2)) % in the first 4 minutes of a 8 minute interval the first 2 minutes
+            disp 'want to open propene valve (shower on) if...'
+            if ((~bitget(statusData(lastrow,col.Valve1armAxis),14))|(~bitget(statusData(lastrow,col.Valve1armAxis),1))) % Valve(s) still closed
+                disp 'valve(s) closed, -> now OPEN'
+                system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*50/200))]); % set scale 50 sccm Propene flow of 200 sccm MFC to 255
+                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*2000/5000))]); % set scale 2000 sccm Shower flow of 5000 sccm MFC to 255
+                %           system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*100/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
+                Valveword=bitset(Valveword,1,1);
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                pause(0.5); %wait 4 power up
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+            end
+        elseif ((mod(double(statusData(lastrow,4)),8)<4) & (mod(double(statusData(lastrow,4)),4)>=2)) % in the first 4 minutes of a 8 minute interval the last 2 minutes
+            disp 'want to close propene valve (shower still on) if...'
+            % we are in the second half of the first 4 minute interval
+            % disp 'want to close propene valve if...'
+            if ((bitget(statusData(lastrow,col.Valve1armAxis),14))|(~bitget(statusData(lastrow,col.Valve1armAxis),1))) % Valve still open and/or shower still closed
+                disp 'Valve was open and/or shower closed -> now CLOSED'
+                %           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+                system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC propene
+                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*2000/5000))]); % set/keep set scale 2000 sccm Shower flow of 5000 sccm MFC to 255
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
+                Valveword=bitset(Valveword,1,1); %keep shower valve open
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                pause(0.5); % wait...
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+            end
+        elseif ((mod(double(statusData(lastrow,4)),8)>=4) & (mod(double(statusData(lastrow,4)),4)<2)) % in the last 4 minutes of a 8 minute interval the first 2 minutes
+            disp 'want to open propene valve and close shower if...'
+            % we are in the second half of the first 4 minute interval
+            % disp 'want to close propene valve if...'
+            if ((~bitget(statusData(lastrow,col.Valve1armAxis),14))|(bitget(statusData(lastrow,col.Valve1armAxis),1))) % Valve still closed and/or shower still open
+                disp 'Valve was closed and/or shower open -> now valve is OPEN and shower off'
+                %           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+                system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*50/200))]); % set scale 50 sccm Propene flow of 200 sccm MFC to 255
+                system(['/lift/bin/eCmd @armAxis w 0xa446 0x0000']); % close MFC Shower
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1); % open Valve
+                Valveword=bitset(Valveword,1,0); %close shower valve
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                pause(0.5); % wait...
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+            end
+        elseif ((mod(double(statusData(lastrow,4)),8)>=4) & (mod(double(statusData(lastrow,4)),4)>=2)) % in the last 4 minutes of a 8 minute interval the last 2 minutes
+            disp 'want to close propene valve and keep shower closed if...'
+            % we are in the second half of the first 4 minute interval
+            % disp 'want to close propene valve if...'
+            if ((bitget(statusData(lastrow,col.Valve1armAxis),14))|(bitget(statusData(lastrow,col.Valve1armAxis),1))) % Valve still closed and/or shower still open
+                disp 'Valve was open and/or shower open -> now valve is CLOSED and shower off'
+                %           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+                system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC propene
+                system(['/lift/bin/eCmd @armAxis w 0xa446 0x0000']); % close/ keep closed MFC Shower
+                Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % open Valve
+                Valveword=bitset(Valveword,1,0); %close shower valve
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
+                system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+                pause(0.5); % wait...
+                system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+            end
         end
     end
-end
-
-
-
-% zero pitot every 5 min for 10 s if lamp is off
+    
+    
+    
+    
+    
+    % zero pitot every 5 min for 10 s if lamp is off
     if bitget(statusData(lastrow,col.Valve2armAxis),11)==0 % lamp off ?
         if ( mod(double(statusData(lastrow,4)),5)==0 & double(statusData(lastrow,5))<10 ) %first 10 sec period of every five min
             if bitget(statusData(lastrow,col.Valve1armAxis),12)==0 % if pitot 0 still off, switch it on
@@ -352,7 +392,7 @@ end
         else % 10 sec are over
             if bitget(statusData(lastrow,col.Valve1armAxis),12)==1 % if pitot 0 is still on, switch it off
                 if isfield(data,'hFlyDetection') % if zeroing not in progress by FlyDetection
-                    if ishandle(data.hFlyDetection), 
+                    if ishandle(data.hFlyDetection),
                         Detdata = getappdata(data.hFlyDetection, 'Detdata');
                         if (Detdata.PitotTime==0 & get(Detdata.tglPitot,'Value')==0) % zeroing process not in progress in FlyDetection ?
                             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),12,0);
@@ -376,7 +416,7 @@ end
 %            EtalonAction=statusData(:,col.EtalonAction);
 %        if ( mod(double(statusData(lastrow,4)),4)==0 & double(statusData(lastrow,5))<10 & statusData(lastrow,col.MirrorRealigning)==0) %first 10 sec period of every three min
 %            if EtalonAction~=9
-%                system(['/lift/bin/eCmd @Lift s etalonnop']);    
+%                system(['/lift/bin/eCmd @Lift s etalonnop']);
 %                system(['/lift/bin/eCmd @Lift s etalonscanstart ',num2str(20000)])
 %                system(['/lift/bin/eCmd @Lift s etalonscanstop ',num2str(28000)]);
 %                system(['/lift/bin/eCmd @Lift s etalonscanstep ',num2str(16)]);
@@ -384,8 +424,8 @@ end
 %            end
 %        end
 %        if EtalonAction==5
-%                disp(['/lift/bin/eCmd @Lift s etalontoggle']);    
-%                system(['/lift/bin/eCmd @Lift s etalontoggle']);    
+%                disp(['/lift/bin/eCmd @Lift s etalontoggle']);
+%                system(['/lift/bin/eCmd @Lift s etalontoggle']);
 %        end
 
 
