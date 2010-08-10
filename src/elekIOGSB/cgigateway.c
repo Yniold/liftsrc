@@ -274,6 +274,7 @@ int main()
 		printf("<table border=\"0\">\n") ;
 
 		// ROW with headers
+		// =====================================
 		printf("<tr valign=\"baseline\">\n") ;
 		
 		printf("<td>\n") ;
@@ -293,6 +294,8 @@ int main()
 		printf("</tr>\n") ;
 
 		// ROW MFC#1
+		// =====================================
+		
 		printf("<tr valign=\"baseline\">\n") ;
 		
 		printf("<td>\n") ;
@@ -330,6 +333,7 @@ int main()
 		printf("</tr>\n") ;
 
 		// ROW MFC#2
+		// =====================================
 		printf("<tr valign=\"baseline\">\n") ;
 		
 		printf("<td>\n") ;
@@ -367,6 +371,8 @@ int main()
 		printf("</tr>\n") ;
 
 		// ROW MFC#3
+		// =====================================
+		
 		printf("<tr valign=\"baseline\">\n") ;
 		printf("<td>\n") ;
 		printf("MFC3 Flow:\n") ;
@@ -401,6 +407,7 @@ int main()
 		printf("</td>\n") ;
 		printf("</tr>\n") ;
 		
+		// ROW NO PRESSURE#1
 		// =====================================
 		printf("<tr valign=\"baseline\">\n") ;
 		
@@ -417,8 +424,14 @@ int main()
 		if(pGSBStatus)
 			printf("%5.2f bar(abs)\n",0.89f); // test val
 		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("Ambient pressure\n") ;		
+		printf("</td>\n") ;
+
 		printf("</tr>\n") ;
 
+		// ROW NO PRESSURE#2
 		// =====================================
 		printf("<tr valign=\"baseline\">\n") ;
 		
@@ -433,10 +446,15 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f bar(abs)\n",1.07f); // test val
+			printf("%5.2f bar(abs)\n",2.07f); // test val
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("NO pressure low pressure side\n") ;		
 		printf("</td>\n") ;
+
 		printf("</tr>\n") ;
 
+		// ROW NO PRESSURE#3
 		// =====================================
 		printf("<tr valign=\"baseline\">\n") ;
 		
@@ -451,8 +469,13 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f bar(abs)\n",3.14f); // test val
+			printf("%5.2f bar(abs)\n",35.14f); // test val
 		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("NO bottle pressure\n") ;		
+		printf("</td>\n") ;
+		
 		printf("</tr>\n") ;
 
 		printf("</table>\n");
