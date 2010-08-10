@@ -37,16 +37,17 @@ all : elekIOGSB
 elekIOGSB: subbuild1 subbuild2
 
 subbuild1 : elekIOGSB.c $(modules) $(headers)
-	     echo elekIOGSB $(VERSION)
+	     @echo now building elekIOGSB $(VERSION)...
 	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) elekIOGSB.c $(modules) -o elekIOGSB $(LDFLAGS)
 	     cp elekIOGSB $(INSTDIR)
 	     
 subbuild2 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigateway.h ../include/elekIO.h ../include/elekIOPorts.h
-	     echo CGI-Gateway
+	     @echo now building CGI-Gateway...
 	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o -o cgigateway.cgi $(LDFLAGS)
 	     cp cgigateway.cgi $(INSTDIR)
 	     
 clean:		
+		@echo cleaning up the mess...
 		rm cgigateway.cgi
 		rm elekIOGSB
 		
