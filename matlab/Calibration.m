@@ -155,7 +155,7 @@ Humid=Flow0./(Flow0+Flow1).*100;
 CalFlag=double(statusData(:,col.InstrumentAction));
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
-set(handles.textH2O,'String',[num2str(H2O(lastrow),3),' ppm']);
+set(handles.textH2O,'String',[num2str(H2O(lastrow),5),' ppm']);
 set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
@@ -312,7 +312,7 @@ end
     
 % display averages
 set(handles.txtCounts,'String',[num2str(data.Counter)]);
-set(handles.txtH2O,'String',[num2str(avgH2O,3),' ppm']);
+set(handles.txtH2O,'String',[num2str(avgH2O,5),' ppm']);
 set(handles.txtWZ1inonl,'String',[num2str(avgDiodeWZ1inonl,3),' mW']);
 set(handles.txtWZ1outonl,'String',[num2str(avgDiodeWZ1outonl,3),' mW']);
 set(handles.txtWZ2inonl,'String',[num2str(avgDiodeWZ2inonl,3),' mW']);
