@@ -155,7 +155,7 @@ Humid=Flow0./(Flow0+Flow1).*100;
 CalFlag=double(statusData(:,col.InstrumentAction));
 
 set(handles.textDUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
-set(handles.textH2O,'String',[num2str(H2O(lastrow),5),' ppm']);
+set(handles.textH2O,'String',[num2str(H2O(lastrow),5     ),' ppm']);
 set(handles.textPamb,'String',[num2str(Pamb(lastrow),4),' mbar']);
 set(handles.textTLicor,'String',[num2str(TLicor(lastrow),4),' C']);
 set(handles.textTH2O,'String',[num2str(TH2O(lastrow),3),' C']);
