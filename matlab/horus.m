@@ -316,7 +316,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
             if ((~bitget(statusData(lastrow,col.Valve1armAxis),14))|(~bitget(statusData(lastrow,col.Valve1armAxis),1))) % Valve(s) still closed
                 disp 'valve(s) closed, -> now OPEN'
                 system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*50/200))]); % set scale 50 sccm Propene flow of 200 sccm MFC to 255
-                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*2000/5000))]); % set scale 2000 sccm Shower flow of 5000 sccm MFC to 255
+                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*500/5000))]); % set scale 500 sccm Shower flow of 5000 sccm MFC to 255
                 %           system(['/lift/bin/eCmd @armAxis w 0xa444 ', num2str(uint16(255*100/500))]); % set scale 50 sccm C3F6 Flow of 500 sccm MFC to 255
                 Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
                 Valveword=bitset(Valveword,1,1);
@@ -333,7 +333,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
                 disp 'Valve was open and/or shower closed -> now CLOSED'
                 %           system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
                 system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC propene
-                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*2000/5000))]); % set/keep set scale 2000 sccm Shower flow of 5000 sccm MFC to 255
+                system(['/lift/bin/eCmd @armAxis w 0xa446 ', num2str(uint16(255*500/5000))]); % set/keep set scale 500 sccm Shower flow of 5000 sccm MFC to 255
                 Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0); % close Valve
                 Valveword=bitset(Valveword,1,1); %keep shower valve open
                 system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
