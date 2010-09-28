@@ -163,6 +163,13 @@ if ~isnan(col.TempDetFunnel)
 else
     TempDetFunnel=statustime; TempDetFunnel(:)=NaN;
 end
+
+if ~isnan(col.TempFiberTube)
+    x=double(statusData(:,col.TempFiberTube)); eval(['TempFiberTube=',fcts2val.TempFiberTube,';']);
+else
+    TempFiberTube=statustime; TempFiberTube(:)=NaN;
+end
+
 if ~isnan(col.TempPenray)
     x=double(statusData(:,col.TempPenray)); eval(['TempPenray=',fcts2val.TempPenray,';']);
 else
@@ -185,7 +192,10 @@ set(handles.txtPNO,'String',[num2str(PNO(lastrow),4),' mbar']);
 set(handles.txtVHV,'String',statusData(lastrow,col.VHV));
 set(handles.txtTDet,'String',[num2str(TDet(lastrow),3),' C']);
 set(handles.txtTDetFunnel,'String',[num2str(TempDetFunnel(lastrow),3),' C']);
-set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
+% for the temp test we would like to see the temp sensor on FiberTube HH
+% sep 2010
+%set(handles.txtTLamp,'String',[num2str(TempPenray(lastrow),3),' C']);
+set(handles.txtTLamp,'String',[num2str(TempFiberTube(lastrow),3),' C']);
 set(handles.txtMFCC3F6,'String',[num2str(MFCC3F6Flow(lastrow),3),' sccm']);
 set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
 set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
