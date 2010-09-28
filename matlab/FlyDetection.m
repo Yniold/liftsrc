@@ -319,13 +319,13 @@ if get(handles.chkPdiff,'Value')
 end 
 if get(handles.chkTDetFunnel,'Value')
     if ~isnan(col.TempDetFunnel)
-        plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempDetFunnel),'r');
+        plot(handles.axes1,statustime(iZeit),TempDetFunnel(iZeit),'r');
         hold(handles.axes1,'on');
     end
 end 
 if get(handles.chkTLamp,'Value')
-    if ~isnan(col.TempPenray)
-        plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.TempPenray),'r');
+    if ~isnan(col.TempFiberTube)
+        plot(handles.axes1,statustime(iZeit),TempFiberTube(iZeit),'r');
         hold(handles.axes1,'on');
     end
 end 
