@@ -472,6 +472,7 @@ else
 end
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
 system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+pause(0.2);
 system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 
 
@@ -498,6 +499,7 @@ if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,c
     end
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(0.2);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
@@ -524,6 +526,7 @@ if (bitget(statusData(lastrow,col.ValveLift),11)==0 & bitget(statusData(lastrow,
     end
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(0.2);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
@@ -551,6 +554,7 @@ if (bitget(statusData(lastrow,col.ValveLift),9)==0 & bitget(statusData(lastrow,c
     end
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
+    pause(0.2);
     system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
 end
 
@@ -800,7 +804,7 @@ if get(hObject,'Value')
         Valveword=bitset(statusData(lastrow,col.ValveLift),14);
         system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(15*140))]);% 15V needed to switch filament relay on
         system(['/lift/bin/eCmd @Lift w 0xa408 ', num2str(Valveword)]);
-        system('sleep 1');
+        pause(0.2);
         system(['/lift/bin/eCmd @Lift w 0xa468 ', num2str(uint16(8*140))]); % 8V needed to keep solenoids open
         set(hObject,'String','Filament is ON');
         set(hObject,'BackgroundColor','g');
