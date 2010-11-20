@@ -17,14 +17,14 @@ MasterLift=133
 MasterarmAxis=80
 
 PMTCounts=100
-MCP1Counts=128
-MCP2Counts=128
+MCP1Counts=120
+MCP2Counts=120
 
 # add 0x8000 to MCP?Gain to activate gain switching
-MCP1Gain=122
+MCP1Gain=116
 MCP1GainWidth=1000
 
-MCP2Gain=127
+MCP2Gain=120 
 MCP2GainWidth=1000
 
 
@@ -59,15 +59,15 @@ echo MCP2: channel 1-35
 
 #PMT
 /lift/bin/eCmd @lift s setmask 0 0x0000
-/lift/bin/eCmd @lift s setmask 1 0xFFF0
-/lift/bin/eCmd @lift s setmask 2 0xFC03
-/lift/bin/eCmd @lift s setmask 3 0x01FF
-/lift/bin/eCmd @lift s setmask 4 0xFFC0
+/lift/bin/eCmd @lift s setmask 1 0x0000    
+/lift/bin/eCmd @lift s setmask 2 0xFF00
+/lift/bin/eCmd @lift s setmask 3 0xF003
+/lift/bin/eCmd @lift s setmask 4 0xFFFF
 /lift/bin/eCmd @lift s setmask 5 0xFFFF
-/lift/bin/eCmd @lift s setmask 6 0x3FFF
+/lift/bin/eCmd @lift s setmask 6 0x1FFF
 /lift/bin/eCmd @lift s setmask 7 0x0000
-/lift/bin/eCmd @lift s setmask 8 0x0000
-/lift/bin/eCmd @lift s setmask 9 0x0000
+/lift/bin/eCmd @lift s setmask 8 0xFFFC
+/lift/bin/eCmd @lift s setmask 9 0xFFFF
 
 if [ $ArmOn -eq 0 ]; then
      
