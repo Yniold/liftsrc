@@ -12,8 +12,8 @@ INSTDIR?=../bin
 
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM
-CROSS_COMPILE=arm-linux-
-LDFLAGS :=-lrt -lm
+CROSS_COMPILE=$(CROSSCHAIN)arm-v4t-linux-gnueabi-
+LDFLAGS :=-lrt -lm -lpthread
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC
@@ -38,7 +38,7 @@ elekIOGSB: subbuild1 subbuild2
 
 subbuild1 : elekIOGSB.c $(modules) $(headers)
 	     @echo now building elekIOGSB $(VERSION)...
-	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) elekIOGSB.c $(modules) -o elekIOGSB $(LDFLAGS)
+	     $(CC) $(CPPFLAGS) -std=gnu99 $(CFLAGS) elekIOGSB.c GSB_IO_thread.c $(modules) -o elekIOGSB $(LDFLAGS)
 	     cp elekIOGSB $(INSTDIR)
 	     
 subbuild2 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigateway.h ../include/elekIO.h ../include/elekIOPorts.h
@@ -48,7 +48,7 @@ subbuild2 : cgigateway.c ../lib/elekIO.o ../lib/udptools.o ../lib/bitop.o cgigat
 	     
 clean:		
 		@echo cleaning up the mess...
-		rm cgigateway.cgi
-		rm elekIOGSB
+		rm -f ./cgigateway.cgi
+		rm -f ./elekIOGSB
 		
 .PHONY: elekIOGSB clean all
