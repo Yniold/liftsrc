@@ -1067,6 +1067,14 @@ struct spectralStatusType     /* structure for the spectrometer data*/
 /* unique key for shared mem access between cgi and elekIOGSB */
 #define GSB_SHMKEY			(0x23072010)
 
+enum GSBType {
+	GSBTYPE_UNKNOWN, /* not defined == 0 */
+    GSBTYPE_GSB_M,   /* Mainz version for NO, non-EX */
+    GSBTYPE_GSB_F,   /* Juelich version, CO non-EX */
+    GSBTYPE_GSB_X,   /* LOLA version, CO-EX, no MFCs */
+    MAX_GSBTYPE
+};
+
 struct GSBStatusType     /* structure for the GasflaschenSicherheitsBehaelter */ 
 {
   /* data structures for the GasflaschenSicherheitsBehaelter */
@@ -1074,6 +1082,9 @@ struct GSBStatusType     /* structure for the GasflaschenSicherheitsBehaelter */
   
   struct timeval             TimeOfDayMaster;
   struct timeval             TimeOfDayGSB;
+  
+  /* for GUI it's nice to know which type of GSB is connected */
+  enum GSBType				 eTypeOfGSB;				
   
   /* LTC DACs via I2C on ARM9 module*/
   /* 24 bit ADC#0 raw data */
@@ -1099,7 +1110,11 @@ struct GSBStatusType     /* structure for the GasflaschenSicherheitsBehaelter */
   
   /* raw PT100 voltages (CO ex version) */
   int32_t					 iRawPT100CO1;
-
+  
+  /* raw internal temp sensors of the ADCs */
+  int32_t					 iTempADC0;
+  int32_t					 iTempADC1;
+  
   /* spare channels */
   int32_t					 iSpare0;
   int32_t					 iSpare1;
@@ -1116,17 +1131,62 @@ struct GSBStatusType     /* structure for the GasflaschenSicherheitsBehaelter */
   
   /* valve control word, 5 lowermost bits used */
   /* controlled via ATmega644 on upper PCB */
-  uint32_t					 uiAVRFirwareRevision;	/* current AVR firmware */
+  uint32_t					 uiAVRFirmwareRevision;	/* current AVR firmware */
   uint16_t					 uiValveControlWord;	/* bitwise used */
   uint16_t					 uiValveVoltageSwitch;	/* should be around 24V, e.g. 24000 */
   uint16_t					 uiValveVoltageHold;	/* T.B.D., ~16V */
-  uint16_t					 uiValveVoltageRead;	/* actual voltage readback from AVR */
+  uint16_t					 uiValveVoltageIs;	    /* actual voltage readback from AVR */
   uint16_t					 uiValveCurrent;		/* sum of current through valves */
   
   /* LED interior light */
   uint16_t					 uiLEDCurrentSet;		/* setpoint for LED current */
   uint16_t					 uiLEDCurrentIs;		/* reading of LED current */
-  uint16_t					 uiLEDVoltage;			/* reading of LED voltage */    
+  uint16_t					 uiLEDVoltage;			/* reading of LED voltage */  
+    
+/* ============================================================================ */
+/* structure below here is extended with doubles to transfer the calculated     */
+/* values (bar, celsius and so on) to the web gui                               */
+/* may be omitted for transfer to elekStatus, as evaluation might be also done  */
+/* in Matlab, but this will provide at least an overview of what's going on in  */
+/* the containment                                                              */
+/* ============================================================================ */
+
+  double					 dFlowMFC1;
+  double					 dFlowMFC2;
+  double					 dFlowMFC3;
+  
+  /* pressure readings (NO variant) */
+  double					 dPressureNO1;
+  double					 dPressureNO2;
+  double					 dPressureNO3;
+  
+  /* PT100 temp (NO variant) */
+  double					 dPT100NO1;
+  double					 dPT100NO2;
+  
+  /* pressure readings (CO ex version) */
+  double 					 dPressureCO1;
+  double					 dPressureCO2;
+  double					 dPressureCO3;
+  
+  /* PT100 temp (CO ex version) */
+  double					 dPT100CO1;
+  
+  /* internal temp of the ADCs */
+  double					 dTempADC0;
+  double					 dTempADC1;
+  
+  /* LED current & voltage */
+  double					 dLedCurrentIs;
+  double					 dLedCurrentSet;
+  double					 dLedVoltage;
+  
+  /* Valve current & voltage */
+  double					 dValveVoltageSwitch;	/* should be around 24V */
+  double					 dValveVoltageHold;	    /* T.B.D., ~10V */
+  double					 dValveVoltageIs;	    /* actual voltage readback from AVR */
+  double					 dValveCurrent;			/* sum of current through valves */
+  
 };
 
 extern int elkInit(void);
