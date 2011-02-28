@@ -227,9 +227,21 @@ int main()
 	if(ePageToDisplay == E_PAGE_DEBUG)
 	{
 		printf("Content-type: text/html\n\n") ;
-		
 		printf("<html>\n") ;
-		printf("<head><title>GSB Webinterface</title></head>\n") ;
+		if(pGSBStatus)
+		{
+			switch(pGSBStatus->eTypeOfGSB)
+			{
+				case GSBTYPE_GSB_X:
+					printf("<head><title>GSB Webinterface (GSB-X)</title></head>\n") ;
+				case GSBTYPE_GSB_M:
+					printf("<head><title>GSB Webinterface (GSB-M)</title></head>\n") ;
+				case GSBTYPE_GSB_F:
+					printf("<head><title>GSB Webinterface (GSB-F)</title></head>\n") ;
+				default:
+					printf("<head><title>GSB Webinterface (unspecified)</title></head>\n") ;
+			};
+		};		
 		printf("<body>\n") ;
 		printf("<h1>Debug Page</h1>\n") ;
 		printf("SharedMem dump:<br>");
@@ -267,11 +279,48 @@ int main()
 		printf("Content-type: text/html\n\n") ;
 		
 		printf("<html>\n") ;
-		printf("<head><title>GSB Webinterface</title></head>\n") ;
+		if(pGSBStatus)
+		{
+			switch(pGSBStatus->eTypeOfGSB)
+			{
+				case GSBTYPE_GSB_X:
+					printf("<head><title>GSB Webinterface (GSB-X)</title></head>\n");
+					break;
+					
+				case GSBTYPE_GSB_M:
+					printf("<head><title>GSB Webinterface (GSB-M)</title></head>\n");
+					break;
+					
+				case GSBTYPE_GSB_F:
+					printf("<head><title>GSB Webinterface (GSB-F)</title></head>\n");
+					break;
+					
+				default:
+					printf("<head><title>GSB Webinterface (unspecified)</title></head>\n");
+					break;
+			};
+		};		
 		printf("<body>\n") ;
-		printf("<h1>Status Page</h1>\n") ;
+		switch(pGSBStatus->eTypeOfGSB)
+		{
+			case GSBTYPE_GSB_X:
+				printf("<h1>Status Page (GSB-X)</h1>\n");
+				break;
+				
+			case GSBTYPE_GSB_M:
+				printf("<h1>Status Page (GSB-M)</h1>\n");
+				break;
+
+			case GSBTYPE_GSB_F:
+				printf("<h1>Status Page (GSB-F)</h1>\n");
+				break;
+
+			default:
+				printf("<h1>Status Page (GSB-X)</h1>\n");
+				break;
+		};
 		
-		printf("<table border=\"0\">\n") ;
+		printf("<table border=\"0\">\n");
 
 		// ROW with headers
 		// =====================================
@@ -309,7 +358,7 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f sccm\n",9.24f); // test val
+			printf("%+5.3f sccm\n",pGSBStatus->dFlowMFC1);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
@@ -318,7 +367,7 @@ int main()
 
 		// edit fields & submit buttons for MFC Setpoint1
 		printf("<td>\n") ;		
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"><DIV>Setpoint MFC1:\n",getenv("SERVER_NAME"));
+		printf("<FORM ACTION=\"/cgi-bin/cgigateway.cgi\" METHOD=\"get\"><DIV>Setpoint MFC1:\n");
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
@@ -347,7 +396,7 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f sccm\n",9.24f); // test val
+			printf("%+5.3f sccm\n",pGSBStatus->dFlowMFC2);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
@@ -356,7 +405,7 @@ int main()
 
 		// edit fields & submit buttons for MFC Setpoint2
 		printf("<td>\n") ;		
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC2:\n",getenv("SERVER_NAME"));
+		printf("<FORM ACTION=\"/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC2:\n");
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 
@@ -385,7 +434,7 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f sccm\n",9.24f); // test val
+			printf("%+5.3f sccm\n",pGSBStatus->dFlowMFC3);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
@@ -394,7 +443,7 @@ int main()
 
 		// edit fields & submit buttons for MFC Setpoint3
 		printf("<td>\n") ;
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC3:\n",getenv("SERVER_NAME"));
+		printf("<FORM ACTION=\"/cgi-bin/cgigateway.cgi\" METHOD=\"get\"> <DIV>Setpoint MFC3:\n");
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setflow\">\n");
 	
@@ -422,7 +471,7 @@ int main()
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f bar(abs)\n",0.89f); // test val
+			printf("%+5.3f bar(abs)\n",pGSBStatus->dPressureNO1);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
@@ -441,12 +490,12 @@ int main()
 
 		printf("<td bgcolor=\"#808080\">\n") ;
 		if(pGSBStatus)
-			printf("%+08dcts\n",pGSBStatus->iRawPressureNO1);
+			printf("%+08dcts\n",pGSBStatus->iRawPressureNO2);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f bar(abs)\n",2.07f); // test val
+			printf("%+5.3f bar(abs)\n",pGSBStatus->dPressureNO2);
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
 		printf("NO pressure low pressure side\n") ;		
@@ -464,12 +513,12 @@ int main()
 
 		printf("<td bgcolor=\"#808080\">\n") ;
 		if(pGSBStatus)
-			printf("%+08dcts\n",pGSBStatus->iRawPressureNO1);
+			printf("%+08dcts\n",pGSBStatus->iRawPressureNO3);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#00C000\">\n") ;
 		if(pGSBStatus)
-			printf("%5.2f bar(abs)\n",35.14f); // test val
+			printf("%+5.3f bar(abs)\n",pGSBStatus->dPressureNO3);
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
@@ -478,11 +527,83 @@ int main()
 		
 		printf("</tr>\n") ;
 
+		// ROW NO PT100 #1
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("PT100 Bottle Temp:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawPT100NO1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%+5.3f &deg;C\n",pGSBStatus->dPT100NO1);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("NO bottle Temperature\n") ;		
+		printf("</td>\n") ;
+		
+		printf("</tr>\n") ;
+
+		// ROW NO PT100 #2
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("PT100 Containment Temp:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iRawPT100NO2);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%+5.3f &deg;C\n",pGSBStatus->dPT100NO2);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("Containment inside Temperature\n") ;		
+		printf("</td>\n") ;
+		
+		printf("</tr>\n") ;
+
+		// ADC Temp ADC#0
+		// =====================================
+		printf("<tr valign=\"baseline\">\n") ;
+		
+		printf("<td>\n") ;
+		printf("Electronics Temperature:\n") ;
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#808080\">\n") ;
+		if(pGSBStatus)
+			printf("%+08dcts\n",pGSBStatus->iTempADC0);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#00C000\">\n") ;
+		if(pGSBStatus)
+			printf("%+5.3f &deg;C\n",pGSBStatus->dTempADC0);
+		printf("</td>\n") ;
+
+		printf("<td bgcolor=\"#66CC00\">\n") ;
+		printf("Temperature inside ADC#0\n") ;		
+		printf("</td>\n") ;
+		
+		printf("</tr>\n") ;
+
 		printf("</table>\n");
 		
 		// =====================================================================================================
 		// check boxes for Valve1
-		printf("<FORM ACTION=\"http://%s/cgi-bin/cgigateway.cgi\" METHOD=\"get\">\n",getenv("SERVER_NAME"));
+		printf("<FORM ACTION=\"/cgi-bin/cgigateway.cgi\" METHOD=\"get\">\n");
 		printf("<INPUT NAME=\"page\" TYPE=\"hidden\" VALUE=\"status\">\n");
 		printf("<INPUT NAME=\"cmd\" TYPE=\"hidden\" VALUE=\"setvalve\">\n");
 	
