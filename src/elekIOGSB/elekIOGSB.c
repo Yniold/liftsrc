@@ -30,6 +30,7 @@
 #include "../include/elekIO.h"
 #include "../include/elekIOPorts.h"
 #include "elekIOGSB.h"
+#include "GSB_IO_thread.h"
 
 #define STATUS_INTERVAL  200
 
@@ -38,6 +39,32 @@
 #undef DEBUG_TIMER
 
 #define CPUCLOCK 200000000UL 	// CPU clock of ARM9
+
+#define STRINGIFY_(x) #x
+#define STRINGIFY(x) STRINGIFY_(x)
+ 
+#if defined(__AVR__)
+#define CPUTYPE "AVR"
+
+#elif defined (__arm__)
+#define CPUTYPE "ARM"
+
+#elif defined (__i386__)
+#define CPUTYPE "Intel i386"
+
+#else
+#define CPUTYPE ""
+#endif
+ 
+#if defined(__GNUC__)
+#if defined(__GNUC_PATCHLEVEL__)
+#define COMPILER CPUTYPE "-" "GCC" " " STRINGIFY(__GNUC__) "." STRINGIFY(__GNUC_MINOR__) "." STRINGIFY(__GNUC_PATCHLEVEL__)
+#else
+#define COMPILER CPUTYPE "-" "GCC" " " STRINGIFY(__GNUC__) "." STRINGIFY(__GNUC_MINOR__)
+#endif
+#endif
+
+struct GSBStatusType* pGSBStatus;
 
 enum InPortListEnum
 {
@@ -205,66 +232,66 @@ int ChangePriority()
 
 int main(int argc, char *argv[])
 {
-   extern int errno;
-   extern int StatusFlag;
-   extern enum TimerSignalStateEnum TimerState;
+	extern int errno;
+	extern int StatusFlag;
+	extern enum TimerSignalStateEnum TimerState;
 
-   extern struct MessagePortType MessageInPortList[];
-   extern struct MessagePortType MessageOutPortList[];
+	extern struct MessagePortType MessageInPortList[];
+	extern struct MessagePortType MessageOutPortList[];
 
-   uint64_t ulCpuClock = CPUCLOCK;
+	uint64_t ulCpuClock = CPUCLOCK;
 
-   int nLostPackets = 0;				// counter for lost packets from slave
+	int nLostPackets = 0;				// counter for lost packets from slave
 
-   int fdMax;                      // max fd for select
-   int i;                          // loop counter
-   int fdNum;                      // fd number in loop
-   fd_set fdsMaster;               // master file descriptor list
-   fd_set fdsSelect;               // temp file descriptor list for select()
-   int ret;
-   uint64_t ProcessTick;
-   uint64_t TSC,TSCin;
-   uint64_t TSCsentPacket;
-   uint64_t MinTimeDiff=1e6;
-   uint64_t MaxTimeDiff=0;
-   struct timeval StartAction;
-   struct timeval StopAction;
-   struct timeval LastAction;
-   struct timeval GetStatusStartTime;
-   struct timeval GetStatusStopTime;
-   float ProcessTime;
-   struct tm tmZeit;
+	int fdMax;                      // max fd for select
+	int i;                          // loop counter
+	int fdNum;                      // fd number in loop
+	fd_set fdsMaster;               // master file descriptor list
+	fd_set fdsSelect;               // temp file descriptor list for select()
+	int ret;
+	uint64_t ProcessTick;
+	uint64_t TSC,TSCin;
+	uint64_t TSCsentPacket;
+	uint64_t MinTimeDiff=1e6;
+	uint64_t MaxTimeDiff=0;
+	struct timeval StartAction;
+	struct timeval StopAction;
+	struct timeval LastAction;
+	struct timeval GetStatusStartTime;
+	struct timeval GetStatusStopTime;
+	float ProcessTime;
+	struct tm tmZeit;
 
-   struct sigaction  SignalAction;
-   struct sigevent   SignalEvent;
-   sigset_t          SignalMask;
+	struct sigaction  SignalAction;
+	struct sigevent   SignalEvent;
+	sigset_t          SignalMask;
 
-   struct itimerspec StatusTimer;
-   timer_t           StatusTimer_id;
-   clock_t           clock = CLOCK_REALTIME;
-   int               StatusInterval=STATUS_INTERVAL;
+	struct itimerspec StatusTimer;
+	timer_t           StatusTimer_id;
+	clock_t           clock = CLOCK_REALTIME;
+	int               StatusInterval=STATUS_INTERVAL;
 
-   struct timespec pselect_timeout;
+	struct timespec pselect_timeout;
 
-   struct timespec RealTime;         // Real time clock
-   struct sockaddr_in my_addr;     // my address information
-   struct sockaddr_in their_addr;  // connector's address information
-   int    numbytes;
-   socklen_t addr_len;
-   char   buf[GENERIC_BUF_LEN];
-   bool   EndOfSession;
-   int    MessagePort;
-   int    MessageNumber;
-   struct ElekMessageType Message;
+	struct timespec RealTime;         // Real time clock
+	struct sockaddr_in my_addr;     // my address information
+	struct sockaddr_in their_addr;  // connector's address information
+	int    numbytes;
+	socklen_t addr_len;
+	char   buf[GENERIC_BUF_LEN];
+	bool   EndOfSession;
+	int    MessagePort;
+	int    MessageNumber;
+	struct ElekMessageType Message;
 
-   int SlaveNum;
-   int Task;
-   int Channel;
-   int MaskAddr;
-   struct SyncFlagType SyncFlag;
-   int RequestDataFlag;
+	int SlaveNum;
+	int Task;
+	int Channel;
+	int MaskAddr;
+	struct SyncFlagType SyncFlag;
+	int RequestDataFlag;
 
-	struct GSBStatusType* pGSBStatus;
+
 	struct timeval tvLocalTime;
 	char c;
 	int iShmHandle;
@@ -290,58 +317,64 @@ int main(int argc, char *argv[])
 
 	// pointer now is a pointer to struct
 	pGSBStatus = (struct GSBStatusType*) shm;
-	
-   // setup master fd
-   FD_ZERO(&fdsMaster);              // clear the master and temp sets
-   FD_ZERO(&fdsSelect);
-   InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
-   addr_len = sizeof(struct sockaddr);
+	// setup master fd
+	FD_ZERO(&fdsMaster);              // clear the master and temp sets
+	FD_ZERO(&fdsSelect);
+	InitUDPPorts(&fdsMaster,&fdMax);                  // Setup UDP in and out Ports
 
-   // output version info on debugMon and Console
-   //
-   printf("This is elekIOGSB Version %3.2f for ARM\n",VERSION);
-   sprintf(buf, "This is elekIOGSB Version %3.2f for ARM\n",VERSION);
-   SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	addr_len = sizeof(struct sockaddr);
 
-    /* set up signal haendler */
+	// output version info on debugMon and Console
+	//
+	printf("This is elekIOGSB Version %3.2f for ARM\n",VERSION);
+	printf("Compiled with %s\n",COMPILER);
+	sprintf(buf, "This is elekIOGSB Version %3.2f for ARM\n",VERSION);
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
+	sprintf(buf, "Compiled with %s\n",COMPILER);
+	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
-   sigfillset(&SignalAction.sa_mask);
-   SignalAction.sa_flags = 0;
-   SignalAction.sa_handler = signalstatus;
-   sigaction(SIGNAL_STATUS, &SignalAction, NULL);
+	// Init I2C IO Thread
+	GSBIOThreadInit();
 
-    /* Set up timer: */
-   memset(&SignalEvent, 0, sizeof(SignalEvent));
-   SignalEvent.sigev_notify = SIGEV_SIGNAL;
-   SignalEvent.sigev_signo = SIGNAL_STATUS;
-   SignalEvent.sigev_value.sival_int = 0;
+	/* set up signal handler */
 
-   ret= timer_create(clock, &SignalEvent, &StatusTimer_id);
-   if (ret < 0)
-     {
-	perror("timer_create");
-	return EXIT_FAILURE;
-     }
+	sigfillset(&SignalAction.sa_mask);
+	SignalAction.sa_flags = 0;
+	SignalAction.sa_handler = signalstatus;
+	sigaction(SIGNAL_STATUS, &SignalAction, NULL);
 
-   /* Start timer: */
-   StatusTimer.it_interval.tv_sec =   StatusInterval / 1000;
-   StatusTimer.it_interval.tv_nsec = (StatusInterval % 1000) * 1000000;
-   StatusTimer.it_value = StatusTimer.it_interval;
-   ret = timer_settime(StatusTimer_id, 0, &StatusTimer, NULL);
-   if (ret < 0)
-     {
-	perror("timer_settime");
-	return EXIT_FAILURE;
-     }
+	/* Set up timer: */
+	memset(&SignalEvent, 0, sizeof(SignalEvent));
+	SignalEvent.sigev_notify = SIGEV_SIGNAL;
+	SignalEvent.sigev_signo = SIGNAL_STATUS;
+	SignalEvent.sigev_value.sival_int = 0;
 
-   sigemptyset(&SignalMask);
-   gettimeofday(&LastAction, NULL);
-   EndOfSession=FALSE;
-   RequestDataFlag=FALSE;
+	ret= timer_create(clock, &SignalEvent, &StatusTimer_id);
+	if (ret < 0)
+	{
+		perror("timer_create");
+		return EXIT_FAILURE;
+	}
 
-   while (!EndOfSession)
-     {
+	/* Start timer: */
+	StatusTimer.it_interval.tv_sec =   StatusInterval / 1000;
+	StatusTimer.it_interval.tv_nsec = (StatusInterval % 1000) * 1000000;
+	StatusTimer.it_value = StatusTimer.it_interval;
+	ret = timer_settime(StatusTimer_id, 0, &StatusTimer, NULL);
+	if (ret < 0)
+	{
+		perror("timer_settime");
+		return EXIT_FAILURE;
+	}
+
+	sigemptyset(&SignalMask);
+	gettimeofday(&LastAction, NULL);
+	EndOfSession=FALSE;
+	RequestDataFlag=FALSE;
+
+	while (!EndOfSession)
+	{
 	write(2,"Wait for data..\r",16);
 
 	fdsSelect=fdsMaster;
@@ -358,14 +391,14 @@ int main(int argc, char *argv[])
 
 	gettimeofday(&StartAction, NULL);
 
-#ifdef DEBUG_TIMER
+	#ifdef DEBUG_TIMER
 	printf("Time:");
 	localtime_r(&StartAction.tv_sec,&tmZeit);
 
 	printf("%02d:%02d:%02d.%03d :%d\n", tmZeit.tm_hour, tmZeit.tm_min,
 	       tmZeit.tm_sec, StartAction.tv_usec/1000,TimerState);
 	printf("ret %d StatusFlag %d\n",ret,StatusFlag);
-#endif
+	#endif
 
 	if (ret ==-1 )
 	  {
