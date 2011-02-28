@@ -20,10 +20,11 @@ SOURCEDIR = $(shell /bin/pwd)
 DESTDIR?=$(shell /bin/pwd)/bin/
 INSTDIR?=$(DESTDIR)
 LIBDIR := $(DESTDIR)/lib/
+CROSSCHAIN=/opt/OSELAS.Toolchain-trunk/arm-v4t-linux-gnueabi/gcc-4.1.2-glibc-2.5-binutils-2.17-kernel-2.6.18/bin/
 
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM -Wa,-mapcsfloat
-CROSS_COMPILE=arm-linux-
+CROSS_COMPILE=$(CROSSCHAIN)arm-v4t-linux-gnueabi-
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC
