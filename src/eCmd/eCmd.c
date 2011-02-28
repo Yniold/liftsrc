@@ -715,10 +715,10 @@ int main(int argc, char *argv[])
     	    };	  
 
             if (strcasecmp(argv[ArgCount],"gsbflow")==0) {
-    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
-    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    	      if (argc>ArgCount+2) { // do we still have a given parameter ?
+    		    Addr=strtol(argv[ArgCount+1],NULL,0) & 0x3;	// we only have Flowcontrollers 0-2
+    		    Value=strtol(argv[ArgCount+2],NULL,0) & 0xFFFF; // max 65535 flow rate
     		    MsgType=MSG_TYPE_GSB_SETFLOW;
-    		    Addr=0;
     	      } else { // we don't have enough parameter
     		printf("Error please supply parameter for %s\n",argv[ArgCount]);
     	      }
@@ -731,7 +731,7 @@ int main(int argc, char *argv[])
     		    // mask lower 5bits, because we only use these
     		    Value = Value & 0x1F;
     		    MsgType=MSG_TYPE_GSB_SETVALVE;
-    		    Addr=0;
+    		    Addr=Value;
     	      } else { // we don't have enough parameter
     		printf("Error please supply parameter for %s\n",argv[ArgCount]);
     	      }
@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
     		    	Value = 255;
     		    }
     		    MsgType=MSG_TYPE_GSB_SETLIGHT;
-    		    Addr=0;
+    		    Addr=Value;
     	      } else { // we don't have enough parameter
     		printf("Error please supply parameter for %s\n",argv[ArgCount]);
     	      }
