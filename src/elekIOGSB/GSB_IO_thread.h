@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include "gsb.h"
 
 #ifndef false 
 #define false 0
@@ -33,7 +34,8 @@ struct  sGSBIOThreadType
 {
 	int iFD;
 	int iCommand;
-	struct GSBStatusType *psStatus;	
+	struct GSBStatusType *psStatus;
+	struct sI2CMessageQueue *pMessageQueue;
 };
 
 typedef struct sADCStruct0_t

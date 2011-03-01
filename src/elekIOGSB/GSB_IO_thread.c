@@ -68,6 +68,9 @@ pthread_attr_t ThreadAttribute;
 
 struct sGSBIOThreadType sGSBIOThread;
 
+// Queue is defined in elekIOGSB.c
+extern struct sI2CMessageQueue MyMessageQueue;
+
 // we need this mutex for synchronisation of the structure access
 pthread_mutex_t mGSBIOThreadMutex;
 
@@ -94,6 +97,8 @@ int GSBIOThreadInit(void)
 	// pointer to shm status structure so thread has these informations
 	sGSBIOThread.iFD = iGSBIOThreadFile;
 	sGSBIOThread.psStatus = pGSBStatus;
+	sGSBIOThread.pMessageQueue = &MyMessageQueue;
+	
 	
 	#ifdef DEBUG_IOTHREAD
 	printf("<GSBTHREAD> GSBIOThreadInit(): FD is %d\n\r", iGSBIOThreadFile);

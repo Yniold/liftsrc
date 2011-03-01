@@ -31,6 +31,7 @@
 #include "../include/elekIOPorts.h"
 #include "elekIOGSB.h"
 #include "GSB_IO_thread.h"
+#include "gsb.h"
 
 #define STATUS_INTERVAL  200
 
@@ -65,6 +66,7 @@
 #endif
 
 struct GSBStatusType* pGSBStatus;
+struct sI2CMessageQueue MyMessageQueue;
 
 enum InPortListEnum
 {

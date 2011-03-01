@@ -4,6 +4,7 @@
 #define REJECTION_50HZ_60HZ 	(0)
 #define REJECTION_50HZ 			(1)
 #define REJECTION_60HZ  		(2)
+#define MAX_I2C_QUEUE_ENTRIES	(10)
 
 extern int DAC_SetChannel(int iFD, int iChannel, unsigned short usDACValue);
 extern int ADC_GetChannel(int iFD, int iADC, int iChannel, int *piReading);
@@ -48,6 +49,28 @@ union sLTCData
 	struct sLTCDataField LDField;
 	unsigned char LCArray[4];
 };
- 
+
+// We need this for internal communication
+// from the main elekIOGSB thread to the
+// background polling I2C thread
+
+// When the polling thread is idle,
+// we can send commands to control valves,
+// set flows etc.
+
+struct sI2CMessageQueueEntry
+{
+	unsigned char ucMsgLength;		// length of the MSG in bytes
+	unsigned char ucI2CAddress;		// I2C device we are talking to
+	unsigned char aMsgBuffer[32];	// the message we should send out	
+};
+
+struct sI2CMessageQueue
+{
+	unsigned char ucHead;
+	unsigned char ucTail;
+	struct sI2CMessageQueueEntry sI2CMessage[MAX_I2C_QUEUE_ENTRIES];
+};
+
 #pragma pack(pop)
 #endif
