@@ -10,7 +10,7 @@
 // ============================================
 
 #define DEBUG_IOTHREAD
-//#define DEBUG_ADC_READOUT
+#define DEBUG_ADC_READOUT 1
 
 #include <stdio.h>
 #include <string.h>
@@ -53,6 +53,12 @@ unsigned char aGSBIOThreadTxBuffer[1024];
 
 unsigned int uiNumBytesRx;
 unsigned char aRxBuffer[35];
+
+// use these two for doing performance measurements
+// for reduction of ADC conversion times to the minimum
+
+struct timeval StopWatchStartTime;
+struct timeval StopWatchStopTime;
 
 struct sRawADCStruct sMyADCStruct;
 
@@ -172,9 +178,27 @@ void GSBIOThreadFunc(void* pArgument)
 	// thread will run endless till exit();
 	while(true)
 	{
-    	printf("<GSBTHREAD> Starting ADC#0 conversion\n\r");
+		gettimeofday(&StopWatchStartTime, NULL);
+
+	    printf("<GSBTHREAD> Starting ADC#0 conversion\n\r");
    		ADC_FetchData(sStructure->iFD, 0, &sMyADCStruct);
 
+		gettimeofday(&StopWatchStopTime, NULL);
+		
+		unsigned long ulTimeDiffMillisecs;
+		if(((StopWatchStopTime.tv_usec-StopWatchStartTime.tv_usec)/1000) < 0) // check negative
+		{
+			ulTimeDiffMillisecs = 1000*((StopWatchStopTime.tv_sec-StopWatchStartTime.tv_sec)+1);
+			ulTimeDiffMillisecs -= (1000+(StopWatchStopTime.tv_usec-StopWatchStartTime.tv_usec)/1000);
+		}
+		else
+		{
+			ulTimeDiffMillisecs = 1000*(StopWatchStopTime.tv_sec-StopWatchStartTime.tv_sec);
+			ulTimeDiffMillisecs += ((StopWatchStopTime.tv_usec-StopWatchStartTime.tv_usec)/1000);
+		};
+		printf("<GSBTHREAD> Time for 9 channels: %06ldms\n\r",ulTimeDiffMillisecs);
+		printf("<GSBTHREAD> Average time for 1 channel: %06ldms\n\r",ulTimeDiffMillisecs / 9);
+		printf("<GSBTHREAD> if we do it right[TM] -> 1 channel: %06ldms\n\r",ulTimeDiffMillisecs / 18);
     	printf("<GSBTHREAD> Starting ADC#1 conversion\n\r");
    		ADC_FetchData(sStructure->iFD, 1, &sMyADCStruct);
 
@@ -223,6 +247,11 @@ void GSBIOThreadFunc(void* pArgument)
    		// TODO: read in config file and set GSB type properly
    		sStructure->psStatus->eTypeOfGSB = GSBTYPE_GSB_M;
 		
+		// DEBUG
+		if(1)
+		{
+			CheckAndPopMessageQueue(sStructure);		
+		}		
 		// unlock access
 		pthread_mutex_unlock(&mGSBIOThreadMutex);
    	};
@@ -379,7 +408,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			//printf("<GSBTHREAD> errno = %d, %s\n", errno, strerror(errno));
 			//printf("<GSBTHREAD> status = %d \n\r",status);				
 		
-			usleep(10000);
+			usleep(1000);
 		}
 	}
 	while(status < 0);
@@ -390,7 +419,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 		status = read(iFD,aBuffer,4);
 		if (status < 0)
 		{
-			usleep(10000);
+			usleep(1000);
 		}
 	}
 	while(status < 0);
@@ -398,21 +427,15 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 	#ifdef DEBUG_ADC_READOUT
 	printf("%02X:%02x:%02X:%02X ->",aBuffer[0],aBuffer[1],aBuffer[2],aBuffer[3]);
 	#endif
-	
+
 	// endianess is swapped, so swap back
-	aTempVal[0] = aBuffer[3];
-	aTempVal[1] = aBuffer[2];
-	aTempVal[2] = aBuffer[1];
-	aTempVal[3] = aBuffer[0] & 0x7F; // mask sign bit
+	strLTCData.LCArray[0] = aBuffer[3];
+	strLTCData.LCArray[1] = aBuffer[2];
+	strLTCData.LCArray[2] = aBuffer[1];
+	strLTCData.LCArray[3] = aBuffer[0];
 
-	// set int pointer to start of 4 byte array
-	int* piTemperature = (int*)&aTempVal;
-	int	iReading;
-	
-	// so we get an int
-	iReading = *piTemperature;
-
-	// only the first 24 bits are valid, so throw away 8bit - 1 sign bit = 7 bit
+	// use the bitfield & union to get the signed 24bit reading
+	int iReading = (signed int)strLTCData.iReading32 - 2147483648;
 	iReading = iReading / 128;
 	
 	// save temp data
@@ -467,9 +490,11 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 		strLTCData.LCArray[3] = aBuffer[0];
 
 		// use the bitfield & union to get the signed 24bit reading
-		int iReading = strLTCData.LDField.LTReading;
+//		int iReading = strLTCData.LDField.LTReading;
+		int iReading = (signed int)strLTCData.iReading32 - 2147483648;
 
-		double dVoltage = (double)iReading * (double)2.5f / (double)16777216.0f;
+//		double dVoltage = (double)iReading * (double)2.5f / (double)16777216.0f;
+		double dVoltage = (double)iReading * (double)5.0f / (double)2147483648;
 		printf("Channel %02d: %+09d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReading, dVoltage, dVoltage * 3);
 
 		// store in array
@@ -533,7 +558,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			{
 				double dOhms = dVoltage / 200e-6f;				
 				double dTemp = Ohm2Temperature(dOhms);
-				printf("Temp:  %+5.3f degrees celsius\n\r",dTemp);
+				printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
 				sADCStruct->ADC0.dPT100Temp0 = dTemp;
 			};
 
@@ -541,7 +566,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			{
 				double dOhms = dVoltage / 200e-6f;				
 				double dTemp = Ohm2Temperature(dOhms);
-				printf("Temp:  %+5.3f degrees celsius\n\r",dTemp);
+				printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
 				sADCStruct->ADC0.dPT100Temp1 = dTemp;
 			};
 		};
@@ -592,6 +617,57 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 		};
 	};
 	return 0;
+};
+
+// =================================================================
+// check if we got an I2C message in the queue to be sent out
+// and do so if any message is available
+// =================================================================
+
+void CheckAndPopMessageQueue(struct sGSBIOThreadType *sThreadStructure)
+{
+	// check if we have a message from the main GSB thread to send via I2C
+	printf("Message Queue Head: %03d\n\r",sThreadStructure->pMessageQueue->ucHead);
+	printf("Head Message is:");
+
+	// print HEAD message in HEX for debug
+	int iPrintLoop = 0;
+	for(iPrintLoop = 0; iPrintLoop < 10; iPrintLoop++)
+	{
+		printf("0x%02X ",sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].aMsgBuffer[iPrintLoop]);
+	};
+	printf("Length: %02d byte\n\r",sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].ucMsgLength);
+	printf("I2Cadr: 0x%02x\n\r",sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].ucI2CAddress);
+	printf("Message Queue Tail: %03d\n\r",sThreadStructure->pMessageQueue->ucTail);
+
+
+	int status;
+
+	if(sThreadStructure->pMessageQueue->ucHead != sThreadStructure->pMessageQueue->ucTail)
+	{
+		// try to change slave address to new value
+		status = ioctl(sThreadStructure->iFD, I2C_SLAVE_FORCE, \
+						sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].ucI2CAddress);
+		if (status < 0)
+		{
+			printf("<GSBTHREAD> MSG_POP: ioctl(fd, I2C_SLAVE) failed\n");
+			printf("<GSBTHREAD> errno = %d, %s\n", errno, strerror(errno));
+		}
+
+		// write I2C cmd from queue
+		do
+		{		
+			status = write(sThreadStructure->iFD,sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].aMsgBuffer,\
+							sThreadStructure->pMessageQueue->sI2CMessage[sThreadStructure->pMessageQueue->ucHead].ucMsgLength);
+
+			if (status < 0)
+			{
+				usleep(10000);
+			}
+		}
+		while(status < 0);
+		sThreadStructure->pMessageQueue->ucTail = (sThreadStructure->pMessageQueue->ucTail+1) % MAX_I2C_QUEUE_ENTRIES;
+	};
 };
 
 // =================================================================

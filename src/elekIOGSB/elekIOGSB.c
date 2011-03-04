@@ -32,6 +32,7 @@
 #include "elekIOGSB.h"
 #include "GSB_IO_thread.h"
 #include "gsb.h"
+#include "i2c-commands.h"
 
 #define STATUS_INTERVAL  200
 
@@ -66,7 +67,8 @@
 #endif
 
 struct GSBStatusType* pGSBStatus;
-struct sI2CMessageQueue MyMessageQueue;
+volatile struct sI2CMessageQueue MyMessageQueue;
+extern pthread_mutex_t mGSBIOThreadMutex;
 
 enum InPortListEnum
 {
@@ -336,6 +338,9 @@ int main(int argc, char *argv[])
 	sprintf(buf, "Compiled with %s\n",COMPILER);
 	SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 
+	MyMessageQueue.ucHead = MAX_I2C_QUEUE_ENTRIES-1;
+	MyMessageQueue.ucTail = MAX_I2C_QUEUE_ENTRIES-1;
+
 	// Init I2C IO Thread
 	GSBIOThreadInit();
 
@@ -534,7 +539,29 @@ int main(int argc, char *argv[])
 				 		
 				 		// save in structure for now
 				 		pGSBStatus->uiValveControlWord = Message.Addr & 0x1F;
-
+				 		
+				 		// ================== critical section ====================
+						// data exchange with main thread
+						// lock access to queue structure against I/O thread
+						pthread_mutex_lock(&mGSBIOThreadMutex);
+						
+						// we have a circular buffer
+						// so increase head with wrap around
+						MyMessageQueue.ucHead = ((MyMessageQueue.ucHead)+1) % MAX_I2C_QUEUE_ENTRIES;
+						unsigned char ucIndex = MyMessageQueue.ucHead;
+						
+						// fill the I2C message structure to talk to GSB AVR
+						MyMessageQueue.sI2CMessage[ucIndex].ucI2CAddress = AVR_I2C_ADDR;		// AVR
+						MyMessageQueue.sI2CMessage[ucIndex].aMsgBuffer[0] = CMD_SET_VALVEBITS;	// I2C command code
+						MyMessageQueue.sI2CMessage[ucIndex].aMsgBuffer[1] = 0x01;				// number of parameters
+						MyMessageQueue.sI2CMessage[ucIndex].aMsgBuffer[2] = Message.Addr & 0x1F;// parameter byte
+						MyMessageQueue.sI2CMessage[ucIndex].ucMsgLength = 3;					// msg length
+						
+						// unlock
+						pthread_mutex_unlock(&mGSBIOThreadMutex);
+						
+				 		// ================== /critical section ====================
+				 														
 						// reply with an ACK	
 						Message.Status = Message.Value;
 						Message.MsgType = MSG_TYPE_ACK;
