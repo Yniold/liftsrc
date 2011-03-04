@@ -11,6 +11,8 @@
 // Valves are coded in Bit0-4
 // other bits not used
 
+#define AVR_I2C_ADDR				(0x10)
+
 #define CMD_SET_VALVEBITS           (0xE0)
 
 #define CMD_SET_VALVEVOLT_HOLD      (0xE1)
