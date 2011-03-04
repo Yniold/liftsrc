@@ -10,7 +10,7 @@
 // ============================================
 
 #define DEBUG_IOTHREAD
-#define DEBUG_ADC_READOUT 1
+//#define DEBUG_ADC_READOUT 1
 
 #include <stdio.h>
 #include <string.h>
@@ -181,7 +181,9 @@ void GSBIOThreadFunc(void* pArgument)
 		gettimeofday(&StopWatchStartTime, NULL);
 
 	    printf("<GSBTHREAD> Starting ADC#0 conversion\n\r");
-   		ADC_FetchData(sStructure->iFD, 0, &sMyADCStruct);
+
+   		//ADC_FetchData(sStructure->iFD, 0, &sMyADCStruct);
+		ADC_FetchData_Simultaneous(sStructure->iFD, &sMyADCStruct);
 
 		gettimeofday(&StopWatchStopTime, NULL);
 		
@@ -199,8 +201,8 @@ void GSBIOThreadFunc(void* pArgument)
 		printf("<GSBTHREAD> Time for 9 channels: %06ldms\n\r",ulTimeDiffMillisecs);
 		printf("<GSBTHREAD> Average time for 1 channel: %06ldms\n\r",ulTimeDiffMillisecs / 9);
 		printf("<GSBTHREAD> if we do it right[TM] -> 1 channel: %06ldms\n\r",ulTimeDiffMillisecs / 18);
-    	printf("<GSBTHREAD> Starting ADC#1 conversion\n\r");
-   		ADC_FetchData(sStructure->iFD, 1, &sMyADCStruct);
+//    	printf("<GSBTHREAD> Starting ADC#1 conversion\n\r");
+//   		ADC_FetchData(sStructure->iFD, 1, &sMyADCStruct);
 
 		// data exchange with main thread
 		// lock access to structure against main thread
@@ -246,12 +248,13 @@ void GSBIOThreadFunc(void* pArgument)
 
    		// TODO: read in config file and set GSB type properly
    		sStructure->psStatus->eTypeOfGSB = GSBTYPE_GSB_M;
-		
+
 		// DEBUG
 		if(1)
 		{
 			CheckAndPopMessageQueue(sStructure);		
 		}		
+		
 		// unlock access
 		pthread_mutex_unlock(&mGSBIOThreadMutex);
    	};
@@ -445,7 +448,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 		sADCStruct->ADC1.iTemperature = iReading;
 			
 	
-	printf("RAW Counts: %d Temp: %+08.3f\n\r", iReading, (double)iReading/(314.0f)-273.15f);
+	printf("RAW Counts: %+010d Temp: %+08.3f\n\r", iReading, (double)iReading/(314.0f)-273.15f);
 	
 	// LTC2499 has 16 channels from 0-15
 	// scan 8 differential channels, IN+@ even channel numbers, IN-@ odd channel numbers
@@ -495,7 +498,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 
 //		double dVoltage = (double)iReading * (double)2.5f / (double)16777216.0f;
 		double dVoltage = (double)iReading * (double)5.0f / (double)2147483648;
-		printf("Channel %02d: %+09d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReading, dVoltage, dVoltage * 3);
+		printf("Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReading, dVoltage, dVoltage * 3);
 
 		// store in array
 		if(iADC == 0)
@@ -607,7 +610,7 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			{
 				double dOhms = dVoltage / 200e-6f;				
 				double dTemp = Ohm2Temperature(dOhms);
-				printf("Temp:  %+5.3f degrees celsius\n\r",dTemp);
+				printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
 			};
 			
 			if((iChannel > 3) && (iChannel < 8))
@@ -616,6 +619,323 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			};
 		};
 	};
+	return 0;
+};
+
+// try to communicate with the LTC2499 more efficiently
+// we use broadcasts to write the config data to both LTCs
+// and start the conversions simultanously
+// so will gain roughly a factor of 2 polling the ADCs
+
+int ADC_FetchData_Simultaneous(int iFD, struct sRawADCStruct *sADCStruct)
+{
+	static int iAddress=0;
+	static int iChannel=0;
+	static int status;
+	static unsigned char aBuffer[20];
+	static unsigned char aTempVal[4];
+
+	static union sLTCData strLTCData;
+
+	iAddress = 0x77; // broadcast address of LTC2499
+
+	#ifdef DEBUG_ADC_READOUT
+	printf("FD: %d I2C Address: %02X (broadcast address of LTC2499)\n\r",iFD ,iAddress);
+	#endif
+	
+	// try to change slave address to new value
+    status = ioctl(iFD, I2C_SLAVE_FORCE, iAddress);
+    if (status < 0)
+    {
+        printf("<GSBTHREAD> ERROR: ioctl(fd, I2C_SLAVE, 0x%02X) failed\n", iAddress);
+        printf("<GSBTHREAD> errno = %d, %s\n", errno, strerror(errno));
+        close(iFD);
+        return -3;
+    }
+		
+	if(iChannel < 8)
+	{
+		// Channel 0-7 are normal channels
+		// set channel & start conversion
+		// using normal speed mode, 50Hz
+		do
+		{
+			aWriteCmdBuf[0] = 0xA0 + iChannel;
+			aWriteCmdBuf[1] = 0x90;
+		
+			status = write(iFD,aWriteCmdBuf,2);
+			if (status < 0)
+			{
+				//printf("<GSBTHREAD> write() SOC failed, errno = %d, %s\n", errno, strerror(errno));
+				//printf("<GSBTHREAD> status = %d \n\r",status);				
+	
+				usleep(1000);
+			}
+		}
+		while(status < 0);
+	}
+	else
+	{
+		// Channel 8 should be the internal temp sensor
+		// set channel & start conversion
+		do
+		{
+			// start of conversion in normal speed mode
+			// read internal temperature sensor
+			aWriteCmdBuf[0] = 0xA0;
+			aWriteCmdBuf[1] = 0xD0;
+		
+			status = write(iFD,aWriteCmdBuf,2);
+			if (status < 0)
+			{
+				//printf("<GSBTHREAD> write() SOC failed, errno = %d, %s\n", errno, strerror(errno));
+				//printf("<GSBTHREAD> status = %d \n\r",status);				
+	
+				usleep(1000);
+			}
+		}
+		while(status < 0);
+	}
+	
+	// we can do other I2C tasks here, as the LTCs will be busy for roughly 150ms till
+	// the conversion is done
+	
+	// TODO: **** INSERT QUEUE POLLING HERE ****
+	
+	// now we should select the individual LTC to read the results when finished
+	// we address each LTC and try to read the result
+
+	// ==========================
+	// FIRST LTC2499
+	// ==========================
+			
+	iAddress = 0x14; // first 
+	#ifdef DEBUG_ADC_READOUT
+	printf("FD: %d I2C Address: %02X (READ 1st ADC)\n\r",iFD ,iAddress);
+	#endif
+
+	// try to change slave address to new value
+	status = ioctl(iFD, I2C_SLAVE_FORCE, iAddress);
+	if (status < 0)
+	{
+	    printf("<GSBTHREAD> ERROR: ioctl(fd, I2C_SLAVE, 0x%02X) failed\n", iAddress);
+	    printf("<GSBTHREAD> errno = %d, %s\n", errno, strerror(errno));
+	    close(iFD);
+	    return -3;
+	}
+	
+	// poll channel
+	do
+	{
+		status = read(iFD,aBuffer,4);
+		if (status < 0)
+		{
+			usleep(1000);
+			//printf("<GSBTHREAD> read() conversion result failed, errno = %d, %s\n", errno, strerror(errno));
+			//printf("<GSBTHREAD> status = %d \n\r",status);				
+		}
+	}
+	while(status < 0);
+
+	// endianess is swapped, so swap back
+	strLTCData.LCArray[0] = aBuffer[3];
+	strLTCData.LCArray[1] = aBuffer[2];
+	strLTCData.LCArray[2] = aBuffer[1];
+	strLTCData.LCArray[3] = aBuffer[0];
+
+	// use the bitfield & union to get the signed 24bit reading
+	int iReadingADC0 = (signed int)strLTCData.iReading32 - 2147483648;
+
+	double dVoltageADC0 = (double)iReadingADC0 * (double)5.0f / (double)2147483648;
+	
+	if(iChannel != 8)
+		sADCStruct->ADC0.iChannel[iChannel] = iReadingADC0;
+	else
+		sADCStruct->ADC0.iTemperature = iReadingADC0;
+
+	// ==========================
+	// SECOND LTC2499
+	// ==========================
+	
+	iAddress = 0x15; // second ADC 
+	#ifdef DEBUG_ADC_READOUT
+	printf("FD: %d I2C Address: %02X (READ 2nd ADC)\n\r",iFD ,iAddress);
+	#endif
+
+	// try to change slave address to new value
+	status = ioctl(iFD, I2C_SLAVE_FORCE, iAddress);
+	if (status < 0)
+	{
+	    printf("<GSBTHREAD> ERROR: ioctl(fd, I2C_SLAVE, 0x%02X) failed\n", iAddress);
+	    printf("<GSBTHREAD> errno = %d, %s\n", errno, strerror(errno));
+	    close(iFD);
+	    return -3;
+	}
+	
+	// poll channel
+	do
+	{
+		status = read(iFD,aBuffer,4);
+		if (status < 0)
+		{
+			usleep(1000);
+			//printf("<GSBTHREAD> read() conversion result failed, errno = %d, %s\n", errno, strerror(errno));
+			//printf("<GSBTHREAD> status = %d \n\r",status);				
+		}
+	}
+	while(status < 0);
+
+	// endianess is swapped, so swap back
+	strLTCData.LCArray[0] = aBuffer[3];
+	strLTCData.LCArray[1] = aBuffer[2];
+	strLTCData.LCArray[2] = aBuffer[1];
+	strLTCData.LCArray[3] = aBuffer[0];
+
+	// use the bitfield & union to get the signed 24bit reading
+	int iReadingADC1 = (signed int)strLTCData.iReading32 - 2147483648;
+
+	double dVoltageADC1 = (double)iReadingADC1 * (double)5.0f / (double)2147483648;
+	
+	if(iChannel != 8)
+		sADCStruct->ADC1.iChannel[iChannel] = iReadingADC1;
+	else
+		sADCStruct->ADC1.iTemperature = iReadingADC1;
+
+
+	// Evaluate raw readings
+	// this should really be done more nicely by reading a config file
+
+	if(iChannel == 0)
+	{	
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dFlow = 0.8f / 5.0f * dVoltageADC0;		// we have an 0.8 sccm NO MFC, on 5V FSC range
+		printf("Flow:  %+5.3f sml (0.8 sml FSC)\n\r",dFlow);
+		sADCStruct->ADC0.dMFC0Flow = dFlow;	
+		
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		dVoltageADC1 = dVoltageADC1 * 3;				// voltage divider is made of 3 equal 10K resistors
+		double dCurrent = dVoltageADC1 / 100.0f;		// 100R measurement resistor in current loop
+		double dSlope = 200.00f / 16e-3f; 				// 16mA span for 200bar FSC
+		double dPressure = (dCurrent - 4e-3f) * dSlope;	// 4mA is zero offset (4mA - 20mA current loop sensor)
+		
+		printf("Curr:  %+9.7fA Press: %+5.3f bar (200 bar FSC)\n\r",dCurrent,dPressure);
+	};
+
+	if(iChannel == 1)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dFlow = 10.0f / 5.0f * dVoltageADC0;		// we have an 10sccm NO MFC, on 5V FSC range
+		printf("Flow:  %+5.3f sml (10 sml FSC)\n\r",dFlow);
+		sADCStruct->ADC0.dMFC1Flow = dFlow;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		double dCurrent = dVoltageADC1 / 100.0f;		// 100R measurement resistor in current loop
+		double dSlope = 3.00f / 16e-3f; 				// 16mA span for 3bar FSC
+		double dPressure = (dCurrent - 4e-3f) * dSlope;	// 4mA is zero offset (4mA - 20mA current loop sensor)
+		
+		printf("Curr:  %+9.7fA Press: %+5.3f bar (3 bar FSC)\n\r",dCurrent,dPressure);
+	};
+
+	if(iChannel == 2)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dFlow = 10.0f / 5.0f * dVoltageADC0;		// we have an 10sccm NO MFC, on 5V FSC range
+		printf("Flow:  %+5.3f sml (10 sml FSC)\n\r",dFlow);
+		sADCStruct->ADC0.dMFC2Flow = dFlow;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		double dCurrent = dVoltageADC1 / 100.0f;		// 100R measurement resistor in current loop
+		double dSlope = 3.00f / 16e-3f; 				// 16mA span for 3bar FSC
+		double dPressure = (dCurrent - 4e-3f) * dSlope;	// 4mA is zero offset (4mA - 20mA current loop sensor)
+		
+		printf("Curr:  %+9.7fA Press: %+5.3f bar (3 bar FSC)\n\r",dCurrent,dPressure);
+	};
+	
+	if(iChannel == 3)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dPressure = 3.5f / 5.0f * dVoltageADC0;	// we have a 3.5bar FSC pressure sensor with 5V FSC
+		printf("Press: %+5.3f bar (3.5 bar FSC)\n\r",dPressure);
+		sADCStruct->ADC0.dPressSens0 = dPressure;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		double dOhms = dVoltageADC1 / 200e-6f;			// we have a 200uA constant current source for the PT100 exitation				
+		double dTemp = Ohm2Temperature(dOhms);			// we have a subroutine with the PT100 formula for temperature
+		printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
+	};
+
+	if(iChannel == 4)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dPressure = 3.5f / 5.0f * dVoltageADC0;	// we have a 3.5bar FSC pressure sensor with 5V FSC
+		printf("Press: %+5.3f bar (3.5 bar FSC)\n\r",dVoltageADC0);
+		sADCStruct->ADC0.dPressSens1 = dPressure;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		printf("Not used!\n\r");
+	};
+
+	if(iChannel == 5)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
+		double dPressure = 60.0f / 5.0f * dVoltageADC0;	// we have a 60 bar FSC pressure sensor with 5V FSC
+		printf("Press: %+5.3f bar (60 bar FSC)\n\r",dPressure);
+		sADCStruct->ADC0.dPressSens2 = dPressure;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		printf("Not used!\n\r");
+	};
+
+	if(iChannel == 6)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		double dOhms = dVoltageADC0 / 200e-6f;			// we have a 200uA constant current source for the PT100 exitation				
+		double dTemp = Ohm2Temperature(dOhms);			// we have a subroutine with the PT100 formula for temperature
+		printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
+		sADCStruct->ADC0.dPT100Temp0 = dTemp;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		printf("Not used!\n\r");
+	};
+
+	if(iChannel == 7)
+	{
+		// ADC#0
+		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
+		double dOhms = dVoltageADC0 / 200e-6f;			// we have a 200uA constant current source for the PT100 exitation				
+		double dTemp = Ohm2Temperature(dOhms);			// we have a subroutine with the PT100 formula for temperature
+		printf("Ohm: %+5.3f Temp:  %+5.3f degrees celsius\n\r",dOhms, dTemp);
+		sADCStruct->ADC0.dPT100Temp1 = dTemp;
+
+		// ADC#1
+		printf("ADC#1 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC1, dVoltageADC1, dVoltageADC1 * 3);
+		printf("Not used!\n\r");
+	};
+	
+	// next channel
+	iChannel++;
+	if(iChannel > 8)
+		iChannel = 0;
 	return 0;
 };
 

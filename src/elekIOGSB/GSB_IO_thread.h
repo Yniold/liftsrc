@@ -84,6 +84,7 @@ extern int GSBIOThreadInit(void);
 extern void GSBIOThreadFunc(void* pArgument);
 extern int i2c_recv_from_avr(int fd, int command, char *rxdata, unsigned int *recvlen);
 extern int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct);
+extern int ADC_FetchData_Simultaneous(int iFD, struct sRawADCStruct *sADCStruct);
 extern int DAC_SetChannel(int iFD, int iChannel, unsigned short usDACValue);
 extern void CheckAndPopMessageQueue(struct sGSBIOThreadType *sThreadStructure);
 
