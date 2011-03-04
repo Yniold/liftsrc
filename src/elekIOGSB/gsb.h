@@ -41,13 +41,14 @@ struct sLTCDataField
 {
 	unsigned char LTDontUse0:6;
 	signed int LTReading:25;
-	unsigned char LTSignedBit:1; 		
+	unsigned char LTRangeBits:1; 		
 };
 
 union sLTCData
 {
 	struct sLTCDataField LDField;
 	unsigned char LCArray[4];
+	signed int iReading32:32;
 };
 
 // We need this for internal communication
