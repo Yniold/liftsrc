@@ -1,6 +1,6 @@
 #!/bin/sh
 echo set gate timings and delays
-echo settings for DOMINO
+echo settings for RoofTest
 
 echo check whether ArmAxis is online
 ping armAxis -c 1 -w 1 -q
@@ -14,7 +14,7 @@ fi
      
 
 MasterLift=133
-MasterarmAxis=80
+MasterarmAxis=40
 
 PMTCounts=100
 MCP1Counts=120
