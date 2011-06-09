@@ -476,8 +476,8 @@ if x==0
     SetFlow2=0;
     SetFlow3=0;
 else
-    eval(['SetFlow2=',fcts2val.CalFlow2Set,';']);
-    eval(['SetFlow3=',fcts2val.CalFlow3Set,';']);
+    eval(['SetFlow2=',fcts2val.CalFlow2Set,'']);
+    eval(['SetFlow3=',fcts2val.CalFlow3Set,'']);
 end
 
 if ~isnan(Flow)
@@ -533,12 +533,12 @@ Flow1=Flow-Flow0;
 if Flow0==0
     SetFlow0=0;
 else
-    x=Flow0; eval(['SetFlow0=',fcts2val.CalFlow0Set,';']);
+    x=Flow0; eval(['SetFlow0=',fcts2val.CalFlow0Set,'']);
 end
 if Flow1==0
     SetFlow1=0;
 else
-    x=Flow1; eval(['SetFlow1=',fcts2val.CalFlow1Set,';']);
+    x=Flow1; eval(['SetFlow1=',fcts2val.CalFlow1Set,'']);
 end
 if ~isnan(Flow0) & ~isnan(Flow1) & FlowOn==1 
     system(['/lift/bin/eCmd @armCalib s calibflow 0 +', num2str(SetFlow0)]);   
