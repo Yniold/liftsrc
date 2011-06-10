@@ -764,12 +764,12 @@ if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
 else 
     set(handles.toggleNOPurge,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),14)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),14)==0   % C3F6 Valve
     set(handles.tglN2O,'BackgroundColor','c');
 else 
     set(handles.tglN2O,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),13)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),13)==0   % Propene
     set(handles.tglVac,'BackgroundColor','c');
 else 
     set(handles.tglVac,'BackgroundColor','g');
