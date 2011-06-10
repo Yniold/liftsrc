@@ -24,7 +24,7 @@ MCP2Counts=120
 MCP1Gain=130
 MCP1GainWidth=1000
 
-MCP2Gain=130 
+MCP2Gain=160 
 MCP2GainWidth=1000
 
 
