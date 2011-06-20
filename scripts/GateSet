@@ -60,13 +60,13 @@ echo MCP2: channel 1-35
 #PMT
 /lift/bin/eCmd @lift s setmask 0 0x0000
 /lift/bin/eCmd @lift s setmask 1 0x0000    
-/lift/bin/eCmd @lift s setmask 2 0x0000
-/lift/bin/eCmd @lift s setmask 3 0xF000
-/lift/bin/eCmd @lift s setmask 4 0xFFFF
+/lift/bin/eCmd @lift s setmask 2 0xffe0
+/lift/bin/eCmd @lift s setmask 3 0x007f
+/lift/bin/eCmd @lift s setmask 4 0xFFFe
 /lift/bin/eCmd @lift s setmask 5 0xFFFF
-/lift/bin/eCmd @lift s setmask 6 0x1FFF
-/lift/bin/eCmd @lift s setmask 7 0x0000
-/lift/bin/eCmd @lift s setmask 8 0xFFFC
+/lift/bin/eCmd @lift s setmask 6 0xFFFF
+/lift/bin/eCmd @lift s setmask 7 0xFFFF
+/lift/bin/eCmd @lift s setmask 8 0xFFFF
 /lift/bin/eCmd @lift s setmask 9 0xFFFF
 
 if [ $ArmOn -eq 0 ]; then
