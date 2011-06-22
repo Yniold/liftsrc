@@ -172,7 +172,9 @@ x=double(statusData(:,col.PitotAbs)); eval(['PitotAbs=',fcts2val.PitotAbs,';']);
 x=double(statusData(:,col.PitotDiff)); eval(['PitotDiff=',fcts2val.PitotDiff,';']);
 x=double(statusData(:,col.MFCC3F6Flow)); eval(['MFCC3F6Flow=',fcts2val.MFCC3F6Flow,';']);
 x=double(statusData(:,col.MFCPropFlow)); eval(['MFCPropFlow=',fcts2val.MFCPropFlow,';']);
+x=double(statusData(:,col.MFCIPISynAirFlow)); eval(['MFCIPISynAirFlow=',fcts2val.MFCIPISynAirFlow,';']);
 x=double(statusData(:,col.MFCShowerFlow)); eval(['MFCShowerFlow=',fcts2val.MFCShowerFlow,';']);
+
 
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtWZ1in,'String',[num2str(DiodeWZ1in(lastrow),3),' mW']);
@@ -190,6 +192,7 @@ set(handles.txtMFCC3F6,'String',[num2str(MFCC3F6Flow(lastrow),3),' sccm']);
 set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
 set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
 set(handles.txtMFCProp,'String',[num2str(MFCPropFlow(lastrow),3),' sccm']);
+set(handles.txtMFCIPISynAir,'String',[num2str(MFCIPISynAirFlow(lastrow),4),' sccm']);
 set(handles.txtMFCShower,'String',[num2str(MFCShowerFlow(lastrow),4),' sccm']);
 set(handles.txtMFCNO,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
 
@@ -325,6 +328,10 @@ if get(handles.chkMFCC3F6,'Value')
 end 
 if get(handles.chkMFCProp,'Value')
     plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.MFCPropFlow),'r');
+    hold(handles.axes1,'on');
+end
+if get(handles.chkMFCIPISynAir,'Value')
+    plot(handles.axes1,statustime(iZeit),statusData(iZeit,col.MFCIPISynAirFlow),'r');
     hold(handles.axes1,'on');
 end 
 if get(handles.chkMFCShower,'Value')
@@ -2099,3 +2106,37 @@ function editMFCC3F6_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function editMFCIPISynAir_Callback(hObject, eventdata, handles)
+% hObject    handle to editMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editMFCIPISynAir as text
+%        str2double(get(hObject,'String')) returns contents of editMFCIPISynAir as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function editMFCIPISynAir_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chkMFCIPISynAir.
+function chkMFCIPISynAir_Callback(hObject, eventdata, handles)
+% hObject    handle to chkMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkMFCIPISynAir
+
+

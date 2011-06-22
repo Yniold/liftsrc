@@ -172,7 +172,9 @@ x=double(statusData(:,col.PitotAbs)); eval(['PitotAbs=',fcts2val.PitotAbs,';']);
 x=double(statusData(:,col.PitotDiff)); eval(['PitotDiff=',fcts2val.PitotDiff,';']);
 x=double(statusData(:,col.MFCC3F6Flow)); eval(['MFCC3F6Flow=',fcts2val.MFCC3F6Flow,';']);
 x=double(statusData(:,col.MFCPropFlow)); eval(['MFCPropFlow=',fcts2val.MFCPropFlow,';']);
+x=double(statusData(:,col.MFCIPISynAirFlow)); eval(['MFCIPISynAirFlow=',fcts2val.MFCIPISynAirFlow,';']);
 x=double(statusData(:,col.MFCShowerFlow)); eval(['MFCShowerFlow=',fcts2val.MFCShowerFlow,';']);
+
 
 set(handles.txtDiodeUV,'String',[num2str(DiodeUV(lastrow),3),' mW']);
 set(handles.txtWZ1in,'String',[num2str(DiodeWZ1in(lastrow),3),' mW']);
@@ -190,6 +192,7 @@ set(handles.txtMFCC3F6,'String',[num2str(MFCC3F6Flow(lastrow),3),' sccm']);
 set(handles.txtPabs,'String',[num2str(PitotAbs(lastrow),4),' mbar']);
 set(handles.txtPdiff,'String',[num2str(PitotDiff(lastrow),3),' mbar']);
 set(handles.txtMFCProp,'String',[num2str(MFCPropFlow(lastrow),3),' sccm']);
+set(handles.txtMFCIPISynAir,'String',[num2str(MFCIPISynAirFlow(lastrow),4),' sccm']);
 set(handles.txtMFCShower,'String',[num2str(MFCShowerFlow(lastrow),4),' sccm']);
 set(handles.txtMFCNO,'String',[num2str(MFCFlow(lastrow),3),' sccm']);
 
@@ -764,12 +767,12 @@ if bitget(statusData(lastrow,col.Valve1armAxis),5)==0
 else 
     set(handles.toggleNOPurge,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),14)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),14)==0   % C3F6 Valve
     set(handles.tglN2O,'BackgroundColor','c');
 else 
     set(handles.tglN2O,'BackgroundColor','g');
 end
-if bitget(statusData(lastrow,col.Valve1armAxis),13)==0
+if bitget(statusData(lastrow,col.Valve1armAxis),13)==0   % Propene
     set(handles.tglVac,'BackgroundColor','c');
 else 
     set(handles.tglVac,'BackgroundColor','g');
@@ -1330,7 +1333,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 end
 
 
-% --- Executes on button press in toggleC3F6.
+% --- Executes on button press in toggleC3F6. --> meanwhile this button is
+% used for IPISynAir !!!
 function toggleC3F6_Callback(hObject, eventdata, handles)
 % hObject    handle to toggleC3F6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1511,7 +1515,7 @@ function editMFC_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editMFC as text
 %        str2double(get(hObject,'String')) returns contents of editMFC as a double
-MaxFlow=20;
+MaxFlow=34.18;
 setMFC=str2double(get(hObject,'String'));
 if setMFC<0 | isnan(setMFC) setMFC=0; end
 if setMFC>MaxFlow setMFC=MaxFlow; end
@@ -1576,7 +1580,7 @@ lastrow=data.lastrow;
 
 if statusData(lastrow,col.ValidSlaveDataFlag)
     if get(hObject,'Value')
-        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14);
+        Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,1);
         set(hObject,'BackgroundColor','g');
     else
         Valveword=bitset(statusData(lastrow,col.Valve1armAxis),14,0);
@@ -1584,6 +1588,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    pause(0.5);
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
@@ -2011,7 +2016,7 @@ function editMFCShower_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of editMFCShower as text
 %        str2double(get(hObject,'String')) returns contents of editMFCShower as a double
-MaxFlow=5000;
+MaxFlow=20000;
 setMFC=str2double(get(hObject,'String'));
 if setMFC<0 | isnan(setMFC) setMFC=0; end
 if setMFC>MaxFlow setMFC=MaxFlow; end
@@ -2097,3 +2102,37 @@ function editMFCC3F6_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function editMFCIPISynAir_Callback(hObject, eventdata, handles)
+% hObject    handle to editMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of editMFCIPISynAir as text
+%        str2double(get(hObject,'String')) returns contents of editMFCIPISynAir as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function editMFCIPISynAir_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chkMFCIPISynAir.
+function chkMFCIPISynAir_Callback(hObject, eventdata, handles)
+% hObject    handle to chkMFCIPISynAir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkMFCIPISynAir
+
+
