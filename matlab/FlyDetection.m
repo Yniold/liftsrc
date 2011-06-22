@@ -1330,7 +1330,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 end
 
 
-% --- Executes on button press in toggleC3F6.
+% --- Executes on button press in toggleC3F6. --> meanwhile this button is
+% used for IPISynAir !!!
 function toggleC3F6_Callback(hObject, eventdata, handles)
 % hObject    handle to toggleC3F6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
