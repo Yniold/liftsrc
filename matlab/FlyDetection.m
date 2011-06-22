@@ -1337,8 +1337,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 end
 
 
-% --- Executes on button press in toggleC3F6. --> meanwhile this button is
-% used for IPISynAir !!!
+% --- Executes on button press in toggleC3F6. (internal addition of C3F6!)
 function toggleC3F6_Callback(hObject, eventdata, handles)
 % hObject    handle to toggleC3F6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1365,7 +1364,8 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
 end
 
 
-% --- Executes on button press in toggleNO1.
+% --- Executes on button press in toggleNO1. --> meanwhile used for
+% IPISynAir valve
 function toggleNO1_Callback(hObject, eventdata, handles)
 % hObject    handle to toggleNO1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
