@@ -321,6 +321,24 @@ void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize)
 	printf("\n\r");
      };
 
+   // ***************** MFC Data **************
+   //
+   if (uiGroupFlags & GROUP_MFCDATA)
+     {
+	int Card=0;
+	// for Card
+	//
+	printf("MFC(Cal):");
+	for (Card=0; Card<MAX_MFC_CARD_CALIB; Card++)
+	  {
+	     int iChannel = 0;
+	     for(iChannel; iChannel < 4; iChannel++)
+	     printf("Ch:%01d(S%05d/F%5d) ", iChannel, ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[iChannel].SetFlow,
+		    ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[iChannel].Flow);
+	  }
+	// for Card
+	//
+     };
 };
 
 void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
@@ -573,7 +591,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	       }
 	  }
      }
-
+   
    // ***************** GPS DATA **************
    //
    if(uiGroupFlags & GROUP_GPSDATA)
@@ -680,8 +698,6 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	     printf("Ch:%01d(S%05d/F%5d) ", iChannel, ptrElekStatus->MFCCardSlave[Card].MFCChannelData[iChannel].SetFlow,
 		    ptrElekStatus->MFCCardSlave[Card].MFCChannelData[iChannel].Flow);
 	  }
-	// for Card
-	//
      }
 
    // if GROUP_VALVEDATA
