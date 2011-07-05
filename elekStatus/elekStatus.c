@@ -318,26 +318,18 @@ void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize)
        (double)(ptrCalibStatus->LicorCalib.H2OA)/1000.0f,\
        (double)(ptrCalibStatus->LicorCalib.H2OB)/1000.0f,\
        (double)(ptrCalibStatus->LicorCalib.H2OD)/1000.0f);
-	printf("\n\r");
-     };
 
-   // ***************** MFC Data **************
-   //
-   if (uiGroupFlags & GROUP_MFCDATA)
-     {
 	int Card=0;
-	// for Card
-	//
-	printf("MFC(Cal):");
+	
+	printf(" MFC(Cal):");
 	for (Card=0; Card<MAX_MFC_CARD_CALIB; Card++)
 	  {
 	     int iChannel = 0;
 	     for(iChannel; iChannel < 4; iChannel++)
 	     printf("Ch:%01d(S%05d/F%5d) ", iChannel, ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[iChannel].SetFlow,
 		    ptrCalibStatus->MFCCardCalib[Card].MFCChannelData[iChannel].Flow);
-	  }
-	// for Card
-	//
+	  };
+	printf("\n\r");
      };
 };
 
