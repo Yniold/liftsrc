@@ -214,16 +214,16 @@ statusDataCols=...
 'TDet',930,'1./(3.3540154E-3+2.5627725E-4.*log(22000./3000./(4.094.*1550./(x-9999)-1))+2.082921E-6.*(log(22000./3000./(4.094.*1550./(x-9999)-1))).^2+7.30003206E-8.*(log(22000./3000./(4.094.*1550./(x-9999)-1))).^3)-273.15','C';
 'TDetSumDat',931,'x*NaN','C';
 'TDetSumSqr',932,'x*NaN','C';
-'DiodeWZ1out',933,'0.02686*(x-9999)','mW'; %calibrated by Korbinian, 10th June 2010
+'DiodeWZ1out',933,'0.0305*(x-9999)','mW'; %calibrated by Korbinian&Anna, 17th July 2011
 'DiodeWZ1outSumDat',934,'x*NaN','mW';
 'DiodeWZ1outSumSqr',935,'x*NaN','mW';
-'DiodeWZ2out',936,'0.00632*(x-10000)','mW'; %calibrated by Korbinian, 10th June 2010
+'DiodeWZ2out',936,'0.01014*(x-9999)','mW';%calibrated by Korbinian&Anna, 17th July 2011
 'DiodeWZ2outSumDat',937,'x*NaN','mW';
 'DiodeWZ2outSumSqr',938,'x*NaN','mW';
-'DiodeWZ1in',939,'0.00795*(x-10000)','mW'; %calibrated by Korbinian, 10th June 2010
+'DiodeWZ1in',939,'0.00377*(x-10000)','mW'; %calibrated by Korbinian&Anna, 17th July 2011
 'DiodeWZ1inSumDat',940,'x*NaN','mW';
 'DiodeWZ1inSumSqr',941,'x*NaN','mW';
-'DiodeWZ2in',891,'0.00955*(x-9999)','mW'; %calibrated by Korbinian, 10th June 2010
+'DiodeWZ2in',891,'0.00956*(x-9999)','mW'; %calibrated by Korbinian&Anna, 17th July 2011
 'DiodeWZ2inSumDat',892,'x*NaN','mW';
 'DiodeWZ2inSumSqr',893,'x*NaN','mW';
 'PitotAbs',897,'(x-10000-3030/5).*1500./3030-15.8','mbar';
