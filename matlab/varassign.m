@@ -253,10 +253,10 @@ statusDataCols=...
 'OphirConfig',729,'x*NaN','';
 'MFCSetFlow',730,'34.18*x/255','sccm';
 'MFCFlow',731,'34.18*(x-10010)/(11461-10010)','sccm';
-'MFCPropSetFlow',1123,'0.41*200*x/255','sccm'; % calibrated for SynAir by company, applied correction factor for propene 
-'MFCPropFlow',1124,'0.41*200*(x-10010)/(11461-10010)','sccm'; % calibrated for SynAir by company, applied correction factor for propene 
-'MFCC3F6SetFlow',1125,'0.249*2000*x/255','sccm'; % calibrated for SynAir by company, applied correction factor for C3F6
-'MFCC3F6Flow',1126,'0.249*2000*(x-10010)/(11461-10010)','sccm'; % calibrated for SynAir by company, applied correction factor for C3F6 
+'MFCPropSetFlow',1123,'200*x/255','sccm'; % calibrated for SynAir by company, applied correction factor for propene 
+'MFCPropFlow',1124,'200*(x-10010)/(11461-10010)','sccm'; % calibrated for SynAir by company, applied correction factor for propene 
+'MFCC3F6SetFlow',1125,'2000*x/255','sccm'; % calibrated for SynAir by company, applied correction factor for C3F6
+'MFCC3F6Flow',1126,'2000*(x-10010)/(11461-10010)','sccm'; % calibrated for SynAir by company, applied correction factor for C3F6 
 'MFCIPISynAirFlow',972,'7.19*x-71912','sccm'; % calibrated by KHE, 22.6.2011
 'MFCShowerSetFlow',1127,'20000*x/255','sccm';
 'MFCShowerFlow',1128,'20000*(x-10010)/(11461-10010)','sccm';
