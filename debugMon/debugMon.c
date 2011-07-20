@@ -1,8 +1,15 @@
 /*
+<<<<<<< HEAD
 * $RCSfile: debugMon.c,v $ last changed on $Date: 2006/09/04 10:17:20 $ by $Author: rudolf $
 *
 * $Log: debugMon.c,v $
 * Revision 1.4  2006/09/04 10:17:20  rudolf
+=======
+* $RCSfile: debugMon.c,v $ last changed on $Date: 2006-09-04 10:17:20 $ by $Author: rudolf $
+*
+* $Log: debugMon.c,v $
+* Revision 1.4  2006-09-04 10:17:20  rudolf
+>>>>>>> remotes/codebase/GSB
 * fixed compiler warning for GCC 4.03
 *
 * Revision 1.3  2005/04/22 13:13:58  rudolf

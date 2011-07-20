@@ -779,7 +779,7 @@ int main(int argc, char *argv[])
 				 Message.Value=elkReadData(Message.Addr);
 				 Message.MsgType=MSG_TYPE_ACK;
 
-				 sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %d (%04x)",
+				 sprintf(buf,"elekIOaux : ReadCmd from %05d Port %04x Value %lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -794,7 +794,7 @@ int main(int argc, char *argv[])
 
 			       case MSG_TYPE_WRITE_DATA:
 
-				 sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %d (%04x)",
+				 sprintf(buf,"elekIOaux : WriteCmd from %05d Port %04x Value %lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);

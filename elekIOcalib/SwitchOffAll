@@ -1,0 +1,6 @@
+echo switch off flow and heater
+eCmd s calibflow 0 +0
+eCmd s calibflow 1 +0
+eCmd s calibflow 2 +0
+eCmd s calibflow 3 +0
+eCmd s calibwatertemp 0

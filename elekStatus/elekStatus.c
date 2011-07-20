@@ -251,7 +251,7 @@ void PrintAuxStatus(struct auxStatusType *ptrAuxStatus, int PacketSize)
 	Seconds=ptrAuxStatus->TimeOfDayAux.tv_sec;
 	gmtime_r(&Seconds,&tmZeit);
 
-	printf("JD:%03d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
+	printf("JD:%03d %02d.%02d %02d:%02d:%02d.%03ld :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
 	       tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrAuxStatus->TimeOfDayAux.tv_usec/1000);
 
 	printf("WS(MeteoBox): %5.2f WDir: %03d Temp: %+5.2f RH: %5.2f GS: %5.3f ",\
@@ -311,7 +311,7 @@ void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize)
 	Seconds=ptrCalibStatus->TimeOfDayCalib.tv_sec;
 	gmtime_r(&Seconds,&tmZeit);
 
-	printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
+	printf("%d %02d.%02d %02d:%02d:%02d.%03ld :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
 	       tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrCalibStatus->TimeOfDayCalib.tv_usec/1000);
 
 	printf("H2O_A: %06.4f H2O_B: %06.4f H2O_DELTA: %06.4f",\
@@ -331,6 +331,7 @@ void PrintCalibStatus(struct calibStatusType *ptrCalibStatus, int PacketSize)
 	  };
 	printf("\n\r");
      };
+
 };
 
 void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
@@ -353,14 +354,14 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	Seconds=ptrElekStatus->TimeOfDayMaster.tv_sec;
 	gmtime_r(&Seconds,&tmZeit);
 
-	printf("%d %02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
+	printf("%d %02d.%02d %02d:%02d:%02d.%03ld :",tmZeit.tm_yday+1,tmZeit.tm_mon+1,tmZeit.tm_mday,
 	       tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDayMaster.tv_usec/1000);
 
 	printf("Time(S):");
 	Seconds=ptrElekStatus->TimeOfDaySlave.tv_sec;
 	gmtime_r(&Seconds,&tmZeit);
 
-	printf("%02d.%02d %02d:%02d:%02d.%03d :",tmZeit.tm_mon+1,tmZeit.tm_mday,
+	printf("%02d.%02d %02d:%02d:%02d.%03ld :",tmZeit.tm_mon+1,tmZeit.tm_mday,
 	       tmZeit.tm_hour, tmZeit.tm_min, tmZeit.tm_sec, ptrElekStatus->TimeOfDaySlave.tv_usec/1000);
      };
 
@@ -376,7 +377,7 @@ void PrintElekStatus(struct elekStatusType *ptrElekStatus, int PacketSize)
 	       ptrElekStatus->EtalonData.CurSpeed,
 	       ptrElekStatus->EtalonData.DitherStepWidth,
 
-	       ptrElekStatus->EtalonData.Status);
+	       ptrElekStatus->EtalonData.Status.StatusWord);
      };
 
    // ***************** COUNTER CARDS DATA **************

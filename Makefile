@@ -20,10 +20,11 @@ SOURCEDIR = $(shell /bin/pwd)
 DESTDIR?=$(shell /bin/pwd)/bin/
 INSTDIR?=$(DESTDIR)
 LIBDIR := $(DESTDIR)/lib/
+CROSSCHAIN=/opt/OSELAS.Toolchain-trunk/arm-v4t-linux-gnueabi/gcc-4.1.2-glibc-2.5-binutils-2.17-kernel-2.6.18/bin/
 
 ifeq ($(ARMBUILD),1)
 CPPFLAGS :=-DRUNONARM -Wa,-mapcsfloat
-CROSS_COMPILE=arm-linux-
+CROSS_COMPILE=$(CROSSCHAIN)arm-v4t-linux-gnueabi-
 else
 CROSS_COMPILE=
 CPPFLAGS :=-DRUNONPC
@@ -48,6 +49,8 @@ horus:
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C eCmd
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOServ
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOcalib
+	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOGSB
+	
 # don't built cross elekIOaux
 ifneq ($(ARMBUILD),1)
 	$(MAKE) CC=$(CC) CPPFLAGS=$(CPPFLAGS) CFLAGS=$(CFLAGS) INSTDIR=$(INSTDIR) $(flags) -C elekIOaux
@@ -95,7 +98,7 @@ else
 	cp $(DESTDIR)/mirrors ../bin
 	cp $(DESTDIR)/debugMon ../bin
 	cp $(DESTDIR)/spectrometerServer ../bin
-	cp $(DESTDIR)/testccram ../bin
+#	cp $(DESTDIR)/testccram ../bin
 	chmod +x $(DESTDIR)*
 	chmod +x ./scripts/*
 endif
@@ -134,6 +137,7 @@ clean:
 	rm -f ./broadcastClient/broadcastClient
 	rm -f ./broadcastClient/*.o
 	rm -f ./testccram/testccram
+	rm -f ./elekIOGSB/cgigateway.cgi
 	rm -f ./testccram/*.o
 	
 # test if there is a directory called 'bin' in '../' before trying to delete its contents
@@ -146,7 +150,7 @@ clean:
 	if [ -d ../bin ]; then rm -f ../bin/etalon; fi
 	if [ -d ../bin ]; then rm -f ../bin/mirrors; fi
 	if [ -d ../bin ]; then rm -f ../bin/spectrometerServer; fi
-	if [ -d ../bin ]; then rm -f ../bin/testccram; fi
+#	if [ -d ../bin ]; then rm -f ../bin/testccram; fi
 	
 #	$(MAKE) DESTDIR=$(DESTDIR) $(flags) -C instServer
 #        rm ./instServer/*.o

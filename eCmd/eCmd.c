@@ -140,7 +140,19 @@ update file description
 #include <netdb.h>
 
 #ifdef RUNONPC
-#include <asm/msr.h>
+
+// newer 2.6 kernel don't provide the header file for rtscll() any longer,
+// so we define it here by ourselves
+
+#define rdtsc(low,high) \
+__asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
+
+#define rdtscl(low) \
+__asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
+
+#define rdtscll(val) \
+__asm__ __volatile__("rdtsc" : "=A" (val))
+
 #endif
 
 #include "../include/elekIOPorts.h"
@@ -222,9 +234,9 @@ int WriteCommand(uint16_t Addr, uint16_t Value) {
     Message.Value=Value;
 	
     SendUDPData(&MessageOutPortList[ELEK_ELEKIO_OUT],sizeof(struct ElekMessageType), &Message);
-    printf("ID: %d send req on %4x wait for data....", Message.MsgID, Addr);
+    printf("ID: %lld send req on %4x wait for data....", Message.MsgID, Addr);
     RecieveUDPData(&MessageInPortList[ELEK_ELEKIO_IN], sizeof(struct ElekMessageType), &Message);    
-    printf("ID: %d %4x %d\n",Message.MsgID,Message.Value, Message.MsgType);
+    printf("ID: %lld %4llx %d\n",Message.MsgID,Message.Value, Message.MsgType);
 
     return(Message.Value);
 	
@@ -250,9 +262,9 @@ int SetStatusCommand(uint16_t MsgType, uint16_t Addr, int64_t Value) {
     Message.Value=Value;
 	
     SendUDPData(&MessageOutPortList[ELEK_ELEKIO_OUT],sizeof(struct ElekMessageType), &Message);
-    printf("ID: %d send %d on %4x wait for data....", Message.MsgID, Value, Addr);
+    printf("ID: %lld send %lld on %4x wait for data....", Message.MsgID, Value, Addr);
     RecieveUDPData(&MessageInPortList[ELEK_ELEKIO_IN], sizeof(struct ElekMessageType), &Message);    
-    printf("ID: %d %4x %d\n",Message.MsgID,Message.Value, Message.MsgType);
+    printf("ID: %lld %4llx %d\n",Message.MsgID,Message.Value, Message.MsgType);
 
     return(Message.Value);
 	
@@ -342,6 +354,9 @@ int main(int argc, char *argv[])
 	printf("eCmd @host s mirrorstop\n");
 	printf("eCmd @host s mirrorrealignmin data\n");
 	printf("eCmd @host s mirrorstoprealign\n");
+	printf("eCmd @host s gsbflow number[0-2] [Flowrate in sccm]\n");
+	printf("eCmd @host s gsbvalve valveword [Bits0-4 are valid]\n");
+	printf("eCmd @host s gsblight intensity [0..255]\n");
 		
 	exit(EXIT_FAILURE);
     }
@@ -417,8 +432,8 @@ int main(int argc, char *argv[])
 	    Addr=strtol(argv[ArgCount],NULL,0);
 	    ArgCount++;
 	    Value=ReadCommand(Addr);
-	    printf("Read %4x(%5d) : %4x(%5d)\n",Addr,Addr, Value, Value);
-	    printf("%d\n",Value);
+	    printf("Read %4x(%5d) : %4llx(%5lld)\n",Addr,Addr, Value, Value);
+	    printf("%lld\n",Value);
 	    break;
 
 	case 'w':
@@ -430,7 +445,7 @@ int main(int argc, char *argv[])
 		Value=strtol(argv[ArgCount],NULL,0);
 		ArgCount++;
 		ret=WriteCommand(Addr,Value);
-		printf("Wrote %4x=%4x(%5d) : %4x(%5d)\n",ret,Addr,Addr,Value,Value);
+		printf("Wrote %4x=%4x(%5d) : %4llx(%5lld)\n",ret,Addr,Addr,Value,Value);
 	    }
 	    else
 		printf("Usage :\t%s w addr data\n", argv[0]);
@@ -616,7 +631,7 @@ int main(int argc, char *argv[])
     		            Value=strtol(argv[ArgCount+2],NULL,0);
     		            if (ptr) Addr=Addr+CALIB_VMFC_ABS;        // offset in case we want to use counts instead of sccm
     		        } else {
-            		    printf("Error : %d is too high, range of MFC for Calib is [0..%d]\n",
+            		    printf("Error : %lld is too high, range of MFC for Calib is [0..%d]\n",
             		           Value,(MAX_MFC_CHANNEL_PER_CARD*MAX_MFC_CARD_CALIB)-1);
             		    exit(EXIT_FAILURE);
     		        }            
@@ -698,6 +713,44 @@ int main(int argc, char *argv[])
     		Value=0;
     		MsgType=MSG_TYPE_MIRROR_FLAG_REALIGN;
     	    };	  
+
+            if (strcasecmp(argv[ArgCount],"gsbflow")==0) {
+    	      if (argc>ArgCount+2) { // do we still have a given parameter ?
+    		    Addr=strtol(argv[ArgCount+1],NULL,0) & 0x3;	// we only have Flowcontrollers 0-2
+    		    Value=strtol(argv[ArgCount+2],NULL,0) & 0xFFFF; // max 65535 flow rate
+    		    MsgType=MSG_TYPE_GSB_SETFLOW;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+
+            if (strcasecmp(argv[ArgCount],"gsbvalve")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    
+    		    // mask lower 5bits, because we only use these
+    		    Value = Value & 0x1F;
+    		    MsgType=MSG_TYPE_GSB_SETVALVE;
+    		    Addr=Value;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
+
+            if (strcasecmp(argv[ArgCount],"gsblight")==0) {
+    	      if (argc>ArgCount+1) { // do we still have a given parameter ?
+    		    Value=strtol(argv[ArgCount+1],NULL,0);
+    		    if(Value > 255)
+    		    {
+    		    	printf("only 0-255 allowed, truncating\n");
+    		    	Value = 255;
+    		    }
+    		    MsgType=MSG_TYPE_GSB_SETLIGHT;
+    		    Addr=Value;
+    	      } else { // we don't have enough parameter
+    		printf("Error please supply parameter for %s\n",argv[ArgCount]);
+    	      }
+    	    };	    	    
     
     	    // if we got a valid Msg send it
     	    if (MsgType<MAX_MSG_TYPE) {

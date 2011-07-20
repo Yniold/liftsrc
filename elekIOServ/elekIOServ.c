@@ -271,7 +271,14 @@
 #include <netdb.h>
 
 #ifdef RUNONPC
-# include <asm/msr.h>
+#define rdtsc(low,high) \
+__asm__ __volatile__("rdtsc" : "=a" (low), "=d" (high))
+
+#define rdtscl(low) \
+__asm__ __volatile__("rdtsc" : "=a" (low) : : "edx")
+
+#define rdtscll(val) \
+__asm__ __volatile__("rdtsc" : "=A" (val))
 #endif
 
 #include <signal.h>
@@ -1320,7 +1327,7 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster)
 	  };
 
         // success
-        sprintf(debugbuf,"ElekIOServ(M) : Opened %s with %d BAUD!\n\r", port, baud);
+        sprintf(debugbuf,"ElekIOServ(M) : Opened %s with %ld BAUD!\n\r", port, baud);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
         // set data to initial values
@@ -1362,7 +1369,7 @@ int InitGPSReceiver(struct elekStatusType *ptrElekStatus, int IsMaster)
 	  };
 
         // success
-        sprintf(debugbuf,"ElekIOServ(S) : Opened %s with %d BAUD!\n\r", port, baud);
+        sprintf(debugbuf,"ElekIOServ(S) : Opened %s with %ld BAUD!\n\r", port, baud);
         SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],debugbuf);
 
         // set data to initial values
@@ -3339,7 +3346,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MOVE_BUTTERFLY:
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_MOVE_BUTTERFLY from %4d Port %04x Value %05ld (%04lx)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MOVE_BUTTERFLY from %4d Port %04x Value %05lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3360,7 +3367,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_REF_CHANNEL:
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_REF_CHANNEL from %4d Port %04x Value %05d (%04x)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_REF_CHANNEL from %4d Port %04x Value %05lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3379,7 +3386,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MIRROR_MOVE:
 			    if (MessagePort!=ELEK_MIRROR_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_MOVE from %4d Port %04x Value %05lld (%04x)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_MOVE from %4d Port %04x Value %05lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3428,7 +3435,7 @@ int main(int argc, char *argv[])
 
 			    ElekStatus.MirrorData.MovingFlag.Field.Realigning = Message.Value;
 
-			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_FLAG_REALIGN from %4d Port %04x Value %05d (%04x) Flag now : %d",
+			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_FLAG_REALIGN from %4d Port %04x Value %05lld (%04llx) Flag now : %d",
 				    MessageInPortList[MessagePort].PortNumber,
 				    Message.Addr,Message.Value,Message.Value,
 				    ElekStatus.MirrorData.MovingFlag.Field.Realigning );
@@ -3443,7 +3450,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_MIRROR_CMD_REALIGN:
 			    if (MessagePort!=ELEK_MIRROR_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_CMD_REALIGN from %4d Port %04x Value %05d (%04x)",
+				 sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_CMD_REALIGN from %4d Port %04x Value %05lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3474,7 +3481,7 @@ int main(int argc, char *argv[])
 
 			  case MSG_TYPE_MIRROR_STOP:
 
-			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_STOP from %4d Port %04x Value %05d (%04x)",
+			    sprintf(buf,"ElekIOServ: MSG_TYPE_MIRROR_STOP from %4d Port %04x Value %05lld (%04llx)",
 				    MessageInPortList[MessagePort].PortNumber,
 				    Message.Addr,Message.Value,Message.Value);
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3498,7 +3505,7 @@ int main(int argc, char *argv[])
 
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: ReadCmd from %4d Port %04x Value %d (%04x)",
+				 sprintf(buf,"ElekIOServ: ReadCmd from %4d Port %04x Value %lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3515,7 +3522,7 @@ int main(int argc, char *argv[])
 			  case MSG_TYPE_WRITE_DATA:
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %d (%04x)",
+				 sprintf(buf,"ElekIOServ: WriteCmd from %4d Port %04x Value %lld (%04llx)",
 					 MessageInPortList[MessagePort].PortNumber,
 					 Message.Addr,Message.Value,Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
@@ -3535,7 +3542,7 @@ int main(int argc, char *argv[])
 
 			    if (Message.Value) ElekStatus.InstrumentFlags.StatusQuery=1;
 			    else ElekStatus.InstrumentFlags.StatusQuery=0;
-			    sprintf(buf,"elekIOServ: Set StatusQuery to %d %d",Message.Value,ElekStatus.InstrumentFlags.StatusQuery);
+			    sprintf(buf,"elekIOServ: Set StatusQuery to %lld %d",Message.Value,ElekStatus.InstrumentFlags.StatusQuery);
 			    SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			    Message.MsgType=MSG_TYPE_ACK;
 			    SendUDPDataToIP(&MessageOutPortList[MessageInPortList[MessagePort].RevMessagePort],
@@ -3626,7 +3633,7 @@ int main(int argc, char *argv[])
 
 			    if (MessagePort!=ELEK_ETALON_IN)
 			      {
-				 sprintf(buf,"elekIOServ: Change %s to %d",strSysParameterDescription[Message.Addr],Message.Value);
+				 sprintf(buf,"elekIOServ: Change %s to %lld",strSysParameterDescription[Message.Addr],Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			      }
 			    /* if MessagePort */
@@ -3647,7 +3654,7 @@ int main(int argc, char *argv[])
 				 else
 				   ElekStatus.CounterCardSlave.Channel[Channel].Mask[MaskAddr]=Message.Value;
 
-				 sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %x", MaskAddr, Channel, Message.Value);
+				 sprintf(buf,"elekIOServ: Set Mask Addr %d of Channel %d to %llx", MaskAddr, Channel, Message.Value);
 				 SendUDPMsg(&MessageOutPortList[ELEK_DEBUG_OUT],buf);
 			      }
 			    else

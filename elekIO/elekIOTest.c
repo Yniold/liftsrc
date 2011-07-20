@@ -1,8 +1,15 @@
 /*
+<<<<<<< HEAD
 * $RCSfile: elekIOTest.c,v $ last changed on $Date: 2007/09/11 13:28:06 $ by $Author: rudolf $
 *
 * $Log: elekIOTest.c,v $
 * Revision 1.2  2007/09/11 13:28:06  rudolf
+=======
+* $RCSfile: elekIOTest.c,v $ last changed on $Date: 2007-09-11 13:28:06 $ by $Author: rudolf $
+*
+* $Log: elekIOTest.c,v $
+* Revision 1.2  2007-09-11 13:28:06  rudolf
+>>>>>>> remotes/codebase/GSB
 * added AT96 test software
 *
 * Revision 1.1  2007/02/13 17:19:25  martinez

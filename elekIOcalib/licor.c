@@ -194,8 +194,8 @@ void LicorParseLine(unsigned char* aBuffer, int iLength, struct sLicorType* sThe
 	     // Data Block detected
 	     // so parse the line and fill it into structure
 	     sscanf((char*)aBuffer, "DATAD\t%s %s %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-		    &aTempBuffer,
-		    &aTempBuffer2,
+		    (char*)&aTempBuffer,
+		    (char*)&aTempBuffer2,
 		    &dFloatArg[0],
 		    &dFloatArg[1],
 		    &dFloatArg[2],

@@ -1,0 +1,1 @@
+KERNEL=="serbus", NAME="%k", SYMLINK+="%k", MODE="0666"
