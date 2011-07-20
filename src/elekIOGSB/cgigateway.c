@@ -475,7 +475,7 @@ int main()
 		printf("</td>\n") ;
 
 		printf("<td bgcolor=\"#66CC00\">\n") ;
-		printf("Ambient pressure\n") ;		
+		printf("Containment pressure\n") ;		
 		printf("</td>\n") ;
 
 		printf("</tr>\n") ;
