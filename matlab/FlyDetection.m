@@ -1388,6 +1388,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    pause(0.5);
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
@@ -1619,6 +1620,7 @@ if statusData(lastrow,col.ValidSlaveDataFlag)
     end
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
     system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+    pause(0.5);
     system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % 15V needed to keep Pitot Zero open
 end
 
