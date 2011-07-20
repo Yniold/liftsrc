@@ -247,7 +247,7 @@ void GSBIOThreadFunc(void* pArgument)
 		sStructure->psStatus->dTempADC0			= sMyADCStruct.ADC0.dADCTemp;   		
 
    		// TODO: read in config file and set GSB type properly
-   		sStructure->psStatus->eTypeOfGSB = GSBTYPE_GSB_M;
+   		sStructure->psStatus->eTypeOfGSB = GSBTYPE_GSB_X;
 
 		// DEBUG
 		if(1)
@@ -552,8 +552,8 @@ int ADC_FetchData(int iFD, int iADC, struct sRawADCStruct *sADCStruct)
 			if(iChannel == 5)
 			{
 				dVoltage = dVoltage * 3;
-				double dPressure = 60.0f / 5.0f * dVoltage;
-				printf("Press: %+5.3f bar (60 bar FSC)\n\r",dPressure);
+				double dPressure = 200.0f / 5.0f * dVoltage;
+				printf("Press: %+5.3f bar (200 bar FSC)\n\r",dPressure);
 				sADCStruct->ADC0.dPressSens2 = dPressure;
 			};
 		
@@ -895,8 +895,8 @@ int ADC_FetchData_Simultaneous(int iFD, struct sRawADCStruct *sADCStruct)
 		// ADC#0
 		printf("ADC#0 Channel %02d: %+010d CTS %+9.7f V (%+5.3fV Diff) ", iChannel, iReadingADC0, dVoltageADC0, dVoltageADC0 * 3);
 		dVoltageADC0 = dVoltageADC0 * 3;				// voltage divider is made of 3 equal 10K resistors		
-		double dPressure = 60.0f / 5.0f * dVoltageADC0;	// we have a 60 bar FSC pressure sensor with 5V FSC
-		printf("Press: %+5.3f bar (60 bar FSC)\n\r",dPressure);
+		double dPressure = 200.0f / 5.0f * dVoltageADC0;	// we have a 60 bar FSC pressure sensor with 5V FSC
+		printf("Press: %+5.3f bar (200 bar FSC)\n\r",dPressure);
 		sADCStruct->ADC0.dPressSens2 = dPressure;
 
 		// ADC#1
