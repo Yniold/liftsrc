@@ -307,36 +307,36 @@ if statusData(lastrow,col.ValidSlaveDataFlag) % only if armaxis is on
     end
 
 
-% periodic C3F6 addition synced to laser going offline
-if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minute
-        (statusData(lastrow,col.EtalonAction)==3 | statusData(lastrow,col.EtalonAction)==4) ) %first 10 sec period of every two min if offline
-    
-    if (mod(double(statusData(lastrow,4)),4)<2) % in the first 2 minutes of a 4 minute interval
-        %disp 'want to open valve if...'
-        if (~bitget(statusData(lastrow,col.Valve1armAxis),13)) % Valve still closed
-            disp 'valve was closed, -> now OPEN' 
-        system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*20.5/82))]); % set scale to 20.5 sccm Propene (correction factor is aready applied!) flow of 82 sccm MFC
-      %  system(['/lift/bin/eCmd @armAxis w 0xa444 ',num2str(uint16(255*124.5/498))]); % set scale to 124.5 sccm C3F6 (correction factor is aready applied!) flow of 498 sccm MFC 
-            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,1);
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
-            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-            pause(0.5); %wait 4 power up 	
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
-        end
-    else % we are in the second half of the 4 minute interval
-        %disp 'want to close Valve if...'
-        if (bitget(statusData(lastrow,col.Valve1armAxis),13)) % Valve still open
-            disp 'Valve was open -> now CLOSED'
-        system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
-      %    system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC
-            Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0); % close Valve
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
-            system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
-            pause(0.5); % wait...
-            system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
-        end
-    end
-end
+% % periodic C3F6 addition synced to laser going offline
+% if ( double(statusData(lastrow,5))<10 & ... % in the first 10 seconds of a minute
+%         (statusData(lastrow,col.EtalonAction)==3 | statusData(lastrow,col.EtalonAction)==4) ) %first 10 sec period of every two min if offline
+%     
+%     if (mod(double(statusData(lastrow,4)),4)<2) % in the first 2 minutes of a 4 minute interval
+%         %disp 'want to open valve if...'
+%         if (~bitget(statusData(lastrow,col.Valve1armAxis),13)) % Valve still closed
+%             disp 'valve was closed, -> now OPEN' 
+%         system(['/lift/bin/eCmd @armAxis w 0xa442 ', num2str(uint16(255*20.5/82))]); % set scale to 20.5 sccm Propene (correction factor is aready applied!) flow of 82 sccm MFC
+%       %  system(['/lift/bin/eCmd @armAxis w 0xa444 ',num2str(uint16(255*124.5/498))]); % set scale to 124.5 sccm C3F6 (correction factor is aready applied!) flow of 498 sccm MFC 
+%             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,1);
+%             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids on
+%             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+%             pause(0.5); %wait 4 power up 	
+%             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+%         end
+%     else % we are in the second half of the 4 minute interval
+%         %disp 'want to close Valve if...'
+%         if (bitget(statusData(lastrow,col.Valve1armAxis),13)) % Valve still open
+%             disp 'Valve was open -> now CLOSED'
+%         system(['/lift/bin/eCmd @armAxis w 0xa444 0x0000']); % close MFC
+%       %    system(['/lift/bin/eCmd @armAxis w 0xa442 0x0000']); % close MFC
+%             Valveword=bitset(statusData(lastrow,col.Valve1armAxis),13,0); % close Valve
+%             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(24*140))]); % 24V needed to switch solenoids o
+%             system(['/lift/bin/eCmd @armAxis w 0xa408 ', num2str(Valveword)]);
+%             pause(0.5); % wait...
+%             system(['/lift/bin/eCmd @armAxis w 0xa460 ', num2str(uint16(15*140))]); % reduce to standby
+%         end
+%     end
+% end
 
 
 
