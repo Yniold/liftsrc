@@ -359,18 +359,18 @@ switch char(xpar)
         else
             x=double(statusData(:,col.MFCC3F6SetFlow)); eval(['xdata=',fcts2val.MFCC3F6SetFlow,';']);
         end
-    case 'MFCPropFlow'
-        if get(handles.toggleX,'Value')==0
-            xdata=statusData(:,col.MFCPropFlow);
-        else
-            x=double(statusData(:,col.MFCPropFlow)); eval(['xdata=',fcts2val.MFCPropFlow,';']);
-        end
     case 'MFCPropSetFlow'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.MFCPropSetFlow);
         else
             x=double(statusData(:,col.MFCPropSetFlow)); eval(['xdata=',fcts2val.MFCPropSetFlow,';']);
         end
+    case 'MFCIPISynAirFlow'
+        if get(handles.toggleX,'Value')==0
+            xdata=statusData(:,col.MFCIPISynAirFlow);
+        else
+            x=double(statusData(:,col.MFCIPISynAirFlow)); eval(['xdata=',fcts2val.MFCIPISynAirFlow,';']);
+        end    
     case 'MFCShowerFlow'
         if get(handles.toggleX,'Value')==0
             xdata=statusData(:,col.MFCShowerFlow);
@@ -1770,6 +1770,12 @@ switch char(ypar)
         else
             x=double(statusData(:,col.MFCPropSetFlow)); eval(['ydata=',fcts2val.MFCPropSetFlow,';']);
         end
+    case 'MFCIPISynAirFlow'
+        if get(handles.toggleY,'Value')==0
+            ydata=statusData(:,col.MFCIPISynAirFlow);
+        else
+            x=double(statusData(:,col.MFCIPISynAirFlow)); eval(['ydata=',fcts2val.MFCIPISynAirFlow,';']);
+        end     
     case 'MFCShowerFlow'
         if get(handles.toggleY,'Value')==0
             ydata=statusData(:,col.MFCShowerFlow);
@@ -2957,7 +2963,7 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';'I28V';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'MFCC3F6Flow';'MFCC3F6SetFlow';...
-    'MFCPropFlow';'MFCPropSetFlow';'MFCShowerFlow';'MFCShowerSetFlow';'PitotAbs';'PitotDiff';...
+    'MFCPropFlow';'MFCIPISynAirFlow';'MFCPropSetFlow';'MFCShowerFlow';'MFCShowerSetFlow';'PitotAbs';'PitotDiff';...
     'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
     'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
     'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
@@ -3011,7 +3017,7 @@ vars={'Time';'DiodeGr';'DiodeUV';'DiodeEtalon';'DiodeWZ1in';'DiodeWZ1out';'Diode
     '+3.3VLift';'+1.5VLift';'+5VarmAxis';'+28VarmAxis';'+3.3VarmAxis';'+1.5VarmAxis';'I28V';...
     'EtaSpd';'EtaSetPos';'EtaCurPos';'EtaEncPos';'EtaIndPos';'EtaOnlinePos';'ValveVoltLift';...
     'Valve1VoltarmAxis';'Valve2VoltarmAxis';'MFCFlow';'MFCSetFlow';'MFCC3F6Flow';'MFCC3F6SetFlow';...
-    'MFCPropFlow';'MFCPropSetFlow';'MFCShowerFlow';'MFCShowerSetFlow';'PitotAbs';'PitotDiff';...
+    'MFCPropFlow';'MFCPropSetFlow';'MFCIPISynAirFlow';'MFCShowerFlow';'MFCShowerSetFlow';'PitotAbs';'PitotDiff';...
     'PhototubeLamp1';'PhototubeLamp2';'ccMasterDelayLift';'ccMasterDelayarmAxis';'ccShiftDelay0';...
     'ccCounts0';'ccPulses0';'ccShiftDelay1';'ccGateDelay1';...
     'ccGateWidth1';'ccCounts1';'ccPulses1';'ccShiftDelay2';'ccGateDelay2';...
